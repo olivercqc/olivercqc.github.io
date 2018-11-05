@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2018-11-05T01:19:35.121Z</updated>
+  <updated>2018-11-05T03:06:36.260Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,28 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Hello World</title>
+    <link href="http://yoursite.com/2018/11/05/test/"/>
+    <id>http://yoursite.com/2018/11/05/test/</id>
+    <published>2018-11-05T03:03:41.685Z</published>
+    <updated>2018-11-05T03:06:36.260Z</updated>
+    
+    <content type="html"><![CDATA[<p><span class="math display">\[(1-0.01)^365=0.0255\]</span> <span class="math display">\[(1+0.01)^365=37.783\]</span></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;&lt;span class=&quot;math display&quot;&gt;\[(1-0.01)^365=0.0255\]&lt;/span&gt; &lt;span class=&quot;math display&quot;&gt;\[(1+0.01)^365=37.783\]&lt;/span&gt;&lt;/p&gt;
+
+      
+    
+    </summary>
+    
+    
+  </entry>
   
   <entry>
     <title>Hello World</title>
