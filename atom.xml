@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2018-11-05T03:06:36.260Z</updated>
+  <updated>2018-11-05T03:15:55.603Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -18,40 +18,19 @@
   
   <entry>
     <title>Hello World</title>
-    <link href="http://yoursite.com/2018/11/05/test/"/>
-    <id>http://yoursite.com/2018/11/05/test/</id>
+    <link href="http://yoursite.com/2018/11/05/hello%20world/"/>
+    <id>http://yoursite.com/2018/11/05/hello world/</id>
     <published>2018-11-05T03:03:41.685Z</published>
-    <updated>2018-11-05T03:06:36.260Z</updated>
+    <updated>2018-11-05T03:15:55.603Z</updated>
     
-    <content type="html"><![CDATA[<p><span class="math display">\[(1-0.01)^365=0.0255\]</span> <span class="math display">\[(1+0.01)^365=37.783\]</span></p>]]></content>
+    <content type="html"><![CDATA[<p><span class="math display">\[(1-0.01)^{365}\approx0.0255\]</span> <span class="math display">\[(1+0.01)^{365}\approx37.783\]</span></p>]]></content>
     
     <summary type="html">
     
       
       
-        &lt;p&gt;&lt;span class=&quot;math display&quot;&gt;\[(1-0.01)^365=0.0255\]&lt;/span&gt; &lt;span class=&quot;math display&quot;&gt;\[(1+0.01)^365=37.783\]&lt;/span&gt;&lt;/p&gt;
+        &lt;p&gt;&lt;span class=&quot;math display&quot;&gt;\[(1-0.01)^{365}\approx0.0255\]&lt;/span&gt; &lt;span class=&quot;math display&quot;&gt;\[(1+0.01)^{365}\approx37.783\]&lt;/span&gt;&lt;/p&gt;
 
-      
-    
-    </summary>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>Hello World</title>
-    <link href="http://yoursite.com/2018/11/05/hello-world/"/>
-    <id>http://yoursite.com/2018/11/05/hello-world/</id>
-    <published>2018-11-05T01:19:35.121Z</published>
-    <updated>2018-11-05T01:19:35.121Z</updated>
-    
-    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p><h2 id="quick-start">Quick Start</h2><h3 id="create-a-new-post">Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p><h3 id="run-server">Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p><h3 id="generate-static-files">Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p><h3 id="deploy-to-remote-sites">Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.
       
     
     </summary>
