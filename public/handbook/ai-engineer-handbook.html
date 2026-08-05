@@ -144,6 +144,17 @@ details.answer{margin-top:12px}.learning-loop .rubric{margin:8px 0}.foundation-s
 <p><strong>唯一主线：</strong>带一个只掌握 Python 基础语法、没有 AI/机器学习/后端经验的读者，逐步完成可评测 RAG、受控 Agent、生产服务、完整 SaaS、多 Agent 编排和 Coding Agent。高级内容不删，只增加学习台阶。</p>
 <p>本版重点不是继续堆概念，而是把每个能力落实为代码、测试、验收标准和可展示的作品。</p>
 </section>
+<div class="callout" id="thesis-book" style="border-left:4px solid #2563eb;background:#eff6ff">
+<p><strong>本书立场 · Thesis（为什么是"从零成为 AI 工程师"，而不是"提示词工程速成"）</strong></p>
+<p>模型能力在指数级进步，但<b>把模型变成可靠系统的那一层代码——Harness 工程——才是 AI 工程师穿越模型迭代周期的核心竞争力</b>。本书的立场很简单：</p>
+<ul>
+<li><b>上下文工程是被低估的一半</b>：模型每一步"看到什么"，往往比模型本身更决定结果（见第 13 章）。</li>
+<li><b>护栏比聪明更重要</b>：没有约束 / 验证 / 纠正的生产 Agent 只是脱缰的野马（见第 14、19 章）。</li>
+<li><b>评估驱动的飞轮是持续改进的唯一引擎</b>：没有可量化、抗噪声的评估，所有"变好"都是错觉（见第 8 章）。</li>
+</ul>
+<p>这和 bojieli《深入理解 AI Agent》的立场高度一致：模型会换代，但"设计原则"会留下来。两本书互补——对方深潜 Agent 设计原理，本书陪你从零把原理落成可上线、可展示的工程能力。</p>
+</div>
+
 <h2 id="ch0">第 0 章 · 先认识目的地：AI 工程师在做什么</h2>
 <div class="chapter-brief">
 <p class="brief-goal"><strong>本章目标：</strong>先知道大模型、AI 应用和 AI 工程师分别是什么，再判断这本书是不是你要走的路线。</p>
@@ -211,7 +222,7 @@ details.answer{margin-top:12px}.learning-loop .rubric{margin:8px 0}.foundation-s
 
 print(summarize_scores([80, 90, 70]))</code></pre>
 </div>
-<h3 id="sec-00-06">0.6 这本书怎样区分主线、进阶和练习</h3>
+<div class="callout"><strong>三档准入判断。</strong>读完上面测试后：① 完全陌生（写不出函数）→ 先补一门基础 Python 再进第 1 章；② 能写函数但没写过类型注解 / dataclass → 直接进第 1 章，遇到 B3–B5 再补；③ 能写注解 + dataclass → 直接进第 1 章。不要把「从零学 AI 工程」误读成「从零学编程」。</div><h3 id="sec-00-06">0.6 这本书怎样区分主线、进阶和练习</h3>
 <p><span class="track-label track-core">主线 · 必须掌握</span>首次阅读按顺序完成，构成阶段项目的最低路径。</p>
 <p><span class="track-label track-advanced">进阶 · 可先跳过</span>默认折叠；适合第二遍学习或已有工程经验的读者。</p>
 <p><span class="track-label track-return">回访 · 学完后再回来</span>需要后续章节知识，题目会明确指出返回时间。</p>
@@ -234,7 +245,7 @@ python --version</code></pre>
 <h3 id="sec-00-08">0.8 工程基础按需补课</h3>
 <p>后续第一次遇到类型标注、HTTP、测试、异步或数据库时，章节顶部会链接到 <a href="#appendix-foundation">附录 B · AI 工程基础桥梁课程</a>。不要在开始 AI 主线前一次性学完附录。</p>
 <p>完整自测清单已经放到附录 B 首页并默认折叠。你可以在卡住时再打开，而不是现在先看一张“不会什么”的大表。</p>
-<h3 id="sec-00-09">0.9 五部分路线：先记住成果，不必先记术语</h3>
+<div class="callout warn"><strong>起点契约（请先读这条）。</strong>全书主线默认你「会读、会写基础函数、会查报错」。但从第 4 章起会用到<strong>类型注解、dataclass、Pydantic、HTTP</strong>——这些不属于「Python 基础语法」。卡住时按各章顶部链接补附录 B3–B5，而不是当成你已经会的。第 9–15 章会同时叠加 dataclass、HTTP 状态码、异常重试，如遇两样以上想不起，先补附录 B4–B7 再回主线。</div><h3 id="sec-00-09">0.9 五部分路线：先记住成果，不必先记术语</h3>
 <table class="toc-table"><thead><tr><th>部分</th><th>一句话目标</th><th>阶段成果</th></tr></thead><tbody>
 <tr><td>Part 1</td><td>把大模型当成可调用、可约束的程序组件</td><td>结构化工单助手</td></tr>
 <tr><td>Part 2</td><td>让模型查自己的资料并证明答案质量</td><td>可评测知识助手</td></tr>
@@ -400,7 +411,7 @@ for temperature in [0.2, 1.0, 1.8]:
 <div class="chapter-brief">
 <p class="brief-goal"><strong>本章目标：</strong>先成功获得一次真实模型回答，再理解请求、响应、供应商和模型，最后用一个简单函数完成流式输出与供应商切换。</p>
 <p class="brief-product"><strong>本章提交物：</strong><code>first_llm_call.py</code>、<code>simple_llm_client.py</code>、<code>.env.example</code> 和一份供应商切换记录。</p>
-<details class="chapter-more"><summary>前置、依赖与维护信息</summary><p>前置：<a href="#bridge-b8">B8 asyncio</a>、按需阅读 <a href="#bridge-b10">B10 Git/CI</a> 和 <a href="#bridge-b10">B10 Git/CI</a>。主线不要求 dataclass 或异步。安装：<code>pip install openai python-dotenv requests</code>。动态接口复核：2026-07-28。</p></details>
+<details class="chapter-more"><summary>前置、依赖与维护信息</summary><p>前置：<a href="#bridge-b2">B2 环境与依赖</a>；<a href="#bridge-b6">B6 HTTP/API</a>。主线不要求 dataclass、异步或 Git/CI。安装：<code>pip install openai python-dotenv requests</code>。动态接口复核：2026-07-28。</p></details>
 </div>
 <h3 id="sec-02-01">2.1 先运行：让 Python 得到第一条模型回答</h3>
 <p><span class="track-label track-core">主线 · 必须掌握</span>先复制运行，不必先理解 API 分类。把下面三项填入项目根目录的 <code>.env</code>：</p>
@@ -629,9 +640,22 @@ print(prompt)</code></pre>
 <h4>Prompt 版本与 A/B</h4><p>本章只记录版本号和变更说明；数据集、回归门禁和发布在第 17 章深入。</p>
 <h4>Prompt Injection</h4><p>这里先建立“不可信数据不能改写系统任务”的直觉；权限、隔离和对抗测试在第 19 章处理。</p>
 </details>
-<section class="learning-loop" id="ch3-learning-loop"><h3>3.7 本章学习闭环与验收</h3><div class="loop-grid"><div class="loop-card"><h4>A · 概念自测</h4><ol><li>角色为什么不能代替任务和规则？</li><li>Few-shot 的主要作用是什么？</li><li>为什么要分离指令区与数据区？</li><li>Prompt 为什么适合放在独立模板文件？</li></ol></div><div class="loop-card"><h4>B · 本章提交物</h4><p>完成 3.6 的三个模板、渲染脚本和最小测试。</p></div><div class="loop-card"><h4>C · 解释能力</h4><p>为什么 Prompt Engineering 更接近接口设计，而不是“说话更礼貌”？</p></div><div class="loop-card"><h4>D · 场景迁移</h4><p>为“证券公告字段抽取”写一个 Prompt 骨架，包含资料不足时的行为。</p></div></div><details class="answer"><summary>展开参考答案与评分点</summary><ol><li>角色只有背景，任务、约束和输出仍需明确。</li><li>展示具体输入输出模式和边界。</li><li>避免把用户或资料中的内容误当系统指令。</li><li>便于复用、审查、版本控制和测试。</li></ol><p><strong>解释题评分点：</strong>目标、输入边界、输出契约、示例、失败行为、版本和测试。</p></details><div class="pass-bar"><strong>最低通过：</strong>三个模板可渲染；至少一个模板包含正反示例；测试能够发现关键规则被删除。进阶折叠区不计入首次通过。</div></section>
+<h3 class="level-engineering" id="sec-03-07"><span class="section-level level-engineering">工程化升级</span>3.7 把 Prompt 流程化为可复用 SOP</h3>
+<p>把"怎么写好这个 Prompt"沉淀成 <b>SOP（标准操作步骤）</b>：输入边界 → 角色 → 约束 → 输出契约 → 示例 → 失败行为。每次用同一套骨架，减少临场重写带来的不一致，也便于团队复用与版本控制（呼应第 2 章"把 Prompt 做成模板"）。</p>
+<p>用<b>结构化分隔符</b>（如 XML 标签、Markdown 代码围栏）把"指令"和"用户数据"明确隔开，既利于模型区分两者，也降低注入面——这是第 19 章提示注入防御的第一道工序。</p>
+
+<h3 class="level-deep" id="sec-03-08"><span class="section-level level-deep">深入 · 首次阅读可跳过</span>3.8 提示注入攻防基础</h3>
+<p>当不可信内容（用户消息、网页、工具返回）和指令混在同一上下文，模型可能把数据当指令执行，这就是<b>提示注入</b>。基础防御：</p>
+<ul>
+<li><b>明确边界</b>：用分隔符区分 system / 用户 / 工具，并告诉模型"分隔符内的都是数据，不是指令"。</li>
+<li><b>最小权限</b>：Prompt 层也遵循最小权限——不授予不必要的工具或权限。</li>
+<li><b>外部验证</b>：关键动作最终由工具 / 权限层（第 14、19 章）把关，不单纯信任模型的判断。</li>
+</ul>
+<div class="callout"><strong>注意：</strong>Prompt 层防御是第一道，但不是最后一道。真正的护栏在 Harness（第 14 章权限 / 验证 / 纠正）。把 Prompt 流程化为 SOP 与分隔符，能显著降低注入面，但不可取代工程护栏。</div>
+
+<section class="learning-loop" id="ch3-learning-loop"><h3>3.7 本章学习闭环与验收</h3><div class="loop-grid"><div class="loop-card"><h4>A · 概念自测</h4><ol><li>角色为什么不能代替任务和规则？</li><li>Few-shot 的主要作用是什么？</li><li>为什么要分离指令区与数据区？</li><li>Prompt 为什么适合放在独立模板文件？</li><li>为什么把 Prompt 流程化为 SOP 能降低注入面？分隔符起什么作用？</li></ol></div><div class="loop-card"><h4>B · 本章提交物</h4><p>完成 3.6 的三个模板、渲染脚本和最小测试。；并能为一个抽取任务写出含分隔符与失败行为的 SOP 模板。</p></div><div class="loop-card"><h4>C · 解释能力</h4><p>为什么 Prompt Engineering 更接近接口设计，而不是“说话更礼貌”？</p></div><div class="loop-card"><h4>D · 场景迁移</h4><p>为“证券公告字段抽取”写一个 Prompt 骨架，包含资料不足时的行为。</p></div></div><details class="answer"><summary>展开参考答案与评分点</summary><ol><li>角色只有背景，任务、约束和输出仍需明确。</li><li>展示具体输入输出模式和边界。</li><li>避免把用户或资料中的内容误当系统指令。</li><li>便于复用、审查、版本控制和测试。</li></ol><p><strong>解释题评分点：</strong>目标、输入边界、输出契约、示例、失败行为、版本和测试。</p></details><div class="pass-bar"><strong>最低通过：</strong>三个模板可渲染；至少一个模板包含正反示例；测试能够发现关键规则被删除。进阶折叠区不计入首次通过。</div></section>
 <h2 id="ch4">第 4 章 · 让模型返回程序能安全使用的数据</h2>
-<div class="chapter-brief"><p class="brief-goal"><strong>本章目标：</strong>理解“看起来像 JSON”为什么仍不可靠，并用 Pydantic 把模型输出转换成经过类型和业务规则检查的对象。</p><p class="brief-product"><strong>本章提交物：</strong><code>Ticket</code> Schema、三类失败测试和一次受控错误处理。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p>前置：第 2–3 章；安装 <code>pip install pydantic pytest</code>；按需阅读 <a href="#bridge-b9">B9 测试</a> 和 <a href="#bridge-b9">B9 测试</a>。进阶联合类型不计入最低通过。<a class="source-ref" href="#source-D01" title="D01 · Pydantic Models and Validation">[D01]</a></p></details></div>
+<div class="chapter-brief"><p class="brief-goal"><strong>本章目标：</strong>理解“看起来像 JSON”为什么仍不可靠，并用 Pydantic 把模型输出转换成经过类型和业务规则检查的对象。</p><p class="brief-product"><strong>本章提交物：</strong><code>Ticket</code> Schema、三类失败测试和一次受控错误处理。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p>前置：第 2–3 章；安装 <code>pip install pydantic pytest</code>；陌生语法见 <a href="#bridge-b5">B5 Pydantic 与数据契约</a>，按需阅读 <a href="#bridge-b9">B9 测试</a>。进阶联合类型不计入最低通过。<a class="source-ref" href="#source-D01" title="D01 · Pydantic Models and Validation">[D01]</a></p></details></div>
 <h3 id="sec-04-01">4.1 JSON 语法正确，也可能不能进入业务系统</h3>
 <p>模型可能返回合法 JSON，但字段缺失、类型错误、枚举不存在，或者金额、日期违反业务规则。Structured Output 的目标不是“输出有大括号”，而是建立程序可以检查的契约。</p>
 <pre class="code status-stdlib"><code>bad_but_valid_json = {
@@ -727,7 +751,7 @@ print("格式和业务规则均通过")</code></pre>
 <section class="part-banner" id="part2"><h2>Part 2 · AI Application Engineer：让模型先查资料再回答</h2><p class="part-problem">现在模型能生成文字，但它不知道公司的私有资料，也无法证明答案来自哪里。本部分从“按意思查找”开始，逐步建立带来源、可拒答、可回归评测的企业知识助手。</p><div class="part-product"><strong>阶段成果：企业知识助手 v1——能够检索真实文档、生成带来源回答，并用固定问题验证改动是否变好。</strong></div></section><h2 id="ch5">第 5 章 · Embedding 与语义检索</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>理解相似度、Embedding 模型选型、归一化、批量处理、向量库和典型失败模式。</p><p class="brief-product"><strong>本章产物：</strong>可比较多语言文本并完成语义检索的索引脚本。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p><strong>前置能力：</strong>Part 1</p><div class="chapter-badges">
 <span></span><span>难度：中级</span>
 <span>主干</span><span>云 API：可选</span><span>GPU：不需要</span>
-</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b3">B3 类型</a>；<a href="#bridge-b3">B3 类型</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
+</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b3">B3 类型</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
 <div class="problem-story"><strong>从一个具体问题开始：</strong>先看现象：查询“怎么申请休息几天”时，关键词搜索可能找不到只写了“年假申请”的制度；语义检索要解决的就是这种“字不同但意思相近”。</div><div class="reader-bridge" data-chapter="5">
 <h3>先知道为什么学这一章</h3>
 <p>关键词不完全相同时，普通搜索可能找不到意思相近的制度条款。怎样让程序“按意思查找”？</p>
@@ -945,7 +969,7 @@ xy = TSNE(n_components=2, random_state=42).fit_transform(reduced)  # 最终 2D
 </section><h2 id="ch6">第 6 章 · RAG 基础：让模型回答私有数据</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>完成加载、分块、嵌入、检索、上下文拼装、回答与引用的最小闭环。</p><p class="brief-product"><strong>本章产物：</strong>支持私有文档问答的最小 RAG。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p><strong>前置能力：</strong>第 5 章</p><div class="chapter-badges">
 <span></span><span>难度：中级</span>
 <span>主干</span><span>云 API：可选</span><span>GPU：不需要</span>
-</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b6">B6 HTTP/API</a>；<a href="#bridge-b6">B6 HTTP/API</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
+</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b6">B6 HTTP/API</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
 <div class="reader-bridge" data-chapter="6">
 <h3>先知道为什么学这一章</h3>
 <p>第 5 章只能找到资料，还没有让模型根据证据回答。怎样把检索结果和生成模型连起来？</p>
@@ -1060,7 +1084,7 @@ context = f"[来源: {chunk['source']}#{chunk['chunk_index']}]\n{chunk['text']}"
 </section><h2 id="ch7">第 7 章 · Advanced Retrieval：混合检索、重排与数据血缘</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>掌握语义分块、BM25 + Dense 混合检索、RRF、Reranker、查询变换、元数据过滤和生产管线。</p><p class="brief-product"><strong>本章产物：</strong>带真实来源元数据、混合检索和重排的 Retriever。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p><strong>前置能力：</strong>第 5–6 章</p><div class="chapter-badges">
 <span></span><span>难度：中级</span>
 <span>主干</span><span>云 API：可选</span><span>GPU：不需要</span>
-</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b9">B9 测试</a>；<a href="#bridge-b9">B9 测试</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
+</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b9">B9 测试</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
 <div class="reader-bridge" data-chapter="7">
 <h3>先知道为什么学这一章</h3>
 <p>基础 RAG 会遇到找不到编号、文档被切坏、正确证据排名太低等问题。</p>
@@ -1527,21 +1551,43 @@ else:
 <li><strong>构造对抗集：</strong>使用<a href="#sec-08-08">8.8 节“评测数据集”</a>的 <code>build_adversarial</code>，为黄金集增加 5 条矛盾或干扰样本。</li>
 <li><strong>运行 Rubric 评委：</strong>使用<a href="#sec-08-09">8.9 节“LLM-as-judge 进阶”</a>的 <code>RUBRIC_JUDGE</code>，比较单分数与多维量规在幻觉样本上的差异。</li>
 <li><strong>接入发布门禁：</strong>使用<a href="#sec-08-10">8.10 节“回归门禁”</a>的 <code>regression_gate</code>，故意制造一次退化并确认脚本返回失败状态。</li>
-</ol><div class="project"><h3>🎯 阶段里程碑 · 企业知识助手 v1</h3><p>助手可以回答私有资料，并且答案质量不再只凭感觉判断。</p><ul><li>引用真实文件名与 chunk/page 元数据</li><li>知识库无答案时拒答</li><li>检索和生成分别有指标</li><li>Prompt/模型变化后自动与基线比较</li></ul></div><section class="learning-loop" id="ch8-learning-loop">
+</ol><h3 class="level-engineering" id="sec-08-14"><span class="section-level level-engineering">工程化升级</span>8.14 评估的统计显著性：分差小于噪声就不要切换</h3>
+<p>Agent 评估充满噪声：同一配置跑两次结果也会漂移。把"分数涨了 2%"当真进步，往往是自欺。</p>
+<ul>
+<li><b>估噪声带宽</b>：在 n 个用例上测得成功率 p，标准误约为 <code>√(p(1-p)/n)</code>。例如 n=100、p=0.8，噪声约 ±0.04。分差小于噪声带宽时，<b>不做切换决策</b>。</li>
+<li><b>配对分析</b>：同批任务上对比两个配置，正确做法是逐题比较两者的胜负，只看结果不同的用例（McNemar 检验），灵敏度远高于各自算总分。</li>
+<li><b>位置偏差</b>：用 LLM 当评委做配对比较时，交换 A/B 顺序各评一次，避免模型偏好靠前的答案。</li>
+<li><b>多次运行取均值 + 波动范围</b>：每个配置跑 3–5 次，报告均值与波动，单次数字不作为部署依据。</li>
+</ul>
+<div class="callout"><strong>Goodhart 定律：</strong>当一个指标变成优化目标，它就不再是好指标。LLM-as-judge 的分数一旦被用于刷榜，模型会学会"让评委打高分"而非"更好地回答"。所以评委的版本也要和模型、提示词一起纳入版本管理。</div>
+
+<h3 class="level-engineering" id="sec-08-15"><span class="section-level level-engineering">工程化升级</span>8.15 评估环境两范式与渐进式信息透露</h3>
+<ul>
+<li><b>工具调用型</b>：靠可执行标准验证（测试是否通过、答案是否匹配），不依赖人类标注。常见分层：单轮问答 → 无状态多轮（搜索+综合）→ 有状态多轮（改数据库）→ 沙箱（代码执行+测试）。</li>
+<li><b>人机交互型</b>：用另一个 LLM 模拟用户。关键原则是<b>渐进式信息透露</b>——绝不能一开始把模拟用户的所有信息全给 Agent，信息应随对话按需透露（如 τ-bench / τ²-bench）。</li>
+</ul>
+<p>还要区分<b>机制指标</b>与<b>目标指标</b>：你改的东西（机制）和你真正关心的东西（目标）常常不是同一个。始终问：我改变的是机制还是目标？以目标为准。特性开关（feature flag）应作为一等公民级架构组件，用来做消融。</p>
+
+<h3 class="level-deep" id="sec-08-16"><span class="section-level level-deep">深入 · 首次阅读可跳过</span>8.16 Rubric 四准则与多源异构评判</h3>
+<p>让 LLM 当评委时，rubric（评分量规）应满足四准则：①基于专家指导；②全面覆盖；③有权重与一票否决项；④自包含、可操作（每条独立判，不依赖评委的领域知识）。</p>
+<p>两个陷阱：<b>长度偏差</b>——评委倾向给更长、更详尽的回复打高分，哪怕内容并不更正确；<b>同源偏差</b>——Agent 与评委同家族时互相偏袒。缓解办法是<b>多源异构评判</b>：用不同模型家族的多个 LLM 分别评判。</p>
+<div class="callout"><strong>延伸阅读：</strong>评估的统计显著性、评估环境范式与 Rubric 准则的系统论述，参见 bojieli《深入理解 AI Agent》第 6 章「Agent 的评估」。</div>
+
+<div class="project"><h3>🎯 阶段里程碑 · 企业知识助手 v1</h3><p>助手可以回答私有资料，并且答案质量不再只凭感觉判断。</p><ul><li>引用真实文件名与 chunk/page 元数据</li><li>知识库无答案时拒答</li><li>检索和生成分别有指标</li><li>Prompt/模型变化后自动与基线比较</li></ul></div><section class="learning-loop" id="ch8-learning-loop">
 <h3>8.学习闭环与验收</h3>
 <p>以下内容才是本章的最低完成标准；正文中需要真实云端、GPU 或后续知识的任务均视为进阶挑战。</p>
 <div class="loop-grid">
-<div class="loop-card"><h4>A · 概念自测</h4><ol><li>检索指标和生成指标为什么要分开？</li><li>黄金集至少包含什么？</li><li>LLM-as-judge 为什么需要量规和校准？</li><li>什么叫回归门禁？</li></ol></div>
-<div class="loop-card"><h4>B · 本章提交物</h4><ul><li>创建至少 10 条黄金集。</li><li>计算 Recall@K 与一个答案忠实度指标。</li><li>模拟新版本掉分并让 CI/脚本返回非零退出码。</li></ul></div>
+<div class="loop-card"><h4>A · 概念自测</h4><ol><li>检索指标和生成指标为什么要分开？</li><li>黄金集至少包含什么？</li><li>LLM-as-judge 为什么需要量规和校准？</li><li>什么叫回归门禁？</li><li>为什么分差小于噪声带宽时不应切换模型？</li></ol></div>
+<div class="loop-card"><h4>B · 本章提交物</h4><ul><li>创建至少 10 条黄金集。</li><li>计算 Recall@K 与一个答案忠实度指标。</li><li>模拟新版本掉分并让 CI/脚本返回非零退出码。</li><li>对一个改动跑 3–5 次取均值与波动范围，并做配对分析。</li></ul></div>
 <div class="loop-card"><h4>C · 解释能力</h4><p>为什么只看平均总分可能掩盖严重问题？</p></div>
 <div class="loop-card"><h4>D · 场景迁移</h4><p>为企业制度助手设计离线评测、上线抽样和用户反馈三层闭环。</p></div>
 </div>
 <details class="answer"><summary>概念自测参考答案</summary><ol><li>可以定位错误发生在检索还是回答。</li><li>问题、期望证据/答案、来源及标签。</li><li>评委也不稳定且有偏差，需要明确评分标准和人工样本校准。</li><li>指标低于基线或阈值时阻止发布。</li></ol><h4>解释题评分点</h4><div class="rubric"><strong>评分点：</strong>分布、分群、长尾、高风险样本、检索/生成拆分、阈值。</div></details>
 <div class="pass-bar"><strong>最低通过：</strong>黄金集可运行；能触发一次回归失败；解释题命中 4 点；三层评测职责清楚。</div>
-</section><section class="part-banner" id="part3"><h2>Part 3 · Agent Engineer：让系统完成受控的多步骤任务</h2><p class="part-problem">现在系统能查资料并回答，但不会根据观察主动选择工具、保存任务进度或在危险动作前请求人工确认。本部分把普通 Python 函数逐步升级为有状态、有边界、能停止和恢复的 Agent。</p><div class="part-product"><strong>阶段成果：企业知识助手 v2——能够选择工具、持久化状态、控制权限、验证结果并从中断处恢复。</strong></div></section><h2 id="ch9">第 9 章 · Agent 基础：认知循环与规划</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>理解 Agent 与普通工作流的边界，掌握 ReAct、Plan-Execute、Reflexion、停止条件和最小循环。</p><p class="brief-product"><strong>本章产物：</strong>一个有最大步数和明确结束条件的单 Agent。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p><strong>前置能力：</strong>Part 1–2</p><div class="chapter-badges">
+</section><div class="reader-bridge"><strong>进入 Part 3 前的自检。</strong>接下来 7 章会同时用到 dataclass、HTTP 状态码、异常重试。如果其中出现两样以上你都想不起在哪见过，先花 2 小时把附录 B4–B7 的桥梁项目各做一遍，再回主线。（本卡片不新增整章，只是前置自检，避免扩篇幅。）</div><section class="part-banner" id="part3"><h2>Part 3 · Agent Engineer：让系统完成受控的多步骤任务</h2><p class="part-problem">现在系统能查资料并回答，但不会根据观察主动选择工具、保存任务进度或在危险动作前请求人工确认。本部分把普通 Python 函数逐步升级为有状态、有边界、能停止和恢复的 Agent。</p><div class="part-product"><strong>阶段成果：企业知识助手 v2——能够选择工具、持久化状态、控制权限、验证结果并从中断处恢复。</strong></div></section><h2 id="ch9">第 9 章 · Agent 基础：认知循环与规划</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>理解 Agent 与普通工作流的边界，掌握 ReAct、Plan-Execute、Reflexion、停止条件和最小循环。</p><p class="brief-product"><strong>本章产物：</strong>一个有最大步数和明确结束条件的单 Agent。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p><strong>前置能力：</strong>Part 1–2</p><div class="chapter-badges">
 <span></span><span>难度：中级</span>
 <span>主干</span><span>云 API：可选</span><span>GPU：不需要</span>
-</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b4">B4 dataclass</a>；<a href="#bridge-b4">B4 dataclass</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
+</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b4">B4 dataclass</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
 <div class="reader-bridge" data-chapter="9">
 <h3>先知道为什么学这一章</h3>
 <p>固定 if/else 适合固定步骤，但有些任务必须根据上一步结果决定下一步。</p>
@@ -1624,7 +1670,7 @@ def run_agent(question: str, max_steps: int = 5) -&gt; str:
 
 
 answer = run_agent("上海天气如何？再帮我算 100/4 + 9")
-print("最终答案：", answer)</code></pre><p>这个版本把 <code>run_agent()</code>、工具表和决策桩放在同一处，复制后即可离线运行。对外接口仍然只有“问题 → 最终答案”；真正接入模型时，不要改循环，只替换决策函数。</p><h3 class="level-engineering" id="sec-09-04"><span class="section-level level-engineering">工程化升级</span>9.4 两个容易踩的坑</h3><ul>
+print("最终答案：", answer)</code></pre><div class="callout warn"><strong>安全提醒（教学示例）。</strong>上面这行 <code>eval(expression, {"__builtins__": {}}, {})</code> 已用空 builtins 沙箱化，仅用于离线演示「把模型输出当指令」的桩。生产环境<strong>绝不允许 eval 模型输出</strong>（见第 19 章提示注入与命令执行防护）。</div><p>这个版本把 <code>run_agent()</code>、工具表和决策桩放在同一处，复制后即可离线运行。对外接口仍然只有“问题 → 最终答案”；真正接入模型时，不要改循环，只替换决策函数。</p><h3 class="level-engineering" id="sec-09-04"><span class="section-level level-engineering">工程化升级</span>9.4 两个容易踩的坑</h3><ul>
 <li><strong>别让模型转圈圈。</strong>模型偶尔会"卡住"，比如反复调同一个工具、或者两个工具互相踢皮球，停不下来。所以一定要设 <code>max_steps</code>（例如最多 5 步），到顶就强制结束——这正是 9.3 节代码里 <code>for step in range(1, max_steps + 1)</code> 这道"保险丝"的作用。没有它，你的程序可能永远卡在那儿。</li>
 <li><strong>工具描述要写清楚。</strong>模型完全靠 <code>description</code> 来判断"该不该用这个工具、参数怎么填"。写得太含糊（比如"处理数据"），模型就会瞎调或者填错参数。把你希望它懂的，用大白话写进 description 和每个参数的说明里。描述写得越像"人话"，模型用得越准。</li>
 </ul><p>本章前半部分我们先搭了一个最小循环：模型选工具 → 程序执行 → 结果喂回 → 再问。这够你跑通"Agent 会动手"这件事，但<strong>真正的生产级 Agent 远不止一个 ReAct 循环</strong>。一种认知架构会把 Agent 拆成围绕一个"共享工作区"运转的五个模块：感知（Perception）、规划（Planning）、执行（Execution）、评估（Evaluation）、注意（Attention）——书里管这叫"society of mind in code"（心智社会），没有一个模块单独聪明，靠共享状态互动才长出智能行为。本章先把"规划→调度→执行→反思→学习"五层讲透；MCP 与护栏分别在第 11 章和第 14 章展开。</p><div class="freshness">
@@ -1639,7 +1685,7 @@ print("最终答案：", answer)</code></pre><p>这个版本把 <code>run_agent(
 <li><strong>L4 Loop</strong>：让 Agent 自主持续推进、直到验证通过的循环。本章<a href="#sec-09-03">9.3 节“一个最小可跑 Agent”</a>的 <code>run_agent</code> 就是最小 Loop。</li>
 </ul>
 <p>四层是<strong>叠加、不是替代</strong>：本章先让你在 L3 / L4 动手跑通；后续工程章节再把四层系统讲透——<a href="#ch15">《四层范式 Prompt→Context→Harness→Loop》</a>、<a href="#ch15">《Ralph Loop 实战》</a>、<a href="#ch22">《多智能体编排》</a>。记住一句话：<strong>你不是在"调一个更聪明的模型"，而是在"搭一套让模型可靠干活的循环与环境"</strong>。</p>
-</div></details><h3 class="level-deep" id="sec-09-05"><span class="section-level level-deep">深入 · 首次阅读可跳过</span>9.5 Agent 架构深挖：五层认知循环</h3><p>前置章节的循环里，模型既当指挥又当裁判。一种更清晰的做法是把职责拆开：<strong>感知</strong>把用户问题结构化（这是简单查询还是矛盾查询？复杂度 0~1？），<strong>规划</strong>据此选策略（直接做 / 拆解 / 探索 / 假设检验），<strong>执行</strong>调工具并把结果包成带"相关性评分"的 finding，<strong>评估</strong>追问"这步有进展吗？证据矛盾吗？"，<strong>注意</strong>读信号决定下一步跑哪个模块。注意模块靠一个 <code>active_signal</code> 字段广播紧急度（如 <code>CONTRADICTION</code>），一旦评估发现矛盾，就打断执行、打回规划重做——这就是"反思→学习"。</p><p>下面这段<strong>纯 Python 可离线跑通</strong>，把"规划→调度→执行→反思→学习"骨架化了。LLM 用桩函数代替，你把 <code>plan()</code> 换成真实模型调用即可，外层循环一行不动：</p><pre class="code status-stdlib"><code>from dataclasses import dataclass, field
+</div></details><h3 class="level-deep" id="sec-09-05"><span class="section-level level-deep">深入 · 首次阅读可跳过</span>9.5 Agent 架构深挖：五层认知循环</h3><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b4">B4 类、对象与 dataclass</a>。本节的 @dataclass / @dataclass 字段 / str | None 写法，若只熟悉 Python 基础语法会卡，按需跳转，不要求提前全部学完。</p><p>前置章节的循环里，模型既当指挥又当裁判。一种更清晰的做法是把职责拆开：<strong>感知</strong>把用户问题结构化（这是简单查询还是矛盾查询？复杂度 0~1？），<strong>规划</strong>据此选策略（直接做 / 拆解 / 探索 / 假设检验），<strong>执行</strong>调工具并把结果包成带"相关性评分"的 finding，<strong>评估</strong>追问"这步有进展吗？证据矛盾吗？"，<strong>注意</strong>读信号决定下一步跑哪个模块。注意模块靠一个 <code>active_signal</code> 字段广播紧急度（如 <code>CONTRADICTION</code>），一旦评估发现矛盾，就打断执行、打回规划重做——这就是"反思→学习"。</p><p>下面这段<strong>纯 Python 可离线跑通</strong>，把"规划→调度→执行→反思→学习"骨架化了。LLM 用桩函数代替，你把 <code>plan()</code> 换成真实模型调用即可，外层循环一行不动：</p><pre class="code status-stdlib"><code>from dataclasses import dataclass, field
 
 @dataclass
 class Workspace:
@@ -1747,7 +1793,7 @@ run("对比北京和上海的天气并算温差")</code></pre><p>跑一下你会
 </section><h2 id="ch10">第 10 章 · Tool Calling：给 Agent 一双可靠的手</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>设计工具 Schema、参数校验、超时、错误回灌、幂等性和读写工具边界。</p><p class="brief-product"><strong>本章产物：</strong>一组可测试、可观测的工具接口与调度器。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p><strong>前置能力：</strong>第 4、9 章</p><div class="chapter-badges">
 <span></span><span>难度：中级</span>
 <span>主干</span><span>云 API：可选</span><span>GPU：不需要</span>
-</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b7">B7 异常/配置</a>；<a href="#bridge-b7">B7 异常/配置</a>；<a href="#bridge-b7">B7 异常/配置</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
+</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b7">B7 异常/配置/重试</a>；<a href="#bridge-b5">B5 Pydantic 与数据契约</a>；<a href="#bridge-b6">B6 HTTP/API</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
 <div class="reader-bridge" data-chapter="10">
 <h3>先知道为什么学这一章</h3>
 <p>模型不能直接执行 Python 函数；它只能提出“调用什么、参数是什么”，程序必须负责验证和执行。</p>
@@ -1894,7 +1940,7 @@ def get_weather(city: str) -&gt; str:
 </section><h2 id="ch11">第 11 章 · MCP：标准化工具与数据接入</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>理解 MCP Client/Server、Tools、Resources、传输、权限和第三方服务信任边界。</p><p class="brief-product"><strong>本章产物：</strong>一个本地 MCP Server 和能够发现/调用工具的客户端。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p><strong>前置能力：</strong>第 10 章</p><div class="chapter-badges">
 <span></span><span>难度：中级</span>
 <span>主干</span><span>云 API：可选</span><span>GPU：不需要</span>
-</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b10">B10 Git/CI</a>；<a href="#bridge-b10">B10 Git/CI</a>；<a href="#bridge-b10">B10 Git/CI</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
+</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b6">B6 HTTP/API</a>；<a href="#bridge-b10">B10 Git/CI</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
 <div class="reader-bridge" data-chapter="11">
 <h3>先知道为什么学这一章</h3>
 <p>每个应用都手工注册工具会产生重复连接代码。怎样让多个应用用统一方式发现和调用工具？</p>
@@ -1958,12 +2004,26 @@ def test_unknown_policy_fails() -&gt; None:
     import pytest
     with pytest.raises(KeyError):
         get_policy("missing")
-</code></pre><section class="learning-loop" id="ch11-learning-loop">
+</code></pre><h3 class="level-engineering" id="sec-11-09"><span class="section-level level-engineering">工程化升级</span>11.9 MCP 的供应链信任风险</h3>
+<p>第三方 MCP Server 应被当成<b>供应链依赖</b>管理，而非"装了就能信"的黑盒：</p>
+<ul>
+<li><b>代码来源与版本</b>：谁写的、哪个 commit、如何更新；</li>
+<li><b>权限范围</b>：它能读 / 写什么、是否触达敏感数据；</li>
+<li><b>数据是否外发</b>：调用是否把上下文传到外部；</li>
+<li><b>更新机制与撤销路径</b>：出问题能否快速下线。</li>
+</ul>
+<p>对策：本地 <b>allowlist</b> 只放行已知 Server；在沙箱 / 受限网络运行未知 Server；记录每次调用的 server / tool / 参数（呼应 11.8 合约测试与审计）。</p>
+
+<h3 class="level-deep" id="sec-11-10"><span class="section-level level-deep">深入 · 首次阅读可跳过</span>11.10 事件驱动工具的新攻击面</h3>
+<p>MCP 的通知 / 订阅（事件驱动）带来新攻击面：恶意 Server 可主动推送消息，制造资源耗尽或注入。对策：对订阅设<b>频率上限</b>、对推送内容同样做<b>注入校验</b>、不信任 Server 自报的能力描述（用合约测试交叉验证）。</p>
+<div class="callout"><strong>延伸阅读：</strong>MCP 信任风险、执行工具安全机制与事件驱动异步 Agent，参见 bojieli《深入理解 AI Agent》第 4 章「工具」。</div>
+
+<section class="learning-loop" id="ch11-learning-loop">
 <h3>11.学习闭环与验收</h3>
 <p>以下内容才是本章的最低完成标准；正文中需要真实云端、GPU 或后续知识的任务均视为进阶挑战。</p>
 <div class="loop-grid">
-<div class="loop-card"><h4>A · 概念自测</h4><ol><li>MCP Host、Client、Server 分别负责什么？</li><li>Tools、Resources、Prompts 有何区别？</li><li>为什么发现到一个 Tool 不代表允许调用？</li><li>MCP 标准化了什么，又没有自动保证什么？</li></ol></div>
-<div class="loop-card"><h4>B · 本章提交物</h4><ul><li>启动或模拟一个含 1 Tool、1 Resource 的 Server。</li><li>Client 列出能力并在调用前应用 allowlist。</li><li>记录一次调用的 server、tool、参数摘要、用户和状态。</li></ul></div>
+<div class="loop-card"><h4>A · 概念自测</h4><ol><li>MCP Host、Client、Server 分别负责什么？</li><li>Tools、Resources、Prompts 有何区别？</li><li>为什么发现到一个 Tool 不代表允许调用？</li><li>MCP 标准化了什么，又没有自动保证什么？</li><li>为什么第三方 MCP Server 要当供应链依赖管理？事件驱动带来了什么新攻击面？</li></ol></div>
+<div class="loop-card"><h4>B · 本章提交物</h4><ul><li>启动或模拟一个含 1 Tool、1 Resource 的 Server。</li><li>Client 列出能力并在调用前应用 allowlist。</li><li>记录一次调用的 server、tool、参数摘要、用户和状态。</li<li>为未知 MCP Server 配置本地 allowlist 与调用审计，并限制订阅频率。</li></ul></div>
 <div class="loop-card"><h4>C · 解释能力</h4><p>为什么第三方 MCP Server 应被当成供应链依赖？</p></div>
 <div class="loop-card"><h4>D · 场景迁移</h4><p>为企业制度 MCP Server 设计只读员工权限与管理员写权限。</p></div>
 </div>
@@ -1972,7 +2032,7 @@ def test_unknown_policy_fails() -&gt; None:
 </section><h2 id="ch12">第 12 章 · State 与 Memory：让任务可以持续</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>设计任务状态、检查点、短期记忆、长期记忆、摘要压缩和人工审批状态。</p><p class="brief-product"><strong>本章产物：</strong>可落盘、可恢复的 AgentState 与分层 Memory。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p><strong>前置能力：</strong>第 9–11 章</p><div class="chapter-badges">
 <span></span><span>难度：中级</span>
 <span>主干</span><span>云 API：可选</span><span>GPU：不需要</span>
-</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b7">B7 异常/配置</a>；<a href="#bridge-b7">B7 异常/配置</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
+</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b4">B4 dataclass</a>；<a href="#bridge-b7">B7 异常/配置</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
 <div class="reader-bridge" data-chapter="12">
 <h3>先知道为什么学这一章</h3>
 <p>Agent 中断后如果忘记做到哪里，可能重复创建工单或重复发送消息。</p>
@@ -2034,13 +2094,31 @@ def make_memory(key: str, value: str, source: str, confidence: float) -&gt; Memo
         confidence=confidence,
         created_at=datetime.now(timezone.utc).isoformat(),
     )
-</code></pre><div class="summary"><h3>12.x 验收前补充：记忆需要置信度和来源</h3>
+</code></pre><h3 class="level-engineering" id="sec-12-07"><span class="section-level level-engineering">工程化升级</span>12.7 用户记忆的四种渐进式策略</h3>
+<p>用户记忆不要一上来就上 RAG。按"成本 / 能力"从低到高，有四种渐进式策略：</p>
+<ol>
+<li><b>写入配置文件</b>：把稳定偏好（称呼、时区、常用设置）写进 <code>user_profile</code>，最简单、零检索成本。</li>
+<li><b>检索增强（RAG）</b>：把历史对话 / 文档切块进向量库，按需检索。适合"记很多但大多用不上"的场景。</li>
+<li><b>工具调用获取</b>：需要实时 / 权威信息时，让 Agent 调工具去查（数据库、API），而不是存一份可能过期的副本。</li>
+<li><b>主动学习</b>：Agent 在交互中主动提炼用户画像、纠正错误记忆，需要置信度与来源（呼应 12.4 / 12.6）。</li>
+</ol>
+<p>选型原则：能用配置解决的绝不上 RAG；RAG 解决不了的再用工具实时查；只有高频且复杂的个性化才值得主动学习。</p>
+
+<h3 class="level-deep" id="sec-12-08"><span class="section-level level-deep">深入 · 首次阅读可跳过</span>12.8 知识组织与 Agentic RAG</h3>
+<ul>
+<li><b>知识组织</b>：按主题分桶、带时间戳与来源、用置信度标记不确定项，便于检索与审计。</li>
+<li><b>多模态信息提取</b>：从聊天截图 / 文件抽取结构化事实（时间、金额、人名），再落地为 memory record。</li>
+<li><b>Agentic RAG</b>：不是"来一个问题就检索"，而是 Agent 自己决定"检索什么、查几轮、何时停"，把检索变成推理的一环，而非固定前处理。</li>
+</ul>
+<div class="callout"><strong>延伸阅读：</strong>用户记忆的四种渐进式策略、知识组织、多模态信息提取与 Agentic RAG，参见 bojieli《深入理解 AI Agent》第 3 章「用户记忆和知识库」。</div>
+
+<div class="summary"><h3>12.x 验收前补充：记忆需要置信度和来源</h3>
 <p>长期记忆不是“模型说过什么”，而是经过验证、可追溯的信息。建议保存 <code>source</code>、<code>created_at</code>、<code>confidence</code> 和过期策略；低置信度推测只能作为候选，不能直接覆盖事实。</p></div><section class="learning-loop" id="ch12-learning-loop">
 <h3>12.学习闭环与验收</h3>
 <p>以下内容才是本章的最低完成标准；正文中需要真实云端、GPU 或后续知识的任务均视为进阶挑战。</p>
 <div class="loop-grid">
-<div class="loop-card"><h4>A · 概念自测</h4><ol><li>State、Memory、Context 三者有何区别？</li><li>检查点为什么要配合幂等？</li><li>哪些信息不应直接进入长期记忆？</li><li>状态转换为什么应显式？</li></ol></div>
-<div class="loop-card"><h4>B · 本章提交物</h4><ul><li>实现 AgentState 并保存到 JSON。</li><li>在中断后恢复，确认已完成步骤不重复。</li><li>实现带来源、时间、置信度的 memory record。</li></ul></div>
+<div class="loop-card"><h4>A · 概念自测</h4><ol><li>State、Memory、Context 三者有何区别？</li><li>检查点为什么要配合幂等？</li><li>哪些信息不应直接进入长期记忆？</li><li>状态转换为什么应显式？</li><li>用户记忆的四种渐进式策略分别适合什么场景？Agentic RAG 与普通 RAG 有何不同？</li></ol></div>
+<div class="loop-card"><h4>B · 本章提交物</h4><ul><li>实现 AgentState 并保存到 JSON。</li><li>在中断后恢复，确认已完成步骤不重复。</li><li>实现带来源、时间、置信度的 memory record。</li<li>给客户支持 Agent 设计 RAG + 工具调用混合记忆，并为每条记忆标注来源与置信度。</li></ul></div>
 <div class="loop-card"><h4>C · 解释能力</h4><p>为什么“把所有历史消息都保存下来”不等于拥有良好记忆？</p></div>
 <div class="loop-card"><h4>D · 场景迁移</h4><p>设计一个客户支持 Agent 的短期状态与长期记忆字段，指出哪些不能长期保存。</p></div>
 </div>
@@ -2089,13 +2167,49 @@ class ContextBudget:
         ("AVAILABLE TOOLS", "\n".join(tool_specs)),
     ]
     return "\n\n".join(f"## {name}\n{body}" for name, body in sections if body)
-</code></pre><h3 class="level-engineering" id="sec-13-04"><span class="section-level level-engineering">工程化升级</span>13.4 压缩与遗忘策略</h3><ul><li>优先删除无关历史，而不是压缩所有内容；</li><li>工具结果只保留字段摘要和资源引用，原始大对象落盘；</li><li>对话摘要必须保留未决事项、承诺、约束和证据来源；</li><li>长期任务每轮重建 Context，不盲目追加全部历史；</li><li>高风险数据单独标记，避免被普通摘要模型处理。</li></ul><h3 class="level-deep" id="sec-13-05"><span class="section-level level-deep">深入 · 首次阅读可跳过</span>13.5 上下文腐化的信号</h3><ul><li>模型重复已经完成的步骤；</li><li>忽略最新约束，继续遵循旧计划；</li><li>同一工具反复调用但没有进展；</li><li>引用来源与当前问题无关；</li><li>输出越来越长、越来越空泛。</li></ul><h3 class="level-deep" id="sec-13-06"><span class="section-level level-deep">深入 · 首次阅读可跳过</span>13.6 Repo Map 是 Context Engineering 的典型案例</h3><p>Coding Agent 不应把整个仓库塞进窗口，而应先建立符号、依赖和目录地图，再按任务选择局部文件。RAG、数据库 Schema、历史任务摘要也遵循同一原则：先建立可检索索引，再按当前步骤装配。</p><div class="summary"><h3>13.x 验收前补充：ContextBuilder、裁剪与 Context rot</h3>
-<p><code>ContextBuilder</code> 接收固定槽位并按预算组装：硬约束和当前目标最高，证据其次，历史细节最低。预算不足时先裁剪低优先级内容。随着历史增长出现遗忘约束、引用错位和重复动作，就是 Context rot 的常见信号。 <a class="source-ref" href="#source-P07" title="P07 · Lost in the Middle: How Language Models Use Long Contexts">[P07]</a></p></div><section class="learning-loop" id="ch13-learning-loop">
+</code></pre><h3 class="level-engineering" id="sec-13-04"><span class="section-level level-engineering">工程化升级</span>13.4 压缩与遗忘策略</h3><ul><li>优先删除无关历史，而不是压缩所有内容；</li><li>工具结果只保留字段摘要和资源引用，原始大对象落盘；</li><li>对话摘要必须保留未决事项、承诺、约束和证据来源；</li><li>长期任务每轮重建 Context，不盲目追加全部历史；</li><li>高风险数据单独标记，避免被普通摘要模型处理。</li></ul><h3 class="level-deep" id="sec-13-05"><span class="section-level level-deep">深入 · 首次阅读可跳过</span>13.5 上下文腐化的信号</h3><ul><li>模型重复已经完成的步骤；</li><li>忽略最新约束，继续遵循旧计划；</li><li>同一工具反复调用但没有进展；</li><li>引用来源与当前问题无关；</li><li>输出越来越长、越来越空泛。</li></ul><h3 class="level-deep" id="sec-13-06"><span class="section-level level-deep">深入 · 首次阅读可跳过</span>13.6 Repo Map 是 Context Engineering 的典型案例</h3><p>Coding Agent 不应把整个仓库塞进窗口，而应先建立符号、依赖和目录地图，再按任务选择局部文件。RAG、数据库 Schema、历史任务摘要也遵循同一原则：先建立可检索索引，再按当前步骤装配。</p><h3 class="level-engineering" id="sec-13-07"><span class="section-level level-engineering">工程化升级</span>13.7 KV Cache：为什么提示词前缀不能随便动</h3>
+<p>上下文工程里有一条"铁律"来自推理引擎的实现细节：大模型会缓存前文的计算结果（KV Cache），下一轮只要算新增的 token。但缓存命中的前提是<b>前缀完全不变</b>——只要系统提示词或工具定义改一个字符，整段缓存就作废，模型要从头重算，首 token 延迟和成本都会飙升。</p>
+<p>由此得到三条工程结论：</p>
+<ul>
+<li><b>系统提示词和工具定义一旦定下就不要改。</b>把会变的动态信息（当前时间、用户最新消息、任务进度）追加到消息列表<b>末尾</b>，而不是塞进开头。</li>
+<li><b>动态信息永远追加到末尾。</b>用标准 API 的消息格式，让框架替你管理缓存边界，不要自己手拼字符串。</li>
+<li><b>使用标准 API 格式，不要自行拼接消息。</b>手拼容易在开头插入不可见变化，悄悄击穿缓存。</li>
+</ul>
+<div class="callout"><strong>真实事故：</strong>某团队的客服 Agent 每天处理 10 万次对话，工程师为了让 Agent "知道"当前时间，在系统提示词里加了一行 <code>Current time: {{now}}</code>。结果每次对话前缀都不同，KV Cache 全部失效：首 token 延迟从 0.5 秒涨到 3–5 秒，月度推理账单几乎翻了一倍。正确做法是将时间作为末尾的 user 消息传入。</div>
+<p>区分两个概念：<b>KV Cache</b> 是模型内部复用中间计算；<b>Prompt Cache</b> 是推理引擎在多次 API 请求之间缓存相同前缀。两者都要求"前缀稳定"。下面把动态时间放到末尾的 user 消息，而不是 system 前缀：</p>
+<pre class="code status-stdlib"><code>SYSTEM = "你是保修客服，只能使用提供的工具。"   # 稳定，可缓存
+
+def ask(now: str, user_msg: str) -&gt; list[dict]:
+    # 动态信息放在末尾 user 消息，绝不碰 SYSTEM 前缀
+    return [
+        {"role": "system", "content": SYSTEM},
+        {"role": "user",   "content": f"[当前时间 {now}] {user_msg}"},
+    ]</code></pre>
+
+<h3 class="level-deep" id="sec-13-08"><span class="section-level level-deep">深入 · 首次阅读可跳过</span>13.8 Agent Skills 与状态栏：按需加载，别让上下文无限膨胀</h3>
+<p>上下文会随能力和历史不断膨胀。两个被头部 Agent 产品验证过的办法：</p>
+<p><b>① Agent Skills（渐进式披露）。</b>不要一次性把所有能力说明塞进系统提示词，而是分成三层：</p>
+<ul>
+<li><b>元数据</b>：<code>SKILL.md</code> 的 YAML frontmatter（<code>name</code> + <code>description</code>），常驻 system 或工具描述；<code>description</code> 要写清 "Use when / Don't use when" 和反例，让模型知道何时加载。</li>
+<li><b>核心流程</b>：选中某 Skill 后才把正文注入上下文（通常作为一条 user 消息）。</li>
+<li><b>细则</b>：核心流程再引用更细的子文档，按需取用。</li>
+</ul>
+<p>这种"少量目录常驻、完整正文按需加载"的两层设计，兼顾了可发现性与上下文开销——也解释了为什么前面强调"工具定义 / 系统前缀要稳定"。</p>
+<p><b>② Agent 状态栏（State Bar）。</b>把"当前目录、待办、环境状态"等信息作为<b>一条末尾的 user 消息</b>注入（不是改开头的 system）。模型本身不擅长归纳隐式状态，状态栏相当于给上下文做一个显式、有损的投影。三条经验：</p>
+<ul>
+<li>状态栏用<b>确定性代码</b>维护，不要用大模型去生成它；</li>
+<li><b>不要删掉原始上下文</b>，状态栏只是补充摘要；</li>
+<li>把状态栏的<b>准确率当成生产指标</b>来盯。</li>
+</ul>
+<div class="callout"><strong>延伸阅读：</strong>KV Cache 铁律、Skills 与状态栏的更完整论述，参见 bojieli《深入理解 AI Agent》第 2 章「上下文工程」。本手册聚焦工程落地，对方书补充了更多底层原理与实验。</div>
+
+<div class="summary"><h3>13.x 验收前补充：ContextBuilder、裁剪与 Context rot</h3>
+<p><code>ContextBuilder</code> 接收固定槽位并按预算组装：硬约束和当前目标最高，证据其次，历史细节最低。预算不足时先裁剪低优先级内容。随着历史增长出现遗忘约束、引用错位和重复动作，就是 Context rot 的常见信号。此外还应理解 KV Cache 对前缀稳定的要求，以及用 Skills 渐进式披露与状态栏控制上下文膨胀。 <a class="source-ref" href="#source-P07" title="P07 · Lost in the Middle: How Language Models Use Long Contexts">[P07]</a></p></div><section class="learning-loop" id="ch13-learning-loop">
 <h3>13.学习闭环与验收</h3>
 <p>以下内容才是本章的最低完成标准；正文中需要真实云端、GPU 或后续知识的任务均视为进阶挑战。</p>
 <div class="loop-grid">
-<div class="loop-card"><h4>A · 概念自测</h4><ol><li>Context 为什么不是所有可用信息的堆积？</li><li>常见上下文槽位有哪些？</li><li>超过预算时应怎样裁剪？</li><li>Context rot 的信号是什么？</li></ol></div>
-<div class="loop-card"><h4>B · 本章提交物</h4><ul><li>实现有固定槽位的 ContextBuilder。</li><li>设置预算并验证低优先级内容先被裁剪。</li><li>写测试确认关键约束压缩后仍存在。</li></ul></div>
+<div class="loop-card"><h4>A · 概念自测</h4><ol><li>Context 为什么不是所有可用信息的堆积？</li><li>常见上下文槽位有哪些？</li><li>超过预算时应怎样裁剪？</li><li>Context rot 的信号是什么？</li><li>KV Cache 为什么要求前缀稳定？动态时间放在哪最安全？</li></ol></div>
+<div class="loop-card"><h4>B · 本章提交物</h4><ul><li>实现有固定槽位的 ContextBuilder。</li><li>设置预算并验证低优先级内容先被裁剪。</li><li>写测试确认关键约束压缩后仍存在。</li><li>演示在 system 前缀加动态字段会击穿缓存，并改为末尾 user 消息。</li></ul></div>
 <div class="loop-card"><h4>C · 解释能力</h4><p>为什么长任务应每轮重建上下文，而不是无限追加历史？</p></div>
 <div class="loop-card"><h4>D · 场景迁移</h4><p>为 Coding Agent 设计 repo map、当前任务、测试结果和历史摘要的预算分配。</p></div>
 </div>
@@ -2104,7 +2218,7 @@ class ContextBudget:
 </section><h2 id="ch14">第 14 章 · Harness Engineering：权限、护栏与验证</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>构建最小权限、结构化策略、HITL、Maker/Checker 分离和确定性验证阶梯。</p><p class="brief-product"><strong>本章产物：</strong>工具策略模块、人工审批闸门和 L3/L2 组合验证器。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p><strong>前置能力：</strong>第 10–13 章</p><div class="chapter-badges">
 <span></span><span>难度：高级</span>
 <span>主干</span><span>云 API：可选</span><span>GPU：不需要</span>
-</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b10">B10 Git/CI</a>；<a href="#bridge-b10">B10 Git/CI</a>；<a href="#bridge-b10">B10 Git/CI</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
+</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b7">B7 异常/配置/重试</a>；<a href="#bridge-b10">B10 Git/CI</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
 <div class="reader-bridge" data-chapter="14">
 <h3>先知道为什么学这一章</h3>
 <p>Prompt 说“不要做危险操作”不是权限系统。真正的程序必须限制工具、目录和副作用。</p>
@@ -2173,13 +2287,46 @@ def run_allowed(argv: list[str], cwd: str = ".") -&gt; subprocess.CompletedProce
 <tr><td>L3</td><td>确定性测试</td><td>Schema、pytest、SQL 约束、哈希、权限策略</td></tr>
 <tr><td>L2</td><td>独立模型或规则评审</td><td>第二模型检查事实、代码 review</td></tr>
 <tr><td>L1</td><td>同模型自检</td><td>低成本但相关性高，不能独立作为高风险保证</td></tr>
-<tr><td>L0</td><td>不验证</td><td>只适合低风险、可轻易撤销的草稿</td></tr></table><h3 class="level-engineering" id="sec-14-05"><span class="section-level level-engineering">工程化升级</span>14.5 人工审批界面必须展示什么</h3><ul><li>动作、资源、环境和预期影响；</li><li>模型给出的理由，但标明它只是建议；</li><li>将被发送或修改的最终内容预览；</li><li>批准有效期和一次性/长期授权范围；</li><li>拒绝后的恢复路径。</li></ul><div class="summary"><h3>14.x 验收前补充：白名单与目录边界</h3>
-<p>命令执行应使用“可执行文件 + 子命令”白名单，而不是危险词黑名单。文件工具先把路径解析为绝对路径，再用共同父目录检查是否仍位于工作区；即使如此，这也只是教学护栏，真正不可信代码仍需容器或 VM 隔离。</p></div><section class="learning-loop" id="ch14-learning-loop">
+<tr><td>L0</td><td>不验证</td><td>只适合低风险、可轻易撤销的草稿</td></tr></table><h3 class="level-engineering" id="sec-14-05"><span class="section-level level-engineering">工程化升级</span>14.5 人工审批界面必须展示什么</h3><ul><li>动作、资源、环境和预期影响；</li><li>模型给出的理由，但标明它只是建议；</li><li>将被发送或修改的最终内容预览；</li><li>批准有效期和一次性/长期授权范围；</li><li>拒绝后的恢复路径。</li></ul><h3 class="level-engineering" id="sec-14-06"><span class="section-level level-engineering">工程化升级</span>14.6 Harness 五功能模型：Context / Tools / Constrain / Verify / Correct</h3>
+<p>本章前面把 Harness 拆成"七个组成部分"。换一个更锋利的视角：生产级 Harness 只做五件事，前两个给你能力，后三个给你安全网。</p>
+<table>
+<tr><th>功能</th><th>一句话职责</th><th>例子</th></tr>
+<tr><td>Context（上下文）</td><td>为模型提供感知信息</td><td>系统规则、任务状态、记忆、证据</td></tr>
+<tr><td>Tools（工具）</td><td>为模型提供行动手段</td><td>查询、写文件、调用 API</td></tr>
+<tr><td>Constrain（约束）</td><td>设定行为边界</td><td>白名单、目录边界、最小权限</td></tr>
+<tr><td>Verify（验证）</td><td>自动判断结果对不对</td><td>Schema、pytest、SQL 约束、独立评审</td></tr>
+<tr><td>Correct（纠正）</td><td>出错时自动修复或回退</td><td>重试、回滚、降级</td></tr>
+</table>
+<p>最小可工作 Agent = LLM + 上下文 + 工具；生产环境必须再补上 Constrain / Verify / Correct 三层外壳。没有这层外壳的模型像脱缰的野马：能力惊人，但无法可靠地完成任务。</p>
+
+<h3 class="level-engineering" id="sec-14-07"><span class="section-level level-engineering">工程化升级</span>14.7 提议者-审核者（Proposer-Reviewer）与 Sidecar</h3>
+<p><b>提议者-审核者</b>用独立第二视角检验第一视角的产出：</p>
+<ul>
+<li><b>事前审批</b>：工具执行前，一个模型负责提议行动（Proposer），另一个独立模型负责审查批准（Reviewer）。理想配对是能力相近但训练偏好不同的两个模型，避免"自己人好说话"。</li>
+<li><b>事后验证</b>：操作完成后，由审核视角检验结果。要诀是<b>模态切换</b>——用编译器、测试、哈希等确定性手段验证，而不是再问一遍同一个模型。</li>
+</ul>
+<p><b>Sidecar</b> 解决"执行时如何实时校验"：一个随主 Agent 思考循环运行的轻量 LLM，只读结构化字段来门控危险操作。例如它看到 <code>{"tool":"bash","command":"rm -rf /tmp/data"}</code> 这样的结构化输入，就直接拦截，绕过了"用话术骗模型"的通道。</p>
+<pre class="code status-stdlib"><code># Sidecar：只读结构化字段做门控，不解析自由文本
+def sidecar_guard(tool: str, command: str) -&gt; bool:
+    if tool == "bash" and command.strip().startswith("rm -rf"):
+        return False   # 危险操作在放行前被拦下
+    return True</code></pre>
+
+<h3 class="level-engineering" id="sec-14-08"><span class="section-level level-engineering">工程化升级</span>14.8 危险操作的幂等性与预检-确认</h3>
+<ul>
+<li><b>幂等性</b>：同一操作执行一次和执行多次，对外部世界的影响完全相同，因而可以安全重试。写操作应设计成幂等（如带唯一请求号）。</li>
+<li><b>预检-确认两段式</b>：发送邮件、拨打电话、对外转账这类不可逆操作，先返回"将要发生什么"（dry-run），由人或二次确认后再真正执行。</li>
+<li><b>自动验证闭环</b>：工具不应只返回"成功"。例如 <code>write_file</code> 写入后立刻跑语法检查，形成"执行—验证—反馈"的闭环。</li>
+</ul>
+<div class="callout"><strong>延伸阅读：</strong>五功能模型、提议者-审核者、Sidecar 与幂等设计的系统论述，参见 bojieli《深入理解 AI Agent》第 1、4 章（Harness 与工具安全）。</div>
+
+<div class="summary"><h3>14.x 验收前补充：白名单与目录边界</h3>
+<p>命令执行应使用“可执行文件 + 子命令”白名单，而不是危险词黑名单。文件工具先把路径解析为绝对路径，再用共同父目录检查是否仍位于工作区；即使如此，这也只是教学护栏，真正不可信代码仍需容器或 VM 隔离。生产 Harness 还应落实五功能模型（Context/Tools/Constrain/Verify/Correct）、提议者-审核者与对危险操作的幂等/预检-确认。</p></div><section class="learning-loop" id="ch14-learning-loop">
 <h3>14.学习闭环与验收</h3>
 <p>以下内容才是本章的最低完成标准；正文中需要真实云端、GPU 或后续知识的任务均视为进阶挑战。</p>
 <div class="loop-grid">
-<div class="loop-card"><h4>A · 概念自测</h4><ol><li>Harness 与 Prompt 的职责有何不同？</li><li>为什么黑名单不是安全沙箱？</li><li>Maker 与 Checker 为什么应分离？</li><li>哪些动作应进入 HITL？</li></ol></div>
-<div class="loop-card"><h4>B · 本章提交物</h4><ul><li>实现结构化 Action 和 allow/deny/HITL 策略。</li><li>为目录越界和危险命令写拒绝测试。</li><li>让独立 checker 验证 maker 的结果。</li></ul></div>
+<div class="loop-card"><h4>A · 概念自测</h4><ol><li>Harness 与 Prompt 的职责有何不同？</li><li>为什么黑名单不是安全沙箱？</li><li>Maker 与 Checker 为什么应分离？</li><li>哪些动作应进入 HITL？</li><li>Harness 五功能模型是哪五个？为什么生产必须补后三个？</li></ol></div>
+<div class="loop-card"><h4>B · 本章提交物</h4><ul><li>实现结构化 Action 和 allow/deny/HITL 策略。</li><li>为目录越界和危险命令写拒绝测试。</li><li>让独立 checker 验证 maker 的结果。</li><li>用 Sidecar 只读结构化字段门控一个危险 bash 命令。</li></ul></div>
 <div class="loop-card"><h4>C · 解释能力</h4><p>为什么安全规则必须尽量放在确定性代码而不是提示词里？</p></div>
 <div class="loop-card"><h4>D · 场景迁移</h4><p>设计生产数据库查询、删除和导出三个动作的策略矩阵。</p></div>
 </div>
@@ -2188,7 +2335,7 @@ def run_allowed(argv: list[str], cwd: str = ".") -&gt; subprocess.CompletedProce
 </section><h2 id="ch15">第 15 章 · Loop Engineering：自主迭代、停止与恢复</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>把 Prompt、Context 和 Harness 组合成可自主迭代的循环，掌握停止条件、进度检测、验证回路和 Ralph Loop。</p><p class="brief-product"><strong>本章产物：</strong>一个支持检查点、断点恢复、验证反馈和多重刹车的长任务循环。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p><strong>前置能力：</strong>第 9–14 章</p><div class="chapter-badges">
 <span></span><span>难度：高级</span>
 <span>主干</span><span>云 API：可选</span><span>GPU：不需要</span>
-</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b9">B9 测试</a>；<a href="#bridge-b9">B9 测试</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
+</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b7">B7 异常/配置/重试</a>；<a href="#bridge-b9">B9 测试</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
 <div class="reader-bridge" data-chapter="15">
 <h3>先知道为什么学这一章</h3>
 <p>单步工具调用仍不足以完成长任务。怎样持续推进，又避免无限循环和错误完成？</p>
@@ -2459,13 +2606,25 @@ else:
 <li><strong>CI 在本地先跑</strong>：任何要合并的任务，计划里加一步"本地先跑完整 CI 再标记完成"，避免 agent 因环境/依赖差异在 CI 才翻车。</li>
 </ul><div class="freshness">
 <b>诚实边界：</b> Ralph Loop 强在"长任务、可验证、能重注"，比如大规模重构、库移植、遗留代码迁移。对<strong>需要强创意或强主观判断</strong>的任务，纯"重注同一 prompt"会原地打转——此时应升级到第 13–14 章讲的"分层记忆 + Maker/Checker 分离 + 验证阶梯 L3+L2"，或第 22 章的 <a href="#ch22">《多智能体编排》</a>。
-</div><h3 class="level-deep" id="sec-15-13"><span class="section-level level-deep">深入 · 首次阅读可跳过</span>15.13 综合项目挑战（通过本章闭环后完成）</h3><ol><li>让 Agent 第一次故意写错函数，靠 pytest 失败反馈完成修复；</li><li>模拟工具超时，验证重试后能够恢复；</li><li>模拟重复同一动作，确认 no-progress 刹车；</li><li>构造应审批、应拒绝和应自动放行的三类轨迹；</li><li>输出一份 trajectory evaluation 报告。</li></ol><div class="summary"><h3>15.x 验收前补充：策略违规也是轨迹指标</h3>
+</div><h3 class="level-deep" id="sec-15-13"><span class="section-level level-deep">深入 · 首次阅读可跳过</span>15.13 综合项目挑战（通过本章闭环后完成）</h3><ol><li>让 Agent 第一次故意写错函数，靠 pytest 失败反馈完成修复；</li><li>模拟工具超时，验证重试后能够恢复；</li><li>模拟重复同一动作，确认 no-progress 刹车；</li><li>构造应审批、应拒绝和应自动放行的三类轨迹；</li><li>输出一份 trajectory evaluation 报告。</li></ol><h3 class="level-engineering" id="sec-15-14"><span class="section-level level-engineering">工程化升级</span>15.14 异步与事件驱动：训练同步、部署异步</h3>
+<p>前面讲的 Loop 默认是<b>同步</b>的：调用一次、拿到结果、再决定下一步。但生产环境里有一个根本矛盾——<b>训练（开发）是同步的，部署是异步的</b>：你本地一步步调试，线上却要应对随时到来的外部事件（邮件到达、Webhook、定时任务、人工隔很久才回复）。</p>
+<ul>
+<li><b>消息队列解耦</b>：Agent 不直接空转等外部，而是把"待处理事件"放进队列，Worker 异步消费，天然支持削峰与重试。</li>
+<li><b>回调 / 事件触发</b>：用 MCP 的事件订阅或消息总线，Agent 在事件发生时被唤醒，而不是轮询。</li>
+<li><b>幂等消费</b>：同一事件可能重复投递，消费者必须幂等（用事件 ID 去重），否则重复处理会制造副作用（呼应第 10、12 章的幂等与恢复）。</li>
+</ul>
+
+<h3 class="level-deep" id="sec-15-15"><span class="section-level level-deep">深入 · 首次阅读可跳过</span>15.15 何时用异步、与同步循环如何共存</h3>
+<p><b>用异步的场景</b>：长任务（跑几小时）、外部事件驱动、人机协同（人隔很久才回复）、高吞吐并行。<b>同步循环</b>仍适合"一次会话内多步推理"。两者共存的方式是：同步 Loop 负责单次会话内的推理；异步层负责<b>跨会话 / 跨时间</b>的事件编排与状态恢复（呼应第 12 章 State 落盘、第 14 章 Harness 的事件触发类工具）。</p>
+<div class="callout"><strong>延伸阅读：</strong>事件驱动、异步 Agent 与"训练同步 / 部署异步"矛盾的系统论述，参见 bojieli《深入理解 AI Agent》第 4 章「工具」（执行工具安全、事件触发与异步 Agent）。</div>
+
+<div class="summary"><h3>15.x 验收前补充：策略违规也是轨迹指标</h3>
 <p>Agent Evaluation 不只看成功率。任何尝试调用被禁止工具、越权资源或绕过审批的步骤都应记录为 <strong>policy violation</strong>；即使最终任务成功，违规率也不能被结果分数掩盖。</p></div><section class="learning-loop" id="ch15-learning-loop">
 <h3>15.学习闭环与验收</h3>
 <p>以下内容才是本章的最低完成标准；正文中需要真实云端、GPU 或后续知识的任务均视为进阶挑战。</p>
 <div class="loop-grid">
-<div class="loop-card"><h4>A · 概念自测</h4><ol><li>一个可靠 Loop 至少需要哪些刹车？</li><li>无进展如何检测？</li><li>为什么最终完成要由验证器证明？</li><li>Agent 轨迹应评哪些维度？</li></ol></div>
-<div class="loop-card"><h4>B · 本章提交物</h4><ul><li>实现计划→执行→验证→持久化循环。</li><li>模拟工具失败并恢复。</li><li>计算一条轨迹的步骤效率和策略违规率。</li></ul></div>
+<div class="loop-card"><h4>A · 概念自测</h4><ol><li>一个可靠 Loop 至少需要哪些刹车？</li><li>无进展如何检测？</li><li>为什么最终完成要由验证器证明？</li><li>Agent 轨迹应评哪些维度？</li><li>为什么训练是同步、部署是异步？幂等消费为什么必要？</li></ol></div>
+<div class="loop-card"><h4>B · 本章提交物</h4><ul><li>实现计划→执行→验证→持久化循环。</li><li>模拟工具失败并恢复。</li><li>计算一条轨迹的步骤效率和策略违规率。</li<li>把一次长任务改成事件触发 + 队列消费，并验证事件 ID 去重（幂等）。</li></ul></div>
 <div class="loop-card"><h4>C · 解释能力</h4><p>Ralph Loop 的核心价值为什么不是 while True 本身？</p></div>
 <div class="loop-card"><h4>D · 场景迁移</h4><p>为长时间文档处理任务设计完成条件、无进展条件和人工接管条件。</p></div>
 </div>
@@ -2474,7 +2633,7 @@ else:
 </section><section class="part-banner" id="part4"><h2>Part 4 · Production AI Engineer：把本地脚本变成长期运行的服务</h2><p class="part-problem">现在程序能在你的电脑运行，但同事无法稳定访问；请求变多会拥堵，出错后也难以定位。本部分先用最简单实现看懂 API、后台任务和持久化，再替换为数据库、队列、监控、安全与成本治理。</p><div class="part-product"><strong>阶段成果：企业知识助手 v3——可通过 API 访问、可发布回滚、可追踪排错，并有安全和预算边界。</strong></div></section><h2 id="ch16">第 16 章 · Backend Architecture：API、队列与持久化</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>设计 FastAPI/流式接口、模型服务边界、任务队列、并发控制、数据库、缓存与部署形态。 <a class="source-ref" href="#source-D02" title="D02 · FastAPI Tutorial">[D02]</a></p><p class="brief-product"><strong>本章产物：</strong>一个 API + Worker + Queue + Storage 的服务骨架。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p><strong>前置能力：</strong>Part 1–3</p><div class="chapter-badges">
 <span></span><span>难度：中级</span>
 <span>主干</span><span>云 API：可选</span><span>GPU：不需要</span>
-</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b13">B13 Docker</a>；<a href="#bridge-b13">B13 Docker</a>；<a href="#bridge-b13">B13 Docker</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
+</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b13">B13 Docker</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
 <div class="reader-bridge" data-chapter="16">
 <h3>先知道为什么学这一章</h3>
 <p>现在程序只能在你的电脑运行。怎样让其他程序调用它，并处理耗时任务？</p>
@@ -2569,7 +2728,7 @@ for t in threads: t.join()</code></pre><p><code>Semaphore(3)</code> 保证哪怕
 </section><h2 id="ch17">第 17 章 · LLMOps：版本、评测与发布治理</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>把 Prompt、模型、数据集、配置和评测基线作为可版本化资产，支持灰度、回滚和 CI/CD 门禁。</p><p class="brief-product"><strong>本章产物：</strong>带版本号、评测门禁和回滚策略的发布流程。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p><strong>前置能力：</strong>第 8、16 章</p><div class="chapter-badges">
 <span></span><span>难度：中级</span>
 <span>主干</span><span>云 API：可选</span><span>GPU：不需要</span>
-</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b10">B10 Git/CI</a>；<a href="#bridge-b10">B10 Git/CI</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
+</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b10">B10 Git/CI</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
 <div class="reader-bridge" data-chapter="17">
 <h3>先知道为什么学这一章</h3>
 <p>Prompt 或模型改动后质量下降，怎样知道改了什么并安全回滚？</p>
@@ -2762,7 +2921,7 @@ summarize(traces)</code></pre><p>结构化日志回答“发生了什么”，Tr
 </section><h2 id="ch19">第 19 章 · Security 与 Governance：从提示注入到审计</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>建立纵深防御：输入隔离、最小权限、密钥管理、数据治理、租户隔离、审计和事件响应。</p><p class="brief-product"><strong>本章产物：</strong>一份威胁模型和覆盖输入、工具、数据、输出的安全策略。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p><strong>前置能力：</strong>第 11、14、18 章</p><div class="chapter-badges">
 <span></span><span>难度：高级</span>
 <span>主干</span><span>云 API：可选</span><span>GPU：不需要</span>
-</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b10">B10 Git/CI</a>；<a href="#bridge-b10">B10 Git/CI</a>；<a href="#bridge-b10">B10 Git/CI</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
+</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b10">B10 Git/CI</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
 <div class="reader-bridge" data-chapter="19">
 <h3>先知道为什么学这一章</h3>
 <p>上传的 PDF、网页和工具结果都可能夹带恶意指令。模型不能成为权限边界。</p>
@@ -2821,7 +2980,7 @@ def safe_query(cursor, user_name: str):
 </section><h2 id="ch20">第 20 章 · Cost 与 Performance：延迟、吞吐和预算</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>在质量、延迟、吞吐和成本之间做工程权衡，掌握缓存、并发、批处理、量化、路由和预算阀门。</p><p class="brief-product"><strong>本章产物：</strong>带用量统计、缓存、并发限制和预算上限的性能策略。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p><strong>前置能力：</strong>第 16–18 章</p><div class="chapter-badges">
 <span></span><span>难度：中级</span>
 <span>主干</span><span>云 API：可选</span><span>GPU：不需要</span>
-</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b13">B13 Docker</a>；<a href="#bridge-b13">B13 Docker</a>；<a href="#bridge-b13">B13 Docker</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
+</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b13">B13 Docker</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
 <div class="reader-bridge" data-chapter="20">
 <h3>先知道为什么学这一章</h3>
 <p>用户量增加后，账单和延迟可能非线性上升。怎样知道钱和时间花在哪里？</p>
@@ -2964,7 +3123,7 @@ print(f"估算月成本：¥{monthly_cost_cny:,.2f}")
 </section><section class="part-banner" id="part5"><h2>Part 5 · AI Product 与高级 Agent 工程</h2><p class="part-problem">先把前 20 章组合成完整文档智能 SaaS，再继续掌握企业多 Agent 编排和 Coding Agent。三章都属于完整能力版图：SaaS 建立产品闭环，Multi-Agent 解决跨角色协作，Coding Agent 提升日常开发与长期任务效率。</p><div class="part-product"><strong>最终成果：可交付的 AI Document Intelligence SaaS、多 Agent 编排方案，以及能在受控环境中维护该项目的 Coding Agent。</strong></div></section><h2 id="ch21">第 21 章 · Complete SaaS Project：AI Document Intelligence</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>整合数据接入、OCR、结构化抽取、RAG、Agent、API、评测、Tracing、安全和成本治理。</p><p class="brief-product"><strong>本章产物：</strong>可部署、可演示、可评测并可写入简历的完整 AI SaaS。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p><strong>前置能力：</strong>前 22 章</p><div class="chapter-badges">
 <span></span><span>难度：高级</span>
 <span>最终项目</span><span>云 API：可选</span><span>GPU：不需要</span>
-</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b13">B13 Docker</a>；<a href="#bridge-b13">B13 Docker</a>；<a href="#bridge-b13">B13 Docker</a>；<a href="#bridge-b13">B13 Docker</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
+</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b13">B13 Docker</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
 <div class="reader-bridge" data-chapter="21">
 <h3>先知道为什么学这一章</h3>
 <p>前 20 章的模块都能单独运行，但用户需要的是一个完整产品。怎样把它们组合起来？</p>
@@ -3475,13 +3634,37 @@ print(compress_window(log, window=3))          # 早的3条被压成一段摘要
 <line marker-end="url(#adv-loop-evArrow)" stroke="#1d4ed8" stroke-width="1.8" x1="490" x2="490" y1="118" y2="148"></line>
 <line marker-end="url(#adv-loop-evArrow)" stroke="#1d4ed8" stroke-width="1.8" x1="510" x2="564" y1="118" y2="148"></line>
 <text fill="#6b7280" font-family="sans-serif" font-size="12" text-anchor="middle" x="510" y="278">每个 Worker 本身就是一个 Ralph Loop</text>
-</svg><p class="cap" id="figtitle-ch22-04">图 22.4：从单 Agent 到多 Agent：Layer 4 的放大</p><p>看图说话：左边是<strong>单 Agent（一个 Loop）</strong>——它在自己的上下文预算里转圈，受限于"一次能看多少、记得多久"。当任务复杂到单循环装不下（上下文腐化、注意力稀释），就演进成右边：一个 <strong>Supervisor / 路由</strong>协调多个 <strong>Worker</strong>，而<strong>每个 Worker 本身就是一个 Ralph Loop</strong>（有自己的上下文、工具、验证回路）。这正是本章后续 <a href="#ch22">《多智能体编排》</a> 要展开讲的。记住一句话：<strong>你不是在"换更聪明的单模型"，而是在"把循环们编排稳"</strong>——四层范式里，你已经站在 L4 的门口了。</p><div class="summary"><h3>22.x 验收前补充：先建立单 Agent Baseline</h3>
+</svg><p class="cap" id="figtitle-ch22-04">图 22.4：从单 Agent 到多 Agent：Layer 4 的放大</p><p>看图说话：左边是<strong>单 Agent（一个 Loop）</strong>——它在自己的上下文预算里转圈，受限于"一次能看多少、记得多久"。当任务复杂到单循环装不下（上下文腐化、注意力稀释），就演进成右边：一个 <strong>Supervisor / 路由</strong>协调多个 <strong>Worker</strong>，而<strong>每个 Worker 本身就是一个 Ralph Loop</strong>（有自己的上下文、工具、验证回路）。这正是本章后续 <a href="#ch22">《多智能体编排》</a> 要展开讲的。记住一句话：<strong>你不是在"换更聪明的单模型"，而是在"把循环们编排稳"</strong>——四层范式里，你已经站在 L4 的门口了。</p><h3 class="level-engineering" id="sec-22-20"><span class="section-level level-engineering">工程化升级</span>22.20 多 Agent 失败模式分类：什么时候系统会变糟</h3>
+<p>多 Agent 不是免费午餐。业界总结的常见失败模式（参照多 Agent 系统研究）：</p>
+<ul>
+<li><b>上下文漂移 / 丢失</b>：信息在 Agent 间传递时失真或被截断，下游拿到的是"二手失真"。</li>
+<li><b>责任不清</b>：出错时无法定位是哪个 Agent 的锅，互相甩锅，难以审计。</li>
+<li><b>错误传播 / 放大</b>：一个 Agent 的小错被下游当成事实，链式放大成系统性错误。</li>
+<li><b>通信损耗</b>：为"商量"消耗的 token 远超实际干活，性价比崩塌。</li>
+<li><b>成本与延迟爆炸</b>：N 个 Agent 的对话轮次近似平方增长，长链路延迟失控。</li>
+<li><b>拜占庭式行为</b>：某个 Agent 给出自信但错误（甚至恶意）的信息，系统缺乏交叉验证时照单全收。</li>
+</ul>
+<p>缓解手段与前面章节一致：<b>显式契约</b>（输入输出 schema，呼应第 10 章 Tool Calling）、<b>独立验证</b>（提议者-审核者，呼应第 14 章）、<b>共享状态用权威来源</b>（呼应第 12 章 State）、给每个 Agent 限定职责边界。</p>
+
+<h3 class="level-deep" id="sec-22-21"><span class="section-level level-deep">深入 · 首次阅读可跳过</span>22.21 何时真需要多 Agent + Agent 社会/经济视角</h3>
+<p><b>判断清单</b>——只有在以下情况才值得拆多 Agent：</p>
+<ol>
+<li>子任务确实需要不同专长和不同的上下文窗口；</li>
+<li>子任务可并行且耦合低；</li>
+<li>单 Agent 的上下文装不下全部状态；</li>
+<li>需要隔离不可信 / 高风险的子任务（沙箱化）。</li>
+</ol>
+<p>否则优先用<b>固定工作流</b>或<b>单 Agent + 工具</b>。第 4 章的核心结论仍然成立：能确定性解决的步骤，不要 Agent 化。</p>
+<p><b>Agent 社会 / 经济视角</b>：把多 Agent 看成"任务市场"——有供给（各 Agent 能力）和需求（任务），通过路由 / 竞价分配。理解这点有助于设计调度与成本结构，但不要为"经济学美感"牺牲可靠性：可解释性和责任边界永远优先于花哨的自治。</p>
+<div class="callout"><strong>延伸阅读：</strong>多 Agent 的协作框架、失败模式分类与"Agent 社会/经济"视角，参见 bojieli《深入理解 AI Agent》第 10 章「多 Agent 协作」。本手册聚焦编排工程，对方书补充了更系统的失败模式 taxonomy。</div>
+
+<div class="summary"><h3>22.x 验收前补充：先建立单 Agent Baseline</h3>
 <p>引入多 Agent 前，先在同一任务集记录单 Agent 的成功率、成本和延迟。只有多 Agent 在明确指标或可维护性上带来收益，增加的协调复杂度才有依据。</p></div><section class="learning-loop" id="ch22-learning-loop">
 <h3>22.学习闭环与验收</h3>
 <p>以下内容才是本章的最低完成标准；正文中需要真实云端、GPU 或后续知识的任务均视为进阶挑战。</p>
 <div class="loop-grid">
-<div class="loop-card"><h4>A · 概念自测</h4><ol><li>什么时候不应使用 Multi-Agent？</li><li>Supervisor 的职责是什么？</li><li>共享状态为什么需要 Schema？</li><li>多 Agent 如何评测是否优于单 Agent？</li></ol></div>
-<div class="loop-card"><h4>B · 本章提交物</h4><ul><li>先实现单 Agent baseline。</li><li>实现两角色 supervisor 路由。</li><li>比较两者在 10 个任务上的成功率与成本。</li></ul></div>
+<div class="loop-card"><h4>A · 概念自测</h4><ol><li>什么时候不应使用 Multi-Agent？</li><li>Supervisor 的职责是什么？</li><li>共享状态为什么需要 Schema？</li><li>多 Agent 如何评测是否优于单 Agent？</li><li>列举三种多 Agent 失败模式并说明缓解办法；何时其实不该用多 Agent？</li></ol></div>
+<div class="loop-card"><h4>B · 本章提交物</h4><ul><li>先实现单 Agent baseline。</li><li>实现两角色 supervisor 路由。</li><li>比较两者在 10 个任务上的成功率与成本。</li<li>用单 Agent baseline 与多 Agent 对比，记录通信损耗与错误传播指标。</li></ul></div>
 <div class="loop-card"><h4>C · 解释能力</h4><p>为什么角色数量增加可能降低系统质量？</p></div>
 <div class="loop-card"><h4>D · 场景迁移</h4><p>判断文档抽取流水线哪些步骤应是确定工作流，哪些才值得 Agent 化。</p></div>
 </div>
@@ -3490,7 +3673,7 @@ print(compress_window(log, window=3))          # 早的3条被压成一段摘要
 </section><h2 id="ch23">第 23 章 · AI Coding Agent：日常开发辅助与长期任务工程</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>把 Repo Map、Planner/Coder/Test/Reviewer、Git、测试循环和检查点组合成长任务系统。</p><p class="brief-product"><strong>本章产物：</strong>一个在隔离分支中修改代码、运行测试、记录状态并发起受控 PR 的 Coding Agent。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p><strong>前置能力：</strong>第 13–15、21 章</p><div class="chapter-badges">
 <span></span><span>难度：高级</span>
 <span>进阶主干</span><span>云 API：可选</span><span>GPU：不需要</span>
-</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b10">B10 Git/CI</a>；<a href="#bridge-b10">B10 Git/CI</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
+</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b10">B10 Git/CI</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
 <div class="reader-bridge" data-chapter="23">
 <h3>先知道为什么学这一章</h3>
 <p>AI 工程师日常会使用 Coding Agent 阅读仓库、修改代码、运行测试和创建 PR。怎样让它高效且不越权？</p>
@@ -3809,7 +3992,7 @@ if __name__ == "__main__":
 </section><section class="part-banner" id="electives"><h2>选修专题 · 模型适配与自托管推理</h2><p>这两条路线有价值，但不是 AI Application / Agent Engineer 快速转行的前置条件。根据岗位和硬件条件选择学习。</p><p><strong>阶段产物：</strong>专项能力证明，不阻塞主线项目</p></section><h2 id="elective-a">选修专题 A · Model Adaptation：微调、LoRA 与评估部署</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>判断何时应该微调，完成数据准备、LoRA/QLoRA、评测和适配器部署。</p><p class="brief-product"><strong>本章产物：</strong>一个经过基线对比的小模型适配实验。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><div class="chapter-badges">
 <span></span><span>难度：高级</span>
 <span>选修</span><span>云 API：可选</span><span>GPU：通常需要</span>
-</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b9">B9 测试</a>；<a href="#bridge-b9">B9 测试</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div><p>前面几章，你一直站在“使用者”的位置：拿一个现成的大模型（Large Language Model，大语言模型，简称 <b>LLM</b>），再配上 RAG（Retrieval-Augmented Generation，检索增强生成，第 6 章讲过）去查资料、回答问题。这条路又快又省事，大多数场景都够用了。</p><p>但有些活儿，光靠“现成模型 + RAG”不太顺手：比如你希望模型永远用你们公司的固定话术回复、按死板的 JSON 格式吐数据、或者在一台没网的内网机器上毫秒级响应。这时候，你可能会想：能不能“训练”一个自己的小模型？本章就把“微调（fine-tuning）”这件事讲明白——什么时候该做、怎么个做法、和它跟 RAG 怎么选。</p><h3>A.1 三个词先分清：预训练 / 微调 / 推理</h3><p>新手最容易糊的就是这三个词。我们用一个类比一次记牢：</p><ul>
+</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b9">B9 测试</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div><p>前面几章，你一直站在“使用者”的位置：拿一个现成的大模型（Large Language Model，大语言模型，简称 <b>LLM</b>），再配上 RAG（Retrieval-Augmented Generation，检索增强生成，第 6 章讲过）去查资料、回答问题。这条路又快又省事，大多数场景都够用了。</p><p>但有些活儿，光靠“现成模型 + RAG”不太顺手：比如你希望模型永远用你们公司的固定话术回复、按死板的 JSON 格式吐数据、或者在一台没网的内网机器上毫秒级响应。这时候，你可能会想：能不能“训练”一个自己的小模型？本章就把“微调（fine-tuning）”这件事讲明白——什么时候该做、怎么个做法、和它跟 RAG 怎么选。</p><h3>A.1 三个词先分清：预训练 / 微调 / 推理</h3><p>新手最容易糊的就是这三个词。我们用一个类比一次记牢：</p><ul>
 <li><b>预训练（Pre-training）</b>＝上大学的通识课。模型在海量文本上啃了几个月，学会了“语言是怎么回事”：语法、常识、世界知识。这一步极贵，普通人根本做不起，都是大厂或开源社区做完送给你用的。</li>
 <li><b>微调（Fine-tuning）</b>＝岗前培训。新人已经懂通用知识，你再拿你们公司的几百条真实样例，教它“在我们这儿该怎么说话、怎么干活”。只改一小部分，便宜得多。</li>
 <li><b>推理（Inference）</b>＝上岗干活。模型定型后，你给它一个问题，它吐答案。你前面调 API 的事，全是在“推理”。</li>
@@ -4140,12 +4323,30 @@ print(tok.decode(out[0], skip_special_tokens=True))</code></pre><svg aria-label=
 <li>按"进阶 4"在验证集上对比基线和 LoRA 的命中率，再人工抽 10 条判断是否"风格/格式真的变好"。</li>
 <li>画一张你项目的"RAG vs 微调 vs 两者结合"决策图，写清每条路的触发条件（对照本章进阶 5）。</li>
 <li>记住结论：<b>能加装修（LoRA）就别重建（全参数），知识常变交给 RAG，风格格式交给微调。</b></li>
-</ol><section class="learning-loop" id="elective-a-learning-loop">
+</ol><h3 class="level-engineering" id="sec-ea-07"><span class="section-level level-engineering">工程化升级</span>A.7 从 SFT 到 RL：为什么微调还不够</h3>
+<p>选修 A 前面用 SFT / LoRA 把"知识或格式"固化进模型。但真正让 Agent "会做事"的，往往要靠强化学习（RL）。一句话区分：<b>SFT 负责记忆，RL 负责泛化</b>。</p>
+<ul>
+<li><b>SFT 记忆</b>：把示范训练成"看到这类输入就输出这类模式"，擅长复现见过的形式，但遇到没见过的情形容易照猫画虎。</li>
+<li><b>RL 泛化</b>：通过奖励信号让模型在大量尝试中找到"哪种行为能拿高分"，更擅长把能力推广到没见过的情形。</li>
+</ul>
+<p>一个重要经验是<b>先形后神</b>：先用 SFT 把输出格式、工具调用结构、基本流程"塑形"（shape），让模型先学会"怎么调工具、怎么给结构化输出"，再用 RL 去优化"把事做成"的能力。直接上 RL 而模型还不会正确格式，奖励信号几乎无法引导。</p>
+<p>RL 的成败高度依赖<b>数据与环境</b>：奖励从哪来、环境能否稳定给反馈，往往比模型结构更关键。没有可重复、低噪声的反馈回路，RL 很容易学偏。这也呼应第 8 章"评估的统计显著性"——你的奖励本身必须经得起噪声检验。</p>
+
+<h3 class="level-deep" id="sec-ea-08"><span class="section-level level-deep">深入 · 首次阅读可跳过</span>A.8 RL 基础：奖励信号、奖励黑客与 GRPO/PPO</h3>
+<ul>
+<li><b>奖励信号设计</b>：奖励要和可验证的结果挂钩（测试通过、答案正确、任务完成），而不是"看起来像好答案"。</li>
+<li><b>奖励黑客（reward hacking）</b>：当奖励和真实目标不完全一致，模型会找到钻空子的办法刷高分（例如格式符合要求但内容空洞，或利用评测脚本的漏洞）。对策是奖励基于确定性验证、定期人工抽查、并把评测脚本本身纳入版本管理。</li>
+<li><b>GRPO / PPO</b>：两类常见 RL 算法。PPO 用价值网络估计优势、训练较稳但实现复杂；GRPO 通过同一问题的多个采样互相比较来估计优势，省掉价值网络，在 LLM 后训练中更常用。</li>
+<li><b>单轮 vs 多轮 RL</b>：单轮任务（如一道题答对）奖励清晰；多轮 Agent 任务的奖励要等"整条轨迹"结束后才确定，信用分配更难，通常需要把稀疏的最终奖励拆成过程奖励（对中间步骤也打分）。</li>
+</ul>
+<div class="callout"><strong>延伸阅读：</strong>后训练的完整论述（SFT 记忆 / RL 泛化、先形后神、奖励信号与奖励黑客、GRPO/PPO、单轮与多轮 RL），参见 bojieli《深入理解 AI Agent》第 7 章「模型后训练」。本手册聚焦工程落地，对方书补充了更多算法细节。</div>
+
+<section class="learning-loop" id="elective-a-learning-loop">
 <h3>A.学习闭环与验收</h3>
 <p>以下内容才是本章的最低完成标准；正文中需要真实云端、GPU 或后续知识的任务均视为进阶挑战。</p>
 <div class="loop-grid">
-<div class="loop-card"><h4>A · 概念自测</h4><ol><li>什么时候 RAG 比微调更合适？</li><li>LoRA 改变了什么？</li><li>为什么训练损失下降不等于业务提升？</li><li>微调后为什么仍要评测和部署治理？</li></ol></div>
-<div class="loop-card"><h4>B · 本章提交物</h4><ul><li>准备一份小型 SFT 数据并做格式校验。</li><li>比较微调前后的固定评测集。</li><li>记录训练配置与模型版本。</li></ul></div>
+<div class="loop-card"><h4>A · 概念自测</h4><ol><li>什么时候 RAG 比微调更合适？</li><li>LoRA 改变了什么？</li><li>为什么训练损失下降不等于业务提升？</li><li>微调后为什么仍要评测和部署治理？</li><li>SFT 和 RL 分别解决什么问题？为什么强调先形后神？</li></ol></div>
+<div class="loop-card"><h4>B · 本章提交物</h4><ul><li>准备一份小型 SFT 数据并做格式校验。</li><li>比较微调前后的固定评测集。</li><li>记录训练配置与模型版本。</li<li>对比 SFT 前后与加 RL 后的同一评测集，记录奖励黑客的迹象。</li></ul></div>
 <div class="loop-card"><h4>C · 解释能力</h4><p>为什么“模型不知道最新制度”不应优先通过微调解决？</p></div>
 <div class="loop-card"><h4>D · 场景迁移</h4><p>判断三个问题应使用 Prompt、RAG 还是微调，并说明理由。</p></div>
 </div>
@@ -4154,7 +4355,7 @@ print(tok.decode(out[0], skip_special_tokens=True))</code></pre><svg aria-label=
 </section><h2 id="elective-b">选修专题 B · Self-hosted Inference：vLLM、量化与基准</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>部署自托管模型，理解连续批处理、PagedAttention、量化方案和吞吐/延迟基准。</p><p class="brief-product"><strong>本章产物：</strong>一份可复现实验的推理服务基准报告。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><div class="chapter-badges">
 <span></span><span>难度：高级</span>
 <span>选修</span><span>云 API：不需要</span><span>GPU：需要</span>
-</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b13">B13 Docker</a>；<a href="#bridge-b13">B13 Docker</a>；<a href="#bridge-b13">B13 Docker</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div><p>第 20 章你已经跑通了 Flask 桩接口，知道了"吞吐/延迟""KV 缓存""量化""vLLM"这几个词。这一篇把它们真正落地：怎么把 vLLM 跑起来、连续批处理到底比静态批处理聪明在哪、量化怎么选、怎么自己写压测脚本量出 p50/p95。下面从可复现部署、批处理、量化和基准测试四个方面展开。</p><h3>B.1 vLLM 真实部署：一条命令起服务</h3><p>vLLM 是 UC Berkeley Sky Lab 为"高吞吐、低延迟"设计的推理框架，它默认就开了 PagedAttention，把训练框架（如原生 PyTorch、Hugging Face Transformers）那种"一次只服务一个请求"的低效模式，换成了生产级的服务引擎。下面这条命令在 H100 上跑一个模型，几个旋钮都对应真实性能：</p><pre class="code status-command"><code># pip install vllm
+</div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b13">B13 Docker</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div><p>第 20 章你已经跑通了 Flask 桩接口，知道了"吞吐/延迟""KV 缓存""量化""vLLM"这几个词。这一篇把它们真正落地：怎么把 vLLM 跑起来、连续批处理到底比静态批处理聪明在哪、量化怎么选、怎么自己写压测脚本量出 p50/p95。下面从可复现部署、批处理、量化和基准测试四个方面展开。</p><h3>B.1 vLLM 真实部署：一条命令起服务</h3><p>vLLM 是 UC Berkeley Sky Lab 为"高吞吐、低延迟"设计的推理框架，它默认就开了 PagedAttention，把训练框架（如原生 PyTorch、Hugging Face Transformers）那种"一次只服务一个请求"的低效模式，换成了生产级的服务引擎。下面这条命令在 H100 上跑一个模型，几个旋钮都对应真实性能：</p><pre class="code status-command"><code># pip install vllm
 python -m vllm.entrypoints.openai.api_server \
   --model your-hf-or-local-model \          # 模型名（HuggingFace 或本地路径）
   --dtype bf16 \                        # 计算精度，bf16 半精度
@@ -4363,7 +4564,7 @@ if __name__ == "__main__":
 └── contract_tests.py
 </code></pre>
 
-<h2 id="appendix-foundation">附录 B · AI 工程基础桥梁课程</h2>
+<h2 id="appendix-foundation">附录 B · AI 工程基础桥梁课程</h2><div class="callout"><strong>快速自检排序地图。</strong>把「按需补课」从被动等卡住变为主动排程：进第 4 章前先扫 B5，进 Part 3 前先确认 B4–B7。<table class="toc-table"><thead><tr><th>主线章节</th><th>首次用到的工程基础</th><th>该补的附录 B</th><th>是否需章前先读完</th></tr></thead><tbody><tr><td>第 2 章</td><td>环境变量、同步 HTTP</td><td>B2、B6</td><td>否，卡住再补</td></tr><tr><td>第 4 章</td><td>Pydantic、类型注解</td><td>B3、B5</td><td>建议章前扫一遍 B5</td></tr><tr><td>第 5–8 章</td><td>类型、HTTP、测试、异常</td><td>B3、B6、B7、B9</td><td>否</td></tr><tr><td>第 9 章</td><td>dataclass、循环</td><td>B4</td><td>否</td></tr><tr><td>第 10 章</td><td>Tool Calling、JSON Schema、Pydantic</td><td>B5、B6</td><td>否</td></tr><tr><td>第 11 章</td><td>MCP 远程协议（HTTP 身份）</td><td>B6</td><td>否</td></tr><tr><td>第 12 章</td><td>dataclass 状态建模</td><td>B4</td><td>否</td></tr><tr><td>第 13–15 章</td><td>异常重试、HTTP 身份</td><td>B6、B7</td><td>否</td></tr><tr><td>第 16–21 章</td><td>后端、Docker、队列</td><td>B12、B13</td><td>否</td></tr></tbody></table></div>
 <div class="bridge-intro">
 <h3>怎样使用这套桥梁课程</h3>
 <p>默认读者只掌握 Python 基础语法。本附录不是速查表，也不是要求你在进入 AI 前一次学完的后端课程。主线章节会链接到当前真正需要的小节；你先完成最小实验，再回到主线使用。</p>
@@ -4956,4 +5157,15 @@ volumes:
 <tr><td>Anthropic 模型</td><td>只在兼容矩阵引用当前 Models Overview，不在正文宣称永久“主力模型”。</td></tr>
 <tr><td>MCP</td><td>记录规范日期和 SDK 版本；Server/Client 运行合约测试。</td></tr>
 <tr><td>安全</td><td>每季度对照 OWASP GenAI 和组织威胁模型更新测试。</td></tr>
-<tr><td>依赖</td><td>使用 lockfile；CI 定期扫描弃用和安全漏洞。</td></tr></table><h3>H.2 来源标记怎么读</h3><div class="figure-check-note"><strong>正文来源标记：</strong> <code>[Pxx]</code> 表示论文，<code>[Sxx]</code> 表示标准/规范，<code>[Dxx]</code> 表示工程官方文档，<code>[Oxx]</code> 表示可能变化的供应商官方文档。点击标记会跳到下方来源条目。未标来源的架构取舍应明确写成“本书建议”；来源只证明其旁边的具体结论，不代表整段内容都由来源背书。</div><table class="source-registry"><tr><th>标记</th><th>适用内容</th><th>维护规则</th></tr><tr><td><code>P</code></td><td>稳定方法、研究结论和历史来源</td><td>注明论文条件，不把单个实验数字泛化为普遍规律</td></tr><tr><td><code>S</code></td><td>协议、安全和风险管理规范</td><td>记录规范版本或发布日期</td></tr><tr><td><code>D</code></td><td>Python 工程库和框架官方文档</td><td>升级依赖时重新核验</td></tr><tr><td><code>O</code></td><td>模型供应商 API、端点和兼容行为</td><td>首次接入或升级时运行附录 A 合约测试</td></tr></table><h3>H.3 论文与研究来源</h3><table class="source-registry"><tr><th>ID</th><th>来源</th><th>正文采用的结论范围</th><th>对应章节</th></tr><tr id="source-P01"><td class="source-id">P01</td><td><a href="https://arxiv.org/abs/1706.03762" rel="noopener" target="_blank">Attention Is All You Need</a><br/><span class="small-muted">Vaswani et al. · 2017 · 论文</span></td><td>Transformer 以注意力机制为核心的基础架构。</td><td>第 1 章</td></tr><tr id="source-P02"><td class="source-id">P02</td><td><a href="https://arxiv.org/abs/2005.11401" rel="noopener" target="_blank">Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks</a><br/><span class="small-muted">Lewis et al. · 2020 · 论文</span></td><td>检索结果作为外部非参数记忆参与生成的 RAG 基本思想。</td><td>第 6、8 章</td></tr><tr id="source-P03"><td class="source-id">P03</td><td><a href="https://arxiv.org/abs/2210.03629" rel="noopener" target="_blank">ReAct: Synergizing Reasoning and Acting in Language Models</a><br/><span class="small-muted">Yao et al. · 2022 · 论文</span></td><td>推理轨迹与环境行动交替的 Agent 方法。</td><td>第 9 章</td></tr><tr id="source-P04"><td class="source-id">P04</td><td><a href="https://arxiv.org/abs/2205.13147" rel="noopener" target="_blank">Matryoshka Representation Learning</a><br/><span class="small-muted">Kusupati et al. · 2022 · 论文</span></td><td>经过特定训练的表示可在不同截断维度下适配资源预算。</td><td>第 5 章</td></tr><tr id="source-P05"><td class="source-id">P05</td><td><a href="https://arxiv.org/abs/2004.04906" rel="noopener" target="_blank">Dense Passage Retrieval for Open-Domain Question Answering</a><br/><span class="small-muted">Karpukhin et al. · 2020 · 论文</span></td><td>双编码器稠密向量检索的典型实现与评测方式。</td><td>第 5、7 章</td></tr><tr id="source-P06"><td class="source-id">P06</td><td><a href="https://doi.org/10.1561/1500000019" rel="noopener" target="_blank">The Probabilistic Relevance Framework: BM25 and Beyond</a><br/><span class="small-muted">Robertson &amp; Zaragoza · 2009 · 论文/专著</span></td><td>BM25 的概率相关性框架与词面检索基础。</td><td>第 5、7 章</td></tr><tr id="source-P07"><td class="source-id">P07</td><td><a href="https://arxiv.org/abs/2307.03172" rel="noopener" target="_blank">Lost in the Middle: How Language Models Use Long Contexts</a><br/><span class="small-muted">Liu et al. · 2023 · 论文</span></td><td>长上下文中相关信息位置会影响模型利用效果。</td><td>第 13 章</td></tr><tr id="source-P08"><td class="source-id">P08</td><td><a href="https://arxiv.org/abs/2302.04761" rel="noopener" target="_blank">Toolformer: Language Models Can Teach Themselves to Use Tools</a><br/><span class="small-muted">Schick et al. · 2023 · 论文</span></td><td>语言模型选择工具、生成参数并利用工具结果的研究背景。</td><td>第 10 章</td></tr></table><h3>H.4 标准、安全与治理规范</h3><table class="source-registry"><tr><th>ID</th><th>来源</th><th>正文采用的结论范围</th><th>对应章节</th></tr><tr id="source-S01"><td class="source-id">S01</td><td><a href="https://www.rfc-editor.org/rfc/rfc9110.html" rel="noopener" target="_blank">RFC 9110: HTTP Semantics</a><br/><span class="small-muted">IETF / RFC Editor · 2022 · 互联网标准</span></td><td>HTTP 请求、响应、方法、状态码与无状态语义。</td><td>第 2 章、附录 B3</td></tr><tr id="source-S02"><td class="source-id">S02</td><td><a href="https://modelcontextprotocol.io/specification/2025-11-25" rel="noopener" target="_blank">Model Context Protocol Specification</a><br/><span class="small-muted">Model Context Protocol · 2025-11-25 · 协议规范</span></td><td>MCP 的 Resources、Prompts、Tools、消息与能力协商。</td><td>第 11、19 章</td></tr><tr id="source-S03"><td class="source-id">S03</td><td><a href="https://genai.owasp.org/resource/owasp-top-10-for-llm-applications-2025/" rel="noopener" target="_blank">OWASP Top 10 for LLM Applications 2025</a><br/><span class="small-muted">OWASP GenAI Security Project · 2025 · 安全指南</span></td><td>Prompt Injection、敏感信息泄露、供应链与不安全输出等风险。</td><td>第 19、23 章</td></tr><tr id="source-S04"><td class="source-id">S04</td><td><a href="https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence" rel="noopener" target="_blank">NIST AI 600-1: Generative AI Profile</a><br/><span class="small-muted">NIST · 2024 · 风险管理规范</span></td><td>生成式 AI 全生命周期风险治理与组织控制。</td><td>第 19、23 章</td></tr><tr id="source-S05"><td class="source-id">S05</td><td><a href="https://opentelemetry.io/docs/concepts/signals/traces/" rel="noopener" target="_blank">OpenTelemetry Traces</a><br/><span class="small-muted">OpenTelemetry · 持续维护 · 可观测性规范</span></td><td>Trace、Span 与请求链路的基本语义。</td><td>第 18 章</td></tr></table><h3>H.5 工程框架官方文档</h3><table class="source-registry"><tr><th>ID</th><th>来源</th><th>正文采用的结论范围</th><th>对应章节</th></tr><tr id="source-D01"><td class="source-id">D01</td><td><a href="https://docs.pydantic.dev/latest/concepts/models/" rel="noopener" target="_blank">Pydantic Models and Validation</a><br/><span class="small-muted">Pydantic · 持续维护 · 官方工程文档</span></td><td>类型模型、字段验证、序列化与 ValidationError。</td><td>第 4 章、附录 B2</td></tr><tr id="source-D02"><td class="source-id">D02</td><td><a href="https://fastapi.tiangolo.com/tutorial/" rel="noopener" target="_blank">FastAPI Tutorial</a><br/><span class="small-muted">FastAPI · 持续维护 · 官方工程文档</span></td><td>请求模型、路由、依赖注入、响应与服务启动方式。</td><td>第 16、23 章</td></tr></table><h3>H.6 动态供应商官方文档</h3><table class="source-registry"><tr><th>ID</th><th>来源</th><th>正文采用的结论范围</th><th>对应章节</th></tr><tr id="source-O01"><td class="source-id">O01</td><td><a href="https://platform.openai.com/docs/guides/migrate-to-responses" rel="noopener" target="_blank">OpenAI: Migrate to the Responses API</a><br/><span class="small-muted">OpenAI · 核验于 2026-07-28 · 动态官方文档</span></td><td>OpenAI 平台上 Responses API 与 Chat Completions 的定位差异。</td><td>第 2 章、附录 A</td></tr><tr id="source-O02"><td class="source-id">O02</td><td><a href="https://api-docs.deepseek.com/zh-cn/api/create-chat-completion" rel="noopener" target="_blank">DeepSeek Chat Completions API</a><br/><span class="small-muted">DeepSeek · 核验于 2026-07-28 · 动态官方文档</span></td><td>DeepSeek 当前文档化的 Chat Completions 请求与响应。</td><td>第 2 章、附录 A</td></tr><tr id="source-O03"><td class="source-id">O03</td><td><a href="https://mimo.mi.com/docs/zh-CN/api/chat/openai-api" rel="noopener" target="_blank">MiMo OpenAI Chat Completions API 兼容</a><br/><span class="small-muted">Xiaomi MiMo · 核验于 2026-07-28 · 动态官方文档</span></td><td>MiMo Chat Completions 端点、认证与兼容方式。</td><td>第 2 章、附录 A</td></tr><tr id="source-O04"><td class="source-id">O04</td><td><a href="https://mimo.mi.com/docs/zh-CN/api/chat/responses" rel="noopener" target="_blank">MiMo OpenAI Responses API 兼容</a><br/><span class="small-muted">Xiaomi MiMo · 核验于 2026-07-28 · 动态官方文档</span></td><td>MiMo Responses 兼容接口及不兼容字段限制。</td><td>第 2 章、附录 A</td></tr><tr id="source-O05"><td class="source-id">O05</td><td><a href="https://platform.moonshot.cn/docs/guide/migrating-from-openai-to-kimi" rel="noopener" target="_blank">Kimi OpenAI API 协议兼容性提示</a><br/><span class="small-muted">Moonshot AI · 核验于 2026-07-28 · 动态官方文档</span></td><td>Kimi Chat Completions 兼容范围与参数差异。</td><td>第 2 章、附录 A</td></tr><tr id="source-O06"><td class="source-id">O06</td><td><a href="https://docs.siliconflow.cn/cn/api-reference/chat-completions/chat-completions" rel="noopener" target="_blank">SiliconFlow Chat Completions</a><br/><span class="small-muted">SiliconFlow · 核验于 2026-07-28 · 动态官方文档</span></td><td>SiliconFlow Chat Completions 端点与返回结构。</td><td>第 2 章、附录 A</td></tr></table><footer style="margin-top:60px;padding-top:20px;border-top:1px solid #cbd5e1;color:#64748b;font-size:13px">零 AI 背景入门叙事与主线分层修订版。最后构建：2026-07-29。入门叙事、主线/进阶层级、答案折叠、代码复用、图号、来源、链接与代码静态检查均纳入门禁。</footer></main></div></body></html>
+<tr><td>依赖</td><td>使用 lockfile；CI 定期扫描弃用和安全漏洞。</td></tr></table><h3>H.2 来源标记怎么读</h3><div class="figure-check-note"><strong>正文来源标记：</strong> <code>[Pxx]</code> 表示论文，<code>[Sxx]</code> 表示标准/规范，<code>[Dxx]</code> 表示工程官方文档，<code>[Oxx]</code> 表示可能变化的供应商官方文档。点击标记会跳到下方来源条目。未标来源的架构取舍应明确写成“本书建议”；来源只证明其旁边的具体结论，不代表整段内容都由来源背书。</div><table class="source-registry"><tr><th>标记</th><th>适用内容</th><th>维护规则</th></tr><tr><td><code>P</code></td><td>稳定方法、研究结论和历史来源</td><td>注明论文条件，不把单个实验数字泛化为普遍规律</td></tr><tr><td><code>S</code></td><td>协议、安全和风险管理规范</td><td>记录规范版本或发布日期</td></tr><tr><td><code>D</code></td><td>Python 工程库和框架官方文档</td><td>升级依赖时重新核验</td></tr><tr><td><code>O</code></td><td>模型供应商 API、端点和兼容行为</td><td>首次接入或升级时运行附录 A 合约测试</td></tr></table><h3>H.3 论文与研究来源</h3><table class="source-registry"><tr><th>ID</th><th>来源</th><th>正文采用的结论范围</th><th>对应章节</th></tr><tr id="source-P01"><td class="source-id">P01</td><td><a href="https://arxiv.org/abs/1706.03762" rel="noopener" target="_blank">Attention Is All You Need</a><br/><span class="small-muted">Vaswani et al. · 2017 · 论文</span></td><td>Transformer 以注意力机制为核心的基础架构。</td><td>第 1 章</td></tr><tr id="source-P02"><td class="source-id">P02</td><td><a href="https://arxiv.org/abs/2005.11401" rel="noopener" target="_blank">Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks</a><br/><span class="small-muted">Lewis et al. · 2020 · 论文</span></td><td>检索结果作为外部非参数记忆参与生成的 RAG 基本思想。</td><td>第 6、8 章</td></tr><tr id="source-P03"><td class="source-id">P03</td><td><a href="https://arxiv.org/abs/2210.03629" rel="noopener" target="_blank">ReAct: Synergizing Reasoning and Acting in Language Models</a><br/><span class="small-muted">Yao et al. · 2022 · 论文</span></td><td>推理轨迹与环境行动交替的 Agent 方法。</td><td>第 9 章</td></tr><tr id="source-P04"><td class="source-id">P04</td><td><a href="https://arxiv.org/abs/2205.13147" rel="noopener" target="_blank">Matryoshka Representation Learning</a><br/><span class="small-muted">Kusupati et al. · 2022 · 论文</span></td><td>经过特定训练的表示可在不同截断维度下适配资源预算。</td><td>第 5 章</td></tr><tr id="source-P05"><td class="source-id">P05</td><td><a href="https://arxiv.org/abs/2004.04906" rel="noopener" target="_blank">Dense Passage Retrieval for Open-Domain Question Answering</a><br/><span class="small-muted">Karpukhin et al. · 2020 · 论文</span></td><td>双编码器稠密向量检索的典型实现与评测方式。</td><td>第 5、7 章</td></tr><tr id="source-P06"><td class="source-id">P06</td><td><a href="https://doi.org/10.1561/1500000019" rel="noopener" target="_blank">The Probabilistic Relevance Framework: BM25 and Beyond</a><br/><span class="small-muted">Robertson &amp; Zaragoza · 2009 · 论文/专著</span></td><td>BM25 的概率相关性框架与词面检索基础。</td><td>第 5、7 章</td></tr><tr id="source-P07"><td class="source-id">P07</td><td><a href="https://arxiv.org/abs/2307.03172" rel="noopener" target="_blank">Lost in the Middle: How Language Models Use Long Contexts</a><br/><span class="small-muted">Liu et al. · 2023 · 论文</span></td><td>长上下文中相关信息位置会影响模型利用效果。</td><td>第 13 章</td></tr><tr id="source-P08"><td class="source-id">P08</td><td><a href="https://arxiv.org/abs/2302.04761" rel="noopener" target="_blank">Toolformer: Language Models Can Teach Themselves to Use Tools</a><br/><span class="small-muted">Schick et al. · 2023 · 论文</span></td><td>语言模型选择工具、生成参数并利用工具结果的研究背景。</td><td>第 10 章</td></tr></table><h3>H.4 标准、安全与治理规范</h3><table class="source-registry"><tr><th>ID</th><th>来源</th><th>正文采用的结论范围</th><th>对应章节</th></tr><tr id="source-S01"><td class="source-id">S01</td><td><a href="https://www.rfc-editor.org/rfc/rfc9110.html" rel="noopener" target="_blank">RFC 9110: HTTP Semantics</a><br/><span class="small-muted">IETF / RFC Editor · 2022 · 互联网标准</span></td><td>HTTP 请求、响应、方法、状态码与无状态语义。</td><td>第 2 章、附录 B3</td></tr><tr id="source-S02"><td class="source-id">S02</td><td><a href="https://modelcontextprotocol.io/specification/2025-11-25" rel="noopener" target="_blank">Model Context Protocol Specification</a><br/><span class="small-muted">Model Context Protocol · 2025-11-25 · 协议规范</span></td><td>MCP 的 Resources、Prompts、Tools、消息与能力协商。</td><td>第 11、19 章</td></tr><tr id="source-S03"><td class="source-id">S03</td><td><a href="https://genai.owasp.org/resource/owasp-top-10-for-llm-applications-2025/" rel="noopener" target="_blank">OWASP Top 10 for LLM Applications 2025</a><br/><span class="small-muted">OWASP GenAI Security Project · 2025 · 安全指南</span></td><td>Prompt Injection、敏感信息泄露、供应链与不安全输出等风险。</td><td>第 19、23 章</td></tr><tr id="source-S04"><td class="source-id">S04</td><td><a href="https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence" rel="noopener" target="_blank">NIST AI 600-1: Generative AI Profile</a><br/><span class="small-muted">NIST · 2024 · 风险管理规范</span></td><td>生成式 AI 全生命周期风险治理与组织控制。</td><td>第 19、23 章</td></tr><tr id="source-S05"><td class="source-id">S05</td><td><a href="https://opentelemetry.io/docs/concepts/signals/traces/" rel="noopener" target="_blank">OpenTelemetry Traces</a><br/><span class="small-muted">OpenTelemetry · 持续维护 · 可观测性规范</span></td><td>Trace、Span 与请求链路的基本语义。</td><td>第 18 章</td></tr></table><h3>H.5 工程框架官方文档</h3><table class="source-registry"><tr><th>ID</th><th>来源</th><th>正文采用的结论范围</th><th>对应章节</th></tr><tr id="source-D01"><td class="source-id">D01</td><td><a href="https://docs.pydantic.dev/latest/concepts/models/" rel="noopener" target="_blank">Pydantic Models and Validation</a><br/><span class="small-muted">Pydantic · 持续维护 · 官方工程文档</span></td><td>类型模型、字段验证、序列化与 ValidationError。</td><td>第 4 章、附录 B2</td></tr><tr id="source-D02"><td class="source-id">D02</td><td><a href="https://fastapi.tiangolo.com/tutorial/" rel="noopener" target="_blank">FastAPI Tutorial</a><br/><span class="small-muted">FastAPI · 持续维护 · 官方工程文档</span></td><td>请求模型、路由、依赖注入、响应与服务启动方式。</td><td>第 16、23 章</td></tr></table><h3>H.6 动态供应商官方文档</h3><table class="source-registry"><tr><th>ID</th><th>来源</th><th>正文采用的结论范围</th><th>对应章节</th></tr><tr id="source-O01"><td class="source-id">O01</td><td><a href="https://platform.openai.com/docs/guides/migrate-to-responses" rel="noopener" target="_blank">OpenAI: Migrate to the Responses API</a><br/><span class="small-muted">OpenAI · 核验于 2026-07-28 · 动态官方文档</span></td><td>OpenAI 平台上 Responses API 与 Chat Completions 的定位差异。</td><td>第 2 章、附录 A</td></tr><tr id="source-O02"><td class="source-id">O02</td><td><a href="https://api-docs.deepseek.com/zh-cn/api/create-chat-completion" rel="noopener" target="_blank">DeepSeek Chat Completions API</a><br/><span class="small-muted">DeepSeek · 核验于 2026-07-28 · 动态官方文档</span></td><td>DeepSeek 当前文档化的 Chat Completions 请求与响应。</td><td>第 2 章、附录 A</td></tr><tr id="source-O03"><td class="source-id">O03</td><td><a href="https://mimo.mi.com/docs/zh-CN/api/chat/openai-api" rel="noopener" target="_blank">MiMo OpenAI Chat Completions API 兼容</a><br/><span class="small-muted">Xiaomi MiMo · 核验于 2026-07-28 · 动态官方文档</span></td><td>MiMo Chat Completions 端点、认证与兼容方式。</td><td>第 2 章、附录 A</td></tr><tr id="source-O04"><td class="source-id">O04</td><td><a href="https://mimo.mi.com/docs/zh-CN/api/chat/responses" rel="noopener" target="_blank">MiMo OpenAI Responses API 兼容</a><br/><span class="small-muted">Xiaomi MiMo · 核验于 2026-07-28 · 动态官方文档</span></td><td>MiMo Responses 兼容接口及不兼容字段限制。</td><td>第 2 章、附录 A</td></tr><tr id="source-O05"><td class="source-id">O05</td><td><a href="https://platform.moonshot.cn/docs/guide/migrating-from-openai-to-kimi" rel="noopener" target="_blank">Kimi OpenAI API 协议兼容性提示</a><br/><span class="small-muted">Moonshot AI · 核验于 2026-07-28 · 动态官方文档</span></td><td>Kimi Chat Completions 兼容范围与参数差异。</td><td>第 2 章、附录 A</td></tr><tr id="source-O06"><td class="source-id">O06</td><td><a href="https://docs.siliconflow.cn/cn/api-reference/chat-completions/chat-completions" rel="noopener" target="_blank">SiliconFlow Chat Completions</a><br/><span class="small-muted">SiliconFlow · 核验于 2026-07-28 · 动态官方文档</span></td><td>SiliconFlow Chat Completions 端点与返回结构。</td><td>第 2 章、附录 A</td></tr></table><section id="afterword-clouds">
+<h2>结语 · 两朵乌云与飞轮</h2>
+<p>读到这里，你已经走完了一条完整的路：从 RAG、受控 Agent，到生产服务、多 Agent 编排与 Coding Agent。收尾时，值得把视野再抬高一格。</p>
+<h3>两朵乌云</h3>
+<p>第一朵：<b>模型能力 vs 上下文工程</b>。模型越来越强，有人断言"模型会吃掉 Harness"。但现实是——模型越强，你喂给它的上下文越值钱；上下文工程不是被取代，而是更重要。第二朵：<b>自治 vs 可靠</b>。Agent 越自主，出错面越大；没有评估与护栏的自治，只是更快地把错误规模化。</p>
+<h3>飞轮</h3>
+<p>真正能穿越模型迭代周期的，是一个<b>评估驱动的飞轮</b>：写评测集 → 跑评估 → 定位失败模式 → 改 Harness / 上下文 / 提示 → 再评估。每一次转动，系统都比上一次更可靠一点。这个飞轮转得起来，靠的不是某个酷炫模型，而是你在这本书里一遍遍落地的工程纪律。</p>
+<p>模型会换代，框架会过时，但"把不确定性的智能，约束成确定性的系统"这件事，会一直是 AI 工程师的价值所在。去把你的作品跑起来，让飞轮转起来。</p>
+<div class="callout"><strong>延伸阅读：</strong>模型会不会吃掉 Harness、两朵乌云与飞轮的完整论述，参见 bojieli《深入理解 AI Agent》「后记」。两本书立场一致：设计原则穿越模型迭代周期，而工程落地能力需要你亲自练出来。</div>
+</section>
+
+<footer style="margin-top:60px;padding-top:20px;border-top:1px solid #cbd5e1;color:#64748b;font-size:13px">零 AI 背景入门叙事与主线分层修订版。最后构建：2026-07-29。入门叙事、主线/进阶层级、答案折叠、代码复用、图号、来源、链接与代码静态检查均纳入门禁。</footer></main></div></body></html>
