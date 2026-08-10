@@ -138,7 +138,8 @@ details.answer{margin-top:12px}.learning-loop .rubric{margin:8px 0}.foundation-s
 .bridge-intro{border:1px solid #99f6e4;background:#f0fdfa;border-radius:12px;padding:17px 19px;margin:15px 0}.bridge-course{border-top:4px solid #0f766e;background:#fff;border-radius:10px;box-shadow:0 1px 6px rgba(15,23,42,.08);padding:18px 20px;margin:22px 0}.bridge-course h3{color:#0f766e;margin-top:0}.bridge-course h4{margin-top:20px;color:#134e4a}.bridge-goal{background:#ecfdf5;border-left:4px solid #10b981;padding:9px 12px}.bridge-connect{background:#eff6ff;border-left:4px solid #2563eb;padding:10px 13px;margin-top:18px}.bridge-final{border-top:5px solid #1d4ed8}.route-policy{background:#fff7ed;border-left:5px solid #f97316;padding:12px 15px;border-radius:8px;margin:14px 0}.route-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:17px 0}.route-card{border:1px solid #cbd5e1;background:#fff;border-radius:10px;padding:14px 16px}.route-card h3{margin-top:0;color:#1e40af}
 @media(max-width:850px){.learning-path-grid,.route-grid{grid-template-columns:1fr}}
 </style></head>
-<body><div class="wrap"><nav class="toc"><h3>目录</h3><ul><li><a href="#top">封面与学习说明</a></li><li><a href="#ch0">第 0 章 · 先认识目的地</a></li><li><a href="#part1">Part 1 · LLM 应用基础</a></li><li><a href="#ch1">1 · 认识大模型</a></li><li><a href="#ch2">2 · 第一次调用模型 API</a></li><li><a href="#ch3">3 · 清晰可复用的 Prompt</a></li><li><a href="#ch4">4 · 安全使用结构化数据</a></li><li><a href="#part2">Part 2 · 从私有资料到可评测 RAG</a></li><li><a href="#ch5">5 · Embedding</a></li><li><a href="#ch6">6 · RAG</a></li><li><a href="#ch7">7 · Advanced Retrieval</a></li><li><a href="#ch8">8 · Evaluation</a></li><li><a href="#part3">Part 3 · 从回答到受控 Agent</a></li><li><a href="#ch9">9 · Agent 基础</a></li><li><a href="#ch10">10 · Tool Calling</a></li><li><a href="#ch11">11 · MCP</a></li><li><a href="#ch12">12 · State 与 Memory</a></li><li><a href="#ch13">13 · Context</a></li><li><a href="#ch14">14 · Harness</a></li><li><a href="#ch15">15 · Loop</a></li><li><a href="#part4">Part 4 · 从本地脚本到生产服务</a></li><li><a href="#ch16">16 · Backend</a></li><li><a href="#ch17">17 · LLMOps</a></li><li><a href="#ch18">18 · Observability</a></li><li><a href="#ch19">19 · Security</a></li><li><a href="#ch20">20 · Cost &amp; Performance</a></li><li><a href="#part5">Part 5 · AI Product 与高级 Agent</a></li><li><a href="#ch21">21 · Complete SaaS</a></li><li><a href="#ch22">22 · Multi-Agent</a></li><li><a href="#ch23">23 · AI Coding Agent</a></li><li><a href="#elective-a">选修 A · 微调与 LoRA</a></li><li><a href="#elective-b">选修 B · 自托管推理</a></li><li><a href="#appendices">附录</a></li><li><a href="#appendix-api">附录 A · API 兼容矩阵</a></li><li><a href="#appendix-foundation">附录 B · AI 工程基础桥梁课程</a></li><li><a href="#appendix-workflow">C · 架构决策</a></li><li><a href="#appendix-agent-eval">D · Agent 评测</a></li><li><a href="#appendix-multimodal">E · 多模态/Browser</a></li><li><a href="#appendix-career">F · 简历与面试</a></li><li><a href="#appendix-plan">附录 G · 不同背景读者路线与里程碑</a></li><li><a href="#appendix-freshness">H · 时效与参考</a></li></ul></nav><main><section class="hero-v2" id="top">
+<body><div class="wrap"><nav class="toc"><h3>目录</h3><ul><li><a href="#top">封面与学习说明</a></li><li><a href="#ch0">第 0 章 · 先认识目的地</a></li><li><a href="#part1">Part 1 · LLM 应用基础</a></li><li><a href="#ch1">1 · 认识大模型</a></li><li><a href="#ch2">2 · 第一次调用模型 API</a></li><li><a href="#ch3">3 · 清晰可复用的 Prompt</a></li><li><a href="#ch4">4 · 安全使用结构化数据</a></li><li><a href="#part2">Part 2 · 从私有资料到可评测 RAG</a></li><li><a href="#ch5">5 · Embedding</a></li><li><a href="#ch6">6 · RAG</a></li><li><a href="#ch7">7 · Advanced Retrieval</a></li><li><a href="#ch8">8 · Evaluation</a></li><li><a href="#part3">Part 3 · 从回答到受控 Agent</a></li><li><a href="#ch9">9 · Agent 基础</a></li><li><a href="#ch10">10 · Tool Calling</a></li><li><a href="#ch11">11 · MCP</a></li><li><a href="#ch12">12 · State 与 Memory</a></li><li><a href="#ch13">13 · Context</a></li><li><a href="#ch14">14 · Harness</a></li><li><a href="#ch15">15 · Loop</a></li><li><a href="#part4">Part 4 · 从本地脚本到生产服务</a></li><li><a href="#ch16">16 · Backend</a></li><li><a href="#ch17">17 · LLMOps</a></li><li><a href="#ch18">18 · Observability</a></li><li><a href="#ch19">19 · Security</a></li><li><a href="#ch20">20 · Cost &amp; Performance</a></li><li><a href="#part5">Part 5 · AI Product 与高级 Agent</a></li><li><a href="#ch21">21 · Complete SaaS</a></li><li><a href="#ch22">22 · Multi-Agent</a></li><li><a href="#ch23">23 · AI Coding Agent</a></li><li><a href="#elective-a">选修 A · 微调与 LoRA</a></li><li><a href="#elective-b">选修 B · 自托管推理</a>
+<a href="#elective-c">选修 C · 跨域端到端案例（参考架构）</a></li><li><a href="#appendices">附录</a></li><li><a href="#appendix-api">附录 A · API 兼容矩阵</a></li><li><a href="#appendix-foundation">附录 B · AI 工程基础桥梁课程</a></li><li><a href="#appendix-workflow">附录 C · 架构决策</a></li><li><a href="#appendix-agent-eval">D · Agent 评测</a></li><li><a href="#appendix-multimodal">E · 多模态/Browser</a></li><li><a href="#appendix-career">F · 简历与面试</a></li><li><a href="#appendix-plan">附录 G · 不同背景读者路线与里程碑</a></li><li><a href="#appendix-freshness">H · 时效与参考</a></li></ul></nav><main><section class="hero-v2" id="top">
 <div class="edition">工程基础桥梁课程 + 完整 AI 应用工程能力</div>
 <h1>从零成为 AI 工程师</h1>
 <p><strong>唯一主线：</strong>带一个只掌握 Python 基础语法、没有 AI/机器学习/后端经验的读者，逐步完成可评测 RAG、受控 Agent、生产服务、完整 SaaS、多 Agent 编排和 Coding Agent。高级内容不删，只增加学习台阶。</p>
@@ -159,7 +160,7 @@ details.answer{margin-top:12px}.learning-loop .rubric{margin:8px 0}.foundation-s
 <div class="chapter-brief">
 <p class="brief-goal"><strong>本章目标：</strong>先知道大模型、AI 应用和 AI 工程师分别是什么，再判断这本书是不是你要走的路线。</p>
 <p class="brief-product"><strong>本章提交物：</strong>完成一个五分钟 Python 入学测试，创建空项目与虚拟环境。</p>
-<details class="chapter-more"><summary>时间与维护信息</summary><p>不需要 API Key、云服务或 GPU。内容复核：2026-07-28。</p></details>
+<details class="chapter-more"><summary>时间与维护信息</summary><p>不需要 API Key、云服务或 GPU。内容复核基准：2026-07-28（各章头部「内容复核」为该章原理与示例的复核日期）。本扩充补全版于 2026-08-10 完成，新增了 GraphRAG、升级率指标、MDoS 威胁、形式化熔断、请求合并缓存与跨域案例等小节，并对若干代码与编号做了修订；文件名中的日期即指本次扩充完成日。</p></details>
 </div>
 <h3 id="sec-00-01">0.1 先看一个真实 AI 应用</h3>
 <div class="story-card">
@@ -653,7 +654,7 @@ print(prompt)</code></pre>
 </ul>
 <div class="callout"><strong>注意：</strong>Prompt 层防御是第一道，但不是最后一道。真正的护栏在 Harness（第 14 章权限 / 验证 / 纠正）。把 Prompt 流程化为 SOP 与分隔符，能显著降低注入面，但不可取代工程护栏。</div>
 
-<section class="learning-loop" id="ch3-learning-loop"><h3>3.7 本章学习闭环与验收</h3><div class="loop-grid"><div class="loop-card"><h4>A · 概念自测</h4><ol><li>角色为什么不能代替任务和规则？</li><li>Few-shot 的主要作用是什么？</li><li>为什么要分离指令区与数据区？</li><li>Prompt 为什么适合放在独立模板文件？</li><li>为什么把 Prompt 流程化为 SOP 能降低注入面？分隔符起什么作用？</li></ol></div><div class="loop-card"><h4>B · 本章提交物</h4><p>完成 3.6 的三个模板、渲染脚本和最小测试。；并能为一个抽取任务写出含分隔符与失败行为的 SOP 模板。</p></div><div class="loop-card"><h4>C · 解释能力</h4><p>为什么 Prompt Engineering 更接近接口设计，而不是“说话更礼貌”？</p></div><div class="loop-card"><h4>D · 场景迁移</h4><p>为“证券公告字段抽取”写一个 Prompt 骨架，包含资料不足时的行为。</p></div></div><details class="answer"><summary>展开参考答案与评分点</summary><ol><li>角色只有背景，任务、约束和输出仍需明确。</li><li>展示具体输入输出模式和边界。</li><li>避免把用户或资料中的内容误当系统指令。</li><li>便于复用、审查、版本控制和测试。</li></ol><p><strong>解释题评分点：</strong>目标、输入边界、输出契约、示例、失败行为、版本和测试。</p></details><div class="pass-bar"><strong>最低通过：</strong>三个模板可渲染；至少一个模板包含正反示例；测试能够发现关键规则被删除。进阶折叠区不计入首次通过。</div></section>
+<section class="learning-loop" id="ch3-learning-loop"><h3>3.9 本章学习闭环与验收</h3><div class="loop-grid"><div class="loop-card"><h4>A · 概念自测</h4><ol><li>角色为什么不能代替任务和规则？</li><li>Few-shot 的主要作用是什么？</li><li>为什么要分离指令区与数据区？</li><li>Prompt 为什么适合放在独立模板文件？</li><li>为什么把 Prompt 流程化为 SOP 能降低注入面？分隔符起什么作用？</li></ol></div><div class="loop-card"><h4>B · 本章提交物</h4><p>完成 3.6 的三个模板、渲染脚本和最小测试。；并能为一个抽取任务写出含分隔符与失败行为的 SOP 模板。</p></div><div class="loop-card"><h4>C · 解释能力</h4><p>为什么 Prompt Engineering 更接近接口设计，而不是“说话更礼貌”？</p></div><div class="loop-card"><h4>D · 场景迁移</h4><p>为“证券公告字段抽取”写一个 Prompt 骨架，包含资料不足时的行为。</p></div></div><details class="answer"><summary>展开参考答案与评分点</summary><ol><li>角色只有背景，任务、约束和输出仍需明确。</li><li>展示具体输入输出模式和边界。</li><li>避免把用户或资料中的内容误当系统指令。</li><li>便于复用、审查、版本控制和测试。</li></ol><p><strong>解释题评分点：</strong>目标、输入边界、输出契约、示例、失败行为、版本和测试。</p></details><div class="pass-bar"><strong>最低通过：</strong>三个模板可渲染；至少一个模板包含正反示例；测试能够发现关键规则被删除。进阶折叠区不计入首次通过。</div></section>
 <h2 id="ch4">第 4 章 · 让模型返回程序能安全使用的数据</h2>
 <div class="chapter-brief"><p class="brief-goal"><strong>本章目标：</strong>理解“看起来像 JSON”为什么仍不可靠，并用 Pydantic 把模型输出转换成经过类型和业务规则检查的对象。</p><p class="brief-product"><strong>本章提交物：</strong><code>Ticket</code> Schema、三类失败测试和一次受控错误处理。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p>前置：第 2–3 章；安装 <code>pip install pydantic pytest</code>；陌生语法见 <a href="#bridge-b5">B5 Pydantic 与数据契约</a>，按需阅读 <a href="#bridge-b9">B9 测试</a>。进阶联合类型不计入最低通过。<a class="source-ref" href="#source-D01" title="D01 · Pydantic Models and Validation">[D01]</a></p></details></div>
 <h3 id="sec-04-01">4.1 JSON 语法正确，也可能不能进入业务系统</h3>
@@ -802,8 +803,10 @@ sentences = ["猫坐在垫子上", "一只猫趴在软垫上", "今天股市涨�
 vecs = model.encode(sentences)
 
 # 前两句意思接近，余弦应明显高于第三句
-print("句1~句2:", cosine(vecs[0].tolist(), vecs[1].tolist()))
-print("句1~句3:", cosine(vecs[0].tolist(), vecs[2].tolist()))
+# 注：cosine_similarity 已在 5.1 定义并存入项目统一模块，此处直接复用；
+# 若单独运行本节，请把 5.1 的 def cosine_similarity 一并复制进来。
+print("句1~句2:", cosine_similarity(vecs[0].tolist(), vecs[1].tolist()))
+print("句1~句3:", cosine_similarity(vecs[0].tolist(), vecs[2].tolist()))
 </code></pre><h3 class="level-core" id="sec-05-03"><span class="section-level level-core">主线</span>5.3 向量数据库：成千上万条也能秒查</h3><p>只有 3 条时，暴力两两比较还行；真实场景有上万篇文档，必须靠<strong>向量数据库</strong>做近似检索。下面用 <code>chromadb</code> 演示「建库 → 存 → 查」：</p><pre class="code status-external"><code>import chromadb
 client = chromadb.Client()
 col = client.create_collection("demo")
@@ -831,11 +834,12 @@ print(res["documents"])   # 返回最相近的那条
 </svg><p class="cap" id="figtitle-ch05-01">图 5.1：从文档到「按意思检索」的全过程。</p><h3 class="level-core" id="sec-05-04"><span class="section-level level-core">主线</span>5.4 立即试一试</h3><ol>
 <li>运行<a href="#sec-05-01">5.1 节“余弦相似度”</a>的纯 Python 版本，把 <code>docs</code> 换成自己的 5 句话，再输入一个查询，检查排序是否符合直觉。</li>
 <li>可选：安装 <code>sentence-transformers</code> 和 <code>chromadb</code>，分别运行<a href="#sec-05-02">5.2 节“真实 Embedding”</a>与<a href="#sec-05-03">5.3 节“向量数据库”</a>，比较真实向量与玩具表示的检索结果。</li>
-</ol><p>本章前半部分我们先建立了一个直觉："embedding 把文本变成一串数字，用余弦相似度比远近"。这句话没错，但它漏掉了真正决定 RAG 好不好用的东西：<strong>选哪个模型、向量怎么比、什么时候它会翻车</strong>。这一章把这三个问题一次讲透。</p><h3 class="level-engineering" id="sec-05-05"><span class="section-level level-engineering">工程化升级</span>5.5 选 embedding 模型：不是越大越好</h3><p>无论输入是短句还是长段落，<strong>同一个 embedding 模型输出的向量维度通常固定</strong>。模型会先编码 token，再通过 pooling 或其他聚合方式得到句向量。常见聚合包括取特殊位置、对 token 表示求平均，或使用模型专门训练的池化头。这里要区分“输入长度”和“输出维度”：输入更长不意味着输出向量维度更大，但可能触发截断并影响语义质量。</p><p>维度更高通常意味着更大的索引、更高的内存和网络成本，但不保证在你的任务上一定更准。<span class="source-kind">本书建议</span>：先确定候选模型，再用同一份检索评测集比较 Recall@K、排序质量、延迟和索引大小；在达到业务阈值的候选中选择资源成本更低的方案。不要把示例中的具体维度当作永久规则。</p><p>真实调用长这样。开源阵营有 <code>sentence-transformers</code> 全家桶（MiniLM 快、BGE 中文强），闭源有 OpenAI 的 <code>text-embedding-3-small</code>。下面用开源 BGE 演示，注意它支持多语言，所以中文句和英文同义句也能靠近：</p><pre class="code status-external"><code># 依赖: pip install sentence-transformers
+</ol><p>本章前半部分我们先建立了一个直觉："embedding 把文本变成一串数字，用余弦相似度比远近"。这句话没错，但它漏掉了真正决定 RAG 好不好用的东西：<strong>选哪个模型、向量怎么比、什么时候它会翻车</strong>。这一章把这三个问题一次讲透。</p><div class="callout"><h4>🐢 慢车道：5.5–5.10 现在可以跳过</h4><p>如果你只想先把 embedding「用起来」，下面 5.5–5.10 这六节（选模型、维度、归一化、失败模式、可视化、选型）<strong>现在都能先跳过</strong>。它们讲的本质是「怎么把检索做得更好」——选哪个模型、向量怎么比、什么时候 BM25 更香——那正是第 7 章（混合检索 / 重排）和第 8 章（评测）要系统讲的事。你现在只要把 5.1–5.4 的「文本→向量→存进库→按意思查出来」跑顺、手感建立起来就够了。等第 8 章学到 Recall@K、第 7 章学到 BM25，再回来翻这几节会轻松很多。</p></div><h3 class="level-engineering" id="sec-05-05"><span class="section-level level-engineering">工程化升级</span>5.5 选 embedding 模型：不是越大越好</h3><p>无论输入是短句还是长段落，<strong>同一个 embedding 模型输出的向量维度通常固定</strong>。模型会先编码 token，再通过 pooling 或其他聚合方式得到句向量（<strong>为什么要聚合？</strong>一个句子被拆成十几个 token，每个 token 是一串数字；但检索比对时需要「一整句 = 一个数字向量」，所以必须把这十几个向量压成一个——pooling 本质就是「把一堆数概括成一个代表」）。常见聚合包括取特殊位置、对 token 表示求平均，或使用模型专门训练的池化头。这里要区分“输入长度”和“输出维度”：输入更长不意味着输出向量维度更大，但可能触发截断并影响语义质量。</p><p>维度更高通常意味着更大的索引、更高的内存和网络成本，但不保证在你的任务上一定更准。<span class="source-kind">本书建议</span>：先确定候选模型，再用同一份检索评测集比较 Recall@K、排序质量、延迟和索引大小；在达到业务阈值的候选中选择资源成本更低的方案。不要把示例中的具体维度当作永久规则。</p><p>真实调用长这样。开源阵营有 <code>sentence-transformers</code> 全家桶（MiniLM 快、BGE 中文强），闭源有 OpenAI 的 <code>text-embedding-3-small</code>。下面用开源 BGE 演示，注意它支持多语言，所以中文句和英文同义句也能靠近：</p><pre class="code status-external"><code># 依赖: pip install sentence-transformers
 from sentence_transformers import SentenceTransformer
 
-# BGE-small 维度 512，比 MiniLM(384) 略强、比 BGE-base(768) 省资源
-model = SentenceTransformer("BAAI/bge-small-en-v1.5")   # 想更轻可换 "all-MiniLM-L6-v2"
+# 示例要演示「中文句」与「英文同义句」向量靠近，必须用多语言模型
+# （纯英文模型如 bge-small-en 对中文编码质量差，中英文同义句反而拉不开差距）
+model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")  # 覆盖 50+ 语言，含中英
 
 vecs = model.encode([
     "如何重置路由器密码",
@@ -851,7 +855,7 @@ def cosine(a, b):
 
 print("中~英同义:", round(cosine(vecs[0], vecs[1]), 3))   # 应该明显 &gt; 0
 print("无关句:   ", round(cosine(vecs[0], vecs[2]), 3))   # 应该接近 0
-</code></pre><p>部分经过 Matryoshka Representation Learning 等方法训练的 embedding 模型，允许从完整向量中截取较短前缀，以在存储与质量之间调节。<strong>这不是任意 embedding 模型都具备的性质</strong>；是否能够截断、最低维度和质量损失，应以模型卡说明和你自己的检索评测为准。 <a class="source-ref" href="#source-P04" title="P04 · Matryoshka Representation Learning">[P04]</a></p><h3 class="level-engineering" id="sec-05-06"><span class="section-level level-engineering">工程化升级</span>5.6 归一化与相似度：为什么"余弦"常等于"点积"</h3><p>前置章节只用了余弦。其实检索里有三种常见度量，检索中常见的三种度量如下：</p><ul>
+</code></pre><p>部分经过 Matryoshka Representation Learning 等方法训练的 embedding 模型，允许从完整向量中截取较短前缀，以在存储与质量之间调节（<strong>为什么能砍尾巴还不乱序？</strong>这类模型训练时被要求「无论用前 N 维还是全维，都能保持相似度排序」，所以「头部维度」已经装下大部分信息，截掉尾巴只是少一点精度、不会颠倒谁近谁远）。<strong>这不是任意 embedding 模型都具备的性质</strong>；是否能够截断、最低维度和质量损失，应以模型卡说明和你自己的检索评测为准。 <a class="source-ref" href="#source-P04" title="P04 · Matryoshka Representation Learning">[P04]</a></p><h3 class="level-engineering" id="sec-05-06"><span class="section-level level-engineering">工程化升级</span>5.6 归一化与相似度：为什么"余弦"常等于"点积"</h3><p>前置章节只用了余弦。其实检索里有三种常见度量，检索中常见的三种度量如下：</p><ul>
 <li><strong>余弦相似度</strong>：衡量两个向量夹角的 cos 值，只看"方向"不看"长度"。</li>
 <li><strong>点积 / 内积（dot product / inner product）</strong>：一个向量在另一个上的投影，既看方向也看长度。</li>
 <li><strong>欧氏距离</strong>：空间里的直线距离，越近越相似。</li>
@@ -1070,6 +1074,21 @@ print("提示:", prompt)
     "chunk_index": 3,
 }
 context = f"[来源: {chunk['source']}#{chunk['chunk_index']}]\n{chunk['text']}"
+</code></pre><p>真正的「拒答」要在<strong>检索之后、生成之前</strong>先判断：如果命中的证据不够相关，就不要让模型硬答。下面这段<strong>纯标准库、可直接运行</strong>展示最小判断分支（阈值只是示范，实际要用第 8 章的评测定）：</p><pre class="code status-stdlib"><code>def answer_or_refuse(query, hits, score_threshold=0.30, min_hits=1):
+    """hits: 按相似度降序的 [(score, chunk), ...]
+    证据不足时返回 (None, 拒答理由)，由调用方决定是直接拒答还是转人工。"""
+    relevant = [h for h in hits if h[0] >= score_threshold]
+    if len(relevant) < min_hits:
+        return None, "资料不足：未检索到足够相关的证据，不作答。"
+    context = "\n".join(
+        f"[来源: {c['source']}#{c['chunk_index']}]\n{c['text']}" for _, c in relevant
+    )
+    return context, None
+
+# 演示：第三个问题是资料外问题
+hits_junk = [(0.12, {"text": "年假 10 天", "source": "员工手册.md", "chunk_index": 3})]
+ctx, reason = answer_or_refuse("公司有没有健身房？", hits_junk)
+print(ctx if ctx else reason)   # 输出：资料不足：未检索到足够相关的证据，不作答。
 </code></pre></div><section class="learning-loop" id="ch6-learning-loop">
 <h3>6.学习闭环与验收</h3>
 <p>以下内容才是本章的最低完成标准；正文中需要真实云端、GPU 或后续知识的任务均视为进阶挑战。</p>
@@ -1125,7 +1144,7 @@ context = f"[来源: {chunk['source']}#{chunk['chunk_index']}]\n{chunk['text']}"
 <text fill="#202124" font-size="12" text-anchor="middle" x="617" y="180">⑤ 大模型生成</text>
 <text fill="#5f6368" font-size="11" text-anchor="middle" x="340" y="250">①+② 求「高召回」(宁滥勿漏)，③+④ 求「高精度」(把最相关的顶上来)</text>
 <text fill="#5f6368" font-size="11" text-anchor="middle" x="340" y="270">第一阶段扩大召回，第二阶段重排少量候选</text>
-</svg><p class="cap" id="figtitle-ch07-01">图 7.1：混合检索 + 重排的标准两阶段管线。第一阶段的任务是「尽量把相关的都捞出来」，第二阶段负责「排好队」。</p><h3 class="level-core" id="sec-07-01"><span class="section-level level-core">主线</span>7.1 进阶分块：别再固定切 200 字了</h3><p>前置章节说「常见 200–500 字」，但怎么切很讲究。最朴素的固定长度切法会<strong>把一句话、一个段落、甚至一个表格从中间切断</strong>，embedding 出来的向量就失真了。一种常用的默认解法是<strong>递归分块（Recursive chunking）</strong>：准备一组分隔符，按优先级依次尝试切——先按 <code>"\n\n"</code>（段落）切，切出来还太长就降到 <code>"\n"</code>（句子），再不行降到空格、最后才降到字符级。这样能尽量保住段落和句子的完整。</p><p>下面这段不依赖任何库，逻辑照搬 LangChain 的 <code>RecursiveCharacterTextSplitter</code>，你可以直接跑：</p><pre class="code status-stdlib"><code>def recursive_split(text, chunk_size=200, chunk_overlap=30, separators=None):
+</svg><p class="cap" id="figtitle-ch07-01">图 7.1：混合检索 + 重排的标准两阶段管线。第一阶段的任务是「尽量把相关的都捞出来」，第二阶段负责「排好队」。</p><div class="callout"><h4>本主线按依赖排顺序</h4><p>7.1→7.3 是一条链，别跳：先<b>分块（7.1）</b>决定「喂给检索的是什么」，再<b>混合检索（7.2）</b>决定「怎么找得全」，最后<b>重排（7.3）</b>决定「哪些真正进上下文」。顺序不能反——块没分好，检索再花哨也救不回语义碎片。</p></div><h3 class="level-core" id="sec-07-01"><span class="section-level level-core">主线</span>7.1 进阶分块：别再固定切 200 字了</h3><p>前置章节说「常见 200–500 字」，但怎么切很讲究。最朴素的固定长度切法会<strong>把一句话、一个段落、甚至一个表格从中间切断</strong>，embedding 出来的向量就失真了。一种常用的默认解法是<strong>递归分块（Recursive chunking）</strong>：准备一组分隔符，按优先级依次尝试切——先按 <code>"\n\n"</code>（段落）切，切出来还太长就降到 <code>"\n"</code>（句子），再不行降到空格、最后才降到字符级。这样能尽量保住段落和句子的完整。</p><p>下面这段不依赖任何库，逻辑照搬 LangChain 的 <code>RecursiveCharacterTextSplitter</code>，你可以直接跑：</p><pre class="code status-stdlib"><code>def recursive_split(text, chunk_size=200, chunk_overlap=30, separators=None):
     """递归分块：先按大结构切，切不动再换更细的分隔符。纯 Python，无第三方依赖。"""
     if separators is None:
         separators = ["\n\n", "\n", "。", "，", " ", ""]
@@ -1240,12 +1259,66 @@ print(rewrite_query("我刚玩这游戏，普陀山过不去，先学啥技能�
 <li><strong>增加重排：</strong>把融合后的 Top-20 交给 reranker，再取 Top-3 进入生成阶段；记录正确证据在重排前后的名次变化。</li>
 <li><strong>做查询重写 A/B：</strong>挑 5 个口语化问题，对比原问题与重写问题的检索指标；HyDE 仅作为加分实验。</li>
 </ol><p class="cap">完成本章后，进入<a href="#ch8">第 8 章“Evaluation”</a>，把这些检索改动转化为可回归指标。</p><div class="summary"><h3>7.x 验收前补充：检索指标与稳定 ID</h3>
-<p><strong>Recall@5</strong> 检查正确证据是否进入前 5；<strong>NDCG</strong> 同时考虑相关结果是否排在更前面。稳定 chunk ID 应由来源、位置和内容哈希组成，同一内容重跑 ID 不变，内容更新后 ID 或版本发生变化。</p></div><section class="learning-loop" id="ch7-learning-loop">
+<p><strong>Recall@5</strong> 检查正确证据是否进入前 5；<strong>NDCG</strong> 同时考虑相关结果是否排在更前面（<strong>为什么 NDCG 常在 0~1 之间、且常小于 1？</strong>理想情况是所有相关结果都排在最前，这时分子 = 分母 = 1；只要有一个不相关结果夹在相关结果前面，分子就变小，比值就小于 1——它衡量的正是「相关结果有没有排在更前面」）。稳定 chunk ID 应由来源、位置和内容哈希组成，同一内容重跑 ID 不变，内容更新后 ID 或版本发生变化。</p>
+<p>下面这段<strong>纯标准库、可直接运行</strong>，让你把「检索排名 + 相关性标注」变成两个数字。用法：对每个问题，<code>ranked</code> 是检索返回的 chunk 顺序（索引 0 最靠前），<code>relevant</code> 是其中真正能回答该问题的 chunk 集合。</p>
+<pre class="code status-stdlib"><code>def recall_at_k(ranked, relevant, k=5):
+    """前 k 个结果里，命中的相关 chunk 占全部相关 chunk 的比例。"""
+    if not relevant:
+        return 0.0
+    topk = set(ranked[:k])
+    return len(topk & relevant) / len(relevant)
+
+def ndcg_at_k(ranked, relevant, k=5):
+    """前 k 个结果的相关性加权排序质量；相关=1，不相关=0。"""
+    def dcg(order):
+        return sum((1 if i in order[:pos + 1] else 0) / (pos + 1)
+                   for pos in range(len(order[:k])))
+    ideal = [1] * min(len(relevant), k)          # 理想排序：相关结果全在前面
+    ideal_dcg = sum(1 / (i + 1) for i in range(len(ideal)))
+    if ideal_dcg == 0:
+        return 0.0
+    return dcg(ranked) / ideal_dcg
+
+# 演示：检索返回 8 个 chunk，其中索引 0/2/4 是相关的
+ranked   = [0, 1, 2, 3, 4, 5, 6, 7]
+relevant = {0, 2, 4}
+print("Recall@5 =", round(recall_at_k(ranked, relevant, 5), 2))   # 3/3 = 1.0（前5含0,2,4）
+print("NDCG@5  =", round(ndcg_at_k(ranked, relevant, 5), 2))      # 相关项未全在最前，<1.0</code></pre>
+<div class="callout"><h4>逐行走查：这俩函数到底在算什么</h4><p>零基础最容易卡在「函数签名即契约」——<code>ranked</code> 和 <code>relevant</code> 到底是什么。用上面那段演示的最小输入走一遍：</p><ul>
+<li><code>ranked = [0,1,2,3,4,5,6,7]</code>：检索返回的顺序，<strong>索引 0 是最靠前的那条</strong>，就像搜索结果第 1 条。这是「机器按相似度排好的」。</li>
+<li><code>relevant = {0,2,4}</code>：你<strong>事先人工标注</strong>的、真正能回答这个问题的 chunk 集合（这是评测的「标准答案」，不是机器算的）。</li>
+</ul><p><strong>recall_at_k(ranked, relevant, 5)</strong>：取前 5 条 = {0,1,2,3,4}，其中在 relevant 里的是 0、2、4 共 3 条；relevant 总共 3 条 → 3÷3 = <strong>1.0</strong>。意思是「正确答案全进了前 5」。</p><p><strong>ndcg_at_k(...)</strong>：分母 ideal_dcg 是「假设相关结果全排最前（顺序 0,2,4,...）」的满分；分子是按真实排名 [0,1,2,3,4...] 算的分。因为相关的 0、2、4 之间夹了不相关的 1、3，分子比满分小 → 比值 <strong>&lt; 1.0</strong>。这就是上一行「分母为何小于 1」的来由：它不是错误，而是如实反映了「相关结果没排到最前」。</p></div>
+<p>用这套函数，就能一步步完成第 7 章提交物：先拿 3 个问题比 BM25 与 dense 的 Recall@5，再扩到 20 个加 hybrid，最后（可选）加重排比 NDCG——把感觉变成可回归的数字，而不是一上来就被「20 个问题 × 三种检索 × 两个指标」吓退。</p></div><h3 class="level-deep" id="sec-07-08"><span class="section-level level-deep">深入 · 首次阅读可跳过</span>7.8 GraphRAG：当检索需要“关系”而非“相似句”</h3>
+<p>前面 7.2–7.7 的检索都在“语义相似”层面工作：把问题向量和文档向量比对。但很多真实问题不是“哪段最像”，而是“谁和谁什么关系”。例如“列出所有向<strong>同一供应商</strong>采购且<strong>逾期付款</strong>的部门”“这个客户的<strong>上级审批人</strong>是谁”。这类问题，纯向量检索会把相关句子打散，模型拼不出关系链。</p>
+<p><strong>GraphRAG</strong> 的做法是：在入库阶段从文档中抽取<strong>实体（人 / 组织 / 地点 / 概念）和关系（雇佣 / 属于 / 导致 / 依赖）</strong>，存进图数据库；检索时先用图查询拿到“关系子图”，再把子图连同原文一起送给模型。它和普通 RAG 不是二选一：</p>
+<ul>
+<li><strong>相似检索</strong>回答“这段话讲了什么”；</li>
+<li><strong>图检索</strong>回答“谁和谁什么关系、影响怎么传导”；</li>
+<li>常见组合：先用向量找到候选文档，再在这些文档的实体子图上做关系跳转，最后组装上下文。</li>
+</ul>
+<p>什么时候值得上 GraphRAG（代价不小）：数据里<strong>实体多、关系密、问题常问“关联 / 影响 / 溯源”</strong>，且向量检索反复答不准。否则先用 7.4 的元数据过滤 + 7.2 混合检索就能解决大部分问题。下面是抽取实体的最小示意：</p>
+<pre class="code status-external"><code># 伪代码：从 chunk 抽取 (实体, 关系, 实体) 三元组
+def extract_triples(chunk, llm):
+    prompt = ("从下面文本抽取知识三元组，格式：主体|关系|客体。"
+              "只抽取显式事实，不要推断。\n" + chunk)
+    return [parse_triple(line) for line in llm(prompt).splitlines() if line]
+
+# 入库：三元组写图数据库；原文仍按 7.1 切块存向量库
+for chunk in chunks:
+    for (s, r, o) in extract_triples(chunk, llm):
+        graph.add_edge(s, o, relation=r, source=chunk.id)
+
+# 在线：先图查询拿到关系子图，再拼原文
+subgraph = graph.neighbors("供应商X", depth=2)   # 两跳内的相关实体
+context = subgraph.to_text() + vector_search(question, top_k=3)
+</code></pre>
+
+<section class="learning-loop" id="ch7-learning-loop">
 <h3>7.学习闭环与验收</h3>
 <p>以下内容才是本章的最低完成标准；正文中需要真实云端、GPU 或后续知识的任务均视为进阶挑战。</p>
 <div class="loop-grid">
 <div class="loop-card"><h4>A · 概念自测</h4><ol><li>Hybrid Retrieval 为什么组合 dense 与 sparse？</li><li>RRF 融合解决什么问题？</li><li>Retriever Top-K 与 Reranker Top-N 为什么通常不同？</li><li>稳定 chunk ID 对增量索引有什么价值？</li></ol></div>
-<div class="loop-card"><h4>B · 本章提交物</h4><ul><li>对同一 20 问题比较 BM25、dense 和 hybrid Recall@5。</li><li>加入重排后比较 NDCG 或命中位置。</li><li>为 chunk 生成 source+位置+内容哈希的稳定 ID。</li></ul></div>
+<div class="loop-card"><h4>B · 本章提交物</h4><ul><li><strong>第一步（先迈小步）</strong>：挑 3 个问题，分别跑 BM25 与 dense，用刚学的 <code>recall_at_k</code> 比 Recall@5——先确认「两种检索各擅长什么」。</li><li><strong>第二步（再扩量）</strong>：把问题扩到 20 个，加入 hybrid（融合检索），仍只比 Recall@5。</li><li><strong>第三步（可选 · 工程化）</strong>：加入重排后再比 NDCG 或命中位置——这一项放到第 8 章学过评测后再做也不迟。</li><li>为 chunk 生成 source+位置+内容哈希的稳定 ID。</li></ul></div>
 <div class="loop-card"><h4>C · 解释能力</h4><p>为什么“检索更多”不等于“回答更好”？</p></div>
 <div class="loop-card"><h4>D · 场景迁移</h4><p>证券公告中同时存在股票代码和自然语言问题，设计一条混合检索管线。</p></div>
 </div>
@@ -1951,7 +2024,12 @@ def get_weather(city: str) -&gt; str:
 </div>
 <p class="project-increment"><strong>贯穿项目新增能力：</strong>把企业制度查询工具暴露为可复用 MCP 服务。</p>
 <p class="bridge-links"><strong>卡住时按需补：</strong><a href="#bridge-b6">B6 HTTP/API</a> · <a href="#bridge-b7">B7 错误处理</a></p>
-</div><div class="callout"><h4>MCP 解决“怎么标准接入”，不替你解决“是否可信”</h4><p>MCP 将工具、资源和提示模板以统一协议暴露给宿主。客户端可以发现能力并调用，但第三方 Server 的描述、返回值和权限声明都必须视为不可信输入。 <a class="source-ref" href="#source-S02" title="S02 · Model Context Protocol Specification">[S02]</a></p></div><h3 class="level-core" id="sec-11-01"><span class="section-level level-core">主线</span>11.1 五个角色先分清</h3><table><tr><th>角色</th><th>职责</th></tr>
+</div><div class="callout"><h4>MCP 解决“怎么标准接入”，不替你解决“是否可信”</h4><p>MCP 将工具、资源和提示模板以统一协议（protocol，也就是「两边约定好的说话规矩」——就像你和外卖员提前说好「放门口、拍张照」，不按这个规矩对方就接不上）暴露给宿主。客户端可以发现能力并调用，但第三方 Server 的描述、返回值和权限声明都必须视为不可信输入。 <a class="source-ref" href="#source-S02" title="S02 · Model Context Protocol Specification">[S02]</a></p></div><div class="callout"><h4>本主线按依赖排顺序（先动手、后理解）</h4><p>这一章会一次性冒出 5 个角色加一个协议，别被并排吓到，按这个顺序学就不会乱：</p><ol>
+<li><strong>11.1 五个角色 → 11.2 边界</strong>：先认清「谁是谁」（Host/Client/Server/Tool/Resource），再看清楚 Tools/Resources/Prompts 各管什么——这是你「读得懂」的前提。</li>
+<li><strong>11.3 MCP Server → 11.4 Client</strong>：你必须「动手」的部分，而且有先后——先有个 Server 暴露工具，Client 才能去发现和调用它；不连起来跑通，后面都空谈。</li>
+<li><strong>11.6 认证 / 11.8 合约测试（工程化升级）</strong>：等 Server+Client 跑通了，再补最小权限和测试，属于加固，不阻塞你跑通。</li>
+<li><strong>11.5 传输生命周期、11.7 信任边界（深入 · 首次阅读可跳过）</strong>：解释「为什么远程会出事、怎么更安全」，不影响你能跑通，第一次读直接跳过。</li>
+</ol><p>一句话：先认人、再动手连起来、最后才谈怎么加固和防攻击。</p></div><h3 class="level-core" id="sec-11-01"><span class="section-level level-core">主线</span>11.1 五个角色先分清</h3><table><tr><th>角色</th><th>职责</th></tr>
 <tr><td>Host</td><td>承载用户、模型和多个 MCP Client，例如 IDE 或企业 Agent 平台。</td></tr>
 <tr><td>Client</td><td>与某个 Server 建立会话，协商能力并发送请求。</td></tr>
 <tr><td>Server</td><td>暴露 Tools、Resources、Prompts 等能力。</td></tr>
@@ -2138,7 +2216,11 @@ def make_memory(key: str, value: str, source: str, confidence: float) -&gt; Memo
 </div>
 <p class="project-increment"><strong>贯穿项目新增能力：</strong>每次调用只携带当前任务真正需要的信息。</p>
 <p class="bridge-links"><strong>卡住时按需补：</strong><a href="#bridge-b3">B3 类型标注</a> · <a href="#bridge-b4">B4 数据对象</a></p>
-</div><div class="callout"><h4>Context 是一次编译结果</h4><p>它由目标、任务状态、相关记忆、检索证据、工具定义和约束共同编译而成。信息越多不一定越好；无关内容会稀释注意力、增加成本并提高被注入的表面积。</p></div><h3 class="level-core" id="sec-13-01"><span class="section-level level-core">主线</span>13.1 上下文的六个槽位</h3><ol><li>不可被数据覆盖的系统规则；</li><li>当前目标和成功标准；</li><li>精简后的任务状态；</li><li>经过筛选的 Memory；</li><li>带来源的检索证据；</li><li>当前允许的工具及参数 Schema。</li></ol><h3 class="level-core" id="sec-13-02"><span class="section-level level-core">主线</span>13.2 Token 预算分配</h3><pre class="code status-stdlib"><code>from dataclasses import dataclass
+</div><div class="callout"><h4>Context 是一次编译结果</h4><p>它由目标、任务状态、相关记忆、检索证据、工具定义和约束共同编译而成。信息越多不一定越好；无关内容会稀释注意力、增加成本并提高被注入的表面积。</p></div><div class="callout"><h4>本主线按依赖排顺序（先动手、后理解）</h4><p>这一章有三个认知类型不同的东西，别被并排吓到，按这个顺序学就不会乱：</p><ol>
+<li><strong>13.1 六个槽位 → 13.2 Token 预算</strong>：你必须「动手」的部分——先把 Context 拆成几个格子，再给每个格子定额度。</li>
+<li><strong>13.3 Context Builder</strong>：把第 1 步的格子「封装成一个函数」，属于工程化升级，紧跟主线，不学它你跑不通。</li>
+<li><strong>13.5 上下文腐化（深入 · 首次阅读可跳过）</strong>：这是「理解现象」——解释为什么长上下文会变差。它不影响你能跑通，放在最后看，第一次读甚至可以直接跳过。</li>
+</ol><p>一句话：先能装、再封装、最后才谈为什么会坏。</p></div><h3 class="level-core" id="sec-13-01"><span class="section-level level-core">主线</span>13.1 上下文的六个槽位</h3><ol><li>不可被数据覆盖的系统规则；</li><li>当前目标和成功标准；</li><li>精简后的任务状态；</li><li>经过筛选的 Memory；</li><li>带来源的检索证据；</li><li>当前允许的工具及参数 Schema。</li></ol><h3 class="level-core" id="sec-13-02"><span class="section-level level-core">主线</span>13.2 Token 预算分配</h3><pre class="code status-stdlib"><code>from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class ContextBudget:
@@ -2678,7 +2760,16 @@ def chat(request: ChatRequest) -&gt; dict[str, str]:
 <li><strong>本地 Ollama</strong>：一条命令跑模型，最隐私、零云成本，适合个人/内网。</li>
 <li><strong>自搭 vLLM 服务</strong>：高并发、可控、成本随硬件走，适合有流量的产品。</li>
 <li><strong>云 API（如 OpenAI/DeepSeek）</strong>：最省心、免运维，但按量付费且数据出网，适合快速验证。</li>
-</ul><p>按口诀选：<strong>怕泄露 → 本地/自搭；怕麻烦 → 云 API；要扛量又控成本 → vLLM。</strong></p><p>你写了个 demo：输入一个问题，调用大模型，返回答案，在本地笔记本上跑得挺欢。然后你想"上线"——让同事、甚至用户来用。这时你会发现：<strong>demo 跑通 ≠ 能上线</strong>。</p><p>为什么？因为 demo 只有你一个人在用、一天点几次；上线后是几百几千人同时点，模型又慢又贵，于是你踩到一堆新坑：很多人同时用会打垮模型（<b>并发 concurrency</b>）、同一个问题被重复计算白花钱（<b>缓存 cache</b>）、请求一来就处理会堵死（<b>队列 queue</b>）、出错了你却不知道哪一步挂了（<b>监控 monitoring</b>）、月底账单吓你一跳（<b>成本 cost</b>）。这一章就用最朴素的 Python，把这些"系统工程"问题一个个讲明白。</p><h3 class="level-engineering" id="sec-16-03"><span class="section-level level-engineering">工程化升级</span>16.3 消息队列：请求先排队，后台慢慢算</h3><p>如果一秒钟涌进来 500 个请求，模型一次只能处理几个，直接全塞给模型就会超时、崩掉。<strong>消息队列（message queue，把任务先放进队列、再逐个消费）</strong>就是"先收下、后处理"：用户提交后拿到一个"已受理"回执，真正的计算在后台排队进行。</p><p>用 Python 的 <code>list</code> 当队列 + <code>threading</code> 起一个消费者线程，示意生产者-消费者模型（<strong>producer–consumer，生产者放任务、消费者取任务</strong>）：</p><pre class="code status-stdlib"><code>import threading, time, random
+</ul><p>按口诀选：<strong>怕泄露 → 本地/自搭；怕麻烦 → 云 API；要扛量又控成本 → vLLM。</strong></p><p>你写了个 demo：输入一个问题，调用大模型，返回答案，在本地笔记本上跑得挺欢。然后你想"上线"——让同事、甚至用户来用。这时你会发现：<strong>demo 跑通 ≠ 能上线</strong>。</p><p>为什么？因为 demo 只有你一个人在用、一天点几次；上线后是几百几千人同时点，模型又慢又贵，于是你踩到一堆新坑：很多人同时用会打垮模型（<b>并发 concurrency</b>）、同一个问题被重复计算白花钱（<b>缓存 cache</b>）、请求一来就处理会堵死（<b>队列 queue</b>）、出错了你却不知道哪一步挂了（<b>监控 monitoring</b>）、月底账单吓你一跳（<b>成本 cost</b>）。这一章就用最朴素的 Python，把这些"系统工程"问题一个个讲明白。</p><div class="callout"><h4>先打四个比方，再碰代码</h4><p>16.3 和 16.4 会出现几个你大概率<strong>第一次见</strong>的词，先用厨房类比把它们「翻译」成大白话，免得被代码吓退：</p><ul>
+<li><strong>线程（thread）</strong> = 多雇一个人同时干活。默认你的 Python 只有 1 个人（主线程），<code>threading.Thread</code> 就是再雇一个，让他在后台跑、前台不卡住。</li>
+<li><strong>队列（queue）</strong> = 排队取号。500 个人同时来，不能全冲进厨房，先发号排队，后厨按号一个一个做。</li>
+<li><strong>信号量（Semaphore）</strong> = 一个「同时名额计数器」。它只管一件事：此刻最多几个人能同时干，多出来的人排队等名额空出来。类比成限流闸机最直观：后厨只有 3 个灶台，闸机只放 3 个人同时进，第 4 个在门口等，出来一个再进一个。</li>
+<li><strong>锁（Lock）</strong> = 一次只能一个人动排队本。两个人同时改号单会乱套，所以取号 / 叫号前要先拿锁。</li>
+</ul><p>记住一句话：<strong>队列解决「多了接不下」，信号量解决「多了扛不住」，线程解决「一个人干太慢」</strong>。下面代码就是把这四样东西落地。</p></div><div class="callout"><h4>本主线按依赖排顺序（先动手、后理解）</h4><p>这一章部件多，但顺序是固定的，别跳：</p><ol>
+<li><strong>16.1 最小 API → 16.2 为什么不够</strong>：先把「一个能跑的同步接口」搭起来，再理解为什么上线后它会撑不住——这是动机，不然后面的工具像凭空冒出来。</li>
+<li><strong>16.3 队列（工程化升级）</strong>：解决「多了接不下」——请求先排队，后台慢慢算。先把这一关过掉。</li>
+<li><strong>16.4 信号量（工程化升级）</strong>：解决「多了扛不住」——同一时刻最多几个请求能同时打模型。它和队列是两个独立工具，别混：<strong>队列管「收下后慢慢做」，信号量管「同一时刻最多几个能做」</strong>。</li>
+</ol><p>一句话：先能跑、再削峰（队列）、最后限流（信号量）。</p></div><h3 class="level-engineering" id="sec-16-03"><span class="section-level level-engineering">工程化升级</span>16.3 消息队列：请求先排队，后台慢慢算</h3><p>如果一秒钟涌进来 500 个请求，模型一次只能处理几个，直接全塞给模型就会超时、崩掉。<strong>消息队列（message queue，把任务先放进队列、再逐个消费）</strong>就是"先收下、后处理"：用户提交后拿到一个"已受理"回执，真正的计算在后台排队进行。</p><p>用 Python 的 <code>list</code> 当队列 + <code>threading</code> 起一个消费者线程，示意生产者-消费者模型（<strong>producer–consumer，生产者放任务、消费者取任务</strong>）：</p><pre class="code status-stdlib"><code>import threading, time, random
 
 queue = []          # 用列表模拟队列
 lock = threading.Lock()
@@ -2739,7 +2830,7 @@ for t in threads: t.join()</code></pre><p><code>Semaphore(3)</code> 保证哪怕
 </div>
 <p class="project-increment"><strong>贯穿项目新增能力：</strong>产品可以比较候选版本、阻断退化并回滚。</p>
 <p class="bridge-links"><strong>卡住时按需补：</strong><a href="#bridge-b9">B9 pytest</a> · <a href="#bridge-b10">B10 Git/CI</a></p>
-</div><p>第 16 章已经搭起了"能跑"的骨架：字典缓存、队列、Semaphore 限流、一行行 JSON 日志、拍脑袋的成本估算。那只是生产化的门槛。<strong>真正上线后你会发现，问题不是"能不能跑"，而是"换了提示词、换了模型、被用户注入脏话、账单半夜爆掉时，你还能不能稳住"</strong>。本章先聚焦版本与发布治理：用版本号管理提示和模型，并把评测接入部署流水线；Tracing、安全和成本分别在第 18–20 章展开。</p><h3 class="level-core" id="sec-17-01"><span class="section-level level-core">主线</span>17.1 LLMOps：把提示和模型当成要管的"资产"</h3><p><strong>LLMOps</strong>（Large Language Model Operations）是围绕 LLM 应用生命周期建立的一组工程实践。它管理的不只是代码，还包括 Prompt、模型配置、数据集、评测基线、成本和发布记录。与传统软件相比，LLM 输出具有概率性，且质量会同时受到模型、上下文、工具和策略影响，因此这些资产必须能够版本化、比较和回滚。</p><p>最朴素的落地，是给每次调用记录<strong>版本号和完整配置</strong>。Prompt、模型名、采样参数、检索版本和策略规则中的任何一项改变，都应形成新的发布清单。这样线上出现问题时，团队能够定位差异、灰度比较并回滚到已知版本。下面用纯 Python 模拟一个最小版本注册表：</p><pre class="code status-stdlib"><code>import hashlib, json, time
+</div><p>第 16 章已经搭起了"能跑"的骨架：字典缓存、队列、Semaphore 限流（就是 16.4 讲过的「同时名额计数器」，忘了回看 <a href="#sec-16-04">16.4</a>）、一行行 JSON 日志、拍脑袋的成本估算。那只是生产化的门槛。<strong>真正上线后你会发现，问题不是"能不能跑"，而是"换了提示词、换了模型、被用户注入脏话、账单半夜爆掉时，你还能不能稳住"</strong>。本章先聚焦版本与发布治理：用版本号管理提示和模型，并把评测接入部署流水线；Tracing、安全和成本分别在第 18–20 章展开。</p><h3 class="level-core" id="sec-17-01"><span class="section-level level-core">主线</span>17.1 LLMOps：把提示和模型当成要管的"资产"</h3><p><strong>LLMOps</strong>（Large Language Model Operations）是围绕 LLM 应用生命周期建立的一组工程实践。它管理的不只是代码，还包括 Prompt、模型配置、数据集、评测基线、成本和发布记录。与传统软件相比，LLM 输出具有概率性，且质量会同时受到模型、上下文、工具和策略影响，因此这些资产必须能够版本化、比较和回滚。</p><p>最朴素的落地，是给每次调用记录<strong>版本号和完整配置</strong>。Prompt、模型名、采样参数、检索版本和策略规则中的任何一项改变，都应形成新的发布清单。这样线上出现问题时，团队能够定位差异、灰度比较并回滚到已知版本。下面用纯 Python 模拟一个最小版本注册表：</p><pre class="code status-stdlib"><code>import hashlib, json, time
 
 # "已上线"的提示/模型配置，每个版本一个字典
 PROMPTS = {
@@ -2906,7 +2997,27 @@ summarize(traces)</code></pre><p>结构化日志回答“发生了什么”，Tr
 <line marker-end="url(#adv-prod-arrow)" stroke="#475569" stroke-width="2" x1="440" x2="498" y1="100" y2="165"></line>
 <line marker-end="url(#adv-prod-arrow)" stroke="#475569" stroke-width="2" x1="440" x2="498" y1="262" y2="200"></line>
 <line marker-end="url(#adv-prod-arrow)" stroke="#475569" stroke-dasharray="5 4" stroke-width="2" x1="640" x2="658" y1="187" y2="300"></line>
-</svg><p class="cap" id="figtitle-ch18-01">图 18.1：LLMOps 流水线 + 可观测架构图</p><div class="summary"><h3>18.x 验收前补充：Trace、Span 与脱敏</h3>
+</svg><p class="cap" id="figtitle-ch18-01">图 18.1：LLMOps 流水线 + 可观测架构图</p><h3 class="level-engineering" id="sec-18-03"><span class="section-level level-engineering">工程化升级</span>18.3 升级率：把“人接手”变成可量化信号</h3>
+<p>第 14 章把“高风险动作交人工确认”作为护栏。但人工接手本身是个<strong>信号</strong>：升级率（escalation rate，需要人接手的请求占比）突然升高，往往意味着检索没给到证据、模型不稳，或提示被注入扰动。它和“错误率”互补——很多请求模型“答了但答错”，错误率看不出，升级率能暴露。</p>
+<pre class="code status-stdlib"><code>def summarize_escalation(traces):
+    total = len(traces)
+    escalated = [t for t in traces if t.get("escalated")]
+    rate = len(escalated) / total if total else 0
+    print(f"升级率: {rate:.1%}  ({len(escalated)}/{total})")
+    # 按意图分组，看哪类问题最常被推给人
+    by_intent = {}
+    for t in escalated:
+        by_intent[t["intent"]] = by_intent.get(t["intent"], 0) + 1
+    for intent, n in sorted(by_intent.items(), key=lambda x: -x[1]):
+        print(f"  {intent}: {n} 次升级")
+</code></pre>
+<ul>
+<li><strong>定义</strong>：升级率 = 触发人工确认 / 兜底 / 转工单的请求数 ÷ 总请求数；每个 Trace 用 <code>escalated</code> 布尔位记录（呼应 14 章护栏）。</li>
+<li><strong>告警</strong>：设基线（如 5%），超过就回看这些 Trace 的检索与提示，而不是只看平均分。</li>
+<li><strong>和成本挂钩</strong>：升级常伴随更贵的小模型或多人审核，所以它既是质量信号也是成本信号（呼应第 20 章预算）。</li>
+<li><strong>别滥用</strong>：升级率过低也可能代表“该让人看的没让人看”，要结合拒答率和用户反馈一起看。</li>
+</ul>
+<div class="summary"><h3>18.x 验收前补充：Trace、Span 与脱敏</h3>
 <p>一次用户请求拥有唯一 <code>trace_id</code>；检索、模型调用、工具、审批和验证分别形成 span。日志记录模型与 Prompt 版本、耗时和状态，但对用户文本、凭证和个人信息做脱敏或只保存哈希。</p></div><section class="learning-loop" id="ch18-learning-loop">
 <h3>18.学习闭环与验收</h3>
 <p>以下内容才是本章的最低完成标准；正文中需要真实云端、GPU 或后续知识的任务均视为进阶挑战。</p>
@@ -2940,6 +3051,7 @@ summarize(traces)</code></pre><p>结构化日志回答“发生了什么”，Tr
 模型与 Context
    ├─ 越权工具选择
    ├─ 数据泄漏
+   ├─ 推理端点耗尽（MDoS）
    └─ 不安全输出
               ↓
 工具 / MCP / 数据库 / 浏览器
@@ -2966,7 +3078,26 @@ def safe_query(cursor, user_name: str):
     {"name": "cross_tenant", "tenant": "A", "requested_tenant": "B", "must_deny": True},
     {"name": "unsafe_sql", "input": "' OR 1=1 --", "must_use_parameterized_query": True},
 ]
-</code></pre><section class="learning-loop" id="ch19-learning-loop">
+</code></pre><h3 class="level-engineering" id="sec-19-10"><span class="section-level level-engineering">工程化升级</span>19.10 MDoS：模型拒绝服务与预算 / 限流闸门</h3>
+<p>前面讲的是“内容攻击”（注入、投毒）。还有一类<strong>资源攻击</strong>：攻击者用大量请求把你的模型端点打满，或把账单烧爆，让正常用户得不到服务——这就是<strong>模型拒绝服务（MDoS，Model Denial of Service）</strong>。因为 LLM 推理又慢又贵，它比传统 Web 的 DoS 更容易被少量请求拖垮。</p>
+<p>缓解用“硬限流 + 软预算”两层闸门，正好接住第 20 章的预算阀门：</p>
+<ul>
+<li><strong>硬限流（Hard limit）</strong>：每个用户 / 租户单位时间请求数用 Redis 计数器卡死，超了直接拒绝，根本不打模型。</li>
+<li><strong>软预算（Soft budget）</strong>：接近预算时不失败，而是<strong>降级</strong>——把请求换到更便宜的小模型、缩短上下文，或只返回缓存答案（呼应 20.8 降级）。</li>
+<li><strong>租户隔离</strong>：限流按 tenant_id 分别计数（呼应 19.5），避免一个租户拖垮全体。</li>
+</ul>
+<pre class="code status-stdlib"><code>def gate(user_id: str, redis, db, budget_cap: float):
+    # 1) 硬限流：Redis 计数器，超阈值直接拒
+    if int(redis.get(f"rate:{user_id}") or 0) &gt;= 30:     # 每分 30 次
+        return "rejected", None
+    redis.incr(f"rate:{user_id}")
+    # 2) 软预算：查数据库余额，超了就降级模型
+    spent = float(db.get(f"spent:{user_id}") or 0.0)
+    model = "standard" if spent &lt; budget_cap else "small"   # 不失败，换小模型
+    return "allowed", model
+</code></pre>
+
+<section class="learning-loop" id="ch19-learning-loop">
 <h3>19.学习闭环与验收</h3>
 <p>以下内容才是本章的最低完成标准；正文中需要真实云端、GPU 或后续知识的任务均视为进阶挑战。</p>
 <div class="loop-grid">
@@ -3109,7 +3240,68 @@ cache_hit_rate = 0.60
 uncached_calls = calls_per_day * days * (1 - cache_hit_rate)
 monthly_cost_cny = uncached_calls * (tokens_per_call / 1000) * price_per_1k_tokens_cny
 print(f"估算月成本：¥{monthly_cost_cny:,.2f}")
-</code></pre><p class="small">这里只演示计算方法，不代表任何具体模型价格。实际应分别计算输入、缓存输入、输出、工具和重试成本。</p><h3 class="level-engineering" id="sec-20-10"><span class="section-level level-engineering">工程化升级</span>20.10 性能与成本指标树</h3><ul><li><strong>用户体验：</strong>TTFT、TPOT、P50/P95/P99 延迟；</li><li><strong>容量：</strong>并发数、请求/秒、队列等待时间；</li><li><strong>效率：</strong>输入/输出 token、缓存命中率、重试率；</li><li><strong>质量：</strong>任务成功率、拒答率、模型路由分布；</li><li><strong>财务：</strong>每请求成本、每成功任务成本、租户预算消耗。</li></ul><section class="learning-loop" id="ch20-learning-loop">
+</code></pre><p class="small">这里只演示计算方法，不代表任何具体模型价格。实际应分别计算输入、缓存输入、输出、工具和重试成本。</p><h3 class="level-engineering" id="sec-20-10"><span class="section-level level-engineering">工程化升级</span>20.10 性能与成本指标树</h3><ul><li><strong>用户体验：</strong>TTFT、TPOT、P50/P95/P99 延迟；</li><li><strong>容量：</strong>并发数、请求/秒、队列等待时间；</li><li><strong>效率：</strong>输入/输出 token、缓存命中率、重试率；</li><li><strong>质量：</strong>任务成功率、拒答率、模型路由分布；</li><li><strong>财务：</strong>每请求成本、每成功任务成本、租户预算消耗。</li></ul><h3 class="level-engineering" id="sec-20-11"><span class="section-level level-engineering">工程化升级</span>20.11 请求合并缓存（coalesce）：别让同一问题同时打穿模型</h3>
+<p>20.3 提过“缓存击穿”——大量相同请求同时未命中，会一窝蜂打向模型。对策是<strong>请求合并（coalesce caching）</strong>：相同 key 的并发未命中只发<strong>一次</strong>推理，其余请求订阅同一个进行中的结果，算完一起返回。这样 100 个同时到达的“怎么退款”实际只调 1 次模</p><p class="bridge-note"><strong>桥接提示：</strong>下面这段用到 <code>async</code> / <code>await</code> 和 <code>asyncio.Event</code>，属于并发语法。如果你没接触过，先跳到<a href="#bridge-b8">B8 并发</a>看 10 分钟再回来；零基础也能看懂——它只是“让等待的多个请求共用同一个结果”的写法。</p><pre class="code status-stdlib"><code>import asyncio型。</p>
+<pre class="code status-stdlib"><code>import asyncio
+
+inflight = {}   # question -&gt; (Event, 结果)
+
+async def ask_coalesced(question, ask_model):
+    if question in inflight:          # 已有相同请求在算，等着复用
+        ev, _ = inflight[question]
+        await ev.wait()
+        return inflight[question][1], "合并命中"
+    ev = asyncio.Event()
+    inflight[question] = (ev, None)
+    try:
+        ans = await ask_model(question)
+        inflight[question] = (ev, ans)
+        return ans, "调用模型"
+    finally:
+        ev.set()                      # 通知所有等待者
+        inflight.pop(question, None)
+</code></pre>
+<p>预热缓存（proactive / warm caching）已在 20.6 讲过：在流量到来前把高频问题算好放缓存。coalesce 管的是<strong>运行期并发</strong>，预热管的是<strong>启动期准备</strong>，两者互补。多进程 / 多实例时要用 Redis 的发布订阅或锁来跨进程合并，单机字典只防本进程击穿。</p>
+
+<h3 class="level-engineering" id="sec-20-12"><span class="section-level level-engineering">工程化升级</span>20.12 形式化熔断（circuit breaker）与分层降级</h3>
+<p>20.8 讲了“主端点超时切备用”。但当模型服务<strong>持续</strong>失败（不是偶发超时），一直重试只会雪崩。这时用<strong>熔断（circuit breaker）</strong>状态机：</p>
+<ul>
+<li><strong>Closed（闭合）</strong>：正常放行；记录连续失败数。</li>
+<li><strong>Open（打开）</strong>：连续失败超阈值，直接拒绝 / 走降级，<strong>不再打模型</strong>，避免压垮已不稳的服务。</li>
+<li><strong>Half-open（半开）</strong>：冷却时间后放少量探测请求；成功则回 Closed，失败则回 Open。</li>
+</ul>
+<p>降级要分<strong>层（tiered fallback）</strong>：完整模型 → 小模型（质量降但便宜快）→ 缓存 / 模板答案 → 友好报错。注意<strong>风险任务不能静默降级</strong>到未经评测模型（呼应 20.8）。最小实现：</p>
+<pre class="code status-stdlib"><code>import time
+
+class Breaker:
+    def __init__(self, fail_threshold=5, cooldown=30):
+        self.fails = 0; self.state = "closed"; self.opened_at = 0
+        self.fail_threshold = fail_threshold; self.cooldown = cooldown
+    def allow(self):
+        if self.state == "open":
+            if time.time() - self.opened_at &gt; self.cooldown:
+                self.state = "half-open"      # 冷却后探一下
+                return True
+            return False                       # 仍打开：直接拒，走降级
+        return True
+    def on_success(self):
+        self.fails = 0; self.state = "closed"
+    def on_failure(self):
+        self.fails += 1
+        if self.state == "half-open" or self.fails &gt;= self.fail_threshold:
+            self.state = "open"; self.opened_at = time.time()
+
+def call_with_breaker(ask_model, breaker, fallback):
+    if not breaker.allow():
+        return fallback(), "降级"
+    try:
+        ans = ask_model()
+        breaker.on_success(); return ans, "模型"
+    except Exception:
+        breaker.on_failure(); return fallback(), "降级"
+</code></pre>
+
+<section class="learning-loop" id="ch20-learning-loop">
 <h3>20.学习闭环与验收</h3>
 <p>以下内容才是本章的最低完成标准；正文中需要真实云端、GPU 或后续知识的任务均视为进阶挑战。</p>
 <div class="loop-grid">
@@ -3120,9 +3312,9 @@ print(f"估算月成本：¥{monthly_cost_cny:,.2f}")
 </div>
 <details class="answer"><summary>概念自测参考答案</summary><ol><li>输入/输出 token、模型价格、调用次数、工具/检索和基础设施。</li><li>避免跨版本错误命中、权限泄漏和租户污染。</li><li>任务复杂度、风险、预算、质量、延迟和故障状态。</li><li>吞吐是单位时间处理量，延迟是单个请求等待时间。</li></ol><h4>解释题评分点</h4><div class="rubric"><strong>评分点：</strong>失败重试、人工返工、成功率、总调用、延迟和基础设施。</div></details>
 <div class="pass-bar"><strong>最低通过：</strong>成本公式可计算；路由和故障转移测试通过；场景按风险和预算分级。</div>
-</section><section class="part-banner" id="part5"><h2>Part 5 · AI Product 与高级 Agent 工程</h2><p class="part-problem">先把前 20 章组合成完整文档智能 SaaS，再继续掌握企业多 Agent 编排和 Coding Agent。三章都属于完整能力版图：SaaS 建立产品闭环，Multi-Agent 解决跨角色协作，Coding Agent 提升日常开发与长期任务效率。</p><div class="part-product"><strong>最终成果：可交付的 AI Document Intelligence SaaS、多 Agent 编排方案，以及能在受控环境中维护该项目的 Coding Agent。</strong></div></section><h2 id="ch21">第 21 章 · Complete SaaS Project：AI Document Intelligence</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>整合数据接入、OCR、结构化抽取、RAG、Agent、API、评测、Tracing、安全和成本治理。</p><p class="brief-product"><strong>本章产物：</strong>可部署、可演示、可评测并可写入简历的完整 AI SaaS。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p><strong>前置能力：</strong>前 22 章</p><div class="chapter-badges">
+</section><section class="part-banner" id="part5"><h2>Part 5 · AI Product 与高级 Agent 工程</h2><p class="part-problem">先把前 20 章组合成完整文档智能 SaaS，再继续掌握企业多 Agent 编排和 Coding Agent。三章都属于完整能力版图：SaaS 建立产品闭环，Multi-Agent 解决跨角色协作，Coding Agent 提升日常开发与长期任务效率。</p><div class="part-product"><strong>最终成果：可交付的 AI Document Intelligence SaaS、多 Agent 编排方案，以及能在受控环境中维护该项目的 Coding Agent。</strong></div><p class="part-scope"><strong>本部分定位（请先读）：</strong>第 21–23 章是「能力版图补全」，目标是让你<strong>看懂并用架构图串起</strong>一个完整产品，而不是要求你从零独立部署一套生产 SaaS。主线档会给出<strong>最小可跑骨架</strong>（如第 21 章的 FastAPI 路由与任务状态机）；工程化 / 深入档（多租户、队列、容器化、编排模式）以<strong>要点 + 架构图 + 伪代码</strong>呈现，完整可部署成品需要你结合附录 B 对应小节与所用框架的官方文档逐步拼装。如果你时间有限，先把主线档跑通、把架构图画出来，就已达成本章「理解完整产品」的核心目标；部署级细节按需深入，不必在第一次阅读时全部啃完。</p></section><h2 id="ch21">第 21 章 · Complete SaaS Project：AI Document Intelligence</h2><div class="chapter-brief"><p class="brief-goal"><strong>你将掌握：</strong>整合数据接入、OCR、结构化抽取、RAG、Agent、API、评测、Tracing、安全和成本治理。</p><p class="brief-product"><strong>本章产物：</strong>可部署、可演示、可评测并可写入简历的完整 AI SaaS。</p><details class="chapter-more"><summary>前置、依赖与维护信息</summary><p><strong>前置能力：</strong>前 20 章</p><div class="chapter-badges">
 <span></span><span>难度：高级</span>
-<span>最终项目</span><span>云 API：可选</span><span>GPU：不需要</span>
+<span>最终项目</span><span>云 API：可选</span><span>GPU：可选（深入档的本地多模态/OCR 模型才需要）</span>
 </div><p class="foundation-links"><strong>工程前置：</strong><a href="#bridge-b13">B13 Docker</a>。不熟悉时按需跳转，不要求提前全部学完。</p><p class="verified">内容复核：2026-07-28。稳定原理按本章正文与参考资料理解；模型名、价格、API 路径和框架能力等动态信息，以运行时的官方文档与合约测试为准。</p></details></div>
 <div class="reader-bridge" data-chapter="21">
 <h3>先知道为什么学这一章</h3>
@@ -4471,7 +4663,7 @@ async def one_request(session, sem, results):
         results.append(dt)
 
 async def main():
-    sem = asyncio.Semaphore(CONCURRENCY)
+    sem = asyncio.Semaphore(CONCURRENCY)  # 还是 16.4 那个「同时名额计数器」：最多 CONCURRENCY 个同时跑
     results = []
     async with aiohttp.ClientSession() as session:
         await asyncio.gather(*[one_request(session, sem, results) for _ in range(N)])
@@ -4504,6 +4696,99 @@ if __name__ == "__main__":
 </div>
 <details class="answer"><summary>概念自测参考答案</summary><ol><li>高吞吐推理和显存管理。</li><li>降低显存/成本，但可能影响质量或硬件兼容。</li><li>并发度直接影响吞吐与排队延迟。</li><li>流量小、波动大、缺少 GPU 运维能力或需要快速上线时。</li></ol><h4>解释题评分点</h4><div class="rubric"><strong>评分点：</strong>利用率、运维、冗余、升级、监控、峰值、工程人力和停机风险。</div></details>
 <div class="pass-bar"><strong>最低通过：</strong>压测报告参数完整；质量/性能权衡明确；场景选择考虑流量和运维。</div>
+</section><section class="part-banner" id="elective-c"><h2>选修专题 C · 跨域端到端案例（参考架构）</h2><p>本专题把第 2–20 章的“架构积木”在四个不同领域拼成完整系统，帮你建立“真实 LLM 系统长什么样”的直觉。每个案例都给出架构图、离线 / 在线数据流、一个可运行的核心代码片段、失败模式，以及它复用本书哪些章节。这些案例与第 21 章 SaaS 互补：SaaS 教你把本书能力收口成一个产品，这里给你看不同业务的具体取舍。</p></section>
+<h3>C.1 AI-Native IDE：把仓库当上下文</h3>
+<p><strong>难点</strong>：代码库远超上下文窗口；“改这里会不会影响别处”需要跨文件推理；补全必须低延迟（几百毫秒内出首个 token）。</p>
+<pre class="code">离线（入库）
+  repo ──► [AST 解析] ──► 按 symbol 语义分块 ──► 嵌入 ──► 向量索引
+                     └─► Merkle 树(文件块哈希) ──► 增量比对只重传改动块
+在线（补全）
+  光标位置 ──► [召回] 当前文件 + 被引用符号 + 相关测试
+           ──► [组装窗口] 按预算排序（呼应第 13 章 Context）
+           ──► [流式补全 SSE]（呼应 2.6）──► 客户端边收边显
+           ──► 稳定前缀用 speculative decoding 复用草稿加速</pre>
+<p><strong>核心技巧 1 · AST 语义分块</strong>：不要按固定字符数切，而是按语法节点（函数 / 类 / 方法）切，保证一个符号的上下文完整。</p>
+<pre class="code status-stdlib"><code>import ast
+
+def chunk_by_symbol(path: str):
+    src = open(path).read()
+    tree = ast.parse(src)
+    chunks = []
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+            chunks.append({
+                "symbol": node.name,
+                "start": node.lineno, "end": node.end_lineno,
+                "text": ast.get_source_segment(src, node),
+            })
+    return chunks   # 每个 chunk 是一个完整、可嵌入的符号</code></pre>
+<p><strong>核心技巧 2 · 增量同步</strong>：给每个文件块算哈希存入 Merkle 树，只把哈希变化的块重新嵌入，避免全量重算。</p>
+<p><strong>失败模式</strong>：分块过粗 → 召回噪点多；增量同步漏传 → 补全集过时；speculative decoding 草稿错 → 补全前缀要可丢弃重来；上下文预算不足 → 把“当前文件”挤掉导致改错处。</p>
+<p><em>呼应：第 13 章（Context 预算）、2.6（流式）、20.6（缓存前缀）。</em></p>
+<h3>C.2 自适应学习平台：冷热路径分流</h3>
+<p><strong>难点</strong>：给每位学员生成个性化内容；热门内容要秒回，冷门 / 新用户又要实时生成且质量可控；“判分”不能是模型拍脑袋。</p>
+<pre class="code">离线
+  题库生成 ──► [HITL 人工审核]（呼应第 8 章评测门禁）──► 入库(题目+标准答案+解析)
+在线
+  请求 ──► [路由] ──┬─ 热路径(高活跃/热门用户) ──► 直接交付预生成/缓存内容
+                  └─ 冷路径(新/回流用户)    ──► 实时 LLM 生成
+  判分 ──► [function calling] 调确定性判分函数（呼应第 10 章）</pre>
+<p><strong>核心技巧 · 把“判分”做成确定性工具</strong>：模型只负责解题与给理由，最终分数由固定规则函数返回，可复现、可审计。</p>
+<pre class="code status-stdlib"><code>def score(submission: str, rubric: dict) -&gt; dict:
+    # 确定性判分：先结构化，再按固定规则算分
+    facts = extract_facts(submission)             # 抽取关键事实
+    keys = rubric["key_facts"]
+    got = sum(1 for k, v in keys.items() if facts.get(k) == v)
+    return {"score": got / len(keys),
+            "missing": [k for k, v in keys.items() if facts.get(k) != v]}
+# 模型通过 function calling 调用 score()，不直接输出分数</code></pre>
+<p><strong>失败模式</strong>：冷路径延迟高 → 新用户体验差（用预生成兜底）；判分函数边界漏 → 给错分（rubric 要人审）；个性化漂移 → 长期只推同类题（加多样性约束）。</p>
+<p><em>呼应：第 8 章（评测门禁）、第 10 章（function calling）、第 20 章（热 / 冷成本）。</em></p>
+<h3>C.3 电商搜索：混合检索 + 分层缓存</h3>
+<p><strong>难点</strong>：用户用自然语言搜商品，既要关键词精确命中，又要语义相关，还要在毫秒级返回。</p>
+<pre class="code">离线
+  商品目录 ──► 向量库(语义)
+  商品标题/属性 ──► 搜索引擎(关键词, 精确)
+  查询日志 ──► data lake(挖掘长尾与重排训练)  (呼应第 7 章混合检索)
+在线
+  查询 ──► [L1 KV 缓存] 命中即返
+        ──► [L2 语义缓存 warm tier] 长尾相似问命中
+        ──► [混合检索: 向量 + 关键词] ──► [重排: 离线静态相关 + 在线个性化] (呼应 20.7)</pre>
+<p><strong>核心技巧 · 三层缓存</strong>：L1 是精确 query→结果的 KV（扛最热）；L2 是语义相似的缓存（扛长尾，呼应 20.6/20.11）；都未命中才走模型 / 检索。</p>
+<pre class="code status-stdlib"><code>def search(q: str):
+    if (hit := kv.get(q)):               return hit, "L1"
+    if (hit := semantic_cache.get(q)):   return hit, "L2"   # 向量近邻命中
+    docs = hybrid_retrieve(q)            # 向量 + 关键词
+    ranked = rerank(docs, user_profile)  # 在线个性化重排
+    semantic_cache.put(q, ranked)        # 回填 L2
+    return ranked, "model"</code></pre>
+<p><strong>失败模式</strong>：缓存与商品目录不一致 → 返回下架商品（设 TTL + 失效广播）；长尾语义缓存命中低 → 仍频繁打模型（warm tier 预热高频类目）；重排过拟合 → 新用户被圈在旧偏好（加探索位）。</p>
+<p><em>呼应：第 7 章（混合检索）、20.6/20.11（缓存）、20.7（路由 / 重排）。</em></p>
+<h3>C.4 客服 Agent：GraphRAG + 安全闭环</h3>
+<p><strong>难点</strong>：答案必须来自知识库、可引用、不泄露他人数据；高峰并发且问题常带关系（“和我同供应商的订单谁逾期了”）。</p>
+<pre class="code">离线（入库）
+  工单/手册 ──► [实体-关系抽取] ──► 图数据库(关系子图) + 向量库(原文)
+在线
+  问题 ──► [GraphRAG 四步: 抽取→建图→查询→组装] 拿关系子图+原文 (呼应 7.8)
+       ──► [PII 前置脱敏] 在向量化之前 (呼应第 19 章)
+       ──► [生成 + citation enforcement 强制引用]
+       ──► [可观测: 升级率/grounding 分数/成本] (呼应 18.3、第 20 章)</pre>
+<p><strong>核心技巧 1 · PII 前置脱敏</strong>：脱敏必须在向量化之前完成，否则脱敏后的文本和原始向量会对不上，且泄露已进索引。</p>
+<pre class="code status-stdlib"><code>def redact_before_embed(text: str) -&gt; str:
+    # 先脱敏，再做后续一切（嵌入/检索/生成）
+    return pii_mask(text, entities=["NAME", "PHONE", "ID", "EMAIL"])
+# 检索与生成都基于脱敏后的语料，原始 PII 不进索引</code></pre>
+<p><strong>核心技巧 2 · citation enforcement</strong>：要求模型每个结论句附带证据块 id，生成后校验引用确实存在，缺失则拒答或转人工（呼应升级率）。</p>
+<p><strong>失败模式</strong>：脱敏漏掉罕见实体 → 泄露（用多策略 + 人工抽检）；引用错配 → 答非所引（生成后校验）；关系子图缺失 → 答不出关联问题（回退向量检索）；升级率飙升 → 检索没给到证据（回看 Trace）。</p>
+<p><em>呼应：7.8（GraphRAG）、第 19 章（PII / 安全）、18.3（升级率）、第 20 章（成本）。</em></p>
+<div class="callout"><strong>参考来源</strong>：本专题四个案例的架构样板参考自 Systems Design for the LLM Era（Packt）案例研究章节的观点，已按本书主线重述、补充可运行示例与“呼应第 X 章”的落点索引；本节内容自包含，无需跳转外部。</div>
+
+<section class="learning-loop" id="elective-c-learning-loop">
+<h3>C.学习闭环与验收</h3>
+<div class="loop-grid">
+<div class="loop-card"><h4>A · 概念自测</h4><ol><li>IDE 为什么用 AST 语义分块而不是固定切？</li><li>冷热路径解决什么矛盾？</li><li>电商搜索为什么要三层缓存？</li><li>客服 Agent 为何必须在向量化前脱敏 PII？</li></ol></div>
+<div class="loop-card"><h4>B · 本章提交物</h4><ul><li>为其中一个案例画一张“离线 / 在线”架构图。</li><li>标出它用到的本书章节积木。</li><li>列出该案例的两类主要失败模式与缓解。</li></ul></div>
+</div>
 </section><section class="part-banner" id="appendices"><h2>附录 · 决策、评测、作品集与维护</h2><p>这些内容把“学过技术”变成“会做选择、会证明质量、会交付作品”。</p></section>
 <h2 id="appendix-api">附录 A · 多供应商 API 兼容矩阵与迁移检查</h2>
 <div class="freshness"><strong>最后核验：2026-07-28。</strong>这里只记录稳定接口形态和官方文档入口；模型名、价格、上下文长度、限流与赠金活动不在正文长期硬编码。</div>
@@ -4567,7 +4852,7 @@ if __name__ == "__main__":
 <h2 id="appendix-foundation">附录 B · AI 工程基础桥梁课程</h2><div class="callout"><strong>快速自检排序地图。</strong>把「按需补课」从被动等卡住变为主动排程：进第 4 章前先扫 B5，进 Part 3 前先确认 B4–B7。<table class="toc-table"><thead><tr><th>主线章节</th><th>首次用到的工程基础</th><th>该补的附录 B</th><th>是否需章前先读完</th></tr></thead><tbody><tr><td>第 2 章</td><td>环境变量、同步 HTTP</td><td>B2、B6</td><td>否，卡住再补</td></tr><tr><td>第 4 章</td><td>Pydantic、类型注解</td><td>B3、B5</td><td>建议章前扫一遍 B5</td></tr><tr><td>第 5–8 章</td><td>类型、HTTP、测试、异常</td><td>B3、B6、B7、B9</td><td>否</td></tr><tr><td>第 9 章</td><td>dataclass、循环</td><td>B4</td><td>否</td></tr><tr><td>第 10 章</td><td>Tool Calling、JSON Schema、Pydantic</td><td>B5、B6</td><td>否</td></tr><tr><td>第 11 章</td><td>MCP 远程协议（HTTP 身份）</td><td>B6</td><td>否</td></tr><tr><td>第 12 章</td><td>dataclass 状态建模</td><td>B4</td><td>否</td></tr><tr><td>第 13–15 章</td><td>异常重试、HTTP 身份</td><td>B6、B7</td><td>否</td></tr><tr><td>第 16–21 章</td><td>后端、Docker、队列</td><td>B12、B13</td><td>否</td></tr></tbody></table></div>
 <div class="bridge-intro">
 <h3>怎样使用这套桥梁课程</h3>
-<p>默认读者只掌握 Python 基础语法。本附录不是速查表，也不是要求你在进入 AI 前一次学完的后端课程。主线章节会链接到当前真正需要的小节；你先完成最小实验，再回到主线使用。</p>
+<p>默认读者只掌握 Python 基础语法。本附录不是速查表，也不是要求你在进入 AI 前一次学完的后端课程。主线章节会链接到当前真正需要的小节；你先完成最小实验，再回到主线使用。</p><p class="bridge-note"><strong>重要：这套桥梁是「参考」而非「必读」。你不需要按顺序把 B1–B13 全学一遍再读正文——那样工程量确实会超过一本书。正确做法是：只在主线章节召唤你（如「卡住时按需补：B11 SQL」）时才点进去，补完对应一小节就立刻回来。B11–B13（SQL / Redis / Docker）尤其如此，它们是给「想真正部署」的读者准备的纵深，第一次阅读完全可跳过。</strong></p>
 <div class="learning-path-grid">
 <div><strong>第一次接触</strong><p>按顺序运行代码，逐行理解新语法。</p></div>
 <div><strong>回到主线</strong><p>完成“桥梁项目”和验收后立刻返回对应章节。</p></div>
@@ -4838,7 +5123,7 @@ log_event("model_call", "req-001", ok=True, latency_ms=820)</code></pre>
 </section>
 <section class="bridge-course" id="bridge-b8">
 <h3>B8 · 并发、asyncio、超时与取消</h3>
-<p class="bridge-goal"><strong>完成目标：</strong>理解串行、并发与并行的差别，能用 async/await 并发等待网络任务，并用 Semaphore、timeout 和取消控制资源。</p>
+<p class="bridge-goal"><strong>完成目标：</strong>理解串行、并发与并行的差别，能用 async/await 并发等待网络任务，并用 Semaphore（就是 16.4 讲过的「同时名额计数器」，忘了回看 <a href="#sec-16-04">16.4 的四个比方</a>）、timeout 和取消控制资源。</p>
 <h4>B8.1 先看串行等待</h4>
 <pre class="code status-stdlib"><code>import time
 
@@ -4871,7 +5156,7 @@ asyncio.run(main())</code></pre>
 <h4>B8.3 限制并发</h4>
 <pre class="code status-stdlib"><code>import asyncio
 
-semaphore = asyncio.Semaphore(3)
+semaphore = asyncio.Semaphore(3)  # 还是 16.4 那个「同时名额计数器」：最多 3 个同时跑
 
 async def limited_call(index: int) -&gt; int:
     async with semaphore:
