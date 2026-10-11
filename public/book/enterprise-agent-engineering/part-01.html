@@ -99,9 +99,7 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 <span class="line"><span>response</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>你作为后端工程师，应该立刻想到：</p>
-<blockquote>
-<p>那么它是不是应该像其他远程服务一样，被封装起来？</p>
-</blockquote>
+<p>你作为后端工程师，应该立刻想到：那么它是不是应该像其他远程服务一样，被封装起来？</p>
 <p>答案是：</p>
 <p><strong>应该。</strong></p>
 <p>而且这恰恰是 AI Application Engineering 开始真正“像工程”的地方。</p>
@@ -159,10 +157,7 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 </blockquote>
 <hr>
 <h2 id="sec-1-4">1.4 Token：为什么一句话不是“一句话”？</h2>
-<p>如果你以前没有接触过 LLM，第一次看到 <code>token</code> 时，可能会觉得：</p>
-<blockquote>
-<p>“为什么模型不用字符数或者字数计算？”</p>
-</blockquote>
+<p>如果你以前没有接触过 LLM，第一次看到 <code>token</code> 时，可能会觉得：“为什么模型不用字符数或者字数计算？”</p>
 <p>因为模型实际处理的，并不是我们平常理解的“单词”或者“汉字”。</p>
 <p>模型会把输入文本转换成某种 token 序列。</p>
 <p>因此：</p>
@@ -191,19 +186,13 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 <li>更复杂上下文</li>
 <li>更大的信息污染风险</li>
 </ul>
-<p>所以以后看到：</p>
-<blockquote>
-<p>“把所有历史记录全塞进去。”</p>
-</blockquote>
+<p>所以以后看到：“把所有历史记录全塞进去。”</p>
 <p>不要觉得这是最稳妥的方案。</p>
 <p>很多时候，恰恰相反。</p>
 <hr>
 <h2 id="sec-1-5">1.5 一个你很快会遇到的问题</h2>
 <p>假设你的客服 Agent 需要分析一个工单。</p>
-<p>用户可能提交：</p>
-<blockquote>
-<p>“车昨天开始充电特别慢，我已经换过两个充电桩，还是一样，而且之前从来没有出现过这种情况。”</p>
-</blockquote>
+<p>用户可能提交：“车昨天开始充电特别慢，我已经换过两个充电桩，还是一样，而且之前从来没有出现过这种情况。”</p>
 <p>然后系统还需要补充：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>车辆型号</span></span>
 <span class="line"><span>电池状态</span></span>
@@ -258,9 +247,7 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">save_to_database(result)</span></span>
 <span class="line"></span></code></pre>
 <p>问题是：</p>
-<blockquote>
-<p><code>result</code> 究竟是什么？</p>
-</blockquote>
+<p>问题是：<code>result</code> 究竟是什么？</p>
 <p>它可能返回：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>物流</span></span>
 <span class="line"><span></span></span>
@@ -298,10 +285,7 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 <h2 id="sec-1-7">1.7 从自然语言进入结构化世界</h2>
 <p>想象一下：</p>
 <p>你让一个同事帮你处理一批工单。</p>
-<p>如果你只是告诉他：</p>
-<blockquote>
-<p>“帮我看看这些工单。”</p>
-</blockquote>
+<p>如果你只是告诉他：“帮我看看这些工单。”</p>
 <p>每个人可能都会给出不同格式的结果。</p>
 <p>但如果你明确规定：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>category: 物流 / 商品 / 退款 / 其他</span></span>
@@ -341,17 +325,11 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 <p><strong>AI 世界和传统软件世界之间的接口。</strong></p>
 </blockquote>
 <p>LLM 负责：</p>
-<blockquote>
-<p>从自然语言中提取和判断。</p>
-</blockquote>
+<p>LLM 负责：从自然语言中提取和判断。</p>
 <p>Pydantic / Schema 负责：</p>
-<blockquote>
-<p>把结果约束成程序能够可靠处理的结构。</p>
-</blockquote>
+<p>Pydantic / Schema 负责：把结果约束成程序能够可靠处理的结构。</p>
 <p>业务系统负责：</p>
-<blockquote>
-<p>决定下一步怎么执行。</p>
-</blockquote>
+<p>业务系统负责：决定下一步怎么执行。</p>
 <p>三者职责开始分离。</p>
 <hr>
 <h2 id="sec-1-8">1.8 为什么 Schema 是 AI Engineering 的重要工具？</h2>
@@ -406,10 +384,7 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 <hr>
 <h2 id="sec-1-9">1.9 这时候你应该想到 Retry 了</h2>
 <p>现在假设模型偶尔返回一个无法解析的结果。</p>
-<p>作为后端工程师，你通常不会说：</p>
-<blockquote>
-<p>“服务器有时候报错很正常。”</p>
-</blockquote>
+<p>作为后端工程师，你通常不会说：“服务器有时候报错很正常。”</p>
 <p>你会考虑：</p>
 <ul>
 <li>Retry</li>
@@ -455,10 +430,7 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 </blockquote>
 <hr>
 <h2 id="sec-1-10">1.10 Timeout：最容易被忽略的生产问题</h2>
-<p>本地 Demo 最容易给工程师制造一种错觉：</p>
-<blockquote>
-<p>“调用模型，好像也就几秒。”</p>
-</blockquote>
+<p>本地 Demo 最容易给工程师制造一种错觉：“调用模型，好像也就几秒。”</p>
 <p>但一旦上线，模型调用就可能出现：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>100 ms</span></span>
 <span class="line"><span>800 ms</span></span>
@@ -500,10 +472,7 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 </blockquote>
 <hr>
 <h2 id="sec-1-11">1.11 Streaming：为什么有时候用户感觉“更快了”？</h2>
-<p>假设模型最终会生成：</p>
-<blockquote>
-<p>“根据订单状态和物流信息……”</p>
-</blockquote>
+<p>假设模型最终会生成：“根据订单状态和物流信息……”</p>
 <p>如果你等到全部生成完再返回：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Request</span></span>
 <span class="line"><span>       ↓</span></span>
@@ -511,10 +480,7 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 <span class="line"><span>       ↓</span></span>
 <span class="line"><span>Complete Response</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>用户会感觉：</p>
-<blockquote>
-<p>“这个系统好慢。”</p>
-</blockquote>
+<p>用户会感觉：“这个系统好慢。”</p>
 <p>如果模型支持逐步发送输出，那么用户可能看到：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Request</span></span>
 <span class="line"><span> ↓</span></span>
@@ -524,10 +490,7 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 <span class="line"><span> ↓</span></span>
 <span class="line"><span>“目前订单已经发出……”</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>即使完整响应总耗时没有变化，用户也会觉得：</p>
-<blockquote>
-<p>“系统开始工作了。”</p>
-</blockquote>
+<p>即使完整响应总耗时没有变化，用户也会觉得：“系统开始工作了。”</p>
 <p>因此，Streaming 不只是一个 UI 技巧。</p>
 <p>它其实涉及：</p>
 <blockquote>
@@ -542,10 +505,7 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 <p>这两个指标以后都会影响 AI Application 的设计。</p>
 <hr>
 <h2 id="sec-1-12">1.12 模型不是一种商品，而是一组能力</h2>
-<p>到现在为止，我们还可以假设：</p>
-<blockquote>
-<p>“模型就是模型。”</p>
-</blockquote>
+<p>到现在为止，我们还可以假设：“模型就是模型。”</p>
 <p>但真正开始做工程以后，你很快会发现：</p>
 <p>不同模型可能在不同任务上表现不同。</p>
 <p>例如一个模型：</p>
@@ -630,9 +590,7 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 <span class="line"><span></span></span></code></pre>
 <p>你会选哪个？</p>
 <p>很多人第一反应是：</p>
-<blockquote>
-<p>Model B。</p>
-</blockquote>
+<p>很多人第一反应是：Model B。</p>
 <p>因为 92% 更高。</p>
 <p>但是如果一个业务每天调用 100 万次：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>A：</span></span>
@@ -785,10 +743,7 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 <p>运行前先按本书的公共实验手册配置 <code>AI_BASE_URL</code>、<code>AI_API_KEY</code> 与 <code>AI_MODEL</code>。保留实际报告和失败案例，不要把 Fake 返回值当成模型质量结果，也不要将缺失的 usage/cost 填成零。推荐交付 <code>part01-report.md</code>：记录输入条件、接口契约、失败样例、重试行为、指标已知性，以及这次实验能够支持和不能支持的结论。</p>
 <h2 id="sec-1-17">1.17 故障实验：现在主动把系统弄坏</h2>
 <p>真正的实验从这里开始。</p>
-<p>不要满足于：</p>
-<blockquote>
-<p>“调用成功。”</p>
-</blockquote>
+<p>不要满足于：“调用成功。”</p>
 <p>我们主动创造失败。</p>
 <hr>
 <h3 id="sec-failure-a">Failure A：模型超时</h3>
@@ -827,17 +782,11 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 <h3 id="sec-failure-e">Failure E：结果为空</h3>
 <p>模型没有给出有效结果。</p>
 <p>系统应该：</p>
-<blockquote>
-<p>Retry？</p>
-</blockquote>
+<p>系统应该：Retry？</p>
 <p>还是：</p>
-<blockquote>
-<p>Fallback？</p>
-</blockquote>
+<p>还是：Fallback？</p>
 <p>还是：</p>
-<blockquote>
-<p>交给人工？</p>
-</blockquote>
+<p>还是：交给人工？</p>
 <hr>
 <h2 id="sec-1-18">1.18 不要急着修，先测</h2>
 <p>现在回到 Part 0 学到的原则：</p>
@@ -909,14 +858,8 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">response </span><span style="color:#D73A49">=</span><span style="color:#24292E"> model.generate(</span><span style="color:#005CC5">...</span><span style="color:#24292E">)</span></span>
 <span class="line"></span></code></pre>
 <p>这行代码。</p>
-<p>以前你可能把它理解成：</p>
-<blockquote>
-<p>“调用 AI。”</p>
-</blockquote>
-<p>现在应该把它理解成：</p>
-<blockquote>
-<p>“调用一个可能慢、可能失败、有成本、输出存在不确定性的远程计算服务。”</p>
-</blockquote>
+<p>以前你可能把它理解成：“调用 AI。”</p>
+<p>现在应该把它理解成：“调用一个可能慢、可能失败、有成本、输出存在不确定性的远程计算服务。”</p>
 <p>这两个理解看起来差别不大。</p>
 <p>实际上，它们决定了完全不同的代码质量。</p>
 <hr>
@@ -952,9 +895,7 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 <span class="line"><span>Provider</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>这样你会开始发现：</p>
-<blockquote>
-<p>LLM 只是其中一层。</p>
-</blockquote>
+<p>这样你会开始发现 LLM 只是其中一层。</p>
 <hr>
 <h2 id="sec-1-21">1.21 一个小小的架构升级</h2>
 <p>最初你可能写成：</p>
@@ -1021,9 +962,7 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 <span class="line"><span>Cost Tracking</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>那么：</p>
-<blockquote>
-<p>Agent 还差什么？</p>
-</blockquote>
+<p>那么：Agent 还差什么？</p>
 <p>答案其实很有意思。</p>
 <p>差的不是“更大的 Prompt”。</p>
 <p>也不是“更高级的模型”。</p>
@@ -1039,13 +978,9 @@ Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order()</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>然后发现：</p>
-<blockquote>
-<p>订单已经出库。</p>
-</blockquote>
+<p>然后发现订单已经出库。</p>
 <p>于是模型决定：</p>
-<blockquote>
-<p>那我下一步需要查询物流。</p>
-</blockquote>
+<p>于是模型决定那我下一步需要查询物流。</p>
 <p>再调用：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_logistics()</span></span>
 <span class="line"><span></span></span></code></pre>

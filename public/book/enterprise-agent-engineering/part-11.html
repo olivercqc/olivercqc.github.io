@@ -51,10 +51,7 @@
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>生产失败案例</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>也不断积累。</p>
-<p>如果你只是不断：</p>
-<blockquote>
-<p>“改 Prompt。”</p>
-</blockquote>
+<p>如果你只是不断：“改 Prompt。”</p>
 <p>这个 Agent 很可能最终变成一堆没人敢动的配置。</p>
 <p>所以这一部分，我们要解决的是：</p>
 <blockquote>
@@ -155,10 +152,7 @@
 <li>长上下文更强</li>
 <li>复杂任务更好</li>
 </ul>
-<p>从传统软件角度看，这可能只是：</p>
-<blockquote>
-<p>“换了一个依赖。”</p>
-</blockquote>
+<p>从传统软件角度看，这可能只是：“换了一个依赖。”</p>
 <p>但对 Agent 来说，这可能改变：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool Selection</span></span>
 <span class="line"><span>Output Format</span></span>
@@ -187,9 +181,7 @@
 <p><strong>系统行为发生变化。</strong></p>
 </blockquote>
 <p>所以 Prompt 应该像代码一样：</p>
-<blockquote>
-<p>进入版本控制。</p>
-</blockquote>
+<p>所以 Prompt 应该像代码一样，进入版本控制。</p>
 <p>例如：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>prompt_v1</span></span>
 <span class="line"><span>prompt_v2</span></span>
@@ -254,29 +246,16 @@
 <p>都应该成为知识系统的一部分。</p>
 <hr>
 <h2 id="sec-11-7">11.7 第五种变化：用户变了</h2>
-<p>刚上线时，用户可能只问：</p>
-<blockquote>
-<p>“订单在哪？”</p>
-</blockquote>
+<p>刚上线时，用户可能只问：“订单在哪？”</p>
 <p>后来用户逐渐开始：</p>
-<blockquote>
-<p>用缩写。</p>
-</blockquote>
-<blockquote>
-<p>使用行业术语。</p>
-</blockquote>
-<blockquote>
-<p>输入超长内容。</p>
-</blockquote>
-<blockquote>
-<p>一次问三个问题。</p>
-</blockquote>
-<blockquote>
-<p>给出不完整信息。</p>
-</blockquote>
-<blockquote>
-<p>通过文件上传输入资料。</p>
-</blockquote>
+<ul>
+<li>用缩写。</li>
+<li>使用行业术语。</li>
+<li>输入超长内容。</li>
+<li>一次问三个问题。</li>
+<li>给出不完整信息。</li>
+<li>通过文件上传输入资料。</li>
+</ul>
 <p>于是：</p>
 <blockquote>
 <p><strong>任务分布发生了变化。</strong></p>
@@ -296,18 +275,11 @@
 <p>假设 Agent 在线上出现：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Case #8472</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>用户说：</p>
-<blockquote>
-<p>“你为什么让我更换电池？明明故障已经在充电桩侧确认了。”</p>
-</blockquote>
+<p>用户说：“你为什么让我更换电池？明明故障已经在充电桩侧确认了。”</p>
 <p>工程师一看：</p>
-<blockquote>
-<p>Agent 确实误判了。</p>
-</blockquote>
+<p>工程师一看 Agent 确实误判了。</p>
 <p>以前你可能会：</p>
-<blockquote>
-<p>改 Prompt。</p>
-</blockquote>
+<p>以前你可能会改 Prompt。</p>
 <p>但更成熟的方式是：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Production Failure</span></span>
 <span class="line"><span> ↓</span></span>
@@ -374,9 +346,7 @@
 <span class="line"><span>Fix</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>因为这样很快会陷入：</p>
-<blockquote>
-<p>头痛医头。</p>
-</blockquote>
+<p>因为这样很快会陷入，头痛医头。</p>
 <p>更好的方式是归类。</p>
 <p>例如：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Context Failure        20</span></span>
@@ -390,9 +360,7 @@
 <span class="line"><span>Other                   3</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>这时候你终于能看到：</p>
-<blockquote>
-<p>系统的主要短板到底在哪里。</p>
-</blockquote>
+<p>这时候你终于能看到系统的主要短板到底在哪里。</p>
 <hr>
 <h2 id="sec-11-11">11.11 为什么分类比“修一次”更有价值？</h2>
 <p>假设最近 100 个失败里：</p>
@@ -408,9 +376,7 @@
 <p>再写一版 Prompt。</p>
 </blockquote>
 <p>再比如：</p>
-<blockquote>
-<p>20 个失败都来自 Context。</p>
-</blockquote>
+<p>再比如：20 个失败都来自 Context。</p>
 <p>那么你可能需要重新设计：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Context Builder</span></span>
 <span class="line"><span></span></span></code></pre>
@@ -421,18 +387,13 @@
 <hr>
 <h2 id="sec-11-12">11.12 从 Failure 到 Improvement Hypothesis</h2>
 <p>这里需要建立一个非常重要的工程习惯。</p>
-<p>不要：</p>
-<blockquote>
-<p>“我觉得把 Prompt 改一下会更好。”</p>
-</blockquote>
+<p>不要：“我觉得把 Prompt 改一下会更好。”</p>
 <p>而应该形成：</p>
 <blockquote>
 <p><strong>Hypothesis。</strong></p>
 </blockquote>
 <p>例如：</p>
-<blockquote>
-<p>假设 30% 的工具误用来自 Tool Description 不清晰。</p>
-</blockquote>
+<p>例如：假设 30% 的工具误用来自 Tool Description 不清晰。</p>
 <p>于是：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Hypothesis</span></span>
 <span class="line"><span> ↓</span></span>
@@ -493,9 +454,7 @@
 <h2 id="sec-11-14">11.14 Prompt Evolution：什么时候应该改 Prompt？</h2>
 <p>Prompt 当然需要演进。</p>
 <p>但不要把所有失败都理解为：</p>
-<blockquote>
-<p>Prompt Problem。</p>
-</blockquote>
+<p>但不要把所有失败都理解为：Prompt Problem。</p>
 <p>假设：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent 没找到正确文档。</span></span>
 <span class="line"><span></span></span></code></pre>
@@ -515,16 +474,12 @@
 <hr>
 <h2 id="sec-11-15">11.15 Skill Evolution：把重复成功经验固定下来</h2>
 <p>假设 Agent 经常做：</p>
-<blockquote>
-<p>Python Bug Fix。</p>
-</blockquote>
+<p>假设 Agent 经常做 Python Bug Fix。</p>
 <p>最开始：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent 自己探索</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>运行 100 次以后，你发现：</p>
-<blockquote>
-<p>一个稳定的流程总是有效。</p>
-</blockquote>
+<p>运行 100 次以后，你发现一个稳定的流程总是有效。</p>
 <p>比如：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Inspect Repository</span></span>
 <span class="line"><span> ↓</span></span>
@@ -539,9 +494,7 @@
 <span class="line"><span>Regression</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>那么可以把它沉淀成：</p>
-<blockquote>
-<p>Skill。</p>
-</blockquote>
+<p>那么可以把它沉淀成 Skill。</p>
 <p>也就是说：</p>
 <blockquote>
 <p><strong>成功经验可以被固化成 Agent Procedure。</strong></p>
@@ -564,9 +517,7 @@
 <span class="line"><span>Evaluation</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>去验证：</p>
-<blockquote>
-<p>v2 是否真的更好。</p>
-</blockquote>
+<p>去验证：v2 是否真的更好。</p>
 <p>因此：</p>
 <blockquote>
 <p>Skill 也不是静态 Prompt。</p>
@@ -579,14 +530,9 @@
 <span class="line"><span>query_customer()</span></span>
 <span class="line"><span>→ query_orders()</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>也就是说：</p>
-<blockquote>
-<p>它需要先查客户，再查订单。</p>
-</blockquote>
+<p>也就是说：它需要先查客户，再查订单。</p>
 <p>而你的 Tool 设计要求：</p>
-<blockquote>
-<p>两步调用。</p>
-</blockquote>
+<p>而你的 Tool 设计要求两步调用。</p>
 <p>如果这个路径几乎总是固定，那么你可能发现：</p>
 <blockquote>
 <p>Tool 本身设计得不够贴近 Agent 任务。</p>
@@ -611,9 +557,7 @@
 <span class="line"><span></span></span></code></pre>
 <p>看起来调用少了。</p>
 <p>但 Tool 可能又变得：</p>
-<blockquote>
-<p>太大。</p>
-</blockquote>
+<p>但 Tool 可能又变得太大。</p>
 <p>所以 Tool Evolution 也应该接受：</p>
 <blockquote>
 <p>Evaluation + Complexity Review。</p>
@@ -657,18 +601,10 @@
 </blockquote>
 <hr>
 <h2 id="sec-11-20">11.20 一个很容易被忽略的问题：Memory Pollution</h2>
-<p>假设 Agent 错误地记录：</p>
-<blockquote>
-<p>“用户喜欢所有回答都非常长。”</p>
-</blockquote>
-<p>后来用户每次都要求：</p>
-<blockquote>
-<p>“简洁一点。”</p>
-</blockquote>
+<p>假设 Agent 错误地记录：“用户喜欢所有回答都非常长。”</p>
+<p>后来用户每次都要求：“简洁一点。”</p>
 <p>如果旧 Memory 一直存在：</p>
-<blockquote>
-<p>系统就会不断产生冲突。</p>
-</blockquote>
+<p>如果旧 Memory 一直存在，系统就会不断产生冲突。</p>
 <p>所以 Memory 的更新应该考虑：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Source</span></span>
 <span class="line"><span>Timestamp</span></span>
@@ -678,9 +614,7 @@
 <span class="line"><span>Expiration</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>这已经非常像：</p>
-<blockquote>
-<p>企业数据治理。</p>
-</blockquote>
+<p>这已经非常像企业数据治理。</p>
 <hr>
 <h2 id="sec-11-21">11.21 Dataset Evolution：Dataset 也不是一成不变</h2>
 <p>假设最初 Dataset：</p>
@@ -719,17 +653,13 @@
 <p>可以把 Evaluation Dataset 再分层。</p>
 <h3 id="sec-golden-set">Golden Set</h3>
 <p>经过严格审查：</p>
-<blockquote>
-<p>用来做核心回归。</p>
-</blockquote>
+<p>经过严格审查用来做核心回归。</p>
 <p>应该比较稳定。</p>
 <hr>
 <h3 id="sec-production-derived-set">Production-derived Set</h3>
 <p>从真实线上失败中不断增长。</p>
 <p>它更贴近：</p>
-<blockquote>
-<p>最新真实问题。</p>
-</blockquote>
+<p>它更贴近最新真实问题。</p>
 <hr>
 <p>于是：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Golden Set</span></span>
@@ -835,15 +765,10 @@
 <p><strong>Agent 的行为由多个变量共同决定。</strong></p>
 </blockquote>
 <p>如果这些变量都不记录：</p>
-<blockquote>
-<p>出问题以后很难复现。</p>
-</blockquote>
+<p>如果这些变量都不记录，出问题以后很难复现。</p>
 <hr>
 <h2 id="sec-11-26">11.26 Reproducibility：为什么今天的 Agent 和昨天可能不一样？</h2>
-<p>假设用户投诉：</p>
-<blockquote>
-<p>“昨天同样的问题回答是 A，今天变成 B。”</p>
-</blockquote>
+<p>假设用户投诉：“昨天同样的问题回答是 A，今天变成 B。”</p>
 <p>如果你只记录：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>user input</span></span>
 <span class="line"><span></span></span></code></pre>
@@ -876,9 +801,7 @@
 <span class="line"><span>Final</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>就可以尝试：</p>
-<blockquote>
-<p>Replay。</p>
-</blockquote>
+<p>就可以尝试 Replay。</p>
 <p>例如：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Historical Input</span></span>
 <span class="line"><span>+</span></span>
@@ -967,10 +890,7 @@
 <li>成本高两倍</li>
 <li>维护复杂度明显提高</li>
 </ul>
-<p>这时候不能只说：</p>
-<blockquote>
-<p>“v12 更好。”</p>
-</blockquote>
+<p>这时候不能只说：“v12 更好。”</p>
 <p>应该问：</p>
 <blockquote>
 <p><strong>这 2% 值不值得这些复杂度？</strong></p>
@@ -1045,13 +965,8 @@
 <hr>
 <h2 id="sec-11-34">11.34 Stage 3：Hypothesis</h2>
 <p>选择最大的失败类别：</p>
-<blockquote>
-<p>Retrieval。</p>
-</blockquote>
-<p>提出假设：</p>
-<blockquote>
-<p>“当前 Chunking 策略导致相似维修文档之间难以区分。”</p>
-</blockquote>
+<p>选择最大的失败类别 Retrieval。</p>
+<p>提出假设：“当前 Chunking 策略导致相似维修文档之间难以区分。”</p>
 <hr>
 <h2 id="sec-11-35">11.35 Stage 4：Change</h2>
 <p>只改变：</p>
@@ -1064,9 +979,7 @@
 <p><strong>一次实验尽量只改变一个主要变量。</strong></p>
 </blockquote>
 <p>否则即使结果变好了，你也不知道：</p>
-<blockquote>
-<p>到底是谁带来的。</p>
-</blockquote>
+<p>否则即使结果变好了，你也不知道到底是谁带来的。</p>
 <hr>
 <h2 id="sec-11-36">11.36 Stage 5：Evaluate</h2>
 <p>运行：</p>
@@ -1094,9 +1007,7 @@
 <span class="line"><span>90% → 90%</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>如果都可接受：</p>
-<blockquote>
-<p>可以进入下一阶段。</p>
-</blockquote>
+<p>如果都可接受，可以进入下一阶段。</p>
 <hr>
 <h2 id="sec-11-38">11.38 Stage 7：Release</h2>
 <p>发布：</p>
@@ -1131,10 +1042,7 @@
 <blockquote>
 <p>最有价值的资料之一，不是 Prompt。</p>
 </blockquote>
-<p>也不是：</p>
-<blockquote>
-<p>“最好的 Agent 配置。”</p>
-</blockquote>
+<p>也不是：“最好的 Agent 配置。”</p>
 <p>而是：</p>
 <blockquote>
 <p><strong>过去失败过什么。</strong></p>
@@ -1156,17 +1064,13 @@
 <hr>
 <h2 id="sec-11-41">11.41 为什么失败案例比成功案例更有价值？</h2>
 <p>成功案例告诉你：</p>
-<blockquote>
-<p>系统现在能做什么。</p>
-</blockquote>
+<p>成功案例告诉你系统现在能做什么。</p>
 <p>失败案例告诉你：</p>
 <blockquote>
 <p><strong>系统在哪里会崩。</strong></p>
 </blockquote>
 <p>而工程优化最需要的，恰恰是：</p>
-<blockquote>
-<p>哪里会崩。</p>
-</blockquote>
+<p>而工程优化最需要的，恰恰是：哪里会崩。</p>
 <p>所以：</p>
 <blockquote>
 <p><strong>Production Failure 是 Agent Engineering 的宝贵资产。</strong></p>
@@ -1181,10 +1085,7 @@
 <p>不能未经处理直接复制到开发环境。</p>
 <hr>
 <h2 id="sec-11-42">11.42 Part 11 的一个重要思想：经验资产化</h2>
-<p>如果每次失败都只是：</p>
-<blockquote>
-<p>“工程师手工修一下。”</p>
-</blockquote>
+<p>如果每次失败都只是：“工程师手工修一下。”</p>
 <p>那么经验会随着工程师离开而消失。</p>
 <p>更好的做法：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Failure</span></span>
@@ -1221,9 +1122,7 @@
 <span class="line"><span>Workflow Improvement</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>甚至：</p>
-<blockquote>
-<p>模型本身完全不变。</p>
-</blockquote>
+<p>甚至：模型本身完全不变。</p>
 <p>Agent 仍然可以明显进化。</p>
 <p>所以：</p>
 <blockquote>
@@ -1238,9 +1137,7 @@
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>正确知识没有被检索出来。</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>这时候：</p>
-<blockquote>
-<p>换一个更大的模型。</p>
-</blockquote>
+<p>这时候：换一个更大的模型。</p>
 <p>可能几乎没有效果。</p>
 <p>更合理的是：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Fix Retrieval</span></span>
@@ -1296,9 +1193,7 @@
 <span class="line"><span>Agent v3</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>不要只理解成：</p>
-<blockquote>
-<p>Prompt 换了。</p>
-</blockquote>
+<p>不要只理解成 Prompt 换了。</p>
 <p>真正可能发生的是：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model</span></span>
 <span class="line"><span>Context</span></span>
@@ -1419,10 +1314,7 @@
 <blockquote>
 <p><strong>不要同时修改十个东西。</strong></p>
 </blockquote>
-<p>你正在训练的不是：</p>
-<blockquote>
-<p>“改 Agent 的能力。”</p>
-</blockquote>
+<p>你正在训练的不是：“改 Agent 的能力。”</p>
 <p>而是：</p>
 <blockquote>
 <p><strong>科学地改 Agent 的能力。</strong></p>

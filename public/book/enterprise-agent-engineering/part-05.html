@@ -104,19 +104,11 @@
 <p>有些人一看到：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Workflow</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>就觉得：</p>
-<blockquote>
-<p>“这不是 AI。”</p>
-</blockquote>
+<p>就觉得：“这不是 AI。”</p>
 <p>完全不是。</p>
 <p>例如：</p>
-<blockquote>
-<p>用户提交一封自然语言报销说明。</p>
-</blockquote>
-<p>这封说明可能写得非常随意：</p>
-<blockquote>
-<p>“上周去上海参加客户会议，打车花了 182 元，客户那边临时改了时间，所以多住了一晚……”</p>
-</blockquote>
+<p>例如：用户提交一封自然语言报销说明。</p>
+<p>这封说明可能写得非常随意：“上周去上海参加客户会议，打车花了 182 元，客户那边临时改了时间，所以多住了一晚……”</p>
 <p>你可以先让 LLM 做：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>自然语言</span></span>
 <span class="line"><span>   ↓</span></span>
@@ -194,9 +186,7 @@
 <span class="line"><span>Human Approval</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>整个过程仍然是：</p>
-<blockquote>
-<p>Workflow。</p>
-</blockquote>
+<p>整个过程仍然是：Workflow。</p>
 <hr>
 <h2 id="sec-5-5">5.5 这时候你可能会问：那 Agent 和 Workflow 的区别到底在哪？</h2>
 <p>可以先用一个非常实用的问题来区分：</p>
@@ -217,9 +207,7 @@
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Step 1 → Step 2 → Step 3 → Step 4</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>程序知道：</p>
-<blockquote>
-<p>下一步就是 Step 3。</p>
-</blockquote>
+<p>程序知道下一步就是 Step 3。</p>
 <hr>
 <h3 id="sec-agent">Agent</h3>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Current State</span></span>
@@ -281,9 +269,7 @@
 <p><strong>增加自主性，本质上是在购买更多灵活性。</strong></p>
 </blockquote>
 <p>问题是：</p>
-<blockquote>
-<p>你是否真的需要这些灵活性？</p>
-</blockquote>
+<p>问题是：你是否真的需要这些灵活性？</p>
 <hr>
 <h2 id="sec-5-8">5.8 一个特别重要的设计问题</h2>
 <p>假设业务流程有 20 个步骤。</p>
@@ -319,15 +305,10 @@
 <hr>
 <h2 id="sec-5-9">5.9 第一次认识 ReAct</h2>
 <p>现在我们来到 Agent 中一个非常经典的执行模式：</p>
-<blockquote>
-<p>ReAct。</p>
-</blockquote>
+<p>现在我们来到 Agent 中一个非常经典的执行模式 ReAct。</p>
 <p>你可以先不要关心这个名字到底代表什么。</p>
 <p>先看行为。</p>
-<p>用户说：</p>
-<blockquote>
-<p>“帮我查订单 10001 为什么还没到。”</p>
-</blockquote>
+<p>用户说：“帮我查订单 10001 为什么还没到。”</p>
 <p>Agent：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>我需要知道订单状态。</span></span>
 <span class="line"><span>      ↓</span></span>
@@ -368,10 +349,7 @@
 <span class="line"><span>answer</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>那么你完全没必要做复杂 ReAct。</p>
-<p>但如果问题变成：</p>
-<blockquote>
-<p>“调查为什么这个订单异常。”</p>
-</blockquote>
+<p>但如果问题变成：“调查为什么这个订单异常。”</p>
 <p>那么可能有很多可能路径：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>订单问题？</span></span>
 <span class="line"><span> ↓</span></span>
@@ -420,13 +398,9 @@
 <li>更难调试</li>
 </ul>
 <p>所以你不能因为：</p>
-<blockquote>
-<p>Agent 可以自己决定路径。</p>
-</blockquote>
+<p>所以你不能因为：Agent 可以自己决定路径。</p>
 <p>就得出：</p>
-<blockquote>
-<p>Agent 一定更适合。</p>
-</blockquote>
+<p>就得出：Agent 一定更适合。</p>
 <p>真正的问题仍然是：</p>
 <blockquote>
 <p><strong>路径的不确定性有没有高到值得付出这些代价？</strong></p>
@@ -443,10 +417,7 @@
 <span class="line"><span>行动</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>但一些任务可能天然更适合先规划。</p>
-<p>例如：</p>
-<blockquote>
-<p>“调查过去一年某类客户投诉，找出主要原因，并提出三个改进建议。”</p>
-</blockquote>
+<p>例如：“调查过去一年某类客户投诉，找出主要原因，并提出三个改进建议。”</p>
 <p>这已经不是：</p>
 <blockquote>
 <p>查一下订单。</p>
@@ -484,15 +455,9 @@
 <p>这就是 Planning。</p>
 <hr>
 <h2 id="sec-5-13">5.13 Planning 不是万能药</h2>
-<p>有的人学会 Planning 以后，会开始：</p>
-<blockquote>
-<p>“所有 Agent 都先做 Plan。”</p>
-</blockquote>
+<p>有的人学会 Planning 以后，会开始：“所有 Agent 都先做 Plan。”</p>
 <p>其实也不对。</p>
-<p>如果任务只是：</p>
-<blockquote>
-<p>“查询订单 10001。”</p>
-</blockquote>
+<p>如果任务只是：“查询订单 10001。”</p>
 <p>先生成一个 10 步计划，反而增加了：</p>
 <ul>
 <li>Token</li>
@@ -531,10 +496,7 @@
 <p>代价也更高。</p>
 <hr>
 <h2 id="sec-5-15">5.15 Reflection：让 Agent 检查自己的结果</h2>
-<p>现在再考虑：</p>
-<blockquote>
-<p>“模型已经完成答案了，但我们不太放心。”</p>
-</blockquote>
+<p>现在再考虑：“模型已经完成答案了，但我们不太放心。”</p>
 <p>一种常见思路是：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Generate</span></span>
 <span class="line"><span> ↓</span></span>
@@ -545,19 +507,13 @@
 <span class="line"><span>Final</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>例如：</p>
-<blockquote>
-<p>第一轮模型生成维修建议。</p>
-</blockquote>
+<p>例如：第一轮模型生成维修建议。</p>
 <p>然后另一个模型检查：</p>
-<blockquote>
-<p>是否引用了错误维修手册？</p>
-</blockquote>
-<blockquote>
-<p>是否遗漏了关键故障码？</p>
-</blockquote>
-<blockquote>
-<p>是否给出了没有依据的结论？</p>
-</blockquote>
+<ul>
+<li>是否引用了错误维修手册？</li>
+<li>是否遗漏了关键故障码？</li>
+<li>是否给出了没有依据的结论？</li>
+</ul>
 <p>如果发现问题：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Critique</span></span>
 <span class="line"><span> ↓</span></span>
@@ -619,9 +575,7 @@
 <span class="line"><span>Reflection</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>注意：</p>
-<blockquote>
-<p>它们可以组合。</p>
-</blockquote>
+<p>注意：它们可以组合。</p>
 <p>例如：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Workflow</span></span>
 <span class="line"><span>   ↓</span></span>
@@ -728,13 +682,9 @@
 <span class="line"><span>search_history</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>模型自己决定：</p>
-<blockquote>
-<p>先查什么。</p>
-</blockquote>
+<p>模型自己决定先查什么。</p>
 <p>然后：</p>
-<blockquote>
-<p>根据结果决定下一步。</p>
-</blockquote>
+<p>然后：根据结果决定下一步。</p>
 <p>优点：</p>
 <ul>
 <li>灵活</li>
@@ -773,9 +723,7 @@
 <p><strong>为什么一定要拆成三个 Agent？</strong></p>
 </blockquote>
 <p>如果一个 Agent 就能很好地完成：</p>
-<blockquote>
-<p>收集 + 分析 + 建议。</p>
-</blockquote>
+<p>如果一个 Agent 就能很好地完成，收集 + 分析 + 建议。</p>
 <p>那么 Multi-Agent 反而可能是过度设计。</p>
 <hr>
 <h2 id="sec-5-24">5.24 Architecture Shootout</h2>
@@ -918,10 +866,7 @@
 </tbody>
 </table>
 <p>这时候你选择什么？</p>
-<p>很多人会说：</p>
-<blockquote>
-<p>Multi-Agent，因为准确率最高。</p>
-</blockquote>
+<p>很多人会说：Multi-Agent，因为准确率最高。</p>
 <p>但这不是完整的工程判断。</p>
 <p>如果业务要求：</p>
 <blockquote>
@@ -972,9 +917,7 @@
 <p>现在，我们可以给出一个比较成熟的判断。</p>
 <p>一个任务越满足下面这些特征，就越值得考虑 Agent：</p>
 <h3 id="sec-x35">第一</h3>
-<blockquote>
 <p>路径本身难以提前定义。</p>
-</blockquote>
 <h3 id="sec-x36">第二</h3>
 <blockquote>
 <p>下一步需要基于当前观察结果动态决定。</p>
@@ -984,9 +927,7 @@
 <p>可用工具很多，而且调用顺序不是固定的。</p>
 </blockquote>
 <h3 id="sec-x38">第四</h3>
-<blockquote>
 <p>任务可能需要探索和反复调查。</p>
-</blockquote>
 <h3 id="sec-x39">第五</h3>
 <blockquote>
 <p>业务价值足以覆盖 Agent 带来的额外复杂度。</p>
@@ -1008,13 +949,9 @@
 <h2 id="sec-5-28">5.28 Agent 其实是在购买“路径自由”</h2>
 <p>这是理解 Agent 最好的一个抽象。</p>
 <p>Workflow 给你：</p>
-<blockquote>
-<p>可控的执行路径。</p>
-</blockquote>
+<p>Workflow 给你可控的执行路径。</p>
 <p>Agent 给你：</p>
-<blockquote>
-<p>动态的执行路径。</p>
-</blockquote>
+<p>Agent 给你动态的执行路径。</p>
 <p>因此：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Workflow</span></span>
 <span class="line"><span>= Control</span></span>
@@ -1027,13 +964,9 @@
 <p><strong>当前业务到底更需要 Control，还是更需要 Flexibility？</strong></p>
 </blockquote>
 <p>高风险支付系统可能更需要：</p>
-<blockquote>
-<p>Control。</p>
-</blockquote>
+<p>高风险支付系统可能更需要 Control。</p>
 <p>复杂故障调查可能更需要：</p>
-<blockquote>
-<p>Flexibility。</p>
-</blockquote>
+<p>复杂故障调查可能更需要 Flexibility。</p>
 <p>这比背诵：</p>
 <blockquote>
 <p>ReAct / Planning / Reflection</p>
@@ -1068,10 +1001,7 @@
 <span class="line"><span>                      ↓</span></span>
 <span class="line"><span>                  Final Action</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>这往往比：</p>
-<blockquote>
-<p>“整个系统全部由 Agent 管。”</p>
-</blockquote>
+<p>这往往比：“整个系统全部由 Agent 管。”</p>
 <p>更符合生产环境。</p>
 <hr>
 <h2 id="sec-5-30">5.30 练习：把一个 Agent 拆回 Workflow</h2>
@@ -1091,34 +1021,24 @@
 <span class="line"><span></span></span></code></pre>
 <p>请你认真查看它过去 100 次执行记录。</p>
 <p>然后问：</p>
-<blockquote>
-<p>这些执行路径真的都不同吗？</p>
-</blockquote>
+<p>然后问：这些执行路径真的都不同吗？</p>
 <p>如果你发现：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>90% 的任务：</span></span>
 <span class="line"><span></span></span>
 <span class="line"><span>A → B → C</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>那么你应该考虑：</p>
-<blockquote>
-<p>能不能把主要路径重新变成 Workflow？</p>
-</blockquote>
+<p>那么你应该考虑：能不能把主要路径重新变成 Workflow？</p>
 <p>然后只让 Agent 负责：</p>
-<blockquote>
-<p>那 10% 无法提前确定的部分。</p>
-</blockquote>
+<p>然后只让 Agent 负责：那 10% 无法提前确定的部分。</p>
 <p>这是一个非常成熟的工程优化方向。</p>
 <hr>
 <h2 id="sec-5-31">5.31 练习：什么时候需要 Planning？</h2>
 <p>给下面三个任务分类。</p>
 <h3 id="sec-task-a">Task A</h3>
-<blockquote>
 <p>查询订单状态。</p>
-</blockquote>
 <h3 id="sec-task-b">Task B</h3>
-<blockquote>
 <p>调查一个复杂故障。</p>
-</blockquote>
 <h3 id="sec-task-c">Task C</h3>
 <blockquote>
 <p>分析一年客户投诉并提出改进方案。</p>
@@ -1152,9 +1072,7 @@
 <span class="line"><span></span></span></code></pre>
 <p>这个优化值得吗？</p>
 <p>答案取决于：</p>
-<blockquote>
-<p>业务目标。</p>
-</blockquote>
+<p>答案取决于：业务目标。</p>
 <p>例如：</p>
 <ul>
 <li>医疗辅助？</li>
@@ -1169,10 +1087,7 @@
 </blockquote>
 <hr>
 <h2 id="sec-5-33">5.33 Part 5 最重要的认知变化</h2>
-<p>到这里，你应该已经不再把 Agent 看作：</p>
-<blockquote>
-<p>“一个更高级的 LLM API。”</p>
-</blockquote>
+<p>到这里，你应该已经不再把 Agent 看作：“一个更高级的 LLM API。”</p>
 <p>而应该把它看成：</p>
 <blockquote>
 <p><strong>一种把部分控制流交给模型的系统架构。</strong></p>
@@ -1181,15 +1096,11 @@
 <hr>
 <h3 id="sec-workflow-2">Workflow</h3>
 <p>程序决定：</p>
-<blockquote>
-<p>下一步做什么。</p>
-</blockquote>
+<p>程序决定下一步做什么。</p>
 <hr>
 <h3 id="sec-agent-2">Agent</h3>
 <p>模型在约束范围内决定：</p>
-<blockquote>
-<p>下一步做什么。</p>
-</blockquote>
+<p>模型在约束范围内决定下一步做什么。</p>
 <hr>
 <h3 id="sec-multi-agent">Multi-Agent</h3>
 <p>多个决策实体协作：</p>

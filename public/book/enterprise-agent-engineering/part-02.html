@@ -34,30 +34,18 @@
 </blockquote>
 <p>Part 1 解决了调用边界：请求能够发出去，返回值也经过结构校验。但接口正常不代表模型在每次决策时都获得了真正需要的信息。</p>
 <p>现在假设服务本身没有报错，用户却仍然遇到一个问题。</p>
-<p>用户说：</p>
-<blockquote>
-<p>“我前面已经告诉你了，我的车是 2024 款双电机版本，为什么你又问我车型？”</p>
-</blockquote>
+<p>用户说：“我前面已经告诉你了，我的车是 2024 款双电机版本，为什么你又问我车型？”</p>
 <p>你查看日志。</p>
 <p>发现用户明明说过。</p>
 <p>模型也明明收到了对话历史。</p>
 <p>甚至那句话就在上下文里。</p>
 <p>可是模型还是没有使用。</p>
-<p>于是你开始修改 Prompt：</p>
-<blockquote>
-<p>“请注意，一定要记住用户已经提供的信息。”</p>
-</blockquote>
+<p>于是你开始修改 Prompt：“请注意，一定要记住用户已经提供的信息。”</p>
 <p>还是不稳定。</p>
-<p>你继续修改：</p>
-<blockquote>
-<p>“不要重复询问用户已经提供的信息。”</p>
-</blockquote>
+<p>你继续修改：“不要重复询问用户已经提供的信息。”</p>
 <p>似乎好了一点。</p>
 <p>但过了一段时间，对话变长以后，问题又出现了。</p>
-<p>这时候，你开始怀疑：</p>
-<blockquote>
-<p>“是不是模型的记忆能力不行？”</p>
-</blockquote>
+<p>这时候，你开始怀疑：“是不是模型的记忆能力不行？”</p>
 <p>但很多时候，真正的问题并不是“模型不会记”。</p>
 <p>而是：</p>
 <blockquote>
@@ -67,10 +55,7 @@
 <hr>
 <h2 id="sec-2-1">2.1 模型到底看到了什么？</h2>
 <p>这是整个 Part 2 最值得你反复思考的问题。</p>
-<p>当用户说：</p>
-<blockquote>
-<p>“帮我看看订单为什么还没发货。”</p>
-</blockquote>
+<p>当用户说：“帮我看看订单为什么还没发货。”</p>
 <p>你可能认为模型看到的只是：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>帮我看看订单为什么还没发货。</span></span>
 <span class="line"><span></span></span></code></pre>
@@ -113,10 +98,7 @@
 <span class="line"><span>└── Memory</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>最后这些信息一起进入模型。</p>
-<p>因此，如果模型做错了，你真正应该问的问题不是：</p>
-<blockquote>
-<p>“模型为什么不知道？”</p>
-</blockquote>
+<p>因此，如果模型做错了，你真正应该问的问题不是：“模型为什么不知道？”</p>
 <p>而是：</p>
 <blockquote>
 <p><strong>“在它做出这个决定的那一刻，它到底看到了什么？”</strong></p>
@@ -130,10 +112,7 @@
 <blockquote>
 <p>它知道你公司的内部规则。</p>
 </blockquote>
-<p>例如，你问：</p>
-<blockquote>
-<p>“按照我们公司的报销制度，这种费用能不能报？”</p>
-</blockquote>
+<p>例如，你问：“按照我们公司的报销制度，这种费用能不能报？”</p>
 <p>如果公司的报销制度从来没有进入 Context，那么模型即使再强，也不能凭空知道你们公司的内部规定。</p>
 <p>因此：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model Knowledge</span></span>
@@ -156,20 +135,14 @@
 <span class="line"><span>        ↓</span></span>
 <span class="line"><span>Current Behavior</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>所以很多时候，一个 Agent 表现不好，并不意味着：</p>
-<blockquote>
-<p>“换一个更强的模型。”</p>
-</blockquote>
+<p>所以很多时候，一个 Agent 表现不好，并不意味着：“换一个更强的模型。”</p>
 <p>可能只意味着：</p>
 <blockquote>
 <p><strong>你没有给当前任务构造出合适的 Context。</strong></p>
 </blockquote>
 <hr>
 <h2 id="sec-2-3">2.3 为什么把信息全部塞进去也不是好办法？</h2>
-<p>这是很多初学者非常自然的想法：</p>
-<blockquote>
-<p>“既然模型可能缺信息，那我就把所有东西全部给它。”</p>
-</blockquote>
+<p>这是很多初学者非常自然的想法：“既然模型可能缺信息，那我就把所有东西全部给它。”</p>
 <p>于是一个用户的问题进入系统以后，Context 变成：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户基本信息</span></span>
 <span class="line"><span>+</span></span>
@@ -190,32 +163,21 @@
 <span class="line"><span>所有之前的 Tool Result</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>从直觉上看，这似乎非常稳妥。</p>
-<p>因为：</p>
-<blockquote>
-<p>“反正信息都在里面。”</p>
-</blockquote>
+<p>因为：“反正信息都在里面。”</p>
 <p>但很快你会发现，这种做法存在至少三个问题。</p>
 <hr>
 <h3 id="sec-x5">第一，成本越来越高</h3>
 <p>Context 变长以后，输入 token 增加。</p>
 <p>输入 token 增加以后：</p>
-<blockquote>
-<p>调用成本可能增加。</p>
-</blockquote>
+<p>输入 token 增加以后调用成本可能增加。</p>
 <hr>
 <h3 id="sec-x6">第二，延迟越来越高</h3>
 <p>更长的输入意味着更多数据需要经过模型处理。</p>
-<p>对于一个实时交互系统来说：</p>
-<blockquote>
-<p>更大的 Context 往往意味着更大的响应压力。</p>
-</blockquote>
+<p>对于一个实时交互系统来说：更大的 Context 往往意味着更大的响应压力。</p>
 <hr>
 <h3 id="sec-x7">第三，信息可能开始互相干扰</h3>
 <p>这是最容易被忽略的问题。</p>
-<p>假设用户当前的问题是：</p>
-<blockquote>
-<p>“为什么我的车今天无法充电？”</p>
-</blockquote>
+<p>假设用户当前的问题是：“为什么我的车今天无法充电？”</p>
 <p>你真正需要的可能只是：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>当前车辆型号</span></span>
 <span class="line"><span>当前故障码</span></span>
@@ -284,10 +246,7 @@
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>orders</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>有一千万行数据。</p>
-<p>现在用户查询：</p>
-<blockquote>
-<p>“帮我查订单 10001。”</p>
-</blockquote>
+<p>现在用户查询：“帮我查订单 10001。”</p>
 <p>你显然不会这样做：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">SELECT</span><span style="color:#D73A49"> *</span></span>
 <span class="line"><span style="color:#D73A49">FROM</span><span style="color:#24292E"> orders;</span></span>
@@ -341,9 +300,7 @@
 <span class="line"><span>用户：有，P0XXX。</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>如果对话只有六轮，那么：</p>
-<blockquote>
-<p>全部保存下来很容易。</p>
-</blockquote>
+<p>如果对话只有六轮，那么，全部保存下来很容易。</p>
 <p>于是：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>History</span></span>
 <span class="line"><span>   ↓</span></span>
@@ -386,15 +343,9 @@
 <blockquote>
 <p>有些历史信息实际上已经失去价值。</p>
 </blockquote>
-<p>例如用户在第 3 轮说：</p>
-<blockquote>
-<p>“我现在在公司楼下。”</p>
-</blockquote>
+<p>例如用户在第 3 轮说：“我现在在公司楼下。”</p>
 <p>到第 80 轮讨论电池故障的时候，这句话大概率已经不重要了。</p>
-<p>而用户在第 7 轮说：</p>
-<blockquote>
-<p>“车型是 2024 款双电机。”</p>
-</blockquote>
+<p>而用户在第 7 轮说：“车型是 2024 款双电机。”</p>
 <p>这可能几十轮以后仍然非常重要。</p>
 <p>所以：</p>
 <blockquote>
@@ -424,23 +375,15 @@
 <li>实现简单</li>
 </ul>
 <p>但是马上会出现一个问题：</p>
-<blockquote>
-<p>如果第 10 轮有一条非常重要的信息，而现在已经到了第 100 轮怎么办？</p>
-</blockquote>
+<p>但是马上会出现一个问题：如果第 10 轮有一条非常重要的信息，而现在已经到了第 100 轮怎么办？</p>
 <p>例如：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>第 7 轮：</span></span>
 <span class="line"><span></span></span>
 <span class="line"><span>车型：2024 款双电机</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>100 轮以后，被窗口策略丢掉了。</p>
-<p>于是模型又开始问：</p>
-<blockquote>
-<p>“请提供车型。”</p>
-</blockquote>
-<p>用户非常生气：</p>
-<blockquote>
-<p>“我不是早告诉你了吗？”</p>
-</blockquote>
+<p>于是模型又开始问：“请提供车型。”</p>
+<p>用户非常生气：“我不是早告诉你了吗？”</p>
 <p>这时候你会发现：</p>
 <blockquote>
 <p><strong>“最近的信息”不等于“最重要的信息”。</strong></p>
@@ -472,17 +415,9 @@
 <p><strong>如何减少 Context 大小。</strong></p>
 </blockquote>
 <p>但 Summary 也带来一个风险：</p>
-<blockquote>
-<p>摘要本身可能丢失信息。</p>
-</blockquote>
-<p>比如原对话里有：</p>
-<blockquote>
-<p>“第一次故障发生在 10 月 3 日晚 9 点 15 分。”</p>
-</blockquote>
-<p>摘要可能写成：</p>
-<blockquote>
-<p>“近期发生故障。”</p>
-</blockquote>
+<p>但 Summary 也带来一个风险摘要本身可能丢失信息。</p>
+<p>比如原对话里有：“第一次故障发生在 10 月 3 日晚 9 点 15 分。”</p>
+<p>摘要可能写成：“近期发生故障。”</p>
 <p>如果这个时间后来非常重要，就会丢失。</p>
 <p>因此：</p>
 <blockquote>
@@ -527,10 +462,7 @@
 <hr>
 <h2 id="sec-2-11">2.11 History 和 State 不是一回事</h2>
 <p>这个区别值得单独记住。</p>
-<p>假设用户说：</p>
-<blockquote>
-<p>“我昨天已经重启过设备了，还是不行。”</p>
-</blockquote>
+<p>假设用户说：“我昨天已经重启过设备了，还是不行。”</p>
 <p>这是：</p>
 <blockquote>
 <p>Conversation History。</p>
@@ -539,9 +471,7 @@
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>restart_attempted = true</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>这就是：</p>
-<blockquote>
-<p>Task State。</p>
-</blockquote>
+<p>这就是：Task State。</p>
 <p>两者可以同时存在。</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Conversation History</span></span>
 <span class="line"><span>=</span></span>
@@ -596,25 +526,13 @@
 <h2 id="sec-2-13">2.13 Memory 又是什么？</h2>
 <p>现在问题进一步复杂了。</p>
 <p>假设一个用户连续使用你的 Agent 一个月。</p>
-<p>第一天他说：</p>
-<blockquote>
-<p>“以后回复我时尽量简洁一点。”</p>
-</blockquote>
-<p>第七天他说：</p>
-<blockquote>
-<p>“我是做电池测试的工程师。”</p>
-</blockquote>
-<p>第二十天他说：</p>
-<blockquote>
-<p>“我通常需要先看诊断数据，再看维修建议。”</p>
-</blockquote>
+<p>第一天他说：“以后回复我时尽量简洁一点。”</p>
+<p>第七天他说：“我是做电池测试的工程师。”</p>
+<p>第二十天他说：“我通常需要先看诊断数据，再看维修建议。”</p>
 <p>这些信息如果每次都从头开始重新解释，非常低效。</p>
 <p>于是我们可能希望系统“记住”。</p>
 <p>这就是 Memory。</p>
-<p>但 Memory 不应该简单理解成：</p>
-<blockquote>
-<p>“把全部历史对话永久保存下来。”</p>
-</blockquote>
+<p>但 Memory 不应该简单理解成：“把全部历史对话永久保存下来。”</p>
 <p>因为那样得到的只是一个越来越大的聊天记录。</p>
 <p>真正的 Memory 需要回答：</p>
 <blockquote>
@@ -639,9 +557,7 @@
 <h2 id="sec-2-14">2.14 Memory、History、State、RAG：把它们的关系区分开</h2>
 <p>这几个词经常被混在一起，但它们并不处于同一个概念层级。</p>
 <h3 id="sec-history">History</h3>
-<blockquote>
 <p>已经发生过的对话或事件记录。</p>
-</blockquote>
 <p>例如：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户昨天报告过同一个故障。</span></span>
 <span class="line"><span></span></span></code></pre>
@@ -675,10 +591,7 @@
 <p>因此请记住：<strong>Context 描述当前决策给模型看的输入视图；State 是权威当前状态；Memory 是经治理的信息；RAG 是获取外部证据的路径。它们有关联，但并非同一维度的“信息来源”。</strong></p>
 <h2 id="sec-2-15">2.15 Context Construction：真正开始工程化</h2>
 <p>现在我们可以正式把 Context 构建过程工程化。</p>
-<p>假设用户问：</p>
-<blockquote>
-<p>“这个故障为什么还没解决？”</p>
-</blockquote>
+<p>假设用户问：“这个故障为什么还没解决？”</p>
 <p>Context Builder 可以做：</p>
 <h3 id="sec-x25">第一步：当前问题</h3>
 <p>保留：</p>
@@ -771,10 +684,7 @@
 <hr>
 <h2 id="sec-2-17">2.17 一个非常重要的问题：相关性</h2>
 <p>假设你的系统拥有 10000 条历史维修记录。</p>
-<p>用户当前只问：</p>
-<blockquote>
-<p>“P0XXX 这个故障码通常意味着什么？”</p>
-</blockquote>
+<p>用户当前只问：“P0XXX 这个故障码通常意味着什么？”</p>
 <p>你显然不应该把 10000 条全部塞进去。</p>
 <p>需要先做：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Query</span></span>
@@ -799,10 +709,7 @@
 <hr>
 <h2 id="sec-2-18">2.18 Context Budget：每一块 Context 都应该有预算</h2>
 <p>假设模型允许非常大的上下文。</p>
-<p>我们仍然不应该认为：</p>
-<blockquote>
-<p>“那就全部放进去。”</p>
-</blockquote>
+<p>我们仍然不应该认为：“那就全部放进去。”</p>
 <p>可以给不同来源设置预算。</p>
 <p>例如只是示意：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Instructions      10%</span></span>
@@ -817,10 +724,7 @@
 <blockquote>
 <p><strong>Context 是有限资源。</strong></p>
 </blockquote>
-<p>每一类信息都应该争取：</p>
-<blockquote>
-<p>“我为什么值得占用上下文空间？”</p>
-</blockquote>
+<p>每一类信息都应该争取：“我为什么值得占用上下文空间？”</p>
 <p>这和后端中的：</p>
 <ul>
 <li>CPU budget</li>
@@ -833,17 +737,11 @@
 <h2 id="sec-2-19">2.19 信息应该如何被压缩？</h2>
 <p>假设你已经发现 Context 太长。</p>
 <p>第一种思路：</p>
-<blockquote>
-<p>直接截掉后面的内容。</p>
-</blockquote>
+<p>第一种思路直接截掉后面的内容。</p>
 <p>第二种：</p>
-<blockquote>
-<p>删除最早的内容。</p>
-</blockquote>
+<p>第二种：删除最早的内容。</p>
 <p>第三种：</p>
-<blockquote>
-<p>全部总结成一段话。</p>
-</blockquote>
+<p>第三种：全部总结成一段话。</p>
 <p>都不一定好。</p>
 <p>更好的问题是：</p>
 <blockquote>
@@ -882,10 +780,7 @@
 <h2 id="sec-2-20">2.20 一个 100 轮对话实验</h2>
 <p>现在设计一个实验。</p>
 <p>创建一个非常简单的 Agent。</p>
-<p>让它完成一个长期任务，比如：</p>
-<blockquote>
-<p>“帮助用户分析一台存在间歇性故障的设备。”</p>
-</blockquote>
+<p>让它完成一个长期任务，比如：“帮助用户分析一台存在间歇性故障的设备。”</p>
 <p>用户逐步提供：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Turn 1</span></span>
 <span class="line"><span>设备型号</span></span>
@@ -1003,31 +898,23 @@
 <h3 id="sec-failure-a">Failure A：关键信息被窗口删除</h3>
 <p>把关键事实放在很早的历史位置。</p>
 <p>观察：</p>
-<blockquote>
-<p>模型什么时候开始重复提问？</p>
-</blockquote>
+<p>观察：模型什么时候开始重复提问？</p>
 <hr>
 <h3 id="sec-failure-b-summary">Failure B：Summary 丢失关键事实</h3>
 <p>故意让摘要模型压缩掉一个关键字段。</p>
 <p>然后观察：</p>
-<blockquote>
-<p>后续任务是否失败？</p>
-</blockquote>
+<p>然后观察：后续任务是否失败？</p>
 <hr>
 <h3 id="sec-failure-c">Failure C：塞入大量无关信息</h3>
 <p>加入大量与当前任务无关的历史记录。</p>
 <p>观察：</p>
-<blockquote>
-<p>任务成功率和响应行为是否变化？</p>
-</blockquote>
+<p>观察：任务成功率和响应行为是否变化？</p>
 <hr>
 <h3 id="sec-failure-d">Failure D：状态过期</h3>
 <p>用户在第 20 轮修改车型。</p>
 <p>但 <code>State</code> 仍然保存旧车型。</p>
 <p>观察：</p>
-<blockquote>
-<p>Agent 会使用哪个？</p>
-</blockquote>
+<p>观察：Agent 会使用哪个？</p>
 <p>这实际上是非常典型的：</p>
 <blockquote>
 <p><strong>State Consistency 问题。</strong></p>
@@ -1036,9 +923,7 @@
 <h3 id="sec-failure-e-retrieval">Failure E：Retrieval 找到了错误文档</h3>
 <p>让知识库里存在多个高度相似的文档。</p>
 <p>观察：</p>
-<blockquote>
-<p>模型是否能够识别检索结果可能不可靠？</p>
-</blockquote>
+<p>观察：模型是否能够识别检索结果可能不可靠？</p>
 <hr>
 <h2 id="sec-2-23">2.23 从失败中你会发现一个非常重要的事实</h2>
 <p>Context 本身已经开始像一种工程系统。</p>
@@ -1069,13 +954,9 @@
 <p>这条命令是一次对照观察，不足以独立证明某策略普遍更优。报告应同时保留每案例的事实遗漏、旧值冲突、上下文规模、真实 usage（如果 Provider 提供）和成本未知状态。<code>AI_PERSIST_RAW_MODEL_OUTPUT</code> 与 <code>AI_PERSIST_SENSITIVE_INPUTS</code> 是不同的持久化开关，默认都关闭；保存原始回答或敏感输入前，应先确认本地数据处理与留存安排。建议将结果写入 <code>part02-context-benchmark.md</code>，并明确区分启发式 token 估算和 Provider 实际 usage。</p>
 <h2 id="sec-2-24">2.24 Context 和 Prompt：不要再混为一谈</h2>
 <p>很多文章会把：</p>
-<blockquote>
-<p>Prompt</p>
-</blockquote>
+<p>很多文章会把 Prompt</p>
 <p>和：</p>
-<blockquote>
-<p>Context</p>
-</blockquote>
+<p>和：Context</p>
 <p>混在一起说。</p>
 <p>在实际工程中，可以做一个简单区分。</p>
 <p>Prompt 更强调：</p>
@@ -1103,10 +984,7 @@
 <span class="line"><span>Context</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>共同构成一次模型调用的重要输入。</p>
-<p>这个区分很重要，因为后面当 Agent 出问题时：</p>
-<blockquote>
-<p>“改 Prompt”只是解决问题的一种可能。</p>
-</blockquote>
+<p>这个区分很重要，因为后面当 Agent 出问题时：“改 Prompt”只是解决问题的一种可能。</p>
 <p>有时候真正应该修改的是：</p>
 <ul>
 <li>Retrieval</li>
@@ -1148,15 +1026,11 @@
 <span class="line"><span></span></span></code></pre>
 <p>那么系统依然可能是一个固定 Workflow。</p>
 <p>如果系统可以根据当前任务动态决定：</p>
-<blockquote>
-<p>我现在缺什么信息？</p>
-</blockquote>
-<blockquote>
-<p>我应该查哪个知识源？</p>
-</blockquote>
-<blockquote>
-<p>我是否需要重新检索？</p>
-</blockquote>
+<ul>
+<li>我现在缺什么信息？</li>
+<li>我应该查哪个知识源？</li>
+<li>我是否需要重新检索？</li>
+</ul>
 <p>那么 Agent 就开始出现了。</p>
 <p>所以你会发现：</p>
 <blockquote>
@@ -1164,13 +1038,9 @@
 </blockquote>
 <p>Agent 并不是凭空出现。</p>
 <p>它首先必须知道：</p>
-<blockquote>
-<p>自己现在拥有什么信息。</p>
-</blockquote>
+<p>它首先必须知道自己现在拥有什么信息。</p>
 <p>以及：</p>
-<blockquote>
-<p>自己还缺什么信息。</p>
-</blockquote>
+<p>以及：自己还缺什么信息。</p>
 <p>然后才可能决定：</p>
 <blockquote>
 <p>下一步应该做什么。</p>
@@ -1204,14 +1074,8 @@
 <p>这也是为什么我们先学 Context，再进入 Tool 和 Agent Harness。</p>
 <hr>
 <h2 id="sec-2-28">2.28 一个工程师应该形成的新直觉</h2>
-<p>以后如果你发现 Agent 出现：</p>
-<blockquote>
-<p>“明明查过了，却又查一次。”</p>
-</blockquote>
-<p>不要立刻认为：</p>
-<blockquote>
-<p>“模型太笨。”</p>
-</blockquote>
+<p>以后如果你发现 Agent 出现：“明明查过了，却又查一次。”</p>
+<p>不要立刻认为：“模型太笨。”</p>
 <p>先检查：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool Result</span></span>
 <span class="line"><span>   ↓</span></span>
@@ -1227,10 +1091,7 @@
 <span class="line"><span></span></span>
 <span class="line"><span>有没有因为 Context 构造错误而丢失？</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>同样，如果：</p>
-<blockquote>
-<p>“模型突然忘了用户的车型。”</p>
-</blockquote>
+<p>同样，如果：“模型突然忘了用户的车型。”</p>
 <p>不要首先改 Prompt。</p>
 <p>先检查：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>History</span></span>
@@ -1243,9 +1104,7 @@
 <h2 id="sec-2-29">2.29 练习：设计一个 Context Schema</h2>
 <p>现在自己选择一个业务。</p>
 <p>例如：</p>
-<blockquote>
-<p>工单 Agent。</p>
-</blockquote>
+<p>例如：工单 Agent。</p>
 <p>尝试定义：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> AgentContext</span><span style="color:#24292E">(</span><span style="color:#6F42C1">BaseModel</span><span style="color:#24292E">):</span></span>
 <span class="line"><span style="color:#24292E">    current_request: </span><span style="color:#005CC5">str</span></span>
@@ -1262,9 +1121,7 @@
 <p><strong>在这个任务里，模型需要看到什么？</strong></p>
 </blockquote>
 <p>然后进一步回答：</p>
-<blockquote>
-<p>为什么？</p>
-</blockquote>
+<p>然后进一步回答：为什么？</p>
 <hr>
 <h2 id="sec-2-30">2.30 练习：把一个巨型 Prompt 拆开</h2>
 <p>假设你手上有这样一个字符串：</p>
@@ -1299,18 +1156,12 @@
 <span class="line"><span>Tool Results</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>然后为每一个部分回答：</p>
-<blockquote>
-<p>来源是什么？</p>
-</blockquote>
-<blockquote>
-<p>生命周期是什么？</p>
-</blockquote>
-<blockquote>
-<p>谁负责更新？</p>
-</blockquote>
-<blockquote>
-<p>什么时候应该删除？</p>
-</blockquote>
+<ul>
+<li>来源是什么？</li>
+<li>生命周期是什么？</li>
+<li>谁负责更新？</li>
+<li>什么时候应该删除？</li>
+</ul>
 <p>这个练习会让你真正开始用“系统”的方式理解 Context。</p>
 <hr>
 <h2 id="sec-2-31">2.31 一个小结论：Context 是动态的</h2>
@@ -1360,27 +1211,19 @@
 <p>我们只是不断回答几个问题。</p>
 <hr>
 <h3 id="sec-x58">第一</h3>
-<blockquote>
 <p>模型到底看到了什么？</p>
-</blockquote>
 <p>答案：</p>
-<blockquote>
-<p>Context。</p>
-</blockquote>
+<p>答案：Context。</p>
 <hr>
 <h3 id="sec-x59">第二</h3>
-<blockquote>
 <p>Context 从哪里来？</p>
-</blockquote>
 <p>答案：</p>
 <blockquote>
 <p>Instructions、User Input、History、State、Memory、Retrieval、Tool Results 等。</p>
 </blockquote>
 <hr>
 <h3 id="sec-x60">第三</h3>
-<blockquote>
 <p>为什么不能把所有信息全部塞进去？</p>
-</blockquote>
 <p>因为：</p>
 <ul>
 <li>成本</li>
@@ -1392,9 +1235,7 @@
 <p>都会成为问题。</p>
 <hr>
 <h3 id="sec-x61">第四</h3>
-<blockquote>
 <p>History、State、Memory、RAG 是不是一回事？</p>
-</blockquote>
 <p>不是。</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>History</span></span>
 <span class="line"><span>= 过去发生过什么</span></span>
@@ -1410,9 +1251,7 @@
 <span class="line"><span></span></span></code></pre>
 <hr>
 <h3 id="sec-x62">第五</h3>
-<blockquote>
 <p>Context Engineering 到底是什么？</p>
-</blockquote>
 <p>可以把它概括成一句话：</p>
 <blockquote>
 <p><strong>为了让模型在当前任务中做出更好的决策，有意识地选择、组织、压缩和注入它应该看到的信息。</strong></p>

@@ -38,10 +38,7 @@
 <hr>
 <h2 id="sec-3-1">3.1 从“回答问题”到“做事情”</h2>
 <p>先看两个请求。</p>
-<p>第一个：</p>
-<blockquote>
-<p>“解释一下为什么我的订单还没有发货。”</p>
-</blockquote>
+<p>第一个：“解释一下为什么我的订单还没有发货。”</p>
 <p>模型可以直接回答。</p>
 <p>它不需要访问任何真实系统，只需要根据给它的上下文生成文字。</p>
 <p>所以：</p>
@@ -54,19 +51,13 @@
 <span class="line"><span>Answer</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>这是一个典型的 LLM Application。</p>
-<p>现在换一个请求：</p>
-<blockquote>
-<p>“帮我查一下订单 10001 现在到哪里了。”</p>
-</blockquote>
+<p>现在换一个请求：“帮我查一下订单 10001 现在到哪里了。”</p>
 <p>模型自己知道订单号，但它并不知道订单系统当前的数据。</p>
 <p>它必须访问：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Order Service</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>这时候事情发生了变化。</p>
-<p>模型需要表达：</p>
-<blockquote>
-<p>“我想调用查询订单这个能力。”</p>
-</blockquote>
+<p>模型需要表达：“我想调用查询订单这个能力。”</p>
 <p>例如：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
 <span class="line"><span style="color:#005CC5">  "name"</span><span style="color:#24292E">: </span><span style="color:#032F62">"query_order"</span><span style="color:#24292E">,</span></span>
@@ -87,10 +78,7 @@
 <span class="line"><span>Tool Result</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>然后把结果再交给模型。</p>
-<p>最终模型才能告诉用户：</p>
-<blockquote>
-<p>“订单 10001 已于昨天出库，目前正在运输中。”</p>
-</blockquote>
+<p>最终模型才能告诉用户：“订单 10001 已于昨天出库，目前正在运输中。”</p>
 <p>这一刻，一个重要变化出现了。</p>
 <p>模型不再只是：</p>
 <blockquote>
@@ -135,15 +123,11 @@
 <p>它们不需要通过自然语言理解 API。</p>
 <p>Agent 不一样。</p>
 <p>模型必须知道：</p>
-<blockquote>
-<p>什么时候应该使用这个 Tool？</p>
-</blockquote>
-<blockquote>
-<p>这个 Tool 能解决什么问题？</p>
-</blockquote>
-<blockquote>
-<p>参数应该怎么填写？</p>
-</blockquote>
+<ul>
+<li>什么时候应该使用这个 Tool？</li>
+<li>这个 Tool 能解决什么问题？</li>
+<li>参数应该怎么填写？</li>
+</ul>
 <p>因此 Tool 的描述质量会直接影响 Agent 的行为。</p>
 <hr>
 <h2 id="sec-3-3">3.3 第一个 Tool</h2>
@@ -171,17 +155,11 @@
 <span class="line"></span></code></pre>
 <p>这里实际上存在三种信息：</p>
 <h3 id="sec-tool-name">Tool Name</h3>
-<blockquote>
 <p>叫什么？</p>
-</blockquote>
 <h3 id="sec-tool-description">Tool Description</h3>
-<blockquote>
 <p>能做什么？</p>
-</blockquote>
 <h3 id="sec-input-schema">Input Schema</h3>
-<blockquote>
 <p>应该怎么调用？</p>
-</blockquote>
 <p>这三个信息共同决定了模型能否正确使用工具。</p>
 <hr>
 <h2 id="sec-3-4">3.4 为什么 Tool Description 很重要？</h2>
@@ -189,14 +167,9 @@
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order()</span></span>
 <span class="line"><span>query_customer()</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>用户说：</p>
-<blockquote>
-<p>“帮我看看张三那个订单。”</p>
-</blockquote>
+<p>用户说：“帮我看看张三那个订单。”</p>
 <p>模型必须知道：</p>
-<blockquote>
-<p>先查订单还是先查客户？</p>
-</blockquote>
+<p>模型必须知道：先查订单还是先查客户？</p>
 <p>如果 Tool Description 写得非常模糊：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order:</span></span>
 <span class="line"><span>查询数据。</span></span>
@@ -266,9 +239,7 @@
 <span class="line"><span></span></span></code></pre>
 <p>模型更容易理解。</p>
 <p>但工具太细也有问题：</p>
-<blockquote>
-<p>工具数量过多。</p>
-</blockquote>
+<p>但工具太细也有问题工具数量过多。</p>
 <p>所以 Tool Design 没有一个绝对标准。</p>
 <p>你需要在：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool Granularity</span></span>
@@ -289,17 +260,12 @@
 <p>你可能觉得这很方便。</p>
 <p>模型只要会 SQL，就能访问数据库。</p>
 <p>但从工程角度看，这相当于：</p>
-<blockquote>
-<p>给了模型非常大的权限。</p>
-</blockquote>
+<p>但从工程角度看，这相当于给了模型非常大的权限。</p>
 <p>模型可能生成：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">DROP</span><span style="color:#D73A49"> TABLE</span><span style="color:#24292E"> orders;</span></span>
 <span class="line"></span></code></pre>
 <p>当然，优秀模型不一定会这么做。</p>
-<p>但工程系统不能建立在：</p>
-<blockquote>
-<p>“模型应该不会这么做。”</p>
-</blockquote>
+<p>但工程系统不能建立在：“模型应该不会这么做。”</p>
 <p>之上。</p>
 <p>一个更合理的思想是：</p>
 <blockquote>
@@ -329,9 +295,7 @@
 <span class="line"><span>get_vehicle_status()</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>它们主要：</p>
-<blockquote>
-<p>获取信息。</p>
-</blockquote>
+<p>它们主要获取信息。</p>
 <p>通常风险较低。</p>
 <hr>
 <h3 id="sec-write-tool">Write Tool</h3>
@@ -342,9 +306,7 @@
 <span class="line"><span>issue_refund()</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>它们会：</p>
-<blockquote>
-<p>改变真实世界。</p>
-</blockquote>
+<p>它们会：改变真实世界。</p>
 <p>因此风险更高。</p>
 <hr>
 <h3 id="sec-irreversible-tool">Irreversible Tool</h3>
@@ -389,14 +351,9 @@
 <span class="line"><span style="color:#24292E">}</span></span>
 <span class="line"></span></code></pre>
 <p>这个结果不能只返回给用户。</p>
-<p>因为用户的问题是：</p>
-<blockquote>
-<p>“为什么订单没发货？”</p>
-</blockquote>
+<p>因为用户的问题是：“为什么订单没发货？”</p>
 <p>模型需要看到这个结果，再决定：</p>
-<blockquote>
-<p>是否还需要查物流？</p>
-</blockquote>
+<p>模型需要看到这个结果，再决定：是否还需要查物流？</p>
 <p>因此 Tool Result 必须进入 Context。</p>
 <p>于是：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>User</span></span>
@@ -467,10 +424,7 @@
 <p>然后产生一个结果。</p>
 <hr>
 <h3 id="sec-x18">第二步：判断结果</h3>
-<p>如果模型说：</p>
-<blockquote>
-<p>我要调用 <code>query_order</code>。</p>
-</blockquote>
+<p>如果模型说：我要调用 <code>query_order</code>。</p>
 <p>那么进入：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">if</span><span style="color:#24292E"> response.tool_call:</span></span>
 <span class="line"></span></code></pre>
@@ -487,10 +441,7 @@
 <p><strong>你的程序执行 Tool。</strong></p>
 </blockquote>
 <p>这是一个极其重要的边界。</p>
-<p>模型只提出：</p>
-<blockquote>
-<p>“我想调用这个能力。”</p>
-</blockquote>
+<p>模型只提出：“我想调用这个能力。”</p>
 <p>真正执行：</p>
 <blockquote>
 <p>由你的 Runtime / Backend 负责。</p>
@@ -500,22 +451,16 @@
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">context.append(result)</span></span>
 <span class="line"></span></code></pre>
 <p>模型下一次调用就能看到：</p>
-<blockquote>
-<p>刚刚发生了什么。</p>
-</blockquote>
+<p>模型下一次调用就能看到刚刚发生了什么。</p>
 <hr>
 <h3 id="sec-x21">第五步：继续</h3>
 <p>再次：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">response </span><span style="color:#D73A49">=</span><span style="color:#24292E"> model(context)</span></span>
 <span class="line"></span></code></pre>
 <p>模型可能决定：</p>
-<blockquote>
-<p>继续查询物流。</p>
-</blockquote>
+<p>模型可能决定继续查询物流。</p>
 <p>也可能：</p>
-<blockquote>
-<p>已经足够了，可以回答用户。</p>
-</blockquote>
+<p>也可能已经足够了，可以回答用户。</p>
 <p>于是整个过程就形成：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Decision</span></span>
 <span class="line"><span>   ↓</span></span>
@@ -534,10 +479,7 @@
 <p>这就是 Agent Loop。</p>
 <hr>
 <h2 id="sec-3-10">3.10 Agent Loop 最重要的不是“循环”</h2>
-<p>很多人第一次看到 Agent Loop，会觉得：</p>
-<blockquote>
-<p>“不就是 while True 吗？”</p>
-</blockquote>
+<p>很多人第一次看到 Agent Loop，会觉得：“不就是 while True 吗？”</p>
 <p>从代码结构来说，确实如此。</p>
 <p>但真正重要的是：</p>
 <blockquote>
@@ -578,9 +520,7 @@
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">while</span><span style="color:#005CC5"> True</span><span style="color:#24292E">:</span></span>
 <span class="line"></span></code></pre>
 <p>那就存在一个问题：</p>
-<blockquote>
-<p>它什么时候退出？</p>
-</blockquote>
+<p>那就存在一个问题：它什么时候退出？</p>
 <p>最简单的方法：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">if</span><span style="color:#D73A49"> not</span><span style="color:#24292E"> response.tool_call:</span></span>
 <span class="line"><span style="color:#D73A49">    break</span></span>
@@ -599,9 +539,7 @@
 <span class="line"><span style="color:#24292E">    stop()</span></span>
 <span class="line"></span></code></pre>
 <p>为什么一定需要：</p>
-<blockquote>
-<p><code>max_iterations</code>？</p>
-</blockquote>
+<p>为什么一定需要：<code>max_iterations</code>？</p>
 <p>因为 Agent 可能陷入：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool A</span></span>
 <span class="line"><span> ↓</span></span>
@@ -623,9 +561,7 @@
 <span class="line"><span>再查询</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>这种情况下，没有停止条件的 Agent 可能：</p>
-<blockquote>
-<p>无限消耗 Token 和资源。</p>
-</blockquote>
+<p>这种情况下，没有停止条件的 Agent 可能无限消耗 Token 和资源。</p>
 <p>所以：</p>
 <blockquote>
 <p><strong>Agent Loop 一定需要 Runtime Boundary。</strong></p>
@@ -724,10 +660,7 @@
 <blockquote>
 <p><strong>Tool Call 本身就是另一种 Structured Output。</strong></p>
 </blockquote>
-<p>模型不是自由生成一句：</p>
-<blockquote>
-<p>“我想查一下订单。”</p>
-</blockquote>
+<p>模型不是自由生成一句：“我想查一下订单。”</p>
 <p>而是在告诉系统：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool = query_order</span></span>
 <span class="line"><span>Arguments = {"order_id": 10001}</span></span>
@@ -743,9 +676,7 @@
 <span class="line"><span></span></span></code></pre>
 <p>你有两种方式。</p>
 <p>第一种：</p>
-<blockquote>
-<p>直接给用户报错。</p>
-</blockquote>
+<p>第一种：直接给用户报错。</p>
 <p>第二种：</p>
 <blockquote>
 <p>把这个错误作为 Agent 的观察结果。</p>
@@ -757,10 +688,7 @@
 <span class="line"><span>Result:</span></span>
 <span class="line"><span>ORDER_NOT_FOUND</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>然后模型可能决定：</p>
-<blockquote>
-<p>“那我应该先搜索这个客户的订单。”</p>
-</blockquote>
+<p>然后模型可能决定：“那我应该先搜索这个客户的订单。”</p>
 <p>于是调用：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>search_customer_orders(...)</span></span>
 <span class="line"><span></span></span></code></pre>
@@ -770,9 +698,7 @@
 <p><strong>Tool Error 不一定意味着整个 Agent Task 失败。</strong></p>
 </blockquote>
 <p>有些错误是：</p>
-<blockquote>
-<p>下一步决策需要知道的信息。</p>
-</blockquote>
+<p>有些错误是：下一步决策需要知道的信息。</p>
 <p>这也是 Agent 与传统 API 调用模式开始产生区别的地方。</p>
 <hr>
 <h2 id="sec-3-15">3.15 但是，不要把所有错误都交给模型</h2>
@@ -780,21 +706,13 @@
 <p>假设：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>数据库连接彻底断了。</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>你没有必要让模型思考：</p>
-<blockquote>
-<p>“是不是应该再调用数据库？”</p>
-</blockquote>
+<p>你没有必要让模型思考：“是不是应该再调用数据库？”</p>
 <p>因为：</p>
-<blockquote>
-<p>基础设施已经挂了。</p>
-</blockquote>
+<p>因为：基础设施已经挂了。</p>
 <p>再比如：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户没有执行退款的权限。</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>也不是一个：</p>
-<blockquote>
-<p>“让模型想办法解决”的问题。</p>
-</blockquote>
+<p>也不是一个：“让模型想办法解决”的问题。</p>
 <p>权限失败应该直接阻止操作。</p>
 <p>所以可以把错误分成：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Recoverable / Informational</span></span>
@@ -826,10 +744,7 @@
 <span class="line"><span>Step 3</span></span>
 <span class="line"><span>查询维修记录</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>它现在处于：</p>
-<blockquote>
-<p>“已经发现订单本身没有问题，物流存在异常。”</p>
-</blockquote>
+<p>它现在处于：“已经发现订单本身没有问题，物流存在异常。”</p>
 <p>这个状态必须保存。</p>
 <p>因此 Agent 需要一个 State。</p>
 <p>例如：</p>
@@ -893,10 +808,7 @@
 <p>因此，不要把 Agent 定义成“Model + Context + Tools + State + Memory + Policy + Runtime + Evaluator”。这会把运行时职责与离线/外部评估职责混为一谈。更有用的问题是：Runtime 能否安全、可观测地执行一次任务？Evaluation Harness 能否用可重复的证据判断其表现？</p>
 <p>以后查看任意 Agent Framework 时，可以分别问：它为 Runtime 提供了哪些能力？又如何支持离线评估、回归与报告？</p>
 <h2 id="sec-3-19">3.19 Policy：Agent 不是想干什么就干什么</h2>
-<p>假设用户说：</p>
-<blockquote>
-<p>“帮我把订单取消。”</p>
-</blockquote>
+<p>假设用户说：“帮我把订单取消。”</p>
 <p>模型决定：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>cancel_order(10001)</span></span>
 <span class="line"><span></span></span></code></pre>
@@ -929,17 +841,12 @@
 <p>不要使用 LangChain、LangGraph、AutoGen 或其他 Agent Framework。</p>
 <p>我们先自己实现。</p>
 <p>目标非常简单：</p>
-<blockquote>
-<p>做一个订单查询 Agent。</p>
-</blockquote>
+<p>目标非常简单做一个订单查询 Agent。</p>
 <p>可用 Tool：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order()</span></span>
 <span class="line"><span>query_logistics()</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>用户输入：</p>
-<blockquote>
-<p>“帮我看看订单 10001 为什么还没到。”</p>
-</blockquote>
+<p>用户输入：“帮我看看订单 10001 为什么还没到。”</p>
 <p>Agent 应该能够：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>理解任务</span></span>
 <span class="line"><span> ↓</span></span>
@@ -994,10 +901,7 @@
 <span class="line"></span></code></pre>
 <p>这一轨道需要 Provider 配置，可能产生调用费用，但本例只查询受控数据，不需要为主线开启真实写入。<code>AI_ENABLE_WRITE_TOOLS</code>、远端授权与目标确认不是 Prompt 指令，而是执行边界；不要为完成只读观察而打开真实写权限。这里的 <code>fake</code> 主要用于验证循环、工具契约和轨迹接线；它不能证明真实模型每次都会选择正确工具。</p>
 <h2 id="sec-3-22">3.22 不要马上追求“聪明”</h2>
-<p>第一版 Agent 最重要的不是：</p>
-<blockquote>
-<p>“它能不能解决特别复杂的问题？”</p>
-</blockquote>
+<p>第一版 Agent 最重要的不是：“它能不能解决特别复杂的问题？”</p>
 <p>而是：</p>
 <blockquote>
 <p><strong>你是否真正理解整个执行闭环？</strong></p>
@@ -1017,22 +921,14 @@
 <p>正常运行以后，真正有价值的实验才开始。</p>
 <hr>
 <h3 id="sec-failure-1-tool">Failure 1：模型选择错误 Tool</h3>
-<p>用户问：</p>
-<blockquote>
-<p>“订单现在到哪里了？”</p>
-</blockquote>
+<p>用户问：“订单现在到哪里了？”</p>
 <p>模型调用：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_inventory()</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>你的 Runtime 应该怎样处理？</p>
-<p>不要只是：</p>
-<blockquote>
-<p>“模型错了。”</p>
-</blockquote>
+<p>不要只是：“模型错了。”</p>
 <p>你要开始问：</p>
-<blockquote>
-<p>为什么选错？</p>
-</blockquote>
+<p>你要开始问：为什么选错？</p>
 <p>可能是：</p>
 <ul>
 <li>Tool Description 不清楚</li>
@@ -1093,13 +989,9 @@
 <p><strong>Idempotency 问题。</strong></p>
 </blockquote>
 <p>你应该开始意识到：</p>
-<blockquote>
-<p>Agent 会重新执行动作。</p>
-</blockquote>
+<p>你应该开始意识到 Agent 会重新执行动作。</p>
 <p>所以 Tool 必须考虑：</p>
-<blockquote>
-<p>重复执行是否安全？</p>
-</blockquote>
+<p>所以 Tool 必须考虑：重复执行是否安全？</p>
 <hr>
 <h2 id="sec-3-24">3.24 Failure 5：Agent 陷入循环</h2>
 <p>例如：</p>
@@ -1118,9 +1010,7 @@
 <span class="line"><span></span></span></code></pre>
 <p>触发。</p>
 <p>这时你应该问：</p>
-<blockquote>
-<p>为什么模型没有完成任务？</p>
-</blockquote>
+<p>这时你应该问：为什么模型没有完成任务？</p>
 <p>可能是：</p>
 <ul>
 <li>Tool Result 信息不完整</li>
@@ -1174,14 +1064,9 @@
 <p>因为如果你一开始看到：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">agent </span><span style="color:#D73A49">=</span><span style="color:#24292E"> create_agent(</span><span style="color:#005CC5">...</span><span style="color:#24292E">)</span></span>
 <span class="line"></span></code></pre>
-<p>你只能知道：</p>
-<blockquote>
-<p>“这个框架很好用。”</p>
-</blockquote>
+<p>你只能知道：“这个框架很好用。”</p>
 <p>但你不知道：</p>
-<blockquote>
-<p>它帮你做了什么。</p>
-</blockquote>
+<p>但你不知道它帮你做了什么。</p>
 <p>现在你已经自己实现过：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool Schema</span></span>
 <span class="line"><span>Tool Registry</span></span>
@@ -1208,10 +1093,7 @@
 </blockquote>
 <hr>
 <h2 id="sec-3-27">3.27 为什么不能永远 From Scratch？</h2>
-<p>有人可能会产生另一个极端：</p>
-<blockquote>
-<p>“既然自己写最清楚，那以后都不要框架。”</p>
-</blockquote>
+<p>有人可能会产生另一个极端：“既然自己写最清楚，那以后都不要框架。”</p>
 <p>也不是。</p>
 <p>真实企业系统里，你通常不会自己重新实现：</p>
 <ul>
@@ -1233,14 +1115,8 @@
 <li>Retry Bug</li>
 <li>Concurrency Bug</li>
 </ul>
-<p>你就只能：</p>
-<blockquote>
-<p>“这个框架怎么不工作了？”</p>
-</blockquote>
-<p>而不会知道：</p>
-<blockquote>
-<p>“Runtime 在 Tool Result 注入这里出了问题。”</p>
-</blockquote>
+<p>你就只能：“这个框架怎么不工作了？”</p>
+<p>而不会知道：“Runtime 在 Tool Result 注入这里出了问题。”</p>
 <p>所以：</p>
 <blockquote>
 <p><strong>From Scratch 是认知训练，不是生产开发规范。</strong></p>
@@ -1298,21 +1174,15 @@
 <p>到这里，可以把责任分成三层。</p>
 <h3 id="sec-model-layer">Model Layer</h3>
 <p>负责：</p>
-<blockquote>
-<p>语言理解、生成、工具选择建议等概率性能力。</p>
-</blockquote>
+<p>负责：语言理解、生成、工具选择建议等概率性能力。</p>
 <hr>
 <h3 id="sec-agent-runtime">Agent Runtime</h3>
 <p>负责：</p>
-<blockquote>
-<p>执行、状态、约束、工具调度、错误处理。</p>
-</blockquote>
+<p>负责：执行、状态、约束、工具调度、错误处理。</p>
 <hr>
 <h3 id="sec-business-system">Business System</h3>
 <p>负责：</p>
-<blockquote>
-<p>数据、业务规则、权限、事务、真实副作用。</p>
-</blockquote>
+<p>负责：数据、业务规则、权限、事务、真实副作用。</p>
 <p>于是：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model</span></span>
 <span class="line"><span>“我建议调用退款工具。”</span></span>
@@ -1336,9 +1206,7 @@
 <h2 id="sec-3-30">3.30 练习：设计自己的三个 Tool</h2>
 <p>现在选择一个业务。</p>
 <p>例如：</p>
-<blockquote>
-<p>售后维修。</p>
-</blockquote>
+<p>例如：售后维修。</p>
 <p>设计三个 Tool：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool 1</span></span>
 <span class="line"><span>查询车辆状态</span></span>
@@ -1384,9 +1252,7 @@
 <span class="line"><span>query_salary</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>然后问自己：</p>
-<blockquote>
-<p>哪些信息真的应该暴露给 Agent？</p>
-</blockquote>
+<p>然后问自己：哪些信息真的应该暴露给 Agent？</p>
 <p>这个练习实际上是在训练：</p>
 <blockquote>
 <p><strong>Capability Boundary。</strong></p>
@@ -1399,9 +1265,7 @@
 <span class="line"><span>Irreversible</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>然后对每个 Tool 再问：</p>
-<blockquote>
-<p>Agent 可以自动执行吗？</p>
-</blockquote>
+<p>然后对每个 Tool 再问：Agent 可以自动执行吗？</p>
 <p>可能最终得到：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order</span></span>
 <span class="line"><span>→ Auto</span></span>
@@ -1423,9 +1287,7 @@
 <h2 id="sec-3-33">3.33 Part 3 小结</h2>
 <p>现在回头看看我们这一 Part 做了什么。</p>
 <p>表面上，我们只是：</p>
-<blockquote>
-<p>给模型增加了几个 Tool。</p>
-</blockquote>
+<p>表面上，我们只是：给模型增加了几个 Tool。</p>
 <p>但实际上，发生的是一次架构跃迁。</p>
 <p>Part 1：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Application</span></span>

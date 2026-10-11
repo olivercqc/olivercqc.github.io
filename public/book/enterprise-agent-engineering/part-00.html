@@ -39,18 +39,9 @@
 <p>容器流行的时候，大家开始讨论 Docker。</p>
 <p>Serverless 出现的时候，大家开始讨论函数是不是会取代服务器。</p>
 <p>而现在，轮到了 Agent。</p>
-<p>你可能已经在工作中看到过类似的需求：</p>
-<blockquote>
-<p>“大模型现在这么强，我们是不是也应该做个 Agent？”</p>
-</blockquote>
-<p>或者：</p>
-<blockquote>
-<p>“隔壁部门已经有 AI 助手了，我们这个业务是不是也能接一个？”</p>
-</blockquote>
-<p>再或者：</p>
-<blockquote>
-<p>“老板说今年要搞 Agent，大家看看我们有什么场景可以上。”</p>
-</blockquote>
+<p>你可能已经在工作中看到过类似的需求：“大模型现在这么强，我们是不是也应该做个 Agent？”</p>
+<p>或者：“隔壁部门已经有 AI 助手了，我们这个业务是不是也能接一个？”</p>
+<p>再或者：“老板说今年要搞 Agent，大家看看我们有什么场景可以上。”</p>
 <p>如果你已经开始接触 LLM，你甚至可能已经会调用 GPT、Claude、DeepSeek、Qwen 或其他模型。</p>
 <p>那么看起来，你离“AI 工程师”似乎只差一步：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>调用模型</span></span>
@@ -65,9 +56,7 @@
 <span class="line"><span></span></span></code></pre>
 <p>事实上，真正困难的地方恰恰不在这里。</p>
 <p>困难的是：</p>
-<blockquote>
-<p>当一个模型进入你的软件系统以后，你到底应该让它做什么？</p>
-</blockquote>
+<p>困难的是：当一个模型进入你的软件系统以后，你到底应该让它做什么？</p>
 <p>更重要的是：</p>
 <blockquote>
 <p><strong>什么事情可以交给它，什么事情不能交给它？</strong></p>
@@ -95,9 +84,7 @@
 <span class="line"></span></code></pre>
 <p>请求进来以后，系统查数据库，然后把结果返回出去。</p>
 <p>如果需求是：</p>
-<blockquote>
-<p>查询订单 10001 当前状态。</p>
-</blockquote>
+<p>如果需求是查询订单 10001 当前状态。</p>
 <p>那么整个过程非常明确：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>HTTP Request</span></span>
 <span class="line"><span>    ↓</span></span>
@@ -122,19 +109,14 @@
 <li>QPS 上来怎么办？</li>
 </ul>
 <p>这些都是非常成熟的工程问题。</p>
-<p>现在换一种需求：</p>
-<blockquote>
-<p>“用户不要输入订单号了。用户直接说：帮我看看张伟上周买的那台车现在为什么还没发货。”</p>
-</blockquote>
+<p>现在换一种需求：“用户不要输入订单号了。用户直接说：帮我看看张伟上周买的那台车现在为什么还没发货。”</p>
 <p>表面上看，似乎只是多了一个聊天框。</p>
 <p>但从系统角度看，问题马上发生了变化。</p>
 <p>系统需要先理解：</p>
-<blockquote>
-<p>“张伟”是谁？</p>
-</blockquote>
-<blockquote>
-<p>“上周买的那台车”对应哪个订单？</p>
-</blockquote>
+<ul>
+<li>“张伟”是谁？</li>
+<li>“上周买的那台车”对应哪个订单？</li>
+</ul>
 <p>然后它可能需要查询订单系统。</p>
 <p>如果发现订单已经发出，又需要查询物流系统。</p>
 <p>如果物流状态异常，还可能需要查询售后系统。</p>
@@ -171,15 +153,9 @@
 <p>这个组件，就是 LLM。</p>
 <hr>
 <h3 id="sec-0-1-2">0.1.2 LLM 到底是什么？</h3>
-<p>很多初学者会问：</p>
-<blockquote>
-<p>“LLM 是不是一种新的数据库？”</p>
-</blockquote>
+<p>很多初学者会问：“LLM 是不是一种新的数据库？”</p>
 <p>不是。</p>
-<p>也有人会问：</p>
-<blockquote>
-<p>“LLM 是不是新的后端服务？”</p>
-</blockquote>
+<p>也有人会问：“LLM 是不是新的后端服务？”</p>
 <p>从部署形态上看，它当然可以通过服务提供给你的应用调用，但从软件工程角色上说，这个理解仍然不够准确。</p>
 <p>更合适的理解是：</p>
 <blockquote>
@@ -237,9 +213,7 @@
 <p>这已经是一个 AI Application。</p>
 <p>但它并不是 Agent。</p>
 <p>再比如：</p>
-<blockquote>
-<p>根据公司制度回答员工报销问题。</p>
-</blockquote>
+<p>再比如：根据公司制度回答员工报销问题。</p>
 <p>系统可能是：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Question</span></span>
 <span class="line"><span>   ↓</span></span>
@@ -314,9 +288,7 @@
 <p>你已经会盖房子。</p>
 <p>现在只是房子里多了一种过去没有的、行为并不完全确定的“新型施工材料”。</p>
 <p>问题变成了：</p>
-<blockquote>
-<p>这种材料应该放在哪里？</p>
-</blockquote>
+<p>问题变成了：这种材料应该放在哪里？</p>
 <hr>
 <h3 id="sec-0-1-5">0.1.5 一个重要的工程边界</h3>
 <p>考虑这样一种架构：</p>
@@ -362,10 +334,7 @@
 <span class="line"><span>                    Business System</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>AI 决定“可能应该做什么”。</p>
-<p>传统工程体系负责保证：</p>
-<blockquote>
-<p>“即使 AI 决定错了，系统也不能随便把事情做坏。”</p>
-</blockquote>
+<p>传统工程体系负责保证：“即使 AI 决定错了，系统也不能随便把事情做坏。”</p>
 <p>这个边界以后会贯穿：</p>
 <ul>
 <li>Tool Calling</li>
@@ -387,9 +356,7 @@
 </ul>
 <p>先画出现在的架构。</p>
 <p>然后再问自己：</p>
-<blockquote>
-<p>如果我要给这个系统增加 AI 能力，AI 应该出现在哪里？</p>
-</blockquote>
+<p>然后再问自己：如果我要给这个系统增加 AI 能力，AI 应该出现在哪里？</p>
 <p>注意，不要求你马上做 Agent。</p>
 <p>甚至不要求一定使用 LLM。</p>
 <p>你只需要回答：</p>
@@ -448,26 +415,14 @@
 </blockquote>
 <hr>
 <h3 id="sec-0-2-2">0.2.2 现在换成一个语言任务</h3>
-<p>假设你希望程序判断：</p>
-<blockquote>
-<p>“这个用户是在投诉物流，还是投诉商品质量？”</p>
-</blockquote>
-<p>你把下面的文本给模型：</p>
-<blockquote>
-<p>“东西已经到了，但是包装完全坏了，里面的产品也有划痕。”</p>
-</blockquote>
+<p>假设你希望程序判断：“这个用户是在投诉物流，还是投诉商品质量？”</p>
+<p>你把下面的文本给模型：“东西已经到了，但是包装完全坏了，里面的产品也有划痕。”</p>
 <p>模型可能回答：</p>
-<blockquote>
-<p>商品质量</p>
-</blockquote>
+<p>模型可能回答商品质量</p>
 <p>也可能认为：</p>
-<blockquote>
-<p>物流问题</p>
-</blockquote>
+<p>也可能认为：物流问题</p>
 <p>甚至给出：</p>
-<blockquote>
-<p>物流导致的商品损坏</p>
-</blockquote>
+<p>甚至给出物流导致的商品损坏</p>
 <p>到底哪一个是错的？</p>
 <p>这件事比 <code>100 × 3 = 300</code> 复杂得多。</p>
 <p>因为这里不存在一个天然唯一的答案。</p>
@@ -481,10 +436,7 @@
 <p>因此，AI 系统中的“正确性”开始发生变化。</p>
 <hr>
 <h3 id="sec-0-2-3">0.2.3 这并不意味着 AI 是“不可靠的软件”</h3>
-<p>这里容易产生一个误解：</p>
-<blockquote>
-<p>“既然 AI 有概率性，那它是不是就不能做工程？”</p>
-</blockquote>
+<p>这里容易产生一个误解：“既然 AI 有概率性，那它是不是就不能做工程？”</p>
 <p>不是。</p>
 <p>真正的变化是：</p>
 <p>传统软件常常更接近：</p>
@@ -504,9 +456,7 @@
 <p>Task Success Rate = 94%</p>
 </blockquote>
 <p>然后继续分析：</p>
-<blockquote>
-<p>那 6 个为什么错？</p>
-</blockquote>
+<p>然后继续分析：那 6 个为什么错？</p>
 <p>这就引出了整个 AI Engineering 中非常重要的概念：</p>
 <blockquote>
 <p><strong>Evaluation。</strong></p>
@@ -514,17 +464,11 @@
 <hr>
 <h3 id="sec-0-2-4">0.2.4 为什么“Demo 成功”毫无意义？</h3>
 <p>假设你做了一个售后 Agent。</p>
-<p>你输入：</p>
-<blockquote>
-<p>“我的车充不上电怎么办？”</p>
-</blockquote>
+<p>你输入：“我的车充不上电怎么办？”</p>
 <p>Agent 回答得非常漂亮。</p>
 <p>你很高兴。</p>
 <p>于是你把截图发给领导。</p>
-<p>领导说：</p>
-<blockquote>
-<p>“不错，什么时候上线？”</p>
-</blockquote>
+<p>领导说：“不错，什么时候上线？”</p>
 <p>这时候真正的问题才刚刚开始。</p>
 <p>你有没有测试过：</p>
 <ul>
@@ -649,10 +593,7 @@
 <h3 id="sec-0-2-7">0.2.7 遇到失败时，不要急着改 Prompt</h3>
 <p>这是 AI 工程中非常常见的坏习惯。</p>
 <p>例如 Agent 选错了工具。</p>
-<p>初学者通常会马上说：</p>
-<blockquote>
-<p>“Prompt 再写详细一点。”</p>
-</blockquote>
+<p>初学者通常会马上说：“Prompt 再写详细一点。”</p>
 <p>有时候确实有效。</p>
 <p>但也有可能根本不是 Prompt 的问题。</p>
 <p>假设：</p>
@@ -693,9 +634,7 @@
 <h3 id="sec-0-2-8">0.2.8 小练习：把一次成功变成十次测试</h3>
 <p>给自己找一个简单的 AI 任务。</p>
 <p>例如：</p>
-<blockquote>
-<p>将一段工单分类。</p>
-</blockquote>
+<p>例如：将一段工单分类。</p>
 <p>准备至少 10 个案例。</p>
 <p>其中故意加入：</p>
 <ul>
@@ -717,26 +656,15 @@
 <blockquote>
 <p><strong>在传统软件里，测试往往是在实现之后验证功能；在 AI 软件里，Evaluation 本身就是系统设计的一部分。</strong></p>
 </blockquote>
-<p>以后当你看到任何 AI 系统，都可以问：</p>
-<blockquote>
-<p>“你怎么证明它有效？”</p>
-</blockquote>
-<p>如果对方只能回答：</p>
-<blockquote>
-<p>“你自己试试，效果挺好的。”</p>
-</blockquote>
+<p>以后当你看到任何 AI 系统，都可以问：“你怎么证明它有效？”</p>
+<p>如果对方只能回答：“你自己试试，效果挺好的。”</p>
 <p>你就应该继续追问。</p>
 <hr>
 <h2 id="sec-0-3">0.3 几类不同的技术选择：哪些能力需要组合？</h2>
 <p>现在我们知道 AI 系统和传统软件不完全一样。</p>
 <p>但新的问题来了：</p>
-<blockquote>
-<p>那么，什么时候该使用什么样的 AI 架构？</p>
-</blockquote>
-<p>这时候很容易出现另一种误区：</p>
-<blockquote>
-<p>“越复杂的架构，能力越强，所以 Agent 应该是最终答案。”</p>
-</blockquote>
+<p>但新的问题来了：那么，什么时候该使用什么样的 AI 架构？</p>
+<p>这时候很容易出现另一种误区：“越复杂的架构，能力越强，所以 Agent 应该是最终答案。”</p>
 <p>事实恰恰相反。</p>
 <hr>
 <h3 id="sec-0-3-1">0.3.1 软件架构不是游戏里的装备等级</h3>
@@ -759,9 +687,7 @@
 <p>看起来多先进。</p>
 </blockquote>
 <p>而是：</p>
-<blockquote>
-<p>用合适的复杂度解决问题。</p>
-</blockquote>
+<p>而是：用合适的复杂度解决问题。</p>
 <p>所以我们先建立一个非常重要的原则：</p>
 <h3 id="sec-x24">架构复杂度应该由问题复杂度驱动</h3>
 <p>而不是反过来：</p>
@@ -783,16 +709,11 @@
 <p>没有必要 RAG。</p>
 <p>没有必要 Agent。</p>
 <p>因为问题本身是：</p>
-<blockquote>
-<p>确定性的。</p>
-</blockquote>
+<p>因为问题本身是：确定性的。</p>
 <p>传统软件已经能很好地解决。</p>
 <hr>
 <h3 id="sec-0-3-3">0.3.3 需要语言理解或生成时，加入 LLM</h3>
-<p>再看一个问题：</p>
-<blockquote>
-<p>“请把这段用户投诉总结成三句话。”</p>
-</blockquote>
+<p>再看一个问题：“请把这段用户投诉总结成三句话。”</p>
 <p>这里没有复杂流程。</p>
 <p>也没有必要自主调用工具。</p>
 <p>你只需要：</p>
@@ -814,10 +735,7 @@
 </ul>
 <hr>
 <h3 id="sec-0-3-4">0.3.4 缺少外部知识时，增加检索路径（RAG）</h3>
-<p>现在问题变成：</p>
-<blockquote>
-<p>“根据公司的报销制度，告诉我这次差旅能不能报销。”</p>
-</blockquote>
+<p>现在问题变成：“根据公司的报销制度，告诉我这次差旅能不能报销。”</p>
 <p>普通 LLM 可能并不知道你公司的内部制度。</p>
 <p>怎么办？</p>
 <p>给它知识。</p>
@@ -838,10 +756,7 @@
 <hr>
 <h3 id="sec-0-3-5">0.3.5 需要访问业务系统时，提供 Tool</h3>
 <p>再往前走一步。</p>
-<p>用户说：</p>
-<blockquote>
-<p>“帮我查一下订单 10001。”</p>
-</blockquote>
+<p>用户说：“帮我查一下订单 10001。”</p>
 <p>模型光知道文字是没用的。</p>
 <p>它需要访问真正的订单系统。</p>
 <p>于是出现：</p>
@@ -892,10 +807,7 @@
 <hr>
 <h3 id="sec-0-3-7">0.3.7 需要动态选择下一步时，再考虑 Agent</h3>
 <p>什么时候 Workflow 开始不够用了？</p>
-<p>假设任务变成：</p>
-<blockquote>
-<p>“调查这个订单为什么延迟。”</p>
-</blockquote>
+<p>假设任务变成：“调查这个订单为什么延迟。”</p>
 <p>可能存在很多完全不同的情况：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>先查订单</span></span>
 <span class="line"><span>    ↓</span></span>
@@ -925,20 +837,14 @@
 <span class="line"><span>Act</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>这就是我们开始称之为 Agent 的地方。</p>
-<p>Agent 的关键不是：</p>
-<blockquote>
-<p>“它用了 LLM。”</p>
-</blockquote>
+<p>Agent 的关键不是：“它用了 LLM。”</p>
 <p>而是：</p>
 <blockquote>
 <p><strong>下一步做什么，不完全由预先写死的 Workflow 决定。</strong></p>
 </blockquote>
 <hr>
 <h3 id="sec-0-3-8">0.3.8 需要有意义的分工时，再考虑 Multi-Agent</h3>
-<p>最后再考虑一种更复杂的任务：</p>
-<blockquote>
-<p>“研究某个汽车故障问题，结合历史案例、维修手册和零件库存，形成诊断建议，并生成维修执行计划。”</p>
-</blockquote>
+<p>最后再考虑一种更复杂的任务：“研究某个汽车故障问题，结合历史案例、维修手册和零件库存，形成诊断建议，并生成维修执行计划。”</p>
 <p>你可以让一个 Agent 全部完成。</p>
 <p>也可以拆成：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Agent</span></span>
@@ -1031,55 +937,34 @@
 <p>最后再组合出最简单、能够达到目标的方案。</p>
 <hr>
 <h3 id="sec-0-3-10">0.3.10 一个判断技巧</h3>
-<p>以后当别人跟你说：</p>
-<blockquote>
-<p>“这个需求需要 Agent。”</p>
-</blockquote>
+<p>以后当别人跟你说：“这个需求需要 Agent。”</p>
 <p>你可以连续问五个问题。</p>
 <p>第一：</p>
-<blockquote>
-<p>规则能解决吗？</p>
-</blockquote>
+<p>第一：规则能解决吗？</p>
 <p>第二：</p>
-<blockquote>
-<p>如果不能，只需要语言理解吗？</p>
-</blockquote>
+<p>第二：如果不能，只需要语言理解吗？</p>
 <p>第三：</p>
-<blockquote>
-<p>是不是只是缺少知识？</p>
-</blockquote>
+<p>第三：是不是只是缺少知识？</p>
 <p>第四：</p>
-<blockquote>
-<p>是不是只是需要调用几个 API？</p>
-</blockquote>
+<p>第四：是不是只是需要调用几个 API？</p>
 <p>第五：</p>
-<blockquote>
-<p>下一步到底为什么需要动态决策？</p>
-</blockquote>
+<p>第五：下一步到底为什么需要动态决策？</p>
 <p>最后这个问题尤其重要。</p>
 <p>如果你发现：</p>
-<blockquote>
-<p>所有步骤都能提前规定。</p>
-</blockquote>
+<p>如果你发现所有步骤都能提前规定。</p>
 <p>那你很可能不需要 Agent。</p>
 <p>在最后的机会评估记录里，请把“为什么需要动态决策”写成一句可被反驳的假设，而不是只勾选一个架构名称。例如，写明固定 Workflow 可能在哪些真实分支中失效，以及你准备通过什么案例判断这种差异是否重要。</p>
 <hr>
 <h2 id="sec-0-4">0.4 有些问题，你真的不应该用 Agent</h2>
 <p>这一章非常容易被忽略。</p>
-<p>但它其实决定了一个工程师到底是：</p>
-<blockquote>
-<p>“会使用 Agent。”</p>
-</blockquote>
+<p>但它其实决定了一个工程师到底是：“会使用 Agent。”</p>
 <p>还是：</p>
 <blockquote>
 <p><strong>“懂 Agent 工程。”</strong></p>
 </blockquote>
 <hr>
 <h3 id="sec-0-4-1">0.4.1 一个很诱人的需求</h3>
-<p>假设老板说：</p>
-<blockquote>
-<p>“我们做一个 Agent，把公司的退款全部自动处理掉。”</p>
-</blockquote>
+<p>假设老板说：“我们做一个 Agent，把公司的退款全部自动处理掉。”</p>
 <p>听起来非常先进。</p>
 <p>用户提出退款申请。</p>
 <p>Agent：</p>
@@ -1090,10 +975,7 @@
 <li>决定退款金额。</li>
 <li>执行退款。</li>
 </ol>
-<p>然后大家可能会兴奋：</p>
-<blockquote>
-<p>“这不就是 Agent 的典型场景吗？”</p>
-</blockquote>
+<p>然后大家可能会兴奋：“这不就是 Agent 的典型场景吗？”</p>
 <p>从技术上说，当然可以做。</p>
 <p>但问题是：</p>
 <blockquote>
@@ -1120,10 +1002,7 @@
 <span class="line"><span>→</span></span>
 <span class="line"><span>允许退款</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>那么让 Agent 来决定：</p>
-<blockquote>
-<p>“到底退不退？”</p>
-</blockquote>
+<p>那么让 Agent 来决定：“到底退不退？”</p>
 <p>其实可能是在主动把一个确定性问题变成概率性问题。</p>
 <p>这是一种非常典型的：</p>
 <blockquote>
@@ -1147,9 +1026,7 @@
 <span class="line"><span></span></span></code></pre>
 <p>这里 AI 仍然发挥价值。</p>
 <p>例如：</p>
-<blockquote>
-<p>从复杂的自然语言中提取退款原因。</p>
-</blockquote>
+<p>例如：从复杂的自然语言中提取退款原因。</p>
 <p>但是：</p>
 <blockquote>
 <p><strong>真正决定退款资格的核心规则，仍然由确定性逻辑执行。</strong></p>
@@ -1187,10 +1064,7 @@
 <span class="line"><span>退款</span></span>
 <span class="line"><span>→ 根据金额/规则触发人工审批</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>所以一个成熟的 Agent 系统不会只问：</p>
-<blockquote>
-<p>“模型聪不聪明？”</p>
-</blockquote>
+<p>所以一个成熟的 Agent 系统不会只问：“模型聪不聪明？”</p>
 <p>还会问：</p>
 <blockquote>
 <p><strong>“模型有多大的权限？”</strong></p>
@@ -1235,10 +1109,7 @@
 <hr>
 <h3 id="sec-0-4-6">0.4.6 一个反直觉的例子</h3>
 <p>假设某公司的审批流程非常复杂。</p>
-<p>有人可能会说：</p>
-<blockquote>
-<p>“规则这么复杂，正好交给 Agent。”</p>
-</blockquote>
+<p>有人可能会说：“规则这么复杂，正好交给 Agent。”</p>
 <p>其实未必。</p>
 <p>如果流程虽然复杂，但每一步规则仍然是明确的，那么程序化 Workflow 反而更适合。</p>
 <p>真正需要 Agent 的地方，可能只是：</p>
@@ -1291,10 +1162,7 @@
 <span class="line"><span>Warranty Policy Documents</span></span>
 <span class="line"><span>Historical Service Records</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>产品经理告诉你：</p>
-<blockquote>
-<p>“我们想做一个 AI Agent，帮助维修人员诊断车辆问题。”</p>
-</blockquote>
+<p>产品经理告诉你：“我们想做一个 AI Agent，帮助维修人员诊断车辆问题。”</p>
 <p>你该怎么办？</p>
 <p>最危险的做法，是立即开始设计：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Supervisor Agent</span></span>
@@ -1312,17 +1180,11 @@
 <hr>
 <h3 id="sec-0-5-2">0.5.2 第一步：先理解业务</h3>
 <p>真正的第一步，是问：</p>
-<blockquote>
-<p>谁在使用？</p>
-</blockquote>
+<p>真正的第一步，是问：谁在使用？</p>
 <p>可能是：</p>
-<blockquote>
-<p>一线维修技师。</p>
-</blockquote>
+<p>可能是：一线维修技师。</p>
 <p>然后问：</p>
-<blockquote>
-<p>他现在遇到什么问题？</p>
-</blockquote>
+<p>然后问：他现在遇到什么问题？</p>
 <p>假设你进一步了解到：</p>
 <p>维修技师接到一辆故障车后，需要：</p>
 <ol>
@@ -1375,9 +1237,7 @@
 <span class="line"><span>形成维修建议</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>接着继续问：</p>
-<blockquote>
-<p>哪些步骤是确定性的？</p>
-</blockquote>
+<p>接着继续问：哪些步骤是确定性的？</p>
 <p>例如：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>读取车辆信息</span></span>
 <span class="line"><span>读取故障码</span></span>
@@ -1389,10 +1249,7 @@
 </blockquote>
 <hr>
 <h3 id="sec-0-5-4">0.5.4 哪些步骤真正需要“智能”？</h3>
-<p>再看：</p>
-<blockquote>
-<p>“结合故障码、历史案例、维修手册，分析这个问题最可能的原因。”</p>
-</blockquote>
+<p>再看：“结合故障码、历史案例、维修手册，分析这个问题最可能的原因。”</p>
 <p>这里可能需要：</p>
 <ul>
 <li>非结构化知识理解</li>
@@ -1400,10 +1257,7 @@
 <li>自然语言解释</li>
 </ul>
 <p>这就是 AI 很可能有价值的地方。</p>
-<p>再看：</p>
-<blockquote>
-<p>“下一步应该查哪个系统？”</p>
-</blockquote>
+<p>再看：“下一步应该查哪个系统？”</p>
 <p>如果故障类型非常多，而且无法提前写死所有路径，那么这里可能开始有 Agent 的价值。</p>
 <p>于是你得到：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>确定性数据访问</span></span>
@@ -1499,18 +1353,14 @@
 <p>回到新能源汽车维修的例子。</p>
 <p>你可以发现三个完全不同的机会。</p>
 <h3 id="sec-x49">机会一：知识查询</h3>
-<blockquote>
 <p>“这个故障码是什么意思？”</p>
-</blockquote>
 <p>最可能是：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>RAG + LLM</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>没必要 Agent。</p>
 <hr>
 <h3 id="sec-x50">机会二：跨系统调查</h3>
-<blockquote>
 <p>“为什么这辆车突然充电变慢？”</p>
-</blockquote>
 <p>需要：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>车辆信息</span></span>
 <span class="line"><span>+</span></span>
@@ -1527,9 +1377,7 @@
 <p>就有可能合理。</p>
 <hr>
 <h3 id="sec-x51">机会三：查询零件库存</h3>
-<blockquote>
 <p>“这个维修方案需要什么零件，目前还有库存吗？”</p>
-</blockquote>
 <p>这其实可能非常确定：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Repair Plan</span></span>
 <span class="line"><span>   ↓</span></span>
@@ -1564,10 +1412,7 @@
 <blockquote>
 <p><strong>明确的确定性边界。</strong></p>
 </blockquote>
-<p>所以最终你设计的不是：</p>
-<blockquote>
-<p>“一个 Agent。”</p>
-</blockquote>
+<p>所以最终你设计的不是：“一个 Agent。”</p>
 <p>而是：</p>
 <blockquote>
 <p><strong>一个由确定性软件和概率性 AI 共同组成的系统。</strong></p>
@@ -1578,10 +1423,7 @@
 <p>所以，本 Part 的实验不从代码开始。你要交付的是一份 <strong>Agent Opportunity Assessment（AI 机会评估记录）</strong>。这不是因为工程实现不重要，而是因为在还没有决定解决什么问题之前，先写代码只会让最初的假设更难被质疑。</p>
 <p>本实验会继续使用前文的新能源汽车维修场景。如果你更熟悉客服、运维、金融数据或软件研发，也可以换成自己的业务，但请始终选定一个具体流程，而不是写“提升效率”这样无法检验的大目标。</p>
 <h3 id="sec-x54">先明确：你正在为谁解决什么问题？</h3>
-<p>假设维修技师说：</p>
-<blockquote>
-<p>“这辆车充电速度突然变慢。我需要知道先查什么，哪些证据支持这个判断，以及下一步该找谁或查哪个系统。”</p>
-</blockquote>
+<p>假设维修技师说：“这辆车充电速度突然变慢。我需要知道先查什么，哪些证据支持这个判断，以及下一步该找谁或查哪个系统。”</p>
 <p>不要马上把这句话翻译成“创建一个维修 Agent”。先把它翻译成业务结果：技师希望更快地定位问题，避免漏掉重要证据，并且不希望系统在证据不足时给出看似确定的结论。</p>
 <p>请在记录里写清楚：谁会使用这个结果、谁有权作出最终维修判断、现有流程哪里耗时或容易出错，以及什么事情不属于这次实验的范围。不要为了让项目显得重要而预先承诺节省比例；目前你还没有测量这些数据。</p>
 <h3 id="sec-agent">第一步：还原现有流程，而不是画一张 Agent 图</h3>
@@ -1826,15 +1668,9 @@
 </ul>
 <p>做到这里，你就完成了 Part 0 的实验。它没有模型调用，也没有新增服务，但会决定后续实验究竟是在验证一个真实问题，还是只是在为技术寻找用武之地。</p>
 <h3 id="sec-x62">把评估结论带回业务现场</h3>
-<p>假设老板对你说：</p>
-<blockquote>
-<p>“今年公司的重点就是 Agent。你们团队找个场景先做起来。”</p>
-</blockquote>
+<p>假设老板对你说：“今年公司的重点就是 Agent。你们团队找个场景先做起来。”</p>
 <p>你不需要重新设计一份方案。把刚才的 <code>Agent Opportunity Assessment</code> 拿出来，用它回答五件事：我们究竟要改善哪个业务结果；问题中真正的不确定性在哪里；为什么当前优先选择这个最简单的基线；要用哪些案例判断它是否有效；哪些动作需要人工授权或应当被禁止。</p>
-<p>如果你的记录还不能回答这些问题，就回到记录中补上缺失的证据，而不是把“做 Agent”当作已经完成的问题定义。你可以尝试用下面这句话向业务方解释你的决定：</p>
-<blockquote>
-<p>“我建议先用 ______ 作为基线，验证 ______ 这项业务假设。只有当案例证明固定流程无法妥善处理 ______，并且动态决策带来可衡量的收益时，我们才升级为 Agent。涉及 ______ 的写操作在本次验证中仍保持关闭。”</p>
-</blockquote>
+<p>如果你的记录还不能回答这些问题，就回到记录中补上缺失的证据，而不是把“做 Agent”当作已经完成的问题定义。你可以尝试用下面这句话向业务方解释你的决定：“我建议先用 ______ 作为基线，验证 ______ 这项业务假设。只有当案例证明固定流程无法妥善处理 ______，并且动态决策带来可衡量的收益时，我们才升级为 Agent。涉及 ______ 的写操作在本次验证中仍保持关闭。”</p>
 <p>这不是一份额外的作业，而是把刚才的实验产物带回真实的工程沟通中。你应该能指出每个空格的依据，以及哪些地方仍然只是待验证的假设。</p>
 <h2 id="sec-part">本 Part 小结</h2>
 <p>如果你认真读完这一部分，你现在不应该只是知道几个名词：</p>

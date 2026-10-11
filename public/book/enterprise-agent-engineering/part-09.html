@@ -39,26 +39,14 @@
 <p><strong>软件工程。</strong></p>
 </blockquote>
 <p>如果你本身就是后端工程师，那么这一次会特别有感觉。</p>
-<p>因为以前你可能这样使用 LLM：</p>
-<blockquote>
-<p>“帮我写一个 FastAPI 接口。”</p>
-</blockquote>
-<p>或者：</p>
-<blockquote>
-<p>“这个 SQL 为什么报错？”</p>
-</blockquote>
-<p>或者：</p>
-<blockquote>
-<p>“帮我实现一个 Redis Cache。”</p>
-</blockquote>
+<p>因为以前你可能这样使用 LLM：“帮我写一个 FastAPI 接口。”</p>
+<p>或者：“这个 SQL 为什么报错？”</p>
+<p>或者：“帮我实现一个 Redis Cache。”</p>
 <p>这时候模型更像：</p>
 <blockquote>
 <p><strong>一个代码顾问。</strong></p>
 </blockquote>
-<p>它告诉你：</p>
-<blockquote>
-<p>“你可以这样写。”</p>
-</blockquote>
+<p>它告诉你：“你可以这样写。”</p>
 <p>你拿过代码以后，自己：</p>
 <ul>
 <li>找文件</li>
@@ -102,10 +90,7 @@
 <hr>
 <h2 id="sec-9-1">9.1 为什么“生成代码”不等于“会写软件”？</h2>
 <p>先看一个简单任务。</p>
-<p>用户说：</p>
-<blockquote>
-<p>“帮我写一个 Python 函数，实现用户邮箱格式校验。”</p>
-</blockquote>
+<p>用户说：“帮我写一个 Python 函数，实现用户邮箱格式校验。”</p>
 <p>模型很容易完成：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">import</span><span style="color:#24292E"> re</span></span>
 <span class="line"></span>
@@ -119,10 +104,7 @@
 <span class="line"></span></code></pre>
 <p>问题看起来结束了。</p>
 <p>但现实中的软件开发任务通常不是这样。</p>
-<p>真实 Issue 往往是：</p>
-<blockquote>
-<p>“用户注册时存在重复邮箱问题。部分请求在高并发下会创建两条记录，请修复，并确保现有 API 行为不变。”</p>
-</blockquote>
+<p>真实 Issue 往往是：“用户注册时存在重复邮箱问题。部分请求在高并发下会创建两条记录，请修复，并确保现有 API 行为不变。”</p>
 <p>这时候你必须知道：</p>
 <ul>
 <li>用户表在哪里？</li>
@@ -205,10 +187,7 @@
 </blockquote>
 <hr>
 <h2 id="sec-9-4">9.4 Repository Search：先找到候选代码</h2>
-<p>例如 Issue：</p>
-<blockquote>
-<p>“注册时重复创建用户。”</p>
-</blockquote>
+<p>例如 Issue：“注册时重复创建用户。”</p>
 <p>Agent 可以先搜索：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>register</span></span>
 <span class="line"><span>signup</span></span>
@@ -307,14 +286,9 @@
 <hr>
 <h2 id="sec-9-7">9.7 Code Search 为什么是核心 Tool？</h2>
 <p>假设仓库有 300 个 Python 文件。</p>
-<p>用户说：</p>
-<blockquote>
-<p>“修复订单取消逻辑。”</p>
-</blockquote>
+<p>用户说：“修复订单取消逻辑。”</p>
 <p>模型如果没有搜索能力，只能：</p>
-<blockquote>
-<p>猜。</p>
-</blockquote>
+<p>模型如果没有搜索能力，只能猜。</p>
 <p>有搜索能力以后：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>grep / rg / symbol search</span></span>
 <span class="line"><span></span></span></code></pre>
@@ -385,13 +359,9 @@
 <p>意外覆盖其他开发者正在做的代码。</p>
 </blockquote>
 <p>或者：</p>
-<blockquote>
-<p>删除文件中的特殊配置。</p>
-</blockquote>
+<p>或者：删除文件中的特殊配置。</p>
 <p>或者：</p>
-<blockquote>
-<p>改动大量无关行。</p>
-</blockquote>
+<p>或者：改动大量无关行。</p>
 <p>所以更好的方式通常是：</p>
 <blockquote>
 <p><strong>最小变更。</strong></p>
@@ -411,10 +381,7 @@
 <p>假设 Agent 修改了：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>user_service.py</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>你不应该只看到：</p>
-<blockquote>
-<p>“代码修改完成。”</p>
-</blockquote>
+<p>你不应该只看到：“代码修改完成。”</p>
 <p>应该看到类似：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#B31D28">- user = create_user(email)</span></span>
 <span class="line"><span style="color:#22863A">+ user = get_or_create_user(email)</span></span>
@@ -439,14 +406,9 @@
 <p>现在我们来到了 Coding Agent 最关键的 Tool：</p>
 <h3 id="sec-test-execution">Test Execution</h3>
 <p>假设 Agent 修改了代码。</p>
-<p>它说：</p>
-<blockquote>
-<p>“完成了。”</p>
-</blockquote>
+<p>它说：“完成了。”</p>
 <p>但是你还不知道：</p>
-<blockquote>
-<p>真完成了吗？</p>
-</blockquote>
+<p>但是你还不知道：真完成了吗？</p>
 <p>于是：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Modified Code</span></span>
 <span class="line"><span> ↓</span></span>
@@ -471,23 +433,15 @@
 <hr>
 <h2 id="sec-9-12">9.12 Tests 是 Agent 的 External Verification</h2>
 <p>在 Part 8 中，我们讲过 Reflection。</p>
-<p>当时我们说：</p>
-<blockquote>
-<p>单纯让模型“再检查一遍”并不一定可靠。</p>
-</blockquote>
+<p>当时我们说：单纯让模型“再检查一遍”并不一定可靠。</p>
 <p>Coding Agent 提供了一个非常好的例子。</p>
-<p>假设 Agent 说：</p>
-<blockquote>
-<p>“这个 Bug 已经修好了。”</p>
-</blockquote>
+<p>假设 Agent 说：“这个 Bug 已经修好了。”</p>
 <p>我们不需要完全相信它。</p>
 <p>我们可以：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>run_tests()</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>让测试系统告诉我们：</p>
-<blockquote>
-<p>对不对。</p>
-</blockquote>
+<p>让测试系统告诉我们对不对。</p>
 <p>因此：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>LLM</span></span>
 <span class="line"><span> ↓</span></span>
@@ -517,9 +471,7 @@
 <span class="line"><span>Model</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>模型看到：</p>
-<blockquote>
-<p>我的修改没有解决问题。</p>
-</blockquote>
+<p>模型看到我的修改没有解决问题。</p>
 <p>于是它可能重新检查：</p>
 <ul>
 <li>Transaction</li>
@@ -598,10 +550,7 @@
 <span class="line"><span>再次测试</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>这就是人类工程师日常工作的一个非常典型的循环。</p>
-<p>所以 Coding Agent 真正的价值并不是：</p>
-<blockquote>
-<p>“AI 能写代码。”</p>
-</blockquote>
+<p>所以 Coding Agent 真正的价值并不是：“AI 能写代码。”</p>
 <p>而是：</p>
 <blockquote>
 <p><strong>AI 可以进入软件工程的反馈闭环。</strong></p>
@@ -642,9 +591,7 @@
 <hr>
 <h2 id="sec-9-18">9.18 为什么“禁止危险命令”远远不够？</h2>
 <p>一种非常简单的安全方式是：</p>
-<blockquote>
-<p>禁止 <code>rm -rf</code>。</p>
-</blockquote>
+<p>一种非常简单的安全方式是：禁止 <code>rm -rf</code>。</p>
 <p>但现实世界的问题远远不止这一条命令。</p>
 <p>例如：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">curl</span><span style="color:#032F62"> ...</span></span>
@@ -656,9 +603,7 @@
 <span class="line"></span></code></pre>
 <p>也可能执行项目里的代码。</p>
 <p>所以安全不能只是：</p>
-<blockquote>
-<p>命令黑名单。</p>
-</blockquote>
+<p>所以安全不能只是，命令黑名单。</p>
 <p>而应该是：</p>
 <blockquote>
 <p><strong>执行环境隔离。</strong></p>
@@ -695,9 +640,7 @@
 <hr>
 <h2 id="sec-9-20">9.20 Git：为什么 Version Control 对 Coding Agent 特别重要？</h2>
 <p>如果 Agent 会修改大量代码：</p>
-<blockquote>
-<p>你一定希望知道它改了什么。</p>
-</blockquote>
+<p>如果 Agent 会修改大量代码，你一定希望知道它改了什么。</p>
 <p>Git 天然提供：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Diff</span></span>
 <span class="line"><span>Commit</span></span>
@@ -721,9 +664,7 @@
 <span class="line"><span>Merge</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>这比：</p>
-<blockquote>
-<p>Agent 直接修改主分支。</p>
-</blockquote>
+<p>这比：Agent 直接修改主分支。</p>
 <p>安全得多。</p>
 <hr>
 <h2 id="sec-9-21">9.21 Git 其实是 Agent 的“外部状态管理器”</h2>
@@ -744,14 +685,8 @@
 </blockquote>
 <hr>
 <h2 id="sec-9-22">9.22 Issue Understanding：Agent 为什么不能直接开写？</h2>
-<p>现实中的 Issue 通常不是：</p>
-<blockquote>
-<p>“把函数 A 改成 B。”</p>
-</blockquote>
-<p>而是：</p>
-<blockquote>
-<p>“线上反馈某些用户在特定条件下无法提交订单，请检查并修复。”</p>
-</blockquote>
+<p>现实中的 Issue 通常不是：“把函数 A 改成 B。”</p>
+<p>而是：“线上反馈某些用户在特定条件下无法提交订单，请检查并修复。”</p>
 <p>这意味着 Agent 第一步不是写代码。</p>
 <p>而应该：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Issue</span></span>
@@ -770,10 +705,7 @@
 <hr>
 <h2 id="sec-9-23">9.23 Reproduce：先让问题真正出现</h2>
 <p>这是 Coding Agent 非常值得强调的能力。</p>
-<p>假设 Issue：</p>
-<blockquote>
-<p>“用户取消订单后库存没有回滚。”</p>
-</blockquote>
+<p>假设 Issue：“用户取消订单后库存没有回滚。”</p>
 <p>一个糟糕的 Agent：</p>
 <blockquote>
 <p>猜一个原因，直接修改库存代码。</p>
@@ -843,9 +775,7 @@
 <span class="line"><span>→ PASS</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>并不一定意味着：</p>
-<blockquote>
-<p>Issue 已经解决。</p>
-</blockquote>
+<p>并不一定意味着 Issue 已经解决。</p>
 <p>它只意味着：</p>
 <blockquote>
 <p><strong>这些测试通过了。</strong></p>
@@ -861,10 +791,7 @@
 <h2 id="sec-9-26">9.26 Coding Agent 的 Evaluation</h2>
 <p>现在我们回到最核心的 Agent Evaluation。</p>
 <p>一个 Coding Agent 是否成功？</p>
-<p>不能只说：</p>
-<blockquote>
-<p>“测试通过了。”</p>
-</blockquote>
+<p>不能只说：“测试通过了。”</p>
 <p>应该至少考虑：</p>
 <h3 id="sec-issue-resolution">Issue Resolution</h3>
 <p>原始 Issue 是否真正解决？</p>
@@ -899,9 +826,7 @@
 <p>两者测试都通过。</p>
 <p>你会倾向哪个？</p>
 <p>通常：</p>
-<blockquote>
-<p>A。</p>
-</blockquote>
+<p>通常：A。</p>
 <p>因为它产生的变更范围更小。</p>
 <p>这可以降低：</p>
 <ul>
@@ -927,18 +852,12 @@
 <p>哪个好？</p>
 <p>还是没有唯一答案。</p>
 <p>取决于：</p>
-<blockquote>
-<p>人工介入的成本。</p>
-</blockquote>
+<p>取决于：人工介入的成本。</p>
 <p>例如：</p>
-<blockquote>
-<p>自动修复测试代码。</p>
-</blockquote>
+<p>例如：自动修复测试代码。</p>
 <p>可能不允许自动修改。</p>
 <p>而：</p>
-<blockquote>
-<p>内部低风险文档代码。</p>
-</blockquote>
+<p>而：内部低风险文档代码。</p>
 <p>可能允许高度自治。</p>
 <p>所以：</p>
 <blockquote>
@@ -947,9 +866,7 @@
 <hr>
 <h2 id="sec-9-29">9.29 Skill：为什么 Agent 不应该每次重新学习怎么工作？</h2>
 <p>假设我们经常做：</p>
-<blockquote>
-<p>Python 项目 Bug 修复。</p>
-</blockquote>
+<p>假设我们经常做 Python 项目 Bug 修复。</p>
 <p>流程总是：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Search</span></span>
 <span class="line"><span> ↓</span></span>
@@ -965,9 +882,7 @@
 <span class="line"><span></span></span></code></pre>
 <p>每一次都让模型从头决定这些步骤，可能很浪费。</p>
 <p>于是可以形成：</p>
-<blockquote>
-<p>Skill。</p>
-</blockquote>
+<p>于是可以形成 Skill。</p>
 <p>例如：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>python_bug_fix</span></span>
 <span class="line"><span></span></span></code></pre>
@@ -989,9 +904,7 @@
 <hr>
 <h2 id="sec-9-30">9.30 Skill 和 Tool 的区别</h2>
 <p>Tool：</p>
-<blockquote>
-<p>Agent 可以做什么。</p>
-</blockquote>
+<p>ToolAgent 可以做什么。</p>
 <p>例如：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>read_file()</span></span>
 <span class="line"><span>run_tests()</span></span>
@@ -1036,10 +949,7 @@
 <blockquote>
 <p>Repository-level Instructions / Skills。</p>
 </blockquote>
-<p>于是 Agent 进入仓库以后，不是：</p>
-<blockquote>
-<p>“按自己的习惯改。”</p>
-</blockquote>
+<p>于是 Agent 进入仓库以后，不是：“按自己的习惯改。”</p>
 <p>而是：</p>
 <blockquote>
 <p><strong>遵守这个 Repository 的工程规范。</strong></p>
@@ -1213,10 +1123,7 @@
 </blockquote>
 <p>再修改。</p>
 <p>重新测试。</p>
-<p>这时候 Agent 已经不是：</p>
-<blockquote>
-<p>“一次生成代码。”</p>
-</blockquote>
+<p>这时候 Agent 已经不是：“一次生成代码。”</p>
 <p>而是在：</p>
 <blockquote>
 <p><strong>使用软件工程反馈循环。</strong></p>
@@ -1228,19 +1135,14 @@
 <span class="line"></span></code></pre>
 <p>运行完整测试集。</p>
 <p>因为你不能只证明：</p>
-<blockquote>
-<p>新功能正常。</p>
-</blockquote>
+<p>因为你不能只证明，新功能正常。</p>
 <p>还需要证明：</p>
 <blockquote>
 <p><strong>旧功能没有坏。</strong></p>
 </blockquote>
 <hr>
 <h2 id="sec-9-43">9.43 Agent 最终应该交付什么？</h2>
-<p>不是一句：</p>
-<blockquote>
-<p>“Done。”</p>
-</blockquote>
+<p>不是一句：“Done。”</p>
 <p>而应该产生：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Issue Summary</span></span>
 <span class="line"><span>Root Cause</span></span>
@@ -1268,30 +1170,22 @@
 <h3 id="sec-failure-b">Failure B：错误修改</h3>
 <p>让 Agent 第一次 Patch 故意无法通过测试。</p>
 <p>观察：</p>
-<blockquote>
-<p>它能否根据错误继续修复？</p>
-</blockquote>
+<p>观察：它能否根据错误继续修复？</p>
 <hr>
 <h3 id="sec-failure-c">Failure C：测试命令错误</h3>
 <p>让 README 中存在多个测试入口。</p>
 <p>观察：</p>
-<blockquote>
-<p>Agent 是否能找到正确命令？</p>
-</blockquote>
+<p>观察：Agent 是否能找到正确命令？</p>
 <hr>
 <h3 id="sec-failure-d">Failure D：依赖缺失</h3>
 <p>让某个测试需要额外环境。</p>
 <p>观察：</p>
-<blockquote>
-<p>Agent 是盲目重试，还是识别环境问题？</p>
-</blockquote>
+<p>观察：Agent 是盲目重试，还是识别环境问题？</p>
 <hr>
 <h3 id="sec-failure-e">Failure E：权限问题</h3>
 <p>限制 Agent 修改某个目录。</p>
 <p>观察：</p>
-<blockquote>
-<p>Agent 如何处理 Permission Denied？</p>
-</blockquote>
+<p>观察：Agent 如何处理 Permission Denied？</p>
 <hr>
 <h3 id="sec-failure-f-issue">Failure F：测试全部通过，但 Issue 仍未真正解决</h3>
 <p>这是最重要的一个。</p>
@@ -1302,9 +1196,7 @@
 <span class="line"><span></span></span></code></pre>
 <p>但业务 Issue 仍存在。</p>
 <p>然后观察：</p>
-<blockquote>
-<p>Agent 有没有能力通过 Issue 理解发现问题？</p>
-</blockquote>
+<p>然后观察：Agent 有没有能力通过 Issue 理解发现问题？</p>
 <p>这会让你真正理解：</p>
 <blockquote>
 <p><strong>Tests are evidence, not absolute truth.</strong></p>
@@ -1364,13 +1256,9 @@
 <hr>
 <h2 id="sec-9-47">9.47 Coding Agent 为什么会改变软件开发方式？</h2>
 <p>如果 Coding Agent 只能：</p>
-<blockquote>
-<p>生成代码。</p>
-</blockquote>
+<p>如果 Coding Agent 只能，生成代码。</p>
 <p>它只是一个：</p>
-<blockquote>
-<p>更强大的代码补全工具。</p>
-</blockquote>
+<p>它只是一个更强大的代码补全工具。</p>
 <p>但如果它能够：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Understand</span></span>
 <span class="line"><span>+</span></span>
@@ -1385,9 +1273,7 @@
 <span class="line"><span>Review</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>那么它开始影响的就不仅是：</p>
-<blockquote>
-<p>写代码。</p>
-</blockquote>
+<p>那么它开始影响的就不仅是：写代码。</p>
 <p>还包括：</p>
 <ul>
 <li>Debugging</li>
@@ -1420,15 +1306,9 @@
 <span class="line"><span>Ownership</span></span>
 <span class="line"><span>Product Judgment</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>比如：</p>
-<blockquote>
-<p>“这个功能到底应该存在吗？”</p>
-</blockquote>
+<p>比如：“这个功能到底应该存在吗？”</p>
 <p>不是一个 Coding Agent 单纯靠代码仓库就能完全回答的问题。</p>
-<p>又比如：</p>
-<blockquote>
-<p>“为了性能应该选择最终一致性还是强一致性？”</p>
-</blockquote>
+<p>又比如：“为了性能应该选择最终一致性还是强一致性？”</p>
 <p>这属于：</p>
 <blockquote>
 <p>Architecture Decision。</p>
@@ -1470,9 +1350,7 @@
 <span class="line"><span>Merge</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>于是人的职责开始向上移动：</p>
-<blockquote>
-<p>从“逐行写代码”</p>
-</blockquote>
+<p>于是人的职责开始向上移动从“逐行写代码”</p>
 <p>转向：</p>
 <blockquote>
 <p><strong>定义目标、约束 Agent、验证结果、做架构决策。</strong></p>
@@ -1481,9 +1359,7 @@
 <hr>
 <h2 id="sec-9-50">9.50 一个新的 Engineering Unit：Task</h2>
 <p>传统软件开发经常以：</p>
-<blockquote>
-<p>文件 / 函数 / 类</p>
-</blockquote>
+<p>传统软件开发经常以文件 / 函数 / 类</p>
 <p>为最小工作单位。</p>
 <p>Coding Agent 更自然的工作单位可能变成：</p>
 <blockquote>
@@ -1493,9 +1369,7 @@
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Issue #102</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>Agent 接收到的是：</p>
-<blockquote>
-<p>一个完整问题。</p>
-</blockquote>
+<p>Agent 接收到的是：一个完整问题。</p>
 <p>然后自己完成：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Search</span></span>
 <span class="line"><span>Edit</span></span>
@@ -1508,15 +1382,9 @@
 </blockquote>
 <hr>
 <h2 id="sec-9-51">9.51 Task Quality 决定 Agent Quality</h2>
-<p>但任务描述如果非常模糊：</p>
-<blockquote>
-<p>“优化一下订单系统。”</p>
-</blockquote>
+<p>但任务描述如果非常模糊：“优化一下订单系统。”</p>
 <p>Agent 很难正确行动。</p>
-<p>如果写成：</p>
-<blockquote>
-<p>“重复提交相同订单请求时，不应创建重复订单；必须保证现有 API 兼容；新增回归测试；不要修改订单创建接口。”</p>
-</blockquote>
+<p>如果写成：“重复提交相同订单请求时，不应创建重复订单；必须保证现有 API 兼容；新增回归测试；不要修改订单创建接口。”</p>
 <p>Agent 就拥有：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Goal</span></span>
 <span class="line"><span>Boundary</span></span>
@@ -1530,10 +1398,7 @@
 <p>这个思想在未来的企业 Coding Agent 中会非常重要。</p>
 <hr>
 <h2 id="sec-9-52">9.52 Part 9 小结</h2>
-<p>现在回头看，我们最开始的问题：</p>
-<blockquote>
-<p>“Agent 能不能写代码？”</p>
-</blockquote>
+<p>现在回头看，我们最开始的问题：“Agent 能不能写代码？”</p>
 <p>其实太小了。</p>
 <p>真正的问题是：</p>
 <blockquote>
@@ -1581,9 +1446,7 @@
 <p>Coding Agent 最重要的能力不是生成代码，而是理解 Repository。</p>
 </blockquote>
 <h3 id="sec-x75">第二</h3>
-<blockquote>
 <p>Tool 是 Agent 的手。</p>
-</blockquote>
 <p>对于 Coding Agent 来说：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Search</span></span>
 <span class="line"><span>Read</span></span>
@@ -1598,10 +1461,7 @@
 <blockquote>
 <p>Test 是 Agent 最重要的外部反馈之一。</p>
 </blockquote>
-<p>它让 Agent 不需要完全依赖：</p>
-<blockquote>
-<p>“我认为自己写对了。”</p>
-</blockquote>
+<p>它让 Agent 不需要完全依赖：“我认为自己写对了。”</p>
 <p>而可以得到：</p>
 <blockquote>
 <p><strong>真实执行结果。</strong></p>
@@ -1641,13 +1501,9 @@
 <p>Coding Agent 并没有消灭软件工程，而是在改变软件工程师工作的抽象层级。</p>
 </blockquote>
 <p>人越来越多地负责：</p>
-<blockquote>
-<p>Goal、Architecture、Constraint、Review。</p>
-</blockquote>
+<p>人越来越多地负责：Goal、Architecture、Constraint、Review。</p>
 <p>Agent 越来越多地负责：</p>
-<blockquote>
-<p>Search、Edit、Test、Repair。</p>
-</blockquote>
+<p>Agent 越来越多地负责：Search、Edit、Test、Repair。</p>
 <hr>
 <h2 id="sec-9-54">9.54 一个最终的 Coding Agent Mental Model</h2>
 <p>现在可以把整个 Part 9 压缩成一张图：</p>
@@ -1699,10 +1555,7 @@
 <span class="line"><span>                       Merge</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>这就是我们这一 Part 真正希望你掌握的东西。</p>
-<p>不是：</p>
-<blockquote>
-<p>“我会用某个 Coding Agent 产品。”</p>
-</blockquote>
+<p>不是：“我会用某个 Coding Agent 产品。”</p>
 <p>而是：</p>
 <blockquote>
 <p><strong>我理解一个 Coding Agent 要完成软件工程任务，需要哪些能力、哪些工具、哪些反馈机制，以及哪些安全边界。</strong></p>

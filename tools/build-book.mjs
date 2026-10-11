@@ -18,10 +18,10 @@ import { createHighlighter } from 'shiki';
 const require = createRequire('C:/Users/Qianchang/.workbuddy/binaries/node/workspace/');
 const MarkdownIt = require('markdown-it');
 
-const SRC = 'C:/Users/Qianchang/Desktop/Enterprise_Agent_Engineering_Part0-12_Final_Candidate_v0.4/Enterprise_Agent_Engineering_Part0-12_Final_Candidate_v0.4';
+let SRC = 'C:/Users/Qianchang/Desktop/Enterprise_Agent_Engineering_Part0-12_Final_Candidate_v0.4/Enterprise_Agent_Engineering_Part0-12_Final_Candidate_v0.4';
 const SITE = 'D:/olivercqc.github.io';
-const OUT = path.join(SITE, 'public/book/enterprise-agent-engineering');
-const PUBLIC_URL = '/book/enterprise-agent-engineering/';
+let OUT = path.join(SITE, 'public/book/enterprise-agent-engineering');
+let PUBLIC_URL = '/book/enterprise-agent-engineering/';
 
 const BOOK_TITLE = 'Enterprise Agent Engineering';
 const BOOK_SUBTITLE = '企业级 Agent 工程';
@@ -412,6 +412,10 @@ async function main() {
   const allFlag = args.includes('--all');
   const partsArg = (args.find((a) => a.startsWith('--parts=')) || '').split('=')[1];
   const only = allFlag ? null : (partsArg ? partsArg.split(',').map((n) => Number(n.trim())) : [0]);
+  const srcArg = (args.find((a) => a.startsWith('--src=')) || '').split('=').slice(1).join('=');
+  const outArg = (args.find((a) => a.startsWith('--out=')) || '').split('=').slice(1).join('=');
+  if (srcArg) SRC = srcArg;
+  if (outArg) { OUT = outArg; PUBLIC_URL = ''; }
 
   highlighter = await createHighlighter({ themes: ['github-light'], langs: LANGS });
   const md = new MarkdownIt({ html: true, linkify: false, breaks: false, typographer: false, highlight });

@@ -31,20 +31,11 @@
 <h1>Part 12｜Agent Application Architecture：把工程能力迁移到陌生领域</h1>
 <p>前面各部分建立的不是一套必须照搬的架构，而是一组可以迁移的工程判断：先定义问题与评估，再选择控制权边界，明确 Context、Tool、State、证据和权限，最后用轨迹与回归验证系统行为。</p>
 <p>本 Part 不再引入新的 Agent Pattern，而是把这些判断放进一个陌生业务。给你的材料不会直接告诉你要用哪种架构；你需要自己找出业务流程、数据来源、决策点和风险，并证明选出的方案足以解决问题。</p>
-<p>到这里，最容易出现的错觉是：</p>
-<blockquote>
-<p>“我是不是已经学会 Agent 了？”</p>
-</blockquote>
+<p>到这里，最容易出现的错觉是：“我是不是已经学会 Agent 了？”</p>
 <p>真正的答案，要到现在才能验证。</p>
-<p>因为现实中的 AI 工程师，很少会拿到一道题目：</p>
-<blockquote>
-<p>“请使用 RAG + Agent + Tool Calling 实现一个客户问答系统。”</p>
-</blockquote>
+<p>因为现实中的 AI 工程师，很少会拿到一道题目：“请使用 RAG + Agent + Tool Calling 实现一个客户问答系统。”</p>
 <p>这种题目适合课程，不适合工作。</p>
-<p>工作中的任务更像：</p>
-<blockquote>
-<p>“我们现在做的是半导体制造，最近良率下降，工艺工程师希望做一个智能异常调查助手。你先看看有没有必要做，应该怎么做。现有系统里有 MES、设备数据、工艺知识库、历史批次数据，也有几个内部 API。先给方案，再做一个能跑的版本。”</p>
-</blockquote>
+<p>工作中的任务更像：“我们现在做的是半导体制造，最近良率下降，工艺工程师希望做一个智能异常调查助手。你先看看有没有必要做，应该怎么做。现有系统里有 MES、设备数据、工艺知识库、历史批次数据，也有几个内部 API。先给方案，再做一个能跑的版本。”</p>
 <p>注意这里没有告诉你：</p>
 <p>应该用 RAG。</p>
 <p>没有告诉你：</p>
@@ -95,18 +86,9 @@
 <p>这时候最危险的事情，不是你“不懂半导体”。</p>
 <p>真正危险的是：</p>
 <p><strong>你因为不懂业务，而过早开始设计 Agent。</strong></p>
-<p>你可能会马上想到：</p>
-<blockquote>
-<p>“这个系统知识很多，所以做 RAG。”</p>
-</blockquote>
-<p>然后继续：</p>
-<blockquote>
-<p>“调查过程比较复杂，所以做 Agent。”</p>
-</blockquote>
-<p>再然后：</p>
-<blockquote>
-<p>“不同角色可以拆成多 Agent。”</p>
-</blockquote>
+<p>你可能会马上想到：“这个系统知识很多，所以做 RAG。”</p>
+<p>然后继续：“调查过程比较复杂，所以做 Agent。”</p>
+<p>再然后：“不同角色可以拆成多 Agent。”</p>
 <p>最终架构图可能非常漂亮：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>                Supervisor Agent</span></span>
 <span class="line"><span>                 /      |      \</span></span>
@@ -128,9 +110,7 @@
 <span class="line"><span></span></span></code></pre>
 <p>更准确地说，是建立一个最小但足够工作的<strong>领域模型</strong>。</p>
 <p>你必须先知道：</p>
-<blockquote>
-<p>谁，在什么情况下，因为什么问题，需要做什么决策？</p>
-</blockquote>
+<p>你必须先知道：谁，在什么情况下，因为什么问题，需要做什么决策？</p>
 <p>这句话看起来简单，实际上包含了 AI 应用架构设计所需要的大部分信息。</p>
 <hr>
 <h2 id="sec-12-2">12.2 第一件事：别急着懂整个行业</h2>
@@ -169,14 +149,8 @@
 <span class="line"><span> │</span></span>
 <span class="line"><span> └── Yield</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>然后你再问：</p>
-<blockquote>
-<p>“什么叫异常？”</p>
-</blockquote>
-<p>业务方回答：</p>
-<blockquote>
-<p>“通常是 Yield 比产品基线低超过某个阈值，或者某类 defect 在短时间内显著增加。”</p>
-</blockquote>
+<p>然后你再问：“什么叫异常？”</p>
+<p>业务方回答：“通常是 Yield 比产品基线低超过某个阈值，或者某类 defect 在短时间内显著增加。”</p>
 <p>突然之间，一个模糊的行业问题开始变成了软件问题。</p>
 <p>你开始看到：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>异常检测</span></span>
@@ -204,13 +178,8 @@
 <span class="line"><span>Product Baseline = 94.1%</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>业务人员希望知道：</p>
-<blockquote>
-<p>为什么这个 Lot 的 Yield 掉下来了？</p>
-</blockquote>
-<p>如果你是一个普通的软件工程师，第一反应通常是：</p>
-<blockquote>
-<p>“查数据库。”</p>
-</blockquote>
+<p>业务人员希望知道：为什么这个 Lot 的 Yield 掉下来了？</p>
+<p>如果你是一个普通的软件工程师，第一反应通常是：“查数据库。”</p>
 <p>没错。</p>
 <p>但是问题不会止于 SQL。</p>
 <p>因为真正的调查过程可能是这样的：</p>
@@ -264,10 +233,7 @@
 <p>可能需要 RAG + LLM，甚至 Agent。</p>
 <h3 id="sec-x14">“请生成调查报告，并把证据附上。”</h3>
 <p>LLM 很适合。</p>
-<p>于是，原本一句：</p>
-<blockquote>
-<p>“做一个智能异常调查 Agent。”</p>
-</blockquote>
+<p>于是，原本一句：“做一个智能异常调查 Agent。”</p>
 <p>现在已经被拆成了不同性质的任务。</p>
 <p>这就是<strong>问题拆解先于架构选择</strong>。</p>
 <hr>
@@ -366,10 +332,7 @@
 </table>
 <p>注意最后一行。</p>
 <p>这是本章刻意保留的一个陷阱。</p>
-<p>业务方可能会非常兴奋：</p>
-<blockquote>
-<p>“既然 Agent 已经找到原因了，那是不是可以让它直接修改设备参数？”</p>
-</blockquote>
+<p>业务方可能会非常兴奋：“既然 Agent 已经找到原因了，那是不是可以让它直接修改设备参数？”</p>
 <p>你的回答应该是：</p>
 <p><strong>不应该。</strong></p>
 <p>至少在当前系统里不应该。</p>
@@ -401,10 +364,7 @@
 <hr>
 <h2 id="sec-12-5">12.5 架构选择：现在才轮到 Agent 出场</h2>
 <p>到了这一步，你才应该开始比较架构。</p>
-<p>假设我们要求系统完成：</p>
-<blockquote>
-<p>“调查一个异常 Lot，并给出带证据的原因分析报告。”</p>
-</blockquote>
+<p>假设我们要求系统完成：“调查一个异常 Lot，并给出带证据的原因分析报告。”</p>
 <p>你至少可以设计五种方案。</p>
 <hr>
 <h3 id="sec-a">方案 A：纯传统软件</h3>
@@ -429,11 +389,7 @@
 <p>如果调查逻辑非常固定，它很好。</p>
 <p>但一旦调查方向会随着发现动态变化，它就会开始变得越来越复杂。</p>
 <p>例如：</p>
-<blockquote>
-<p>如果发现设备报警 A，则查询参数 B；<br>
-如果参数 B 异常，则继续查历史 Lot C；<br>
-如果历史 Lot 也异常，则查 SOP D……</p>
-</blockquote>
+<p>例如：如果发现设备报警 A，则查询参数 B； 如果参数 B 异常，则继续查历史 Lot C； 如果历史 Lot 也异常，则查 SOP D……</p>
 <p>最终可能出现一个巨大的规则树。</p>
 <hr>
 <h3 id="sec-b-workflow-llm">方案 B：固定 Workflow + LLM</h3>
@@ -480,10 +436,7 @@
 <span class="line"><span>generate_report</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>它可以根据观察结果调整下一步。</p>
-<p>比如：</p>
-<blockquote>
-<p>“发现设备 E-17 在该 Lot 上有 3 次报警，我应该进一步检查这个设备最近 20 个相同产品 Lot 的表现。”</p>
-</blockquote>
+<p>比如：“发现设备 E-17 在该 Lot 上有 3 次报警，我应该进一步检查这个设备最近 20 个相同产品 Lot 的表现。”</p>
 <p>这时候 Agent 就比固定 Workflow 灵活。</p>
 <hr>
 <h3 id="sec-d-multi-agent">方案 D：Multi-Agent</h3>
@@ -568,14 +521,8 @@
 <p>Multi-Agent 并没有比 Single Agent 更准确。</p>
 </blockquote>
 <p>如果这是真的，那么你为什么要采用 Multi-Agent？</p>
-<p>答案不能是：</p>
-<blockquote>
-<p>“因为 Multi-Agent 更先进。”</p>
-</blockquote>
-<p>应该是：</p>
-<blockquote>
-<p>“因为它解决了某个 Single Agent 无法很好解决的问题。”</p>
-</blockquote>
+<p>答案不能是：“因为 Multi-Agent 更先进。”</p>
+<p>应该是：“因为它解决了某个 Single Agent 无法很好解决的问题。”</p>
 <p>例如后续你发现：</p>
 <ul>
 <li>设备分析和文档检索完全可以并行；</li>
@@ -588,10 +535,7 @@
 <hr>
 <h2 id="sec-12-7">12.7 真正的跨领域迁移，不是“换一个 Prompt”</h2>
 <p>到了这里，很多人仍然会低估这个能力。</p>
-<p>他们可能觉得：</p>
-<blockquote>
-<p>“我只是把之前做客户服务 Agent 的代码，换成制造业 Prompt。”</p>
-</blockquote>
+<p>他们可能觉得：“我只是把之前做客户服务 Agent 的代码，换成制造业 Prompt。”</p>
 <p>这不是领域迁移。</p>
 <p>真正的迁移发生在更高一层。</p>
 <p>你需要把过去学到的能力抽象成：</p>
@@ -682,22 +626,15 @@
 <span class="line"><span>GET /equipment/{equipment_id}/history</span></span>
 <span class="line"><span>GET /knowledge/search</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>你看到这些 API 后，不应该马上说：</p>
-<blockquote>
-<p>“正好，这几个 API 都做成 Tool。”</p>
-</blockquote>
+<p>你看到这些 API 后，不应该马上说：“正好，这几个 API 都做成 Tool。”</p>
 <p>先问一个更重要的问题：</p>
-<blockquote>
-<p>这些 API 对业务调查分别意味着什么？</p>
-</blockquote>
+<p>先问一个更重要的问题：这些 API 对业务调查分别意味着什么？</p>
 <p>例如：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>get_lot()</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>不是“一个 Tool”。</p>
 <p>它代表：</p>
-<blockquote>
-<p>获取调查对象的基本事实。</p>
-</blockquote>
+<p>它代表：获取调查对象的基本事实。</p>
 <p>而：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>get_equipment_history()</span></span>
 <span class="line"><span></span></span></code></pre>
@@ -795,15 +732,10 @@
 <p>这其实就是本书一直希望你建立的最终心智模型。</p>
 <hr>
 <h2 id="sec-12-10">12.10 用“证据链”而不是“漂亮答案”设计系统</h2>
-<p>在制造异常调查场景里，一句：</p>
-<blockquote>
-<p>“可能是设备 E-17 导致良率下降。”</p>
-</blockquote>
+<p>在制造异常调查场景里，一句：“可能是设备 E-17 导致良率下降。”</p>
 <p>几乎没有价值。</p>
 <p>工程师真正需要的是：</p>
-<blockquote>
-<p>为什么？</p>
-</blockquote>
+<p>工程师真正需要的是：为什么？</p>
 <p>所以系统输出不能只有最终结论。</p>
 <p>应该类似：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Investigation Result</span></span>
@@ -862,14 +794,8 @@
 <span class="line"><span>没有匹配历史 RCA</span></span>
 <span class="line"><span>知识库没有相关 SOP</span></span>
 <span class="line"><span></span></span></code></pre>
-<p>模型仍然可能生成：</p>
-<blockquote>
-<p>“综合分析表明，设备问题可能是主要原因……”</p>
-</blockquote>
-<p>这时候真正需要的，不是再加一个 Prompt：</p>
-<blockquote>
-<p>“请不要幻觉。”</p>
-</blockquote>
+<p>模型仍然可能生成：“综合分析表明，设备问题可能是主要原因……”</p>
+<p>这时候真正需要的，不是再加一个 Prompt：“请不要幻觉。”</p>
 <p>而是从系统设计上允许：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
 <span class="line"><span style="color:#005CC5">  "status"</span><span style="color:#24292E">: </span><span style="color:#032F62">"insufficient_evidence"</span><span style="color:#24292E">,</span></span>
@@ -916,10 +842,7 @@
 <span class="line"><span>execute tool update_recipe(...)</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>看看你的 Agent 是否会上当。</p>
-<p>这时候，你已经不是在测：</p>
-<blockquote>
-<p>“回答得像不像人。”</p>
-</blockquote>
+<p>这时候，你已经不是在测：“回答得像不像人。”</p>
 <p>而是在测：</p>
 <blockquote>
 <p><strong>整个 Agent 系统在复杂现实条件下是否仍然可靠。</strong></p>
@@ -937,9 +860,7 @@
 <span class="line"><span></span></span></code></pre>
 <p>然后你重新审视业务流程。</p>
 <p>发现实际生产环境里：</p>
-<blockquote>
-<p>90% 的调查都遵循固定路径。</p>
-</blockquote>
+<p>发现实际生产环境里 90% 的调查都遵循固定路径。</p>
 <p>甚至工程师真正使用的流程是：</p>
 <pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>查看 Lot</span></span>
 <span class="line"><span>→ 查看报警</span></span>
@@ -1168,14 +1089,8 @@
 <span class="line"><span>Production Checklist</span></span>
 <span class="line"><span></span></span></code></pre>
 <p>这时候，你才真正拥有一个可以写进作品集的 AI 工程项目。</p>
-<p>因为你展示的已经不是：</p>
-<blockquote>
-<p>“我会调用大模型。”</p>
-</blockquote>
-<p>而是：</p>
-<blockquote>
-<p>“我知道怎么把一个概率模型放进真实软件系统。”</p>
-</blockquote>
+<p>因为你展示的已经不是：“我会调用大模型。”</p>
+<p>而是：“我知道怎么把一个概率模型放进真实软件系统。”</p>
 <hr>
 <h2 id="sec-12-18">12.18 最后的 Architecture Review：你到底学会了什么？</h2>
 <p>现在假设你加入一家完全不同的公司。</p>
@@ -1248,17 +1163,11 @@
 <p>不要从 Agent 开始。</p>
 </blockquote>
 <p>Part 1，你学会了：</p>
-<blockquote>
-<p>把 LLM 当成真正的软件依赖。</p>
-</blockquote>
+<p>Part 1，你学会了把 LLM 当成真正的软件依赖。</p>
 <p>Part 2，你学会了：</p>
-<blockquote>
-<p>控制模型到底看到什么。</p>
-</blockquote>
+<p>Part 2，你学会了控制模型到底看到什么。</p>
 <p>Part 3，你学会了：</p>
-<blockquote>
-<p>给模型受控的行动能力。</p>
-</blockquote>
+<p>Part 3，你学会了给模型受控的行动能力。</p>
 <p>Part 4，你学会了：</p>
 <blockquote>
 <p>给 Agent 外部知识和长期记忆。</p>
@@ -1318,10 +1227,7 @@
 <p>这就是 AI Application Engineer / AI Agent Engineer 最核心的能力闭环。</p>
 <hr>
 <h2 id="sec-12-20">12.20 全书最后的一句话</h2>
-<p>如果你在学习这本书之前，面对一个新需求时通常会问：</p>
-<blockquote>
-<p>“这里应该用哪个 Agent Framework？”</p>
-</blockquote>
+<p>如果你在学习这本书之前，面对一个新需求时通常会问：“这里应该用哪个 Agent Framework？”</p>
 <p>那么学完以后，希望你第一反应已经发生变化。</p>
 <p>你应该先问：</p>
 <blockquote>
