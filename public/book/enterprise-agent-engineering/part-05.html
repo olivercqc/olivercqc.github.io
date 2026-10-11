@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 5｜Workflow → Agent：什么时候真的需要 Agent？ · Enterprise Agent Engineering</title>
+<meta name="description" content="Workflow → Agent —— 什么时候真的需要 Agent，控制权该交给谁。 —— Enterprise Agent Engineering v0.4">
+<meta property="og:title" content="Part 5｜Workflow → Agent：什么时候真的需要 Agent？">
+<meta property="og:type" content="article">
+<link rel="stylesheet" href="assets/book.css">
+</head>
+<body>
+<a class="skip-link" href="#content">跳到正文</a>
+<header class="topbar"><button class="toc-toggle" id="tocToggle" aria-label="打开目录" aria-controls="sidebar"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button><a class="brand" href="index.html"><span class="brand-title">Enterprise Agent Engineering</span><span class="brand-sub">企业级 Agent 工程</span></a><span class="ver">v0.4</span></header>
+<div class="layout">
+<aside class="sidebar" id="sidebar"><nav class="book-nav"><div class="book-nav-head"><a class="bn-title" href="index.html">Enterprise Agent Engineering</a><span class="bn-ver">v0.4</span></div><ol class="parts"><li class="part"><a class="part-link" href="part-00.html"><span class="part-no">0</span><span class="part-name">先别急着做 Agent</span></a></li>
+<li class="part"><a class="part-link" href="part-01.html"><span class="part-no">1</span><span class="part-name">把 LLM 当成一个真正的软件组件</span></a></li>
+<li class="part"><a class="part-link" href="part-02.html"><span class="part-no">2</span><span class="part-name">Context Engineering：决定模型到底能看到什么</span></a></li>
+<li class="part"><a class="part-link" href="part-03.html"><span class="part-no">3</span><span class="part-name">Tools &amp; Agent Harness：让模型开始与真实世界交互</span></a></li>
+<li class="part"><a class="part-link" href="part-04.html"><span class="part-no">4</span><span class="part-name">RAG &amp; Memory：让 Agent 获得知识，并记住真正值得记住的东西</span></a></li>
+<li class="part is-active"><a class="part-link" href="part-05.html"><span class="part-no">5</span><span class="part-name">Workflow → Agent：什么时候真的需要 Agent？</span></a><ul class="secs"><li class="lvl2"><a class="sec" href="#sec-5-1" data-id="sec-5-1">5.1 先看一个最普通的审批流程</a></li><li class="lvl2"><a class="sec" href="#sec-5-2" data-id="sec-5-2">5.2 Workflow 到底是什么？</a></li><li class="lvl2"><a class="sec" href="#sec-5-3" data-id="sec-5-3">5.3 Workflow 并不意味着不能用 LLM</a></li><li class="lvl2"><a class="sec" href="#sec-5-4" data-id="sec-5-4">5.4 LLM Workflow：让模型参与步骤，但不决定整个流程</a></li><li class="lvl2"><a class="sec" href="#sec-5-5" data-id="sec-5-5">5.5 这时候你可能会问：那 Agent 和 Workflow 的区别到底在哪？</a></li><li class="lvl3"><a class="sec" href="#sec-workflow" data-id="sec-workflow">Workflow</a></li><li class="lvl3"><a class="sec" href="#sec-agent" data-id="sec-agent">Agent</a></li><li class="lvl2"><a class="sec" href="#sec-5-6" data-id="sec-5-6">5.6 但不要把 Agent 理解成“随机 Workflow”</a></li><li class="lvl2"><a class="sec" href="#sec-5-7" data-id="sec-5-7">5.7 自由度是有代价的</a></li><li class="lvl2"><a class="sec" href="#sec-5-8" data-id="sec-5-8">5.8 一个特别重要的设计问题</a></li><li class="lvl3"><a class="sec" href="#sec-ai-ai" data-id="sec-ai-ai">AI 应该被放在需要 AI 的边界上</a></li><li class="lvl2"><a class="sec" href="#sec-5-9" data-id="sec-5-9">5.9 第一次认识 ReAct</a></li><li class="lvl2"><a class="sec" href="#sec-5-10" data-id="sec-5-10">5.10 ReAct 为什么有价值？</a></li><li class="lvl2"><a class="sec" href="#sec-5-11" data-id="sec-5-11">5.11 但是 ReAct 也有代价</a></li><li class="lvl2"><a class="sec" href="#sec-5-12" data-id="sec-5-12">5.12 Planning：什么时候应该先做计划？</a></li><li class="lvl2"><a class="sec" href="#sec-5-13" data-id="sec-5-13">5.13 Planning 不是万能药</a></li><li class="lvl2"><a class="sec" href="#sec-5-14" data-id="sec-5-14">5.14 Static Plan 和 Dynamic Plan</a></li><li class="lvl3"><a class="sec" href="#sec-static-plan" data-id="sec-static-plan">Static Plan</a></li><li class="lvl3"><a class="sec" href="#sec-dynamic-plan" data-id="sec-dynamic-plan">Dynamic Plan</a></li><li class="lvl2"><a class="sec" href="#sec-5-15" data-id="sec-5-15">5.15 Reflection：让 Agent 检查自己的结果</a></li><li class="lvl2"><a class="sec" href="#sec-5-16" data-id="sec-5-16">5.16 Reflection 到底有没有用？</a></li><li class="lvl2"><a class="sec" href="#sec-5-17" data-id="sec-5-17">5.17 一个重要的架构原则</a></li><li class="lvl2"><a class="sec" href="#sec-5-18" data-id="sec-5-18">5.18 现在做一次真正的架构对决</a></li><li class="lvl2"><a class="sec" href="#sec-5-19" data-id="sec-5-19">5.19 Architecture A：传统规则</a></li><li class="lvl2"><a class="sec" href="#sec-5-20" data-id="sec-5-20">5.20 Architecture B：LLM Workflow</a></li><li class="lvl2"><a class="sec" href="#sec-5-21" data-id="sec-5-21">5.21 Architecture C：RAG Workflow</a></li><li class="lvl2"><a class="sec" href="#sec-5-22" data-id="sec-5-22">5.22 Architecture D：Single Agent</a></li><li class="lvl2"><a class="sec" href="#sec-5-23" data-id="sec-5-23">5.23 Architecture E：Multi-Agent</a></li><li class="lvl2"><a class="sec" href="#sec-5-24" data-id="sec-5-24">5.24 Architecture Shootout</a></li><li class="lvl3"><a class="sec" href="#sec-x31" data-id="sec-x31">可选真实模型实验：在同一任务集上比较架构</a></li><li class="lvl2"><a class="sec" href="#sec-5-25" data-id="sec-5-25">5.25 一个可能出现的结果</a></li><li class="lvl2"><a class="sec" href="#sec-5-26" data-id="sec-5-26">5.26 一个更成熟的架构选择公式</a></li><li class="lvl2"><a class="sec" href="#sec-5-27" data-id="sec-5-27">5.27 什么时候真的值得使用 Agent？</a></li><li class="lvl3"><a class="sec" href="#sec-x35" data-id="sec-x35">第一</a></li><li class="lvl3"><a class="sec" href="#sec-x36" data-id="sec-x36">第二</a></li><li class="lvl3"><a class="sec" href="#sec-x37" data-id="sec-x37">第三</a></li><li class="lvl3"><a class="sec" href="#sec-x38" data-id="sec-x38">第四</a></li><li class="lvl3"><a class="sec" href="#sec-x39" data-id="sec-x39">第五</a></li><li class="lvl2"><a class="sec" href="#sec-5-28" data-id="sec-5-28">5.28 Agent 其实是在购买“路径自由”</a></li><li class="lvl2"><a class="sec" href="#sec-5-29" data-id="sec-5-29">5.29 但现实中的系统往往是 Hybrid</a></li><li class="lvl2"><a class="sec" href="#sec-5-30" data-id="sec-5-30">5.30 练习：把一个 Agent 拆回 Workflow</a></li><li class="lvl2"><a class="sec" href="#sec-5-31" data-id="sec-5-31">5.31 练习：什么时候需要 Planning？</a></li><li class="lvl3"><a class="sec" href="#sec-task-a" data-id="sec-task-a">Task A</a></li><li class="lvl3"><a class="sec" href="#sec-task-b" data-id="sec-task-b">Task B</a></li><li class="lvl3"><a class="sec" href="#sec-task-c" data-id="sec-task-c">Task C</a></li><li class="lvl2"><a class="sec" href="#sec-5-32" data-id="sec-5-32">5.32 练习：Reflection 是否值得？</a></li><li class="lvl2"><a class="sec" href="#sec-5-33" data-id="sec-5-33">5.33 Part 5 最重要的认知变化</a></li><li class="lvl3"><a class="sec" href="#sec-workflow-2" data-id="sec-workflow-2">Workflow</a></li><li class="lvl3"><a class="sec" href="#sec-agent-2" data-id="sec-agent-2">Agent</a></li><li class="lvl3"><a class="sec" href="#sec-multi-agent" data-id="sec-multi-agent">Multi-Agent</a></li><li class="lvl2"><a class="sec" href="#sec-part" data-id="sec-part">本 Part 小结：架构是在购买控制权自由度</a></li><li class="lvl2"><a class="sec" href="#sec-part-part-6" data-id="sec-part-part-6">本 Part → Part 6：从选择架构到证明选择值得</a></li></ul></li>
+<li class="part"><a class="part-link" href="part-06.html"><span class="part-no">6</span><span class="part-name">Evaluation Engineering：从“看起来不错”到“有证据证明”</span></a></li>
+<li class="part"><a class="part-link" href="part-07.html"><span class="part-no">7</span><span class="part-name">Production Agent Engineering：让一个“能跑的 Agent”变成“敢上线的 Agent”</span></a></li>
+<li class="part"><a class="part-link" href="part-08.html"><span class="part-no">8</span><span class="part-name">Advanced Agent Patterns：当简单 Agent 已经不够用了</span></a></li>
+<li class="part"><a class="part-link" href="part-09.html"><span class="part-no">9</span><span class="part-name">Coding Agent：让 Agent 真正参与软件开发</span></a></li>
+<li class="part"><a class="part-link" href="part-10.html"><span class="part-no">10</span><span class="part-name">Multi-Agent Engineering：当一个 Agent 不再够用</span></a></li>
+<li class="part"><a class="part-link" href="part-11.html"><span class="part-no">11</span><span class="part-name">Agent Evolution：让 Agent 不只是上线，而是持续变好</span></a></li>
+<li class="part"><a class="part-link" href="part-12.html"><span class="part-no">12</span><span class="part-name">Agent Application Architecture：把工程能力迁移到陌生领域</span></a></li></ol><div class="bn-foot"><a href="index.html">全书目录</a></div></nav></aside>
+<main class="content" id="content">
+<article class="prose">
+<h1>Part 5｜Workflow → Agent：什么时候真的需要 Agent？</h1>
+<blockquote>
+<p>Agent 并不是 Workflow 的“高级版本”。<br>
+真正的问题是：<strong>你的任务到底需要不确定的执行路径，还是一个明确的执行流程？</strong></p>
+</blockquote>
+<p>到 Part 4 为止，我们已经认识了模型输入、工具执行、知识检索与记忆等能力。这里的目标不是再把这些能力复述一遍，而是回答一个架构问题：在任务与评估条件固定时，哪些能力值得组合，控制权又应该留给谁？</p>
+<p>我们先看同一个审批任务，再逐步比较不同方案。比较时始终使用同一组任务与评价条件：哪些步骤可由规则确定，哪些地方需要模型处理语言，是否需要外部知识或工具，以及执行路径是否真的需要根据观察动态调整。</p>
+<p>同一个系统可以组合 RAG、Tool 和 Workflow；Agent 也可以只出现在流程中的某个节点。核心判断不是“能否组合”，而是每增加一分自由度，是否换来了可测量的任务收益。<strong>能够动态决策，不等于应该动态决策。</strong></p>
+<hr>
+<h2 id="sec-5-1">5.1 先看一个最普通的审批流程</h2>
+<p>假设公司有一个报销系统。</p>
+<p>流程规定：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>员工提交报销</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>检查金额</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>金额 ≤ 1000？</span></span>
+<span class="line"><span>   ↙      ↘</span></span>
+<span class="line"><span> Yes      No</span></span>
+<span class="line"><span> ↓         ↓</span></span>
+<span class="line"><span>主管审批   财务审批</span></span>
+<span class="line"><span>   \      /</span></span>
+<span class="line"><span>    ↓    ↓</span></span>
+<span class="line"><span>   审批完成</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>    通知员工</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这个流程看起来其实挺复杂。</p>
+<p>有：</p>
+<ul>
+<li>判断</li>
+<li>分支</li>
+<li>审批</li>
+<li>通知</li>
+<li>状态</li>
+</ul>
+<p>但你会发现：</p>
+<blockquote>
+<p><strong>每一步都是可以提前写出来的。</strong></p>
+</blockquote>
+<p>那么最自然的实现是什么？</p>
+<p>不是 Agent。</p>
+<p>而是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Workflow</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-5-2">5.2 Workflow 到底是什么？</h2>
+<p>如果不说那么多术语，可以把 Workflow 理解成：</p>
+<blockquote>
+<p><strong>程序员提前规定好的执行过程。</strong></p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">def</span><span style="color:#6F42C1"> process_reimbursement</span><span style="color:#24292E">(request):</span></span>
+<span class="line"><span style="color:#24292E">    validate_request(request)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    if</span><span style="color:#24292E"> request.amount </span><span style="color:#D73A49">&#x3C;=</span><span style="color:#005CC5"> 1000</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#24292E">        approve_by_manager(request)</span></span>
+<span class="line"><span style="color:#D73A49">    else</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#24292E">        approve_by_finance(request)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    notify_user(request)</span></span>
+<span class="line"></span></code></pre>
+<p>谁决定下一步？</p>
+<p><strong>程序。</strong></p>
+<p>什么时候决定？</p>
+<p><strong>执行之前就已经写在代码里了。</strong></p>
+<p>所以 Workflow 的核心是：</p>
+<blockquote>
+<p><strong>控制流由系统预先定义。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-5-3">5.3 Workflow 并不意味着不能用 LLM</h2>
+<p>这一点非常重要。</p>
+<p>有些人一看到：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Workflow</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>就觉得：</p>
+<blockquote>
+<p>“这不是 AI。”</p>
+</blockquote>
+<p>完全不是。</p>
+<p>例如：</p>
+<blockquote>
+<p>用户提交一封自然语言报销说明。</p>
+</blockquote>
+<p>这封说明可能写得非常随意：</p>
+<blockquote>
+<p>“上周去上海参加客户会议，打车花了 182 元，客户那边临时改了时间，所以多住了一晚……”</p>
+</blockquote>
+<p>你可以先让 LLM 做：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>自然语言</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>结构化字段</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>得到：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "city"</span><span style="color:#24292E">: </span><span style="color:#032F62">"上海"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "purpose"</span><span style="color:#24292E">: </span><span style="color:#032F62">"客户会议"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "transportation"</span><span style="color:#24292E">: </span><span style="color:#032F62">"taxi"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "transportation_amount"</span><span style="color:#24292E">: </span><span style="color:#005CC5">182</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "extra_hotel_night"</span><span style="color:#24292E">: </span><span style="color:#005CC5">true</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<p>然后交给传统 Workflow：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Structured Data</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Deterministic Rules</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Approval Workflow</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以：</p>
+<blockquote>
+<p><strong>Workflow 和 LLM 完全可以共存。</strong></p>
+</blockquote>
+<p>这就是：</p>
+<blockquote>
+<p><strong>LLM Workflow。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-5-4">5.4 LLM Workflow：让模型参与步骤，但不决定整个流程</h2>
+<p>假设我们做一个售后系统。</p>
+<p>流程固定：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户投诉</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>分类</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>提取订单号</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>查询订单</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>查询售后政策</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>生成建议</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>人工审批</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>其中：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>分类</span></span>
+<span class="line"><span>提取</span></span>
+<span class="line"><span>生成</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>可以交给 LLM。</p>
+<p>但：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>什么时候查订单</span></span>
+<span class="line"><span>什么时候查政策</span></span>
+<span class="line"><span>什么时候人工审批</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>仍然由程序决定。</p>
+<p>于是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>User</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>LLM: Classification</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>LLM: Extraction</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool: Order API</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>RAG: Policy</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>LLM: Recommendation</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Human Approval</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>整个过程仍然是：</p>
+<blockquote>
+<p>Workflow。</p>
+</blockquote>
+<hr>
+<h2 id="sec-5-5">5.5 这时候你可能会问：那 Agent 和 Workflow 的区别到底在哪？</h2>
+<p>可以先用一个非常实用的问题来区分：</p>
+<blockquote>
+<p><strong>“下一步该做什么”，是谁决定的？</strong></p>
+</blockquote>
+<p>如果是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>程序决定</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>更像 Workflow。</p>
+<p>如果是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>模型根据当前状态动态决定</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>更接近 Agent。</p>
+<p>举个例子。</p>
+<hr>
+<h3 id="sec-workflow">Workflow</h3>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Step 1 → Step 2 → Step 3 → Step 4</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>程序知道：</p>
+<blockquote>
+<p>下一步就是 Step 3。</p>
+</blockquote>
+<hr>
+<h3 id="sec-agent">Agent</h3>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Current State</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Should I query order?</span></span>
+<span class="line"><span>Should I query logistics?</span></span>
+<span class="line"><span>Should I query policy?</span></span>
+<span class="line"><span>Should I stop?</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>模型根据当前 Context 动态选择。</p>
+<hr>
+<h2 id="sec-5-6">5.6 但不要把 Agent 理解成“随机 Workflow”</h2>
+<p>Agent 不是：</p>
+<blockquote>
+<p>Workflow 没设计好，所以让模型自己乱跑。</p>
+</blockquote>
+<p>成熟 Agent 的关键仍然是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>明确目标</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>有限工具</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>有限权限</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>受约束的 Runtime</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>明确停止条件</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>也就是说：</p>
+<blockquote>
+<p><strong>Agent 不是取消控制，而是把一部分控制权从程序转移给模型。</strong></p>
+</blockquote>
+<p>而一旦控制权转移给模型，系统就需要承担额外成本。</p>
+<hr>
+<h2 id="sec-5-7">5.7 自由度是有代价的</h2>
+<p>这是理解 Agent 的一个非常好的角度。</p>
+<p>可以把系统的“决策自由度”理解成逐渐提高：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Fixed Function</span></span>
+<span class="line"><span>     ↓</span></span>
+<span class="line"><span>Fixed Workflow</span></span>
+<span class="line"><span>     ↓</span></span>
+<span class="line"><span>LLM-assisted Workflow</span></span>
+<span class="line"><span>     ↓</span></span>
+<span class="line"><span>Agent</span></span>
+<span class="line"><span>     ↓</span></span>
+<span class="line"><span>Multi-Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>自由度越来越高。</p>
+<p>同时，通常也伴随着：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Complexity ↑</span></span>
+<span class="line"><span>Failure Surface ↑</span></span>
+<span class="line"><span>Cost ↑</span></span>
+<span class="line"><span>Latency ↑</span></span>
+<span class="line"><span>Evaluation Difficulty ↑</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以：</p>
+<blockquote>
+<p><strong>增加自主性，本质上是在购买更多灵活性。</strong></p>
+</blockquote>
+<p>问题是：</p>
+<blockquote>
+<p>你是否真的需要这些灵活性？</p>
+</blockquote>
+<hr>
+<h2 id="sec-5-8">5.8 一个特别重要的设计问题</h2>
+<p>假设业务流程有 20 个步骤。</p>
+<p>其中 19 个步骤都是固定的。</p>
+<p>只有第 7 步存在一定的不确定性。</p>
+<p>你需要不需要把整个流程都变成 Agent？</p>
+<p>当然不需要。</p>
+<p>更合理的方式可能是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Workflow</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Step 1</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Step 2</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>LLM Decision</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Step 8</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Step 9</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>...</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是：</p>
+<blockquote>
+<p><strong>把 Agent / LLM 放在真正需要动态能力的位置。</strong></p>
+</blockquote>
+<p>而不是：</p>
+<blockquote>
+<p>整个系统“Agent 化”。</p>
+</blockquote>
+<p>这会成为非常重要的架构思想：</p>
+<h3 id="sec-ai-ai">AI 应该被放在需要 AI 的边界上</h3>
+<hr>
+<h2 id="sec-5-9">5.9 第一次认识 ReAct</h2>
+<p>现在我们来到 Agent 中一个非常经典的执行模式：</p>
+<blockquote>
+<p>ReAct。</p>
+</blockquote>
+<p>你可以先不要关心这个名字到底代表什么。</p>
+<p>先看行为。</p>
+<p>用户说：</p>
+<blockquote>
+<p>“帮我查订单 10001 为什么还没到。”</p>
+</blockquote>
+<p>Agent：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>我需要知道订单状态。</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>调用 query_order()</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>得到：订单已经发货。</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>我还需要知道物流状态。</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>调用 query_logistics()</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>得到：物流 72 小时没有更新。</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>可以给出结论。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你会发现：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Observe</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Decide</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Act</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Observe</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Decide</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是 ReAct 思路的核心：</p>
+<blockquote>
+<p><strong>让模型在行动和观察之间循环。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-5-10">5.10 ReAct 为什么有价值？</h2>
+<p>如果任务路径很简单：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>query_logistics</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>answer</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么你完全没必要做复杂 ReAct。</p>
+<p>但如果问题变成：</p>
+<blockquote>
+<p>“调查为什么这个订单异常。”</p>
+</blockquote>
+<p>那么可能有很多可能路径：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>订单问题？</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>查询库存</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>物流问题？</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>查询物流</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>仓库问题？</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>查询出库记录</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>售后问题？</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>查询售后记录</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这时候，固定 Workflow 的路径会快速膨胀。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>A → B → C</span></span>
+<span class="line"><span>A → B → D</span></span>
+<span class="line"><span>A → E → C</span></span>
+<span class="line"><span>A → E → F</span></span>
+<span class="line"><span>...</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>程序需要提前写越来越多分支。</p>
+<p>Agent 的价值就在这里逐渐体现出来：</p>
+<blockquote>
+<p><strong>让模型根据观察结果选择路径。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-5-11">5.11 但是 ReAct 也有代价</h2>
+<p>假设 Workflow：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>3 steps</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而 Agent：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>5 tool calls</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>5 model calls</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么 Agent 可能：</p>
+<ul>
+<li>更慢</li>
+<li>更贵</li>
+<li>更容易出错</li>
+<li>更难调试</li>
+</ul>
+<p>所以你不能因为：</p>
+<blockquote>
+<p>Agent 可以自己决定路径。</p>
+</blockquote>
+<p>就得出：</p>
+<blockquote>
+<p>Agent 一定更适合。</p>
+</blockquote>
+<p>真正的问题仍然是：</p>
+<blockquote>
+<p><strong>路径的不确定性有没有高到值得付出这些代价？</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-5-12">5.12 Planning：什么时候应该先做计划？</h2>
+<p>ReAct 是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>观察</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>行动</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>观察</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>行动</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>但一些任务可能天然更适合先规划。</p>
+<p>例如：</p>
+<blockquote>
+<p>“调查过去一年某类客户投诉，找出主要原因，并提出三个改进建议。”</p>
+</blockquote>
+<p>这已经不是：</p>
+<blockquote>
+<p>查一下订单。</p>
+</blockquote>
+<p>它可能需要：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>定义任务</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>收集数据</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>分类</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>统计</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>找异常</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>分析原因</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>形成结论</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>生成建议</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果让 Agent 一步一步临时决定：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>下一步做什么？</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>可能会非常混乱。</p>
+<p>于是可以先让它形成计划：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Plan</span></span>
+<span class="line"><span>  ├── Collect</span></span>
+<span class="line"><span>  ├── Classify</span></span>
+<span class="line"><span>  ├── Analyze</span></span>
+<span class="line"><span>  ├── Validate</span></span>
+<span class="line"><span>  └── Report</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后再执行。</p>
+<p>这就是 Planning。</p>
+<hr>
+<h2 id="sec-5-13">5.13 Planning 不是万能药</h2>
+<p>有的人学会 Planning 以后，会开始：</p>
+<blockquote>
+<p>“所有 Agent 都先做 Plan。”</p>
+</blockquote>
+<p>其实也不对。</p>
+<p>如果任务只是：</p>
+<blockquote>
+<p>“查询订单 10001。”</p>
+</blockquote>
+<p>先生成一个 10 步计划，反而增加了：</p>
+<ul>
+<li>Token</li>
+<li>Latency</li>
+<li>Complexity</li>
+</ul>
+<p>所以：</p>
+<blockquote>
+<p><strong>Planning 解决的是任务规划复杂度，不是 Agent 标配。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-5-14">5.14 Static Plan 和 Dynamic Plan</h2>
+<p>可以进一步区分。</p>
+<h3 id="sec-static-plan">Static Plan</h3>
+<p>计划由程序决定。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>A → B → C → D</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h3 id="sec-dynamic-plan">Dynamic Plan</h3>
+<p>模型根据当前信息产生计划。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>问题</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Plan</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>执行</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>发现情况变化</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Replan</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>后者灵活性更高。</p>
+<p>代价也更高。</p>
+<hr>
+<h2 id="sec-5-15">5.15 Reflection：让 Agent 检查自己的结果</h2>
+<p>现在再考虑：</p>
+<blockquote>
+<p>“模型已经完成答案了，但我们不太放心。”</p>
+</blockquote>
+<p>一种常见思路是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Generate</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Critique</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Repair</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Final</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>例如：</p>
+<blockquote>
+<p>第一轮模型生成维修建议。</p>
+</blockquote>
+<p>然后另一个模型检查：</p>
+<blockquote>
+<p>是否引用了错误维修手册？</p>
+</blockquote>
+<blockquote>
+<p>是否遗漏了关键故障码？</p>
+</blockquote>
+<blockquote>
+<p>是否给出了没有依据的结论？</p>
+</blockquote>
+<p>如果发现问题：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Critique</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Repair</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是 Reflection / Self-correction 一类模式。</p>
+<hr>
+<h2 id="sec-5-16">5.16 Reflection 到底有没有用？</h2>
+<p>这是一个必须保持工程师思维的问题。</p>
+<p>如果：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>一次生成质量已经很高</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>再做：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>生成</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>反思</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>重新生成</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>可能只是：</p>
+<blockquote>
+<p>花两倍的钱，得到差不多的结果。</p>
+</blockquote>
+<p>所以任何 Reflection 机制都应该回答：</p>
+<blockquote>
+<p><strong>它到底减少了哪一种失败？</strong></p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>防止格式错误？</span></span>
+<span class="line"><span>防止遗漏？</span></span>
+<span class="line"><span>防止事实错误？</span></span>
+<span class="line"><span>防止工具误用？</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果回答不出来，那么：</p>
+<blockquote>
+<p>Reflection 很可能只是一个“听起来高级”的组件。</p>
+</blockquote>
+<hr>
+<h2 id="sec-5-17">5.17 一个重要的架构原则</h2>
+<p>现在可以把几种模式放在一起看。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>固定流程</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Workflow</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>部分步骤需要 AI</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>LLM Workflow</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>路径有一定不确定性</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>ReAct / Agent</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>任务本身需要先分解</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Planning</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>结果需要额外验证</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Reflection</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>注意：</p>
+<blockquote>
+<p>它们可以组合。</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Workflow</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Agent Step</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>RAG</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Validation</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Next Workflow Step</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>现实系统通常不是“纯粹的某一种模式”。</p>
+<hr>
+<h2 id="sec-5-18">5.18 现在做一次真正的架构对决</h2>
+<p>这是 Part 5 的核心实验。</p>
+<p>我们选择一个业务问题：</p>
+<blockquote>
+<p><strong>调查一笔异常售后订单为什么没有正常完成，并给出下一步处理建议。</strong></p>
+</blockquote>
+<p>系统拥有：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Order API</span></span>
+<span class="line"><span>Logistics API</span></span>
+<span class="line"><span>Inventory API</span></span>
+<span class="line"><span>Service Ticket API</span></span>
+<span class="line"><span>Policy Knowledge Base</span></span>
+<span class="line"><span>Historical Cases</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-5-19">5.19 Architecture A：传统规则</h2>
+<p>程序直接规定：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>查订单</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>如果未发货 → 查库存</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>如果已发货 → 查物流</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>如果物流异常 → 创建工单</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>否则 → 正常结束</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>优点：</p>
+<ul>
+<li>可预测</li>
+<li>易测试</li>
+<li>低成本</li>
+<li>易审计</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>分支多时复杂</li>
+<li>业务变化需要修改程序</li>
+</ul>
+<hr>
+<h2 id="sec-5-20">5.20 Architecture B：LLM Workflow</h2>
+<p>程序固定流程。</p>
+<p>但：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>LLM</span></span>
+<span class="line"><span>负责理解问题</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>提取字段</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>解释结果</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>流程仍然固定。</p>
+<p>优点：</p>
+<ul>
+<li>AI 带来自然语言能力</li>
+<li>控制仍然明确</li>
+</ul>
+<hr>
+<h2 id="sec-5-21">5.21 Architecture C：RAG Workflow</h2>
+<p>增加：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Policy Knowledge</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Historical Cases</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>流程：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Order</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Retrieve Policy</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Retrieve Similar Cases</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>LLM Analysis</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Final Recommendation</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>优点：</p>
+<ul>
+<li>能利用业务知识</li>
+<li>路径仍然清晰</li>
+</ul>
+<hr>
+<h2 id="sec-5-22">5.22 Architecture D：Single Agent</h2>
+<p>现在放开一些控制。</p>
+<p>Agent 可以：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order</span></span>
+<span class="line"><span>query_logistics</span></span>
+<span class="line"><span>query_inventory</span></span>
+<span class="line"><span>query_service_ticket</span></span>
+<span class="line"><span>search_policy</span></span>
+<span class="line"><span>search_history</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>模型自己决定：</p>
+<blockquote>
+<p>先查什么。</p>
+</blockquote>
+<p>然后：</p>
+<blockquote>
+<p>根据结果决定下一步。</p>
+</blockquote>
+<p>优点：</p>
+<ul>
+<li>灵活</li>
+<li>对未知情况适应性更强</li>
+<li>不需要预先穷举所有路径</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>成本增加</li>
+<li>调试困难</li>
+<li>行为不稳定</li>
+<li>需要更强 Evaluation</li>
+</ul>
+<hr>
+<h2 id="sec-5-23">5.23 Architecture E：Multi-Agent</h2>
+<p>再进一步：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Investigation Agent</span></span>
+<span class="line"><span>        ↓</span></span>
+<span class="line"><span>Analysis Agent</span></span>
+<span class="line"><span>        ↓</span></span>
+<span class="line"><span>Execution Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>可能：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Investigator</span></span>
+<span class="line"><span>→ 收集证据</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Analyst</span></span>
+<span class="line"><span>→ 分析原因</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Executor</span></span>
+<span class="line"><span>→ 执行处理</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>看起来很漂亮。</p>
+<p>但你现在应该立刻问：</p>
+<blockquote>
+<p><strong>为什么一定要拆成三个 Agent？</strong></p>
+</blockquote>
+<p>如果一个 Agent 就能很好地完成：</p>
+<blockquote>
+<p>收集 + 分析 + 建议。</p>
+</blockquote>
+<p>那么 Multi-Agent 反而可能是过度设计。</p>
+<hr>
+<h2 id="sec-5-24">5.24 Architecture Shootout</h2>
+<p>现在真正比较它们。</p>
+<table>
+<thead>
+<tr>
+<th>Architecture</th>
+<th style="text-align:right">Accuracy</th>
+<th style="text-align:right">Cost</th>
+<th style="text-align:right">Latency</th>
+<th style="text-align:right">Reliability</th>
+<th style="text-align:right">Complexity</th>
+<th style="text-align:right">Observability</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Traditional</td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+</tr>
+<tr>
+<td>LLM Workflow</td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+</tr>
+<tr>
+<td>RAG Workflow</td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+</tr>
+<tr>
+<td>Single Agent</td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+</tr>
+<tr>
+<td>Multi-Agent</td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+</tr>
+</tbody>
+</table>
+<p>配套仓库的主实验是 <code>labs/lab05_architecture/</code>，任务集是 10 个合成“退款资格调查”案例。先在阅读参考实现前写下 ADR，再执行离线比较：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab05_architecture.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> fake</span></span>
+<span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> pytest</span><span style="color:#032F62"> labs/lab05_architecture/tests</span></span>
+<span class="line"></span></code></pre>
+<p>报告会在同一 Dataset 与 Evaluator 下比较 Rules、LLM Workflow、RAG Workflow、Single Agent 与 Multi-Agent，并保留逐案结果、检索轨迹、调用量、延迟和成本字段。先填上自己实际观察到的结果，再解释错误样本和复杂度；不要只按总分决定架构。</p>
+<h3 id="sec-x31">可选真实模型实验：在同一任务集上比较架构</h3>
+<p>只有在离线主线完成、确认 Provider 配置、实际价格、数据处理条件与预算之后才运行。该命令会为含模型的架构发出真实请求；规则架构仍是确定性基线。对照结果必须按案例复核，不能把 10 个合成案例的一次结果写成普遍架构排名。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab05_architecture.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> real</span><span style="color:#005CC5"> --output</span><span style="color:#032F62"> artifacts/lab05-architecture-real</span></span>
+<span class="line"></span></code></pre>
+<p>注意：</p>
+<blockquote>
+<p><strong>这里没有默认的“冠军”。</strong></p>
+</blockquote>
+<p>最后可能出现：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Traditional</span></span>
+<span class="line"><span>★★★★</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>也可能：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>RAG Workflow</span></span>
+<span class="line"><span>★★★★★</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>也可能：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent</span></span>
+<span class="line"><span>★★★★★</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>取决于任务。</p>
+<hr>
+<h2 id="sec-5-25">5.25 一个可能出现的结果</h2>
+<p>下面是一组用于讨论取舍的假设数字，不是配套仓库的预置结果，也不是本书已经验证的架构排名。实际报告应以你运行的 10 个案例、逐案结果与当前配置为依据。假设最终测试结果是：</p>
+<table>
+<thead>
+<tr>
+<th>Architecture</th>
+<th style="text-align:right">Accuracy</th>
+<th style="text-align:right">Cost</th>
+<th style="text-align:right">Latency</th>
+<th style="text-align:right">Reliability</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Traditional</td>
+<td style="text-align:right">87%</td>
+<td style="text-align:right">低</td>
+<td style="text-align:right">低</td>
+<td style="text-align:right">高</td>
+</tr>
+<tr>
+<td>LLM Workflow</td>
+<td style="text-align:right">91%</td>
+<td style="text-align:right">中</td>
+<td style="text-align:right">中</td>
+<td style="text-align:right">高</td>
+</tr>
+<tr>
+<td>RAG Workflow</td>
+<td style="text-align:right">95%</td>
+<td style="text-align:right">中</td>
+<td style="text-align:right">中</td>
+<td style="text-align:right">高</td>
+</tr>
+<tr>
+<td>Single Agent</td>
+<td style="text-align:right">96%</td>
+<td style="text-align:right">高</td>
+<td style="text-align:right">高</td>
+<td style="text-align:right">中</td>
+</tr>
+<tr>
+<td>Multi-Agent</td>
+<td style="text-align:right">97%</td>
+<td style="text-align:right">很高</td>
+<td style="text-align:right">很高</td>
+<td style="text-align:right">中低</td>
+</tr>
+</tbody>
+</table>
+<p>这时候你选择什么？</p>
+<p>很多人会说：</p>
+<blockquote>
+<p>Multi-Agent，因为准确率最高。</p>
+</blockquote>
+<p>但这不是完整的工程判断。</p>
+<p>如果业务要求：</p>
+<blockquote>
+<p>成本必须低。</p>
+</blockquote>
+<p>或者：</p>
+<blockquote>
+<p>响应必须在 2 秒以内。</p>
+</blockquote>
+<p>又或者：</p>
+<blockquote>
+<p>所有处理都必须可审计。</p>
+</blockquote>
+<p>那么：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>97%</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>可能完全没有价值。</p>
+<p>反而：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>95%</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>低成本</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>稳定</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>可审计</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>才是真正的最佳方案。</p>
+<hr>
+<h2 id="sec-5-26">5.26 一个更成熟的架构选择公式</h2>
+<p>你不需要真的数学计算，但可以形成一个思维模型：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Architecture Value</span></span>
+<span class="line"><span>≈</span></span>
+<span class="line"><span>Business Value</span></span>
+<span class="line"><span>×</span></span>
+<span class="line"><span>Quality</span></span>
+<span class="line"><span>×</span></span>
+<span class="line"><span>Reliability</span></span>
+<span class="line"><span>──────────────────────</span></span>
+<span class="line"><span>Cost × Complexity × Risk</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>不是严格公式。</p>
+<p>它只是提醒我们：</p>
+<blockquote>
+<p><strong>架构不是只优化准确率。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-5-27">5.27 什么时候真的值得使用 Agent？</h2>
+<p>现在，我们可以给出一个比较成熟的判断。</p>
+<p>一个任务越满足下面这些特征，就越值得考虑 Agent：</p>
+<h3 id="sec-x35">第一</h3>
+<blockquote>
+<p>路径本身难以提前定义。</p>
+</blockquote>
+<h3 id="sec-x36">第二</h3>
+<blockquote>
+<p>下一步需要基于当前观察结果动态决定。</p>
+</blockquote>
+<h3 id="sec-x37">第三</h3>
+<blockquote>
+<p>可用工具很多，而且调用顺序不是固定的。</p>
+</blockquote>
+<h3 id="sec-x38">第四</h3>
+<blockquote>
+<p>任务可能需要探索和反复调查。</p>
+</blockquote>
+<h3 id="sec-x39">第五</h3>
+<blockquote>
+<p>业务价值足以覆盖 Agent 带来的额外复杂度。</p>
+</blockquote>
+<p>反过来：</p>
+<p>如果一个任务：</p>
+<ul>
+<li>流程固定</li>
+<li>规则明确</li>
+<li>高度可审计</li>
+<li>延迟敏感</li>
+<li>风险高</li>
+</ul>
+<p>那么应该首先考虑：</p>
+<blockquote>
+<p><strong>Workflow。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-5-28">5.28 Agent 其实是在购买“路径自由”</h2>
+<p>这是理解 Agent 最好的一个抽象。</p>
+<p>Workflow 给你：</p>
+<blockquote>
+<p>可控的执行路径。</p>
+</blockquote>
+<p>Agent 给你：</p>
+<blockquote>
+<p>动态的执行路径。</p>
+</blockquote>
+<p>因此：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Workflow</span></span>
+<span class="line"><span>= Control</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Agent</span></span>
+<span class="line"><span>= Flexibility</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而工程师要做的，是回答：</p>
+<blockquote>
+<p><strong>当前业务到底更需要 Control，还是更需要 Flexibility？</strong></p>
+</blockquote>
+<p>高风险支付系统可能更需要：</p>
+<blockquote>
+<p>Control。</p>
+</blockquote>
+<p>复杂故障调查可能更需要：</p>
+<blockquote>
+<p>Flexibility。</p>
+</blockquote>
+<p>这比背诵：</p>
+<blockquote>
+<p>ReAct / Planning / Reflection</p>
+</blockquote>
+<p>重要得多。</p>
+<hr>
+<h2 id="sec-5-29">5.29 但现实中的系统往往是 Hybrid</h2>
+<p>不要认为最后一定是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>全 Workflow</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>或者：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>全 Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>更真实的系统可能是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>                    User</span></span>
+<span class="line"><span>                      ↓</span></span>
+<span class="line"><span>                  Workflow</span></span>
+<span class="line"><span>                      ↓</span></span>
+<span class="line"><span>               LLM Classification</span></span>
+<span class="line"><span>                      ↓</span></span>
+<span class="line"><span>             ┌────────┴────────┐</span></span>
+<span class="line"><span>             ↓                 ↓</span></span>
+<span class="line"><span>        Fixed Flow         Agent Step</span></span>
+<span class="line"><span>             ↓                 ↓</span></span>
+<span class="line"><span>          Tool A           Tool B/C/D</span></span>
+<span class="line"><span>             ↓                 ↓</span></span>
+<span class="line"><span>             └────────┬────────┘</span></span>
+<span class="line"><span>                      ↓</span></span>
+<span class="line"><span>                   Validation</span></span>
+<span class="line"><span>                      ↓</span></span>
+<span class="line"><span>                  Human Review</span></span>
+<span class="line"><span>                      ↓</span></span>
+<span class="line"><span>                  Final Action</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这往往比：</p>
+<blockquote>
+<p>“整个系统全部由 Agent 管。”</p>
+</blockquote>
+<p>更符合生产环境。</p>
+<hr>
+<h2 id="sec-5-30">5.30 练习：把一个 Agent 拆回 Workflow</h2>
+<p>现在做一个反向练习。</p>
+<p>假设你已经有一个 Agent：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户问题</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Agent</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Answer</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>请你认真查看它过去 100 次执行记录。</p>
+<p>然后问：</p>
+<blockquote>
+<p>这些执行路径真的都不同吗？</p>
+</blockquote>
+<p>如果你发现：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>90% 的任务：</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>A → B → C</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么你应该考虑：</p>
+<blockquote>
+<p>能不能把主要路径重新变成 Workflow？</p>
+</blockquote>
+<p>然后只让 Agent 负责：</p>
+<blockquote>
+<p>那 10% 无法提前确定的部分。</p>
+</blockquote>
+<p>这是一个非常成熟的工程优化方向。</p>
+<hr>
+<h2 id="sec-5-31">5.31 练习：什么时候需要 Planning？</h2>
+<p>给下面三个任务分类。</p>
+<h3 id="sec-task-a">Task A</h3>
+<blockquote>
+<p>查询订单状态。</p>
+</blockquote>
+<h3 id="sec-task-b">Task B</h3>
+<blockquote>
+<p>调查一个复杂故障。</p>
+</blockquote>
+<h3 id="sec-task-c">Task C</h3>
+<blockquote>
+<p>分析一年客户投诉并提出改进方案。</p>
+</blockquote>
+<p>思考：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>A</span></span>
+<span class="line"><span>→ 直接 Tool / Workflow</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>B</span></span>
+<span class="line"><span>→ Agent / ReAct</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>C</span></span>
+<span class="line"><span>→ Planning + Workflow / Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>答案不是唯一的。</p>
+<p>真正需要解释的是：</p>
+<blockquote>
+<p><strong>为什么。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-5-32">5.32 练习：Reflection 是否值得？</h2>
+<p>假设一个模型：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>一次生成准确率 = 94%</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>增加 Reflection 后：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>准确率 = 95%</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>但：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Cost = 2.1x</span></span>
+<span class="line"><span>Latency = 1.8x</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这个优化值得吗？</p>
+<p>答案取决于：</p>
+<blockquote>
+<p>业务目标。</p>
+</blockquote>
+<p>例如：</p>
+<ul>
+<li>医疗辅助？</li>
+<li>普通客服？</li>
+<li>内部知识查询？</li>
+<li>代码生成？</li>
+</ul>
+<p>不同场景完全不同。</p>
+<p>所以：</p>
+<blockquote>
+<p><strong>Reflection 是否值得，本身就是一个架构决策问题。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-5-33">5.33 Part 5 最重要的认知变化</h2>
+<p>到这里，你应该已经不再把 Agent 看作：</p>
+<blockquote>
+<p>“一个更高级的 LLM API。”</p>
+</blockquote>
+<p>而应该把它看成：</p>
+<blockquote>
+<p><strong>一种把部分控制流交给模型的系统架构。</strong></p>
+</blockquote>
+<p>这样一来，很多事情都变得清楚了。</p>
+<hr>
+<h3 id="sec-workflow-2">Workflow</h3>
+<p>程序决定：</p>
+<blockquote>
+<p>下一步做什么。</p>
+</blockquote>
+<hr>
+<h3 id="sec-agent-2">Agent</h3>
+<p>模型在约束范围内决定：</p>
+<blockquote>
+<p>下一步做什么。</p>
+</blockquote>
+<hr>
+<h3 id="sec-multi-agent">Multi-Agent</h3>
+<p>多个决策实体协作：</p>
+<blockquote>
+<p>谁做什么、何时做、结果如何交接。</p>
+</blockquote>
+<hr>
+<h2 id="sec-part">本 Part 小结：架构是在购买控制权自由度</h2>
+<p>选择架构时，先判断流程有多稳定，再判断哪些步骤需要模型参与、执行路径是否真的需要动态调整，以及规划或反思是否带来可测量收益。Traditional、Workflow、LLM Workflow、RAG Workflow、Single Agent 与 Multi-Agent 不是逐级升级的技术等级；它们把不同程度的控制权留给程序或模型。</p>
+<p>一个成熟的架构决策至少写清三件事：当前任务为什么需要这一级自由度；它相对更简单基线改善了什么；新增的成本、延迟、失败面和治理负担能否被接受。</p>
+<h2 id="sec-part-part-6">本 Part → Part 6：从选择架构到证明选择值得</h2>
+<p>架构 Shootout 给出的是在特定任务、数据、评估方法和运行条件下的比较。它不能靠一次演示决定架构优劣，也不能把一个示例里的优势直接推广到所有业务。</p>
+<p>下一部分把“看起来更好”拆成可复现的评估问题：定义任务与数据集，记录行动轨迹，分别评价任务结果、工具选择、参数、检索、成本与延迟，并保留足以解释失败的证据。</p>
+
+</article>
+<nav class="pager"><a class="pg prev" href="part-04.html"><span class="pg-dir">上一部分</span><span class="pg-name">Part 4｜RAG &amp; Memory：让 Agent 获得知识，并记住真正值得记住的东西</span></a><a class="pg next" href="part-06.html"><span class="pg-dir">下一部分</span><span class="pg-name">Part 6｜Evaluation Engineering：从“看起来不错”到“有证据证明”</span></a></nav>
+<footer class="book-foot"><span>Enterprise Agent Engineering</span><span>v0.4</span><span>文本校审候选，非出版定稿</span></footer>
+</main>
+</div>
+<div class="scrim" id="scrim"></div>
+<script src="assets/nav.js"></script>
+</body>
+</html>

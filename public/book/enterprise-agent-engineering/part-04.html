@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 4｜RAG &amp; Memory：让 Agent 获得知识，并记住真正值得记住的东西 · Enterprise Agent Engineering</title>
+<meta name="description" content="RAG 与 Memory —— 让 Agent 获得知识，并记住真正值得记住的东西。 —— Enterprise Agent Engineering v0.4">
+<meta property="og:title" content="Part 4｜RAG &amp; Memory：让 Agent 获得知识，并记住真正值得记住的东西">
+<meta property="og:type" content="article">
+<link rel="stylesheet" href="assets/book.css">
+</head>
+<body>
+<a class="skip-link" href="#content">跳到正文</a>
+<header class="topbar"><button class="toc-toggle" id="tocToggle" aria-label="打开目录" aria-controls="sidebar"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button><a class="brand" href="index.html"><span class="brand-title">Enterprise Agent Engineering</span><span class="brand-sub">企业级 Agent 工程</span></a><span class="ver">v0.4</span></header>
+<div class="layout">
+<aside class="sidebar" id="sidebar"><nav class="book-nav"><div class="book-nav-head"><a class="bn-title" href="index.html">Enterprise Agent Engineering</a><span class="bn-ver">v0.4</span></div><ol class="parts"><li class="part"><a class="part-link" href="part-00.html"><span class="part-no">0</span><span class="part-name">先别急着做 Agent</span></a></li>
+<li class="part"><a class="part-link" href="part-01.html"><span class="part-no">1</span><span class="part-name">把 LLM 当成一个真正的软件组件</span></a></li>
+<li class="part"><a class="part-link" href="part-02.html"><span class="part-no">2</span><span class="part-name">Context Engineering：决定模型到底能看到什么</span></a></li>
+<li class="part"><a class="part-link" href="part-03.html"><span class="part-no">3</span><span class="part-name">Tools &amp; Agent Harness：让模型开始与真实世界交互</span></a></li>
+<li class="part is-active"><a class="part-link" href="part-04.html"><span class="part-no">4</span><span class="part-name">RAG &amp; Memory：让 Agent 获得知识，并记住真正值得记住的东西</span></a><ul class="secs"><li class="lvl2"><a class="sec" href="#sec-4-1" data-id="sec-4-1">4.1 一个 Agent 为什么会“什么都不知道”？</a></li><li class="lvl2"><a class="sec" href="#sec-4-2" data-id="sec-4-2">4.2 RAG 到底解决什么问题？</a></li><li class="lvl3"><a class="sec" href="#sec-retrieval-augmented-generation" data-id="sec-retrieval-augmented-generation">Retrieval-Augmented Generation</a></li><li class="lvl2"><a class="sec" href="#sec-4-3" data-id="sec-4-3">4.3 RAG 其实很像搜索</a></li><li class="lvl2"><a class="sec" href="#sec-4-4" data-id="sec-4-4">4.4 可是，文档是一整本书，模型应该搜索什么？</a></li><li class="lvl2"><a class="sec" href="#sec-4-5" data-id="sec-4-5">4.5 Chunking：把文档切成可以检索的知识单元</a></li><li class="lvl2"><a class="sec" href="#sec-4-6" data-id="sec-4-6">4.6 一个后端工程师很容易理解的类比</a></li><li class="lvl2"><a class="sec" href="#sec-4-7" data-id="sec-4-7">4.7 Embedding：如果用户说法完全不同怎么办？</a></li><li class="lvl3"><a class="sec" href="#sec-embedding" data-id="sec-embedding">Embedding</a></li><li class="lvl2"><a class="sec" href="#sec-4-8" data-id="sec-4-8">4.8 不要把 Embedding 神秘化</a></li><li class="lvl2"><a class="sec" href="#sec-4-9" data-id="sec-4-9">4.9 但是向量搜索也不是万能的</a></li><li class="lvl2"><a class="sec" href="#sec-4-10" data-id="sec-4-10">4.10 Dense、Sparse、Hybrid：三种基本检索思路</a></li><li class="lvl3"><a class="sec" href="#sec-sparse-retrieval" data-id="sec-sparse-retrieval">Sparse Retrieval</a></li><li class="lvl3"><a class="sec" href="#sec-dense-retrieval" data-id="sec-dense-retrieval">Dense Retrieval</a></li><li class="lvl3"><a class="sec" href="#sec-hybrid-retrieval" data-id="sec-hybrid-retrieval">Hybrid Retrieval</a></li><li class="lvl2"><a class="sec" href="#sec-4-11" data-id="sec-4-11">4.11 Metadata：同一个关键词，不一定是同一份知识</a></li><li class="lvl2"><a class="sec" href="#sec-4-12" data-id="sec-4-12">4.12 Reranking：找到一堆“像”的，不代表找到了最好的</a></li><li class="lvl3"><a class="sec" href="#sec-reranking" data-id="sec-reranking">Reranking</a></li><li class="lvl2"><a class="sec" href="#sec-4-13" data-id="sec-4-13">4.13 RAG 的真正难点其实不是“生成”</a></li><li class="lvl2"><a class="sec" href="#sec-4-14" data-id="sec-4-14">4.14 从 RAG 到 Agentic RAG</a></li><li class="lvl3"><a class="sec" href="#sec-agentic-rag" data-id="sec-agentic-rag">Agentic RAG</a></li><li class="lvl2"><a class="sec" href="#sec-4-15" data-id="sec-4-15">4.15 什么时候不要使用 Agentic RAG？</a></li><li class="lvl2"><a class="sec" href="#sec-4-16" data-id="sec-4-16">4.16 现在来说 Memory</a></li><li class="lvl2"><a class="sec" href="#sec-4-17" data-id="sec-4-17">4.17 Memory 不等于“把聊天记录存起来”</a></li><li class="lvl2"><a class="sec" href="#sec-4-18" data-id="sec-4-18">4.18 四类 Memory</a></li><li class="lvl3"><a class="sec" href="#sec-working-memory" data-id="sec-working-memory">Working Memory</a></li><li class="lvl3"><a class="sec" href="#sec-episodic-memory" data-id="sec-episodic-memory">Episodic Memory</a></li><li class="lvl3"><a class="sec" href="#sec-semantic-memory" data-id="sec-semantic-memory">Semantic Memory</a></li><li class="lvl3"><a class="sec" href="#sec-user-memory" data-id="sec-user-memory">User Memory</a></li><li class="lvl2"><a class="sec" href="#sec-4-19" data-id="sec-4-19">4.19 Memory 和 State 为什么还不是一回事？</a></li><li class="lvl2"><a class="sec" href="#sec-4-20" data-id="sec-4-20">4.20 Memory 也会污染 Context</a></li><li class="lvl2"><a class="sec" href="#sec-4-21" data-id="sec-4-21">4.21 Memory 的一个危险问题：记错了怎么办？</a></li><li class="lvl2"><a class="sec" href="#sec-4-22" data-id="sec-4-22">4.22 Memory Conflict</a></li><li class="lvl2"><a class="sec" href="#sec-4-23" data-id="sec-4-23">4.23 RAG 与 Memory 到底是什么关系？</a></li><li class="lvl2"><a class="sec" href="#sec-4-24" data-id="sec-4-24">4.24 实验：建立一个真正的 Business Knowledge Agent</a></li><li class="lvl2"><a class="sec" href="#sec-4-25" data-id="sec-4-25">4.25 第一步：先做普通 RAG</a></li><li class="lvl2"><a class="sec" href="#sec-4-26" data-id="sec-4-26">4.26 第二步：加入 Metadata</a></li><li class="lvl2"><a class="sec" href="#sec-4-27" data-id="sec-4-27">4.27 第三步：加入历史案例</a></li><li class="lvl2"><a class="sec" href="#sec-4-28" data-id="sec-4-28">4.28 第四步：先设计 Memory 的生命周期，而不是把它假装成已经实现的功能</a></li><li class="lvl2"><a class="sec" href="#sec-4-29" data-id="sec-4-29">4.29 第五步：把 Agentic Retrieval 当作一个需要单独验证的决策问题</a></li><li class="lvl2"><a class="sec" href="#sec-4-30" data-id="sec-4-30">4.30 Break：故意让 Retrieval 出问题</a></li><li class="lvl3"><a class="sec" href="#sec-failure-a-chunk" data-id="sec-failure-a-chunk">Failure A：错误 Chunk</a></li><li class="lvl3"><a class="sec" href="#sec-failure-b" data-id="sec-failure-b">Failure B：错误版本</a></li><li class="lvl3"><a class="sec" href="#sec-failure-c" data-id="sec-failure-c">Failure C：无关文档过多</a></li><li class="lvl3"><a class="sec" href="#sec-failure-d-memory" data-id="sec-failure-d-memory">Failure D：Memory 过时</a></li><li class="lvl3"><a class="sec" href="#sec-failure-e-memory" data-id="sec-failure-e-memory">Failure E：Memory 与当前事实冲突</a></li><li class="lvl2"><a class="sec" href="#sec-4-31" data-id="sec-4-31">4.31 Measure：不要只看最终答案</a></li><li class="lvl2"><a class="sec" href="#sec-4-32" data-id="sec-4-32">4.32 一个很重要的工程诊断习惯</a></li><li class="lvl2"><a class="sec" href="#sec-4-33" data-id="sec-4-33">4.33 一个容易踩的坑：把 RAG 当作“知识训练”</a></li><li class="lvl3"><a class="sec" href="#sec-x51" data-id="sec-x51">可选真实模型实验：检索证据是否支持回答</a></li><li class="lvl2"><a class="sec" href="#sec-4-34" data-id="sec-4-34">4.34 RAG 不是所有知识问题的答案</a></li><li class="lvl2"><a class="sec" href="#sec-4-35" data-id="sec-4-35">4.35 RAG + Tool + Memory：三者开始汇合</a></li><li class="lvl2"><a class="sec" href="#sec-4-36" data-id="sec-4-36">4.36 RAG 的另一个现实问题：知识会变化</a></li><li class="lvl2"><a class="sec" href="#sec-4-37" data-id="sec-4-37">4.37 Memory 也需要生命周期</a></li><li class="lvl2"><a class="sec" href="#sec-4-38" data-id="sec-4-38">4.38 Part 4 的一个核心认识</a></li><li class="lvl2"><a class="sec" href="#sec-4-39" data-id="sec-4-39">4.39 练习：设计你的 Knowledge Architecture</a></li><li class="lvl2"><a class="sec" href="#sec-4-40" data-id="sec-4-40">4.40 练习：什么东西绝对不应该进入 Memory？</a></li><li class="lvl2"><a class="sec" href="#sec-4-41" data-id="sec-4-41">4.41 练习：RAG 还是 Tool？</a></li><li class="lvl3"><a class="sec" href="#sec-a" data-id="sec-a">问题 A</a></li><li class="lvl3"><a class="sec" href="#sec-b" data-id="sec-b">问题 B</a></li><li class="lvl3"><a class="sec" href="#sec-c" data-id="sec-c">问题 C</a></li><li class="lvl2"><a class="sec" href="#sec-4-42" data-id="sec-4-42">4.42 本 Part 小结：知识来源与决策时输入要分开治理</a></li><li class="lvl2"><a class="sec" href="#sec-part-part-5" data-id="sec-part-part-5">本 Part → Part 5：从拥有能力到选择架构</a></li></ul></li>
+<li class="part"><a class="part-link" href="part-05.html"><span class="part-no">5</span><span class="part-name">Workflow → Agent：什么时候真的需要 Agent？</span></a></li>
+<li class="part"><a class="part-link" href="part-06.html"><span class="part-no">6</span><span class="part-name">Evaluation Engineering：从“看起来不错”到“有证据证明”</span></a></li>
+<li class="part"><a class="part-link" href="part-07.html"><span class="part-no">7</span><span class="part-name">Production Agent Engineering：让一个“能跑的 Agent”变成“敢上线的 Agent”</span></a></li>
+<li class="part"><a class="part-link" href="part-08.html"><span class="part-no">8</span><span class="part-name">Advanced Agent Patterns：当简单 Agent 已经不够用了</span></a></li>
+<li class="part"><a class="part-link" href="part-09.html"><span class="part-no">9</span><span class="part-name">Coding Agent：让 Agent 真正参与软件开发</span></a></li>
+<li class="part"><a class="part-link" href="part-10.html"><span class="part-no">10</span><span class="part-name">Multi-Agent Engineering：当一个 Agent 不再够用</span></a></li>
+<li class="part"><a class="part-link" href="part-11.html"><span class="part-no">11</span><span class="part-name">Agent Evolution：让 Agent 不只是上线，而是持续变好</span></a></li>
+<li class="part"><a class="part-link" href="part-12.html"><span class="part-no">12</span><span class="part-name">Agent Application Architecture：把工程能力迁移到陌生领域</span></a></li></ol><div class="bn-foot"><a href="index.html">全书目录</a></div></nav></aside>
+<main class="content" id="content">
+<article class="prose">
+<h1>Part 4｜RAG &amp; Memory：让 Agent 获得知识，并记住真正值得记住的东西</h1>
+<blockquote>
+<p>一个聪明的 Agent，如果不知道公司的业务知识，它能做什么？<br>
+一个知道很多知识的 Agent，如果每次都把所有历史重新读一遍，又能坚持多久？</p>
+</blockquote>
+<p>Part 3 让模型通过受控 Tool 访问结构化业务系统；但制度、操作手册、维修文档和过往案例往往存在于文档或知识库中，并不一定能通过一个业务 API 直接取得。你不能把所有资料硬编码进 Tool，也不应把整套知识库塞进每次请求。</p>
+<p>另一个问题也会随之出现：如果系统希望未来任务复用过去的某些信息，是否应该保存所有对话？</p>
+<p>这两个问题分别引出本 Part 的两条主线：<strong>RAG 解决当前任务怎样取得外部证据；Memory 解决哪些信息值得经过治理后留给未来任务。</strong></p>
+<hr>
+<h2 id="sec-4-1">4.1 一个 Agent 为什么会“什么都不知道”？</h2>
+<p>先来看一个非常简单的问题。</p>
+<p>用户问：</p>
+<blockquote>
+<p>“P0XXX 这个故障码代表什么？”</p>
+</blockquote>
+<p>模型可能非常有通用知识。</p>
+<p>但假设：</p>
+<blockquote>
+<p>P0XXX 是你们公司内部定义的一种特殊故障码。</p>
+</blockquote>
+<p>模型没有见过你们公司的内部资料。</p>
+<p>那么它不可能因为“模型很强”就自动知道。</p>
+<p>这时候，很多初学者会犯第一个错误：</p>
+<blockquote>
+<p>“那就把维修手册全部放进 System Prompt。”</p>
+</blockquote>
+<p>于是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>System Prompt</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>整个维修手册</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>全部产品文档</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>全部历史案例</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>系统很快开始膨胀。</p>
+<p>下一步又会发生：</p>
+<blockquote>
+<p>文档太长。</p>
+</blockquote>
+<p>于是继续：</p>
+<blockquote>
+<p>“那我换个更大上下文的模型。”</p>
+</blockquote>
+<p>然后：</p>
+<blockquote>
+<p>“还是有点慢。”</p>
+</blockquote>
+<p>再然后：</p>
+<blockquote>
+<p>“成本也太高了。”</p>
+</blockquote>
+<p>我们又回到了 Part 2 已经讨论过的问题：</p>
+<blockquote>
+<p><strong>模型看到的信息越多，并不意味着当前决策越好。</strong></p>
+</blockquote>
+<p>真正合理的问题应该是：</p>
+<blockquote>
+<p><strong>我现在需要什么知识？</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-4-2">4.2 RAG 到底解决什么问题？</h2>
+<p>假设公司有一本：</p>
+<blockquote>
+<p>《新能源汽车高压系统维修手册》</p>
+</blockquote>
+<p>里面有 800 页。</p>
+<p>用户问：</p>
+<blockquote>
+<p>“车辆显示 P0XXX，同时充电速度明显下降，通常先检查什么？”</p>
+</blockquote>
+<p>我们真正想做的事情是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户问题</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>找到相关知识</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>把相关知识放入 Context</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>让模型回答</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是：</p>
+<h3 id="sec-retrieval-augmented-generation">Retrieval-Augmented Generation</h3>
+<p>也就是：</p>
+<blockquote>
+<p><strong>RAG。</strong></p>
+</blockquote>
+<p>“Retrieval”解决的是：</p>
+<blockquote>
+<p>找什么。</p>
+</blockquote>
+<p>“Generation”解决的是：</p>
+<blockquote>
+<p>找到以后怎么理解、组织和回答。</p>
+</blockquote>
+<p>因此一个非常朴素的 RAG 可以表示成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Question</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Retrieve</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Relevant Documents</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Answer</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你可以把它理解成：</p>
+<blockquote>
+<p><strong>先查资料，再让模型基于资料回答。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-4-3">4.3 RAG 其实很像搜索</h2>
+<p>如果你过去做过搜索系统，那么 RAG 很容易理解。</p>
+<p>用户输入：</p>
+<blockquote>
+<p>“P0XXX 充电慢”</p>
+</blockquote>
+<p>系统要做的是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Query</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Search</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Top Relevant Results</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Return</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>RAG 只是在最后多了一步：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Search Results</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Natural Language Answer</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以不要把 RAG 神秘化。</p>
+<p>它不是：</p>
+<blockquote>
+<p>“给 Agent 增加了一个神奇的长期知识脑。”</p>
+</blockquote>
+<p>更准确的理解是：</p>
+<blockquote>
+<p><strong>RAG 是一种让模型在需要的时候访问外部知识的机制。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-4-4">4.4 可是，文档是一整本书，模型应该搜索什么？</h2>
+<p>这时候我们会遇到 RAG 的第一个真正工程问题。</p>
+<p>假设：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>维修手册</span></span>
+<span class="line"><span>=</span></span>
+<span class="line"><span>800 页</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你不能把 800 页直接作为一个检索结果交给模型。</p>
+<p>你必须把文档拆成更小的部分。</p>
+<p>这就是：</p>
+<blockquote>
+<p><strong>Chunking。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-4-5">4.5 Chunking：把文档切成可以检索的知识单元</h2>
+<p>最简单的方法：</p>
+<blockquote>
+<p>每 1000 个字符切一段。</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Document</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Chunk 1</span></span>
+<span class="line"><span>Chunk 2</span></span>
+<span class="line"><span>Chunk 3</span></span>
+<span class="line"><span>Chunk 4</span></span>
+<span class="line"><span>...</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这样搜索时：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户问题</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>寻找最相关 Chunk</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>返回若干 Chunk</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这个思路非常简单。</p>
+<p>但是：</p>
+<blockquote>
+<p><strong>怎么切，实际上会影响检索效果。</strong></p>
+</blockquote>
+<p>例如一个操作说明：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>步骤 1：检查高压连接器</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>步骤 2：读取故障码</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>步骤 3：确认绝缘电阻</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>步骤 4：执行复位</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果你随便在中间切一刀：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Chunk 1:</span></span>
+<span class="line"><span>步骤 1</span></span>
+<span class="line"><span>步骤 2</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Chunk 2:</span></span>
+<span class="line"><span>步骤 3</span></span>
+<span class="line"><span>步骤 4</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>有时候还好。</p>
+<p>但如果刚好把：</p>
+<blockquote>
+<p>条件</p>
+</blockquote>
+<p>和：</p>
+<blockquote>
+<p>对应动作</p>
+</blockquote>
+<p>拆开了，Chunk 本身就失去了完整语义。</p>
+<p>因此：</p>
+<blockquote>
+<p><strong>Chunk 不是简单的字符串切片。</strong></p>
+</blockquote>
+<p>它应该尽可能形成：</p>
+<blockquote>
+<p>一个具有相对完整意义的知识单元。</p>
+</blockquote>
+<hr>
+<h2 id="sec-4-6">4.6 一个后端工程师很容易理解的类比</h2>
+<p>假设你有一个数据库。</p>
+<p>你不会把整张数据库表看作一次查询的最小单位。</p>
+<p>你会根据业务查询：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Table</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Rows</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Relevant Rows</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>RAG 有一点类似：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Document</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Chunks</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Relevant Chunks</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以 Chunk 可以先简单理解成：</p>
+<blockquote>
+<p><strong>面向检索而组织的数据单元。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-4-7">4.7 Embedding：如果用户说法完全不同怎么办？</h2>
+<p>现在假设文档里写的是：</p>
+<blockquote>
+<p>“车辆高压系统出现异常，建议首先检查动力电池绝缘状态。”</p>
+</blockquote>
+<p>而用户问：</p>
+<blockquote>
+<p>“我的车充电特别慢，会不会是电池绝缘有问题？”</p>
+</blockquote>
+<p>两个句子没有共享很多完全相同的关键词。</p>
+<p>如果只做简单关键词匹配：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Keyword Search</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>可能效果一般。</p>
+<p>这时候，我们希望系统能够理解：</p>
+<blockquote>
+<p>这些文字虽然表达方式不同，但语义可能相关。</p>
+</blockquote>
+<p>于是出现了：</p>
+<h3 id="sec-embedding">Embedding</h3>
+<p>Embedding 可以先粗略理解成：</p>
+<blockquote>
+<p><strong>把文本转换成一个用于表示语义特征的向量。</strong></p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>文本</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Embedding Model</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Vector</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>问题 Vector</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>可以和：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>文档 Chunk Vector</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>进行相似度比较。</p>
+<p>于是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Query</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Embedding</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Similarity Search</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Relevant Chunks</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是我们经常说的：</p>
+<blockquote>
+<p><strong>向量检索。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-4-8">4.8 不要把 Embedding 神秘化</h2>
+<p>你现在不需要学习高深的向量数学。</p>
+<p>你只需要建立一个工程直觉：</p>
+<blockquote>
+<p><strong>Embedding 是为了让系统能够用“语义相似”而不只是“字面相同”来寻找信息。</strong></p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>“充电速度突然下降”</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>和：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>“车辆充电功率异常降低”</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>虽然文字不同，但业务语义可能非常接近。</p>
+<p>Embedding 就是在帮助系统发现这种关系。</p>
+<hr>
+<h2 id="sec-4-9">4.9 但是向量搜索也不是万能的</h2>
+<p>现在假设用户问：</p>
+<blockquote>
+<p>“工单号 2026100812345 的最终处理结果是什么？”</p>
+</blockquote>
+<p>这是一个非常明确的标识符查询。</p>
+<p>你其实未必需要：</p>
+<blockquote>
+<p>“语义相似搜索。”</p>
+</blockquote>
+<p>更直接的方式可能是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Exact Match</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>或者：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Database Query</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这再次印证了 Part 0 的原则：</p>
+<blockquote>
+<p><strong>不要因为技术存在，就强行使用技术。</strong></p>
+</blockquote>
+<p>RAG 也是一样。</p>
+<p>并不是所有信息查询都需要向量数据库。</p>
+<hr>
+<h2 id="sec-4-10">4.10 Dense、Sparse、Hybrid：三种基本检索思路</h2>
+<p>到这里，我们可以建立一个简单分类。</p>
+<h3 id="sec-sparse-retrieval">Sparse Retrieval</h3>
+<p>更擅长：</p>
+<blockquote>
+<p>关键词、精确术语、编号。</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>P0XXX</span></span>
+<span class="line"><span>工单号</span></span>
+<span class="line"><span>零件号</span></span>
+<span class="line"><span>SKU</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h3 id="sec-dense-retrieval">Dense Retrieval</h3>
+<p>更擅长：</p>
+<blockquote>
+<p>语义相似。</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>“充电很慢”</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>可能匹配：</p>
+<blockquote>
+<p>“充电功率异常降低”。</p>
+</blockquote>
+<hr>
+<h3 id="sec-hybrid-retrieval">Hybrid Retrieval</h3>
+<p>结合两者。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Keyword</span></span>
+<span class="line"><span>   +</span></span>
+<span class="line"><span>Semantic</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Candidate Results</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这个思路很重要，因为真实业务往往既有：</p>
+<blockquote>
+<p>人类自然语言。</p>
+</blockquote>
+<p>也有：</p>
+<blockquote>
+<p>专业编号、产品型号、错误码、订单号。</p>
+</blockquote>
+<p>所以实际系统中：</p>
+<blockquote>
+<p><strong>混合检索往往比单一方法更符合业务需求。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-4-11">4.11 Metadata：同一个关键词，不一定是同一份知识</h2>
+<p>假设知识库里有：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>2024 车型维修手册</span></span>
+<span class="line"><span>2025 车型维修手册</span></span>
+<span class="line"><span>2026 车型维修手册</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>用户明确说：</p>
+<blockquote>
+<p>“我的车是 2024 款。”</p>
+</blockquote>
+<p>如果你只进行语义搜索，三个文档可能都很相似。</p>
+<p>这时候可以增加 Metadata：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "model_year"</span><span style="color:#24292E">: </span><span style="color:#005CC5">2024</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "document_type"</span><span style="color:#24292E">: </span><span style="color:#032F62">"repair_manual"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "language"</span><span style="color:#24292E">: </span><span style="color:#032F62">"zh"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "version"</span><span style="color:#24292E">: </span><span style="color:#032F62">"v3"</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<p>然后检索时增加过滤：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>metadata filter</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>于是搜索空间从：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>所有文档</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>缩小成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>2024</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>repair_manual</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是非常典型的：</p>
+<blockquote>
+<p><strong>先过滤，再检索。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-4-12">4.12 Reranking：找到一堆“像”的，不代表找到了最好的</h2>
+<p>假设一次检索返回：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Result 1</span></span>
+<span class="line"><span>Result 2</span></span>
+<span class="line"><span>Result 3</span></span>
+<span class="line"><span>Result 4</span></span>
+<span class="line"><span>Result 5</span></span>
+<span class="line"><span>Result 6</span></span>
+<span class="line"><span>...</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>它们都和问题“有点关系”。</p>
+<p>但是：</p>
+<blockquote>
+<p>最相关的到底是哪几个？</p>
+</blockquote>
+<p>这时候可以增加：</p>
+<h3 id="sec-reranking">Reranking</h3>
+<p>简单理解：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Query</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Initial Retrieval</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Candidate Set</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Rerank</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Best Results</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>因此，一个常见的 RAG Pipeline 会逐渐变成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Question</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Query Processing</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Candidate Retrieval</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Metadata Filtering</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Reranking</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这已经不是简单的：</p>
+<blockquote>
+<p>“把向量数据库接起来。”</p>
+</blockquote>
+<p>而是一个真正的检索系统。</p>
+<hr>
+<h2 id="sec-4-13">4.13 RAG 的真正难点其实不是“生成”</h2>
+<p>很多刚接触 RAG 的人会认为：</p>
+<blockquote>
+<p>“把文档放进向量库就结束了。”</p>
+</blockquote>
+<p>实际上，真正容易出问题的是：</p>
+<blockquote>
+<p><strong>找错知识。</strong></p>
+</blockquote>
+<p>假设模型回答得非常流畅。</p>
+<p>但它引用的是错误版本的维修手册。</p>
+<p>那么语言生成能力再好，也只是：</p>
+<blockquote>
+<p>很自信地说错话。</p>
+</blockquote>
+<p>因此 RAG 系统至少存在两个独立环节：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Retrieval Quality</span></span>
+<span class="line"><span>        ↓</span></span>
+<span class="line"><span>Generation Quality</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>前面找到错的，后面再聪明也很难补救。</p>
+<p>所以：</p>
+<blockquote>
+<p><strong>RAG 的 Evaluation 不能只测最终回答。</strong></p>
+</blockquote>
+<p>这一点会在 Part 6 再系统展开。</p>
+<hr>
+<h2 id="sec-4-14">4.14 从 RAG 到 Agentic RAG</h2>
+<p>现在看一个简单的 RAG。</p>
+<p>用户问：</p>
+<blockquote>
+<p>“这个故障是什么原因？”</p>
+</blockquote>
+<p>程序：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Question</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Retrieve</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Top 5 Chunks</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Answer</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这个流程很清楚。</p>
+<p>但是有些任务并没有这么简单。</p>
+<p>例如：</p>
+<blockquote>
+<p>“调查这辆车为什么充电功率持续下降，并给出最可能的原因。”</p>
+</blockquote>
+<p>系统第一次检索后可能发现：</p>
+<blockquote>
+<p>资料不够。</p>
+</blockquote>
+<p>于是可能需要：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>先查故障码</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>再查电池诊断</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>根据结果重新构造 Query</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>再检索维修手册</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>比较历史案例</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这时候：</p>
+<blockquote>
+<p>“要不要查？”</p>
+</blockquote>
+<blockquote>
+<p>“查什么？”</p>
+</blockquote>
+<blockquote>
+<p>“查完以后还需要什么？”</p>
+</blockquote>
+<p>开始可以由 Agent 动态决定。</p>
+<p>于是就出现：</p>
+<h3 id="sec-agentic-rag">Agentic RAG</h3>
+<p>可以简单理解成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Decide whether to retrieve</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Query</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Retrieve</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Observe</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Decide whether more information is needed</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Retrieve again</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>...</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以：</p>
+<blockquote>
+<p><strong>普通 RAG 通常是固定检索流程；Agentic RAG 开始让 Agent 参与检索策略。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-4-15">4.15 什么时候不要使用 Agentic RAG？</h2>
+<p>如果问题只是：</p>
+<blockquote>
+<p>“公司报销标准是什么？”</p>
+</blockquote>
+<p>那么：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Question</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Retrieve</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Answer</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>可能已经足够。</p>
+<p>没必要：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>规划</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>多轮搜索</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>反思</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>再搜索</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>...</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>否则你只是：</p>
+<blockquote>
+<p>把一个简单搜索问题变成一个昂贵的 Agent 问题。</p>
+</blockquote>
+<p>再次回到 Part 0：</p>
+<blockquote>
+<p><strong>复杂度必须由问题驱动。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-4-16">4.16 现在来说 Memory</h2>
+<p>Part 2 已经区分了 History、State、Memory 与 RAG。本节向实现层再走一步：当一次交互产生了新信息，系统应该把它留在事件记录里、从外部知识源重新检索，还是提升为可能影响未来任务的记忆？</p>
+<p>例如，“这次查询没找到维修手册”通常只是一次任务事件；“该用户长期偏好先看原始诊断数据”则可能成为记忆候选。候选并不等于已获准写入，后面会具体讨论写入治理和生命周期。</p>
+<hr>
+<h2 id="sec-4-17">4.17 Memory 不等于“把聊天记录存起来”</h2>
+<p>数据库能保存信息，却不会替你决定哪些信息值得在未来使用。把全部对话写进数据库，只解决了“有没有保存”，没有解决“哪些应该被取回、何时仍有效、是否可以用于当前任务”。</p>
+<p>因此，记忆是一个需要治理的应用能力，不是数据库表的另一个名字。具体写入条件、冲突处理与过期规则会在本 Part 的 Memory 设计实验中展开。</p>
+<hr>
+<h2 id="sec-4-18">4.18 四类 Memory</h2>
+<p>我们先建立一个工程上非常实用的分类。</p>
+<hr>
+<h3 id="sec-working-memory">Working Memory</h3>
+<p>一些实现会把当前任务中的临时工作材料称为 Working Memory。为避免与 Part 3 定义的权威 <code>State</code> 混淆，本书采用更窄的用法：Working Memory 指临时归纳、尚未确认的假设、候选检查步骤等工作材料，不是业务系统的权威记录。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>待验证的故障原因假设</span></span>
+<span class="line"><span>对三份检索结果的临时比较</span></span>
+<span class="line"><span>下一步可尝试的候选查询</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>它通常生命周期较短。订单状态、任务是否完成、写操作是否已执行等权威信息仍由应用 State 或业务系统负责，不能只留在 Working Memory 里。</p>
+<h3 id="sec-episodic-memory">Episodic Memory</h3>
+<p>过去发生过的具体事件。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>上次这个设备出现 P0XXX，</span></span>
+<span class="line"><span>最后通过更换连接器解决。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>它保留的是：</p>
+<blockquote>
+<p><strong>发生过什么。</strong></p>
+</blockquote>
+<hr>
+<h3 id="sec-semantic-memory">Semantic Memory</h3>
+<p>从大量事件中提炼出的稳定事实。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>该型号设备对某类错误码</span></span>
+<span class="line"><span>通常需要首先检查绝缘状态。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这是更抽象、更长期的知识。</p>
+<hr>
+<h3 id="sec-user-memory">User Memory</h3>
+<p>与用户长期相关的信息。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户是电池测试工程师。</span></span>
+<span class="line"><span>用户偏好简洁回答。</span></span>
+<span class="line"><span>用户主要负责某类设备。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这些信息未来可以持续影响交互。</p>
+<hr>
+<h2 id="sec-4-19">4.19 Memory 和 State 为什么还不是一回事？</h2>
+<p>两者的差异不是存在哪里，而是它们承担什么责任。<code>status = waiting_for_diagnostic_result</code> 是当前任务的状态，它必须跟随任务推进而更新；“用户偏好优先展示原始诊断数据”是候选长期记忆，它可以影响多个任务，但必须允许被纠正、过期或删除。</p>
+<p>因此，不能把 Memory 当作权威任务状态，也不能用一条长期记忆覆盖当前系统记录的事实。发生冲突时，必须有明确的来源优先级和更新时间规则。</p>
+<hr>
+<h2 id="sec-4-20">4.20 Memory 也会污染 Context</h2>
+<p>这里直接复用 Part 2 的 Context Budget 原则：Memory 是候选来源，不是默认全部注入的内容。保存阶段判断“未来是否值得保留”，读取阶段还要判断“此刻是否相关、是否仍然有效”。这两个决策必须分开。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Memory Store → Eligibility / Freshness → Relevance → Context Budget → Model</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>长效存储做得再好，如果检索阶段把过期、冲突或无关的记忆一股脑加入 Context，仍然会降低当前决策质量。</p>
+<hr>
+<h2 id="sec-4-21">4.21 Memory 的一个危险问题：记错了怎么办？</h2>
+<p>想象一下：</p>
+<p>用户说：</p>
+<blockquote>
+<p>“我平时做 Python 开发。”</p>
+</blockquote>
+<p>Agent 把它记成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>user_role = python_developer</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>半年以后，用户已经换成：</p>
+<blockquote>
+<p>Go。</p>
+</blockquote>
+<p>但 Memory 还是旧的。</p>
+<p>于是 Agent 每次都假设：</p>
+<blockquote>
+<p>“你作为 Python 工程师应该……”</p>
+</blockquote>
+<p>这时候 Memory 就从：</p>
+<blockquote>
+<p>帮助系统。</p>
+</blockquote>
+<p>变成：</p>
+<blockquote>
+<p><strong>错误信息源。</strong></p>
+</blockquote>
+<p>因此 Memory 需要考虑：</p>
+<ul>
+<li>更新时间</li>
+<li>来源</li>
+<li>置信度</li>
+<li>覆盖规则</li>
+<li>失效</li>
+<li>删除</li>
+<li>冲突</li>
+</ul>
+<p>这和传统系统中的：</p>
+<blockquote>
+<p>Data Freshness</p>
+</blockquote>
+<p>非常类似。</p>
+<hr>
+<h2 id="sec-4-22">4.22 Memory Conflict</h2>
+<p>例如系统里有两个事实：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Memory A:</span></span>
+<span class="line"><span>车型 = 2024</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Memory B:</span></span>
+<span class="line"><span>车型 = 2025</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这时候系统怎么办？</p>
+<p>简单地把两个都给模型：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>2024</span></span>
+<span class="line"><span>2025</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后让模型自己猜？</p>
+<p>这是一个非常危险的设计。</p>
+<p>更好的思路是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Memory</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Resolve Conflict</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Current State</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以：</p>
+<blockquote>
+<p><strong>Memory Management 本身也需要工程规则。</strong></p>
+</blockquote>
+<p>你会发现：</p>
+<p>Agent 越复杂，它越来越像一个：</p>
+<blockquote>
+<p>有状态的数据系统。</p>
+</blockquote>
+<hr>
+<h2 id="sec-4-23">4.23 RAG 与 Memory 到底是什么关系？</h2>
+<p>到这里可以做一次非常重要的总结。</p>
+<p>用户问：</p>
+<blockquote>
+<p>“P0XXX 是什么意思？”</p>
+</blockquote>
+<p>我们可能去：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>维修手册</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这属于：</p>
+<blockquote>
+<p>RAG。</p>
+</blockquote>
+<p>用户说：</p>
+<blockquote>
+<p>“以后回答故障问题时先给原始诊断结果。”</p>
+</blockquote>
+<p>我们保存下来。</p>
+<p>这属于：</p>
+<blockquote>
+<p>Memory。</p>
+</blockquote>
+<p>用户当前任务是：</p>
+<blockquote>
+<p>“等待电池诊断结果。”</p>
+</blockquote>
+<p>这属于：</p>
+<blockquote>
+<p>State。</p>
+</blockquote>
+<p>用户刚刚说：</p>
+<blockquote>
+<p>“我已经更换过两个充电桩。”</p>
+</blockquote>
+<p>这属于：</p>
+<blockquote>
+<p>History。</p>
+</blockquote>
+<p>于是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>History</span></span>
+<span class="line"><span>State</span></span>
+<span class="line"><span>Memory</span></span>
+<span class="line"><span>RAG</span></span>
+<span class="line"><span>Tool Results</span></span>
+<span class="line"><span>Current Input</span></span>
+<span class="line"><span>        ↓</span></span>
+<span class="line"><span>     Context</span></span>
+<span class="line"><span>        ↓</span></span>
+<span class="line"><span>       LLM</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这张图非常值得记住。</p>
+<hr>
+<h2 id="sec-4-24">4.24 实验：建立一个真正的 Business Knowledge Agent</h2>
+<p>现在我们开始做这一 Part 的核心项目。不要重新做一个完全不同的 Demo；先把 RAG 当成一个能独立测量的知识检索组件，再理解它如何被 Part 3 的 Agent 调用。前文的新能源汽车维修业务继续作为概念例子，但配套 Lab 04 使用的是仓库内合成维修文档和固定案例，不连接真实车辆系统。</p>
+<p>先阅读 <code>labs/lab04_rag/TASK.md</code>，然后跑本地检索基线与测试：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab04_rag.src.run</span></span>
+<span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> pytest</span><span style="color:#032F62"> labs/lab04_rag/tests</span></span>
+<span class="line"></span></code></pre>
+<p>实验主线先比较 Sparse、Dense/Hash、Hybrid、Metadata Filtering 与 Reranking，再观察具体案例的命中证据。随后可以把检索结果交给真实回答模型；是否使用真实 embedding 是另一项实验选择，不能混为同一条证据链。</p>
+<hr>
+<h2 id="sec-4-25">4.25 第一步：先做普通 RAG</h2>
+<p>先不要 Agentic RAG。</p>
+<p>流程：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Question</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Retrieve</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Top Results</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Answer</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>例如：</p>
+<blockquote>
+<p>“P0XXX 同时出现充电速度下降，维修手册怎么建议？”</p>
+</blockquote>
+<hr>
+<h2 id="sec-4-26">4.26 第二步：加入 Metadata</h2>
+<p>把文档增加：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>vehicle_model</span></span>
+<span class="line"><span>model_year</span></span>
+<span class="line"><span>document_type</span></span>
+<span class="line"><span>version</span></span>
+<span class="line"><span>language</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后让查询优先过滤：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>车型</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>年份</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>文档类型</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>观察：</p>
+<blockquote>
+<p>检索结果是否更加准确？</p>
+</blockquote>
+<hr>
+<h2 id="sec-4-27">4.27 第三步：加入历史案例</h2>
+<p>现在增加：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Historical Repair Cases</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>用户问：</p>
+<blockquote>
+<p>“以前有没有遇到过类似问题？”</p>
+</blockquote>
+<p>这时候：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Knowledge Base</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Historical Cases</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>都可能成为 Retrieval Source。</p>
+<hr>
+<h2 id="sec-4-28">4.28 第四步：先设计 Memory 的生命周期，而不是把它假装成已经实现的功能</h2>
+<p>用户说：</p>
+<blockquote>
+<p>“以后类似故障请优先给我原始诊断数据。”</p>
+</blockquote>
+<p>这句话可以作为一个 Memory 设计例子：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "type"</span><span style="color:#24292E">: </span><span style="color:#032F62">"user_preference"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "key"</span><span style="color:#24292E">: </span><span style="color:#032F62">"diagnostic_output_order"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "value"</span><span style="color:#24292E">: </span><span style="color:#032F62">"raw_data_first"</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<p>但要把这个结构写进 JSON，不代表系统已经拥有跨会话记忆。配套仓库中的 Lab 03/04 当前没有实现持久化用户 Memory；Part 3 的单次运行状态、聊天消息和 RAG 文档库都不能冒充它。请将这一阶段作为设计工作表：明确记忆归属哪个用户或会话、依据什么来源写入、何时更新/遗忘、冲突时谁是事实来源、是否设置 TTL、如何控制访问，以及如何评估错误记忆造成的损害。</p>
+<p>若以后实现 Memory，必须单独增加存储、权限、生命周期和回归测试；本轮不要为了让示例“看起来完整”就声称仓库已经能保存并恢复用户偏好。</p>
+<hr>
+<h2 id="sec-4-29">4.29 第五步：把 Agentic Retrieval 当作一个需要单独验证的决策问题</h2>
+<p>更复杂的系统可能根据当前查询决定是否增加关键词、改变检索策略或继续寻找证据。Lab 04 的任务确实包含一个受控的 Agentic Retrieval Decision，但它是围绕本地检索策略的教学实现，不等同于一个能够自由调用多个业务 API、持久化用户 Memory 并无限循环的完整维修 Agent。</p>
+<h2 id="sec-4-30">4.30 Break：故意让 Retrieval 出问题</h2>
+<p>实验不是结束在：</p>
+<blockquote>
+<p>“Agent 最终回答正确。”</p>
+</blockquote>
+<p>我们现在主动制造问题。</p>
+<hr>
+<h3 id="sec-failure-a-chunk">Failure A：错误 Chunk</h3>
+<p>把正确的故障说明拆坏。</p>
+<p>观察：</p>
+<blockquote>
+<p>模型能否从不完整知识中正确回答？</p>
+</blockquote>
+<hr>
+<h3 id="sec-failure-b">Failure B：错误版本</h3>
+<p>知识库同时存在：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>2024 Manual</span></span>
+<span class="line"><span>2025 Manual</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>让 Retrieval 错误命中。</p>
+<p>观察：</p>
+<blockquote>
+<p>Agent 是否识别到版本冲突？</p>
+</blockquote>
+<hr>
+<h3 id="sec-failure-c">Failure C：无关文档过多</h3>
+<p>加入大量相似但无关的维修内容。</p>
+<p>观察：</p>
+<blockquote>
+<p>Retrieval Precision 是否下降？</p>
+</blockquote>
+<hr>
+<h3 id="sec-failure-d-memory">Failure D：Memory 过时</h3>
+<p>修改用户车型，但保留旧 Memory。</p>
+<p>观察：</p>
+<blockquote>
+<p>Agent 使用了什么？</p>
+</blockquote>
+<hr>
+<h3 id="sec-failure-e-memory">Failure E：Memory 与当前事实冲突</h3>
+<p>历史 Memory：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>车型 = 2024</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>当前 API：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>车型 = 2025</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>观察：</p>
+<blockquote>
+<p>系统如何处理冲突？</p>
+</blockquote>
+<hr>
+<h2 id="sec-4-31">4.31 Measure：不要只看最终答案</h2>
+<p>这次至少记录：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Retrieval</span></span>
+<span class="line"><span>├── Top K</span></span>
+<span class="line"><span>├── Relevant Count</span></span>
+<span class="line"><span>└── Wrong Retrieval Count</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Generation</span></span>
+<span class="line"><span>├── Answer Correctness</span></span>
+<span class="line"><span>└── Grounding</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Memory</span></span>
+<span class="line"><span>├── Hit Rate</span></span>
+<span class="line"><span>├── Usage</span></span>
+<span class="line"><span>└── Conflict</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>System</span></span>
+<span class="line"><span>├── Latency</span></span>
+<span class="line"><span>└── Cost</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你会第一次发现：</p>
+<blockquote>
+<p>“最终回答错了”只是症状。</p>
+</blockquote>
+<p>真正的原因可能发生在：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Chunking</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Retrieval</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Reranking</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Memory</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>任意一层。</p>
+<hr>
+<h2 id="sec-4-32">4.32 一个很重要的工程诊断习惯</h2>
+<p>以后一个 RAG Agent 答错时，不要只问：</p>
+<blockquote>
+<p>“模型为什么答错？”</p>
+</blockquote>
+<p>而应该拆成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>1. Knowledge Base 有正确资料吗？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>2. Chunk 切对了吗？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>3. Retrieval 找到了吗？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>4. Ranking 排对了吗？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>5. Context 放进去了吗？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>6. Memory 有没有干扰？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>7. Model 是否正确理解？</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是：</p>
+<blockquote>
+<p><strong>Failure Attribution。</strong></p>
+</blockquote>
+<p>它会在 Part 6 Evaluation Engineering 中成为一个完整主题。</p>
+<hr>
+<h2 id="sec-4-33">4.33 一个容易踩的坑：把 RAG 当作“知识训练”</h2>
+<p>很多初学者会说：</p>
+<blockquote>
+<p>“我们把公司的文档训练进模型。”</p>
+</blockquote>
+<p>但对于很多业务场景，真正需要的并不是重新训练模型。</p>
+<p>而是：</p>
+<blockquote>
+<p><strong>让模型在回答当前问题时访问外部知识。</strong></p>
+</blockquote>
+<p>这个思路非常重要。</p>
+<p>因为业务知识会不断变化：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>2025 Policy</span></span>
+<span class="line"><span>↓</span></span>
+<span class="line"><span>2026 Policy</span></span>
+<span class="line"><span>↓</span></span>
+<span class="line"><span>2027 Policy</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果每次业务规则变化都重新训练模型，会非常笨重。</p>
+<p>RAG 的一个重要价值，就是：</p>
+<blockquote>
+<p><strong>把变化频繁的业务知识从模型本体中解耦出来。</strong></p>
+</blockquote>
+<p>这也是为什么：</p>
+<blockquote>
+<p>文档更新、版本管理、Metadata、Retrieval Evaluation</p>
+</blockquote>
+<p>都会变得非常重要。</p>
+<hr>
+<h3 id="sec-x51">可选真实模型实验：检索证据是否支持回答</h3>
+<p>本地检索基线和检索组件测试属于主线；以下回答评估会调用真实回答模型，不能因为选择 <code>local_hash</code> 就当作完全离线。仅在完成主线、已确认 Provider 兼容性、费用和输入数据处理安排后运行。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab04_rag.src.answer_evaluation</span><span style="color:#005CC5"> --retriever</span><span style="color:#032F62"> local_hash</span><span style="color:#005CC5"> --method</span><span style="color:#032F62"> hybrid_rerank</span><span style="color:#005CC5"> --top-k</span><span style="color:#005CC5"> 3</span><span style="color:#005CC5"> --output</span><span style="color:#032F62"> artifacts/lab04-local-retriever-answer-evaluation.json</span></span>
+<span class="line"></span></code></pre>
+<p>运行前需要配置 <code>AI_BASE_URL</code>、<code>AI_API_KEY</code> 和 <code>AI_MODEL</code>。如果这些配置缺失，程序会把逐案例生成错误记录下来；CLI 退出码为 0 只表示报告成功写出，不表示回答评估成功。</p>
+<p>如果还要把真实 embedding 检索与真实回答模型一起测量，则使用独立的 <code>remote_embeddings</code> 路径，并额外配置 <code>AI_EMBEDDING_MODEL</code> 及相应价格参数。两条路径不要混在一个结论里：<code>local_hash</code> 是“本地确定性检索 + 真实回答生成”；<code>remote_embeddings</code> 是“真实 embedding 检索 + 真实回答生成”。</p>
+<p>实验要检查的不只是引用 ID 是否存在，还要人工确认来源内容是否真的支持答案。当前六例回答集和小型合成文档库适合验证流程与暴露典型失败，不足以证明生产质量。完整的跨系统动态调查可以在 Part 3 的 Agent Loop 中继续设计；持久化 Memory 仍是独立的设计与实现任务。</p>
+<hr>
+<h2 id="sec-4-34">4.34 RAG 不是所有知识问题的答案</h2>
+<p>再来看一个问题。</p>
+<p>用户问：</p>
+<blockquote>
+<p>“订单 10001 现在到哪里？”</p>
+</blockquote>
+<p>这不是典型知识库问题。</p>
+<p>因为答案来自：</p>
+<blockquote>
+<p><strong>实时业务状态。</strong></p>
+</blockquote>
+<p>最合理的方式可能是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order()</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而不是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>RAG</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>再比如：</p>
+<blockquote>
+<p>“某公司 2023 年公布的某项政策是什么？”</p>
+</blockquote>
+<p>可能更适合静态知识检索。</p>
+<p>所以：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>实时状态</span></span>
+<span class="line"><span>→ Tool / API</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>静态知识</span></span>
+<span class="line"><span>→ RAG</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>长期用户偏好</span></span>
+<span class="line"><span>→ Memory</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>当然，真实系统里三者也可以组合。</p>
+<hr>
+<h2 id="sec-4-35">4.35 RAG + Tool + Memory：三者开始汇合</h2>
+<p>现在想象一个完整请求：</p>
+<blockquote>
+<p>“我这辆 2024 款双电机车型最近充电变慢了。按照公司维修规范，我之前已经换过充电桩了，下一步该查什么？”</p>
+</blockquote>
+<p>这个问题同时需要：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>当前车辆信息</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>维修规范</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>RAG</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>之前做过什么</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>History / State</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>用户偏好</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Memory</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>最后：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>RAG</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Memory</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>State</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Current Input</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Agent</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Next Action</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你现在可以看到：</p>
+<blockquote>
+<p><strong>Agent 并不是独立存在的。</strong></p>
+</blockquote>
+<p>它是站在：</p>
+<ul>
+<li>Context</li>
+<li>Tools</li>
+<li>Retrieval</li>
+<li>Memory</li>
+<li>State</li>
+</ul>
+<p>这些基础设施之上的。</p>
+<p>这也是为什么前面的学习顺序非常重要。</p>
+<hr>
+<h2 id="sec-4-36">4.36 RAG 的另一个现实问题：知识会变化</h2>
+<p>假设维修手册：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Version 1</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>后来更新成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Version 2</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果知识库里两个版本都存在，但系统没有明确规则：</p>
+<blockquote>
+<p>“优先最新版本。”</p>
+</blockquote>
+<p>那么 Agent 可能检索到旧文档。</p>
+<p>因此，真实 RAG 系统需要考虑：</p>
+<ul>
+<li>Version</li>
+<li>Effective Date</li>
+<li>Source</li>
+<li>Authority</li>
+<li>Expiration</li>
+<li>Metadata</li>
+</ul>
+<p>这其实已经非常接近：</p>
+<blockquote>
+<p>企业知识管理。</p>
+</blockquote>
+<p>所以不要把 RAG 简化成：</p>
+<blockquote>
+<p>“向量数据库 + Prompt。”</p>
+</blockquote>
+<p>一个真正有价值的企业 RAG，本质上是：</p>
+<blockquote>
+<p><strong>知识管理 + 检索 + Context Construction + LLM。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-4-37">4.37 Memory 也需要生命周期</h2>
+<p>Memory 不是：</p>
+<blockquote>
+<p>写入一次，永久有效。</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Temporary Task Memory</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>可能只存在几个小时。</p>
+<p>而：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>User Preference</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>可能长期存在。</p>
+<p>因此 Memory 可以存在：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>短期</span></span>
+<span class="line"><span>中期</span></span>
+<span class="line"><span>长期</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>不同生命周期。</p>
+<p>这又回到了后端工程师很熟悉的：</p>
+<blockquote>
+<p>TTL / Expiration。</p>
+</blockquote>
+<p>你会发现：</p>
+<blockquote>
+<p>Agent Memory 越认真做，越像一个真正的数据系统。</p>
+</blockquote>
+<hr>
+<h2 id="sec-4-38">4.38 Part 4 的一个核心认识</h2>
+<p>回到 Part 2 建立的约定，再看它们在知识型 Agent 中如何协作：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>History</span></span>
+<span class="line"><span>= 已发生的交互或事件记录</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>State</span></span>
+<span class="line"><span>= 应用维护的权威当前状态</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Memory</span></span>
+<span class="line"><span>= 经筛选、可更新、可过期或删除的跨任务信息</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Knowledge Source</span></span>
+<span class="line"><span>= 手册、SOP、数据库等权威或候选资料</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>RAG</span></span>
+<span class="line"><span>= 从知识源中检索并提供候选证据的处理路径</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span>= 当前决策真正提供给模型的输入视图</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>一次调用可以把当前请求、State 的必要快照、相关 History/Memory、RAG 检索的证据和 Tool Results 组装成 Context，但不能因此把它们视为同类数据。尤其要注意：<strong>RAG 是检索路径，不是知识本身；State 负责权威当前状态，不能被 Memory 或模型生成的文字替代。</strong></p>
+<p>这一区分可以帮助你判断：答案错了究竟应该检查知识来源、检索结果、状态一致性、记忆资格，还是 Context 的组装过程。</p>
+<h2 id="sec-4-39">4.39 练习：设计你的 Knowledge Architecture</h2>
+<p>选择一个业务。</p>
+<p>例如：</p>
+<blockquote>
+<p>售后维修。</p>
+</blockquote>
+<p>把信息分成四类：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>History</span></span>
+<span class="line"><span>State</span></span>
+<span class="line"><span>Memory</span></span>
+<span class="line"><span>Knowledge</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后继续问：</p>
+<blockquote>
+<p>Knowledge 应该放在哪里？</p>
+</blockquote>
+<p>可能是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>RAG</span></span>
+<span class="line"><span></span></span></code></pre>
+<blockquote>
+<p>当前状态应该放在哪里？</p>
+</blockquote>
+<p>可能是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>State Store</span></span>
+<span class="line"><span></span></span></code></pre>
+<blockquote>
+<p>长期用户偏好应该放在哪里？</p>
+</blockquote>
+<p>可能是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Memory Store</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这个练习本质上是在做：</p>
+<blockquote>
+<p><strong>Information Architecture for Agents。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-4-40">4.40 练习：什么东西绝对不应该进入 Memory？</h2>
+<p>这是一个很重要的反向思考。</p>
+<p>例如：</p>
+<blockquote>
+<p>“用户今天说早餐吃了包子。”</p>
+</blockquote>
+<p>它是否应该成为永久 Memory？</p>
+<p>再比如：</p>
+<blockquote>
+<p>“用户明确要求以后所有回答都先给结论。”</p>
+</blockquote>
+<p>是否值得？</p>
+<p>再比如：</p>
+<blockquote>
+<p>“用户今天临时让我查一次订单。”</p>
+</blockquote>
+<p>是否值得？</p>
+<p>要求你分别判断：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Remember</span></span>
+<span class="line"><span>Temporary</span></span>
+<span class="line"><span>Ignore</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>通过这个练习理解：</p>
+<blockquote>
+<p>Memory 的价值不在于“记住更多”，而在于“记住真正有用的东西”。</p>
+</blockquote>
+<hr>
+<h2 id="sec-4-41">4.41 练习：RAG 还是 Tool？</h2>
+<p>下面三个问题分别怎么解决？</p>
+<h3 id="sec-a">问题 A</h3>
+<blockquote>
+<p>“公司的退款政策是什么？”</p>
+</blockquote>
+<h3 id="sec-b">问题 B</h3>
+<blockquote>
+<p>“订单 10001 现在是什么状态？”</p>
+</blockquote>
+<h3 id="sec-c">问题 C</h3>
+<blockquote>
+<p>“根据公司的退款政策判断订单 10001 是否符合退款条件。”</p>
+</blockquote>
+<p>可能分别是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>A → RAG</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>B → Tool</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>C → RAG + Tool + LLM / Workflow</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而如果判断过程需要动态查询多个系统：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>C → RAG + Tool + Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>注意这里不是唯一答案。</p>
+<p>关键是：</p>
+<blockquote>
+<p><strong>能否解释为什么。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-4-42">4.42 本 Part 小结：知识来源与决策时输入要分开治理</h2>
+<p>RAG 关注当前问题需要哪些外部证据，以及文档如何切分、检索、排序和校验；Memory 关注哪些交互信息值得跨任务保留，以及何时更新、限制、过期或删除。两者都可能为 Context 提供信息，但都不应绕开来源、相关性和权限判断。</p>
+<p>遇到答案错误时，先沿证据链定位是文档、Chunk、Retrieval、Reranking、Context 还是模型理解出了问题；不要把所有失败都归因于“模型不够聪明”。</p>
+<h2 id="sec-part-part-5">本 Part → Part 5：从拥有能力到选择架构</h2>
+<p>工具让系统能够行动，RAG 让系统能够查找资料，Memory 可以为后续任务保留有用信息。但能力越多不代表越应该把控制权交给模型。</p>
+<p>下一部分固定同一个业务任务，比较规则系统、LLM Workflow、RAG Workflow、Single Agent 和 Multi-Agent。判断标准不是哪种架构更先进，而是额外的自由度有没有换来足够的任务收益。</p>
+
+</article>
+<nav class="pager"><a class="pg prev" href="part-03.html"><span class="pg-dir">上一部分</span><span class="pg-name">Part 3｜Tools &amp; Agent Harness：让模型开始与真实世界交互</span></a><a class="pg next" href="part-05.html"><span class="pg-dir">下一部分</span><span class="pg-name">Part 5｜Workflow → Agent：什么时候真的需要 Agent？</span></a></nav>
+<footer class="book-foot"><span>Enterprise Agent Engineering</span><span>v0.4</span><span>文本校审候选，非出版定稿</span></footer>
+</main>
+</div>
+<div class="scrim" id="scrim"></div>
+<script src="assets/nav.js"></script>
+</body>
+</html>

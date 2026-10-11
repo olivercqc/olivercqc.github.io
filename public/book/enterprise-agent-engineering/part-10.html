@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 10｜Multi-Agent Engineering：当一个 Agent 不再够用 · Enterprise Agent Engineering</title>
+<meta name="description" content="Multi-Agent Engineering —— 当一个 Agent 不再够用。 —— Enterprise Agent Engineering v0.4">
+<meta property="og:title" content="Part 10｜Multi-Agent Engineering：当一个 Agent 不再够用">
+<meta property="og:type" content="article">
+<link rel="stylesheet" href="assets/book.css">
+</head>
+<body>
+<a class="skip-link" href="#content">跳到正文</a>
+<header class="topbar"><button class="toc-toggle" id="tocToggle" aria-label="打开目录" aria-controls="sidebar"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button><a class="brand" href="index.html"><span class="brand-title">Enterprise Agent Engineering</span><span class="brand-sub">企业级 Agent 工程</span></a><span class="ver">v0.4</span></header>
+<div class="layout">
+<aside class="sidebar" id="sidebar"><nav class="book-nav"><div class="book-nav-head"><a class="bn-title" href="index.html">Enterprise Agent Engineering</a><span class="bn-ver">v0.4</span></div><ol class="parts"><li class="part"><a class="part-link" href="part-00.html"><span class="part-no">0</span><span class="part-name">先别急着做 Agent</span></a></li>
+<li class="part"><a class="part-link" href="part-01.html"><span class="part-no">1</span><span class="part-name">把 LLM 当成一个真正的软件组件</span></a></li>
+<li class="part"><a class="part-link" href="part-02.html"><span class="part-no">2</span><span class="part-name">Context Engineering：决定模型到底能看到什么</span></a></li>
+<li class="part"><a class="part-link" href="part-03.html"><span class="part-no">3</span><span class="part-name">Tools &amp; Agent Harness：让模型开始与真实世界交互</span></a></li>
+<li class="part"><a class="part-link" href="part-04.html"><span class="part-no">4</span><span class="part-name">RAG &amp; Memory：让 Agent 获得知识，并记住真正值得记住的东西</span></a></li>
+<li class="part"><a class="part-link" href="part-05.html"><span class="part-no">5</span><span class="part-name">Workflow → Agent：什么时候真的需要 Agent？</span></a></li>
+<li class="part"><a class="part-link" href="part-06.html"><span class="part-no">6</span><span class="part-name">Evaluation Engineering：从“看起来不错”到“有证据证明”</span></a></li>
+<li class="part"><a class="part-link" href="part-07.html"><span class="part-no">7</span><span class="part-name">Production Agent Engineering：让一个“能跑的 Agent”变成“敢上线的 Agent”</span></a></li>
+<li class="part"><a class="part-link" href="part-08.html"><span class="part-no">8</span><span class="part-name">Advanced Agent Patterns：当简单 Agent 已经不够用了</span></a></li>
+<li class="part"><a class="part-link" href="part-09.html"><span class="part-no">9</span><span class="part-name">Coding Agent：让 Agent 真正参与软件开发</span></a></li>
+<li class="part is-active"><a class="part-link" href="part-10.html"><span class="part-no">10</span><span class="part-name">Multi-Agent Engineering：当一个 Agent 不再够用</span></a><ul class="secs"><li class="lvl2"><a class="sec" href="#sec-10-1" data-id="sec-10-1">10.1 先从一个人能不能做开始</a></li><li class="lvl2"><a class="sec" href="#sec-10-2" data-id="sec-10-2">10.2 Multi-Agent 的真正价值不是“多个”</a></li><li class="lvl2"><a class="sec" href="#sec-10-3" data-id="sec-10-3">10.3 什么叫“有意义的边界”？</a></li><li class="lvl3"><a class="sec" href="#sec-x5" data-id="sec-x5">目标不同</a></li><li class="lvl3"><a class="sec" href="#sec-x6" data-id="sec-x6">上下文不同</a></li><li class="lvl3"><a class="sec" href="#sec-x7" data-id="sec-x7">权限不同</a></li><li class="lvl3"><a class="sec" href="#sec-x8" data-id="sec-x8">执行节奏不同</a></li><li class="lvl2"><a class="sec" href="#sec-10-4" data-id="sec-10-4">10.4 Single Agent 和 Multi-Agent 的第一条分界线</a></li><li class="lvl2"><a class="sec" href="#sec-10-5" data-id="sec-10-5">10.5 Multi-Agent 与传统分布式系统其实非常像</a></li><li class="lvl2"><a class="sec" href="#sec-10-6" data-id="sec-10-6">10.6 第一种常见架构：Supervisor</a></li><li class="lvl2"><a class="sec" href="#sec-10-7" data-id="sec-10-7">10.7 Supervisor 的优点</a></li><li class="lvl2"><a class="sec" href="#sec-10-8" data-id="sec-10-8">10.8 Supervisor 的代价</a></li><li class="lvl2"><a class="sec" href="#sec-10-9" data-id="sec-10-9">10.9 第二种架构：Planner / Worker</a></li><li class="lvl2"><a class="sec" href="#sec-10-10" data-id="sec-10-10">10.10 为什么这个架构可能有价值？</a></li><li class="lvl2"><a class="sec" href="#sec-10-11" data-id="sec-10-11">10.11 第三种架构：Peer-to-peer</a></li><li class="lvl2"><a class="sec" href="#sec-10-12" data-id="sec-10-12">10.12 为什么 Peer-to-peer 很容易失控？</a></li><li class="lvl2"><a class="sec" href="#sec-10-13" data-id="sec-10-13">10.13 Message Passing：Agent 之间到底传什么？</a></li><li class="lvl2"><a class="sec" href="#sec-10-14" data-id="sec-10-14">10.14 Agent Message 不是聊天消息</a></li><li class="lvl2"><a class="sec" href="#sec-10-15" data-id="sec-10-15">10.15 Shared State：多个 Agent 看同一个状态</a></li><li class="lvl2"><a class="sec" href="#sec-10-16" data-id="sec-10-16">10.16 Shared State 的优点</a></li><li class="lvl2"><a class="sec" href="#sec-10-17" data-id="sec-10-17">10.17 Shared State 的危险：谁拥有状态？</a></li><li class="lvl2"><a class="sec" href="#sec-10-18" data-id="sec-10-18">10.18 Independent Context + Message Passing</a></li><li class="lvl2"><a class="sec" href="#sec-10-19" data-id="sec-10-19">10.19 Shared Context 和 Independent Context 谁更好？</a></li><li class="lvl3"><a class="sec" href="#sec-shared-context" data-id="sec-shared-context">Shared Context</a></li><li class="lvl3"><a class="sec" href="#sec-independent-context" data-id="sec-independent-context">Independent Context</a></li><li class="lvl2"><a class="sec" href="#sec-10-20" data-id="sec-10-20">10.20 Concurrency：为什么 Multi-Agent 一定会遇到并发？</a></li><li class="lvl2"><a class="sec" href="#sec-10-21" data-id="sec-10-21">10.21 Partial Failure：不是所有 Agent 都会成功</a></li><li class="lvl3"><a class="sec" href="#sec-strict" data-id="sec-strict">Strict</a></li><li class="lvl3"><a class="sec" href="#sec-best-effort" data-id="sec-best-effort">Best-effort</a></li><li class="lvl3"><a class="sec" href="#sec-retry" data-id="sec-retry">Retry</a></li><li class="lvl3"><a class="sec" href="#sec-alternative" data-id="sec-alternative">Alternative</a></li><li class="lvl2"><a class="sec" href="#sec-10-22" data-id="sec-10-22">10.22 Failure Propagation：A 的错误会不会影响 B？</a></li><li class="lvl2"><a class="sec" href="#sec-10-23" data-id="sec-10-23">10.23 Provenance：结果来自谁？</a></li><li class="lvl2"><a class="sec" href="#sec-10-24" data-id="sec-10-24">10.24 为什么 Provenance 很重要？</a></li><li class="lvl2"><a class="sec" href="#sec-10-25" data-id="sec-10-25">10.25 Permission Boundary：Multi-Agent 一个非常实际的价值</a></li><li class="lvl2"><a class="sec" href="#sec-10-26" data-id="sec-10-26">10.26 但是不要为了“安全”把每件事都拆成 Agent</a></li><li class="lvl2"><a class="sec" href="#sec-10-27" data-id="sec-10-27">10.27 Multi-Agent 的成本会怎样增长？</a></li><li class="lvl2"><a class="sec" href="#sec-10-28" data-id="sec-10-28">10.28 一个重要公式</a></li><li class="lvl2"><a class="sec" href="#sec-10-29" data-id="sec-10-29">10.29 DAG：把 Multi-Agent 看成任务图</a></li><li class="lvl2"><a class="sec" href="#sec-10-30" data-id="sec-10-30">10.30 但是 DAG 只是控制结构，不是 Agent</a></li><li class="lvl2"><a class="sec" href="#sec-10-31" data-id="sec-10-31">10.31 Multi-Agent Evaluation：比 Single Agent 更难</a></li><li class="lvl2"><a class="sec" href="#sec-10-32" data-id="sec-10-32">10.32 不要只评估最终答案</a></li><li class="lvl2"><a class="sec" href="#sec-10-33" data-id="sec-10-33">10.33 Coordination Quality</a></li><li class="lvl2"><a class="sec" href="#sec-10-34" data-id="sec-10-34">10.34 Multi-Agent 的核心实验</a></li><li class="lvl2"><a class="sec" href="#sec-10-35" data-id="sec-10-35">10.35 Architecture A：Single Agent</a></li><li class="lvl2"><a class="sec" href="#sec-10-36" data-id="sec-10-36">10.36 Architecture B：Shared Context Multi-Agent</a></li><li class="lvl2"><a class="sec" href="#sec-10-37" data-id="sec-10-37">10.37 Architecture C：Independent Context + Message Passing</a></li><li class="lvl2"><a class="sec" href="#sec-10-38" data-id="sec-10-38">10.38 Architecture D：Supervisor</a></li><li class="lvl2"><a class="sec" href="#sec-10-39" data-id="sec-10-39">10.39 四种架构必须使用同一套任务集合</a></li><li class="lvl2"><a class="sec" href="#sec-10-40" data-id="sec-10-40">10.40 比较什么？</a></li><li class="lvl2"><a class="sec" href="#sec-10-41" data-id="sec-10-41">10.41 一个非常可能出现的结果</a></li><li class="lvl3"><a class="sec" href="#sec-x53" data-id="sec-x53">可选真实模型实验：观察真实模型的协作开销</a></li><li class="lvl2"><a class="sec" href="#sec-10-42" data-id="sec-10-42">10.42 故障实验：让 Multi-Agent 真正发生故障</a></li><li class="lvl3"><a class="sec" href="#sec-failure-a-agent-a" data-id="sec-failure-a-agent-a">Failure A：Agent A 输出不完整</a></li><li class="lvl3"><a class="sec" href="#sec-failure-b-agent-a" data-id="sec-failure-b-agent-a">Failure B：Agent A 输出错误</a></li><li class="lvl3"><a class="sec" href="#sec-failure-c-agent-b-timeout" data-id="sec-failure-c-agent-b-timeout">Failure C：Agent B Timeout</a></li><li class="lvl3"><a class="sec" href="#sec-failure-d-agent-c" data-id="sec-failure-d-agent-c">Failure D：Agent C 权限不足</a></li><li class="lvl3"><a class="sec" href="#sec-failure-e-message-schema" data-id="sec-failure-e-message-schema">Failure E：Message Schema 错误</a></li><li class="lvl3"><a class="sec" href="#sec-failure-f" data-id="sec-failure-f">Failure F：循环</a></li><li class="lvl2"><a class="sec" href="#sec-10-43" data-id="sec-10-43">10.43 一个很重要的工程问题：谁是最终负责人？</a></li><li class="lvl2"><a class="sec" href="#sec-10-44" data-id="sec-10-44">10.44 Multi-Agent 不是组织模拟游戏</a></li><li class="lvl2"><a class="sec" href="#sec-10-45" data-id="sec-10-45">10.45 一个实用的拆分方法：按 Capability 拆</a></li><li class="lvl2"><a class="sec" href="#sec-10-46" data-id="sec-10-46">10.46 另一个实用的拆分方法：按 Risk 拆</a></li><li class="lvl2"><a class="sec" href="#sec-10-47" data-id="sec-10-47">10.47 再一个实用的拆分方法：按 Context 拆</a></li><li class="lvl2"><a class="sec" href="#sec-10-48" data-id="sec-10-48">10.48 Multi-Agent 的真正成熟状态</a></li><li class="lvl2"><a class="sec" href="#sec-10-49" data-id="sec-10-49">10.49 一个非常重要的统一视角</a></li><li class="lvl3"><a class="sec" href="#sec-workflow" data-id="sec-workflow">Workflow</a></li><li class="lvl3"><a class="sec" href="#sec-single-agent" data-id="sec-single-agent">Single Agent</a></li><li class="lvl3"><a class="sec" href="#sec-multi-agent" data-id="sec-multi-agent">Multi-Agent</a></li><li class="lvl2"><a class="sec" href="#sec-10-50" data-id="sec-10-50">10.50 Part 10 小结</a></li><li class="lvl3"><a class="sec" href="#sec-x72" data-id="sec-x72">第一</a></li><li class="lvl3"><a class="sec" href="#sec-x73" data-id="sec-x73">第二</a></li><li class="lvl3"><a class="sec" href="#sec-x74" data-id="sec-x74">第三</a></li><li class="lvl3"><a class="sec" href="#sec-x75" data-id="sec-x75">第四</a></li><li class="lvl3"><a class="sec" href="#sec-x76" data-id="sec-x76">第五</a></li><li class="lvl3"><a class="sec" href="#sec-x77" data-id="sec-x77">第六</a></li><li class="lvl3"><a class="sec" href="#sec-x78" data-id="sec-x78">第七</a></li><li class="lvl2"><a class="sec" href="#sec-10-51" data-id="sec-10-51">10.51 最终 Mental Model</a></li><li class="lvl2"><a class="sec" href="#sec-10-52" data-id="sec-10-52">10.52 一个最终练习</a></li><li class="lvl2"><a class="sec" href="#sec-part-part-11" data-id="sec-part-part-11">本 Part → Part 11：从协作架构到持续演进</a></li></ul></li>
+<li class="part"><a class="part-link" href="part-11.html"><span class="part-no">11</span><span class="part-name">Agent Evolution：让 Agent 不只是上线，而是持续变好</span></a></li>
+<li class="part"><a class="part-link" href="part-12.html"><span class="part-no">12</span><span class="part-name">Agent Application Architecture：把工程能力迁移到陌生领域</span></a></li></ol><div class="bn-foot"><a href="index.html">全书目录</a></div></nav></aside>
+<main class="content" id="content">
+<article class="prose">
+<h1>Part 10｜Multi-Agent Engineering：当一个 Agent 不再够用</h1>
+<blockquote>
+<p>多一个 Agent，并不意味着多一份能力。<br>
+很多时候，多一个 Agent 只是多了一份通信、多一份状态、多一份成本，也多了一种失败方式。</p>
+</blockquote>
+<p>Part 9 展示了一个 Agent 如何在可审查的工程闭环中完成复杂任务。但任务复杂，并不自动说明应当拆成多个 Agent。拆分会增加消息协议、上下文同步、部分失败与协调成本；只有当不同角色确实需要不同能力、信息或权限时，这种成本才可能值得。</p>
+<p>那么问题来了。</p>
+<p>如果一个任务更复杂，我们是不是可以：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Agent</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后让它们一起工作？</p>
+<p>答案当然是可以。</p>
+<p>这就是 Multi-Agent。</p>
+<p>但真正困难的问题不是：</p>
+<blockquote>
+<p><strong>“怎么创建多个 Agent？”</strong></p>
+</blockquote>
+<p>而是：</p>
+<blockquote>
+<p><strong>“为什么这个任务需要多个 Agent？”</strong></p>
+</blockquote>
+<p>再进一步：</p>
+<blockquote>
+<p><strong>“拆开以后，系统真的会变好吗？”</strong></p>
+</blockquote>
+<p>如果你回答不出这两个问题，那么 Multi-Agent 很可能只是：</p>
+<blockquote>
+<p><strong>把一个复杂系统拆成了更多复杂系统。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-10-1">10.1 先从一个人能不能做开始</h2>
+<p>假设你有一个任务：</p>
+<blockquote>
+<p>“分析一份客户投诉，然后给出处理建议。”</p>
+</blockquote>
+<p>一个 Agent 完全可以完成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>读取投诉</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>查询客户信息</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>检索政策</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>分析</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>给出建议</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这时候，如果你突然设计：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Agent</span></span>
+<span class="line"><span>Analysis Agent</span></span>
+<span class="line"><span>Execution Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你首先应该问：</p>
+<blockquote>
+<p><strong>为什么？</strong></p>
+</blockquote>
+<p>如果一个 Agent 已经能稳定完成，那么拆成三个 Agent 很可能只会带来：</p>
+<ul>
+<li>更多模型调用</li>
+<li>更多 Context</li>
+<li>更多通信</li>
+<li>更高延迟</li>
+<li>更高成本</li>
+<li>更复杂的调试</li>
+</ul>
+<p>这就是 Multi-Agent 最容易踩的第一个坑。</p>
+<hr>
+<h2 id="sec-10-2">10.2 Multi-Agent 的真正价值不是“多个”</h2>
+<p>Multi-Agent 真正有价值的地方，通常来自：</p>
+<blockquote>
+<p><strong>分工。</strong></p>
+</blockquote>
+<p>而分工存在价值，是因为某些任务本身就具有：</p>
+<ul>
+<li>不同目标</li>
+<li>不同上下文</li>
+<li>不同工具</li>
+<li>不同权限</li>
+<li>不同执行节奏</li>
+<li>不同专业职责</li>
+</ul>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Agent</span></span>
+<span class="line"><span>负责寻找证据</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Analysis Agent</span></span>
+<span class="line"><span>负责分析证据</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Execution Agent</span></span>
+<span class="line"><span>负责执行动作</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>它们做的并不是同一件事。</p>
+<p>所以一个非常重要的判断原则是：</p>
+<blockquote>
+<p><strong>只有当任务之间存在有意义的边界时，Multi-Agent 才有存在价值。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-10-3">10.3 什么叫“有意义的边界”？</h2>
+<p>可以从几个角度看。</p>
+<h3 id="sec-x5">目标不同</h3>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent A</span></span>
+<span class="line"><span>目标：找到所有相关资料</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Agent B</span></span>
+<span class="line"><span>目标：判断资料是否可信</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h3 id="sec-x6">上下文不同</h3>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Agent</span></span>
+<span class="line"><span>需要大量网页和文档</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Execution Agent</span></span>
+<span class="line"><span>只需要结构化任务结果</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果强行让一个 Agent 保存全部信息：</p>
+<blockquote>
+<p>Context 会非常庞大。</p>
+</blockquote>
+<p>拆开以后：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Context</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>和：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Execution Context</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>可以独立管理。</p>
+<hr>
+<h3 id="sec-x7">权限不同</h3>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Agent</span></span>
+<span class="line"><span>只能 Read</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Execution Agent</span></span>
+<span class="line"><span>拥有 Write</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这时候拆分本身就成为：</p>
+<blockquote>
+<p><strong>Security Boundary。</strong></p>
+</blockquote>
+<hr>
+<h3 id="sec-x8">执行节奏不同</h3>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research</span></span>
+<span class="line"><span>运行 20 分钟</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Validation</span></span>
+<span class="line"><span>只需要几秒</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Execution</span></span>
+<span class="line"><span>需要人工审批</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>它们本身就不是同一种工作。</p>
+<hr>
+<h2 id="sec-10-4">10.4 Single Agent 和 Multi-Agent 的第一条分界线</h2>
+<p>所以可以先形成一个非常简单的问题：</p>
+<blockquote>
+<p><strong>如果只使用一个 Agent，你会遇到什么真正的工程问题？</strong></p>
+</blockquote>
+<p>不要回答：</p>
+<blockquote>
+<p>“这样不够高级。”</p>
+</blockquote>
+<p>也不要回答：</p>
+<blockquote>
+<p>“Multi-Agent 看起来更专业。”</p>
+</blockquote>
+<p>必须是具体问题，例如：</p>
+<blockquote>
+<p>Context 太大。</p>
+</blockquote>
+<blockquote>
+<p>权限无法隔离。</p>
+</blockquote>
+<blockquote>
+<p>任务可以高度并行。</p>
+</blockquote>
+<blockquote>
+<p>不同任务需要不同工具和策略。</p>
+</blockquote>
+<blockquote>
+<p>一个角色不应该同时负责调查和执行。</p>
+</blockquote>
+<blockquote>
+<p>任务之间天然具有明确边界。</p>
+</blockquote>
+<p>如果说不出具体问题：</p>
+<blockquote>
+<p>暂时不要拆。</p>
+</blockquote>
+<hr>
+<h2 id="sec-10-5">10.5 Multi-Agent 与传统分布式系统其实非常像</h2>
+<p>作为后端工程师，你看到 Multi-Agent 以后，很容易发现一种熟悉感。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Service A</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Message</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Service B</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>和：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent A</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Message</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Agent B</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>结构上很像。</p>
+<p>传统分布式系统会面对：</p>
+<ul>
+<li>RPC</li>
+<li>Message Queue</li>
+<li>State</li>
+<li>Retry</li>
+<li>Timeout</li>
+<li>Idempotency</li>
+<li>Concurrency</li>
+<li>Partial Failure</li>
+<li>Distributed Tracing</li>
+</ul>
+<p>Multi-Agent 同样会面对。</p>
+<p>所以：</p>
+<blockquote>
+<p><strong>Multi-Agent Engineering，本质上越来越接近 Distributed Systems Engineering。</strong></p>
+</blockquote>
+<p>区别只是：</p>
+<blockquote>
+<p>以前服务之间传递的是结构化程序数据；现在某些决策和协作逻辑也可能由模型参与。</p>
+</blockquote>
+<hr>
+<h2 id="sec-10-6">10.6 第一种常见架构：Supervisor</h2>
+<p>最容易理解的是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>                 Supervisor</span></span>
+<span class="line"><span>                     │</span></span>
+<span class="line"><span>          ┌──────────┼──────────┐</span></span>
+<span class="line"><span>          ↓          ↓          ↓</span></span>
+<span class="line"><span>      Research     Analysis   Execution</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Supervisor 负责：</p>
+<blockquote>
+<p>决定哪个 Agent 做什么。</p>
+</blockquote>
+<p>例如用户提出：</p>
+<blockquote>
+<p>“分析这个异常订单并给出处理方案。”</p>
+</blockquote>
+<p>Supervisor 可能决定：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>先交给 Research Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Research Agent 完成以后：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>再交给 Analysis Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Analysis 完成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>交给 Execution Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这和传统系统的：</p>
+<blockquote>
+<p>Orchestrator。</p>
+</blockquote>
+<p>非常类似。</p>
+<hr>
+<h2 id="sec-10-7">10.7 Supervisor 的优点</h2>
+<p>这种架构很直观。</p>
+<p>每个 Agent 都比较简单：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Agent</span></span>
+<span class="line"><span>↓</span></span>
+<span class="line"><span>专门研究</span></span>
+<span class="line"><span></span></span></code></pre>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Analysis Agent</span></span>
+<span class="line"><span>↓</span></span>
+<span class="line"><span>专门分析</span></span>
+<span class="line"><span></span></span></code></pre>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Execution Agent</span></span>
+<span class="line"><span>↓</span></span>
+<span class="line"><span>专门执行</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而 Supervisor 管理整个过程。</p>
+<p>优点包括：</p>
+<ul>
+<li>职责清晰</li>
+<li>权限容易划分</li>
+<li>工具集合可以缩小</li>
+<li>Context 可以隔离</li>
+<li>Agent 可以独立优化</li>
+</ul>
+<hr>
+<h2 id="sec-10-8">10.8 Supervisor 的代价</h2>
+<p>但是问题马上来了：</p>
+<blockquote>
+<p>Supervisor 自己也是一个 Agent。</p>
+</blockquote>
+<p>它也需要：</p>
+<ul>
+<li>模型调用</li>
+<li>Context</li>
+<li>State</li>
+<li>Tool</li>
+<li>Evaluation</li>
+</ul>
+<p>于是系统变成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>User</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Supervisor</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Agent A</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Supervisor</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Agent B</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Supervisor</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Agent C</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>模型调用次数可能快速增加。</p>
+<p>所以：</p>
+<blockquote>
+<p><strong>Supervisor 的价值必须能够覆盖它本身的协调成本。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-10-9">10.9 第二种架构：Planner / Worker</h2>
+<p>另一种常见方法是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Planner</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Task 1</span></span>
+<span class="line"><span>Task 2</span></span>
+<span class="line"><span>Task 3</span></span>
+<span class="line"><span>Task 4</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Worker A</span></span>
+<span class="line"><span>Worker B</span></span>
+<span class="line"><span>Worker C</span></span>
+<span class="line"><span>Worker D</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>分别执行。</p>
+<p>例如：</p>
+<blockquote>
+<p>“研究四个竞争产品，然后做横向比较。”</p>
+</blockquote>
+<p>Planner 可以分解：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Product A</span></span>
+<span class="line"><span>Research Product B</span></span>
+<span class="line"><span>Research Product C</span></span>
+<span class="line"><span>Research Product D</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后四个 Worker 并行执行。</p>
+<p>最后：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Aggregation Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>负责综合。</p>
+<hr>
+<h2 id="sec-10-10">10.10 为什么这个架构可能有价值？</h2>
+<p>关键是：</p>
+<blockquote>
+<p><strong>任务之间相对独立。</strong></p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research A</span></span>
+<span class="line"><span>Research B</span></span>
+<span class="line"><span>Research C</span></span>
+<span class="line"><span>Research D</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>互相之间几乎不依赖。</p>
+<p>那么如果串行执行：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>A</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>B</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>C</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>D</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>可能很慢。</p>
+<p>如果并行：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>      ┌→ A</span></span>
+<span class="line"><span>      ├→ B</span></span>
+<span class="line"><span>Task ─┼→ C</span></span>
+<span class="line"><span>      └→ D</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>速度可能显著提高。</p>
+<p>这时候：</p>
+<blockquote>
+<p>Multi-Agent 的价值来自<strong>并行性</strong>。</p>
+</blockquote>
+<p>而不是：</p>
+<blockquote>
+<p>“因为三个 Agent 比一个厉害。”</p>
+</blockquote>
+<hr>
+<h2 id="sec-10-11">10.11 第三种架构：Peer-to-peer</h2>
+<p>还有一种方式：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent A</span></span>
+<span class="line"><span> ↔</span></span>
+<span class="line"><span>Agent B</span></span>
+<span class="line"><span> ↔</span></span>
+<span class="line"><span>Agent C</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>它们没有一个绝对的 Supervisor。</p>
+<p>Agent 可以直接互相发送消息。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Agent</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>Analysis Agent</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>Research Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>分析 Agent 发现：</p>
+<blockquote>
+<p>“资料不够。”</p>
+</blockquote>
+<p>它又要求 Research Agent：</p>
+<blockquote>
+<p>“再找一些证据。”</p>
+</blockquote>
+<p>这种方式更灵活。</p>
+<p>但同时：</p>
+<blockquote>
+<p><strong>更难控制。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-10-12">10.12 为什么 Peer-to-peer 很容易失控？</h2>
+<p>如果有：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>A ↔ B</span></span>
+<span class="line"><span>B ↔ C</span></span>
+<span class="line"><span>C ↔ A</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>消息可能不断循环。</p>
+<p>更复杂的是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>A → B</span></span>
+<span class="line"><span>A → C</span></span>
+<span class="line"><span>B → C</span></span>
+<span class="line"><span>C → A</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你很快需要考虑：</p>
+<ul>
+<li>消息协议</li>
+<li>消息去重</li>
+<li>超时</li>
+<li>循环检测</li>
+<li>状态一致性</li>
+<li>消息顺序</li>
+</ul>
+<p>这已经非常接近：</p>
+<blockquote>
+<p><strong>分布式系统。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-10-13">10.13 Message Passing：Agent 之间到底传什么？</h2>
+<p>这是 Multi-Agent 非常重要的问题。</p>
+<p>最简单的做法是：</p>
+<blockquote>
+<p>A 给 B 发一大段自然语言。</p>
+</blockquote>
+<p>例如：</p>
+<blockquote>
+<p>“我觉得这个订单可能是物流问题，你去查一下。”</p>
+</blockquote>
+<p>简单，但很难控制。</p>
+<p>更成熟的方法是结构化消息：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "task_id"</span><span style="color:#24292E">: </span><span style="color:#032F62">"task-1001"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "from"</span><span style="color:#24292E">: </span><span style="color:#032F62">"research_agent"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "to"</span><span style="color:#24292E">: </span><span style="color:#032F62">"analysis_agent"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "message_type"</span><span style="color:#24292E">: </span><span style="color:#032F62">"evidence_bundle"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "payload"</span><span style="color:#24292E">: {</span></span>
+<span class="line"><span style="color:#005CC5">    "order_id"</span><span style="color:#24292E">: </span><span style="color:#005CC5">10001</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">    "evidence"</span><span style="color:#24292E">: [</span></span>
+<span class="line"><span style="color:#24292E">      {</span></span>
+<span class="line"><span style="color:#005CC5">        "source"</span><span style="color:#24292E">: </span><span style="color:#032F62">"logistics"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">        "fact"</span><span style="color:#24292E">: </span><span style="color:#032F62">"no_update_72h"</span></span>
+<span class="line"><span style="color:#24292E">      }</span></span>
+<span class="line"><span style="color:#24292E">    ]</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<p>这样：</p>
+<blockquote>
+<p>Agent 之间开始拥有明确的通信协议。</p>
+</blockquote>
+<p>这和 API / Event Schema 非常相似。</p>
+<hr>
+<h2 id="sec-10-14">10.14 Agent Message 不是聊天消息</h2>
+<p>这是一个特别值得注意的概念。</p>
+<p>用户和模型之间的：</p>
+<blockquote>
+<p>对话消息。</p>
+</blockquote>
+<p>与 Agent 之间的：</p>
+<blockquote>
+<p><strong>系统消息。</strong></p>
+</blockquote>
+<p>其实不是同一个东西。</p>
+<p>用户可能说：</p>
+<blockquote>
+<p>“我的订单为什么没到？”</p>
+</blockquote>
+<p>而 Agent A 给 Agent B 的消息更像：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Task ID</span></span>
+<span class="line"><span>Evidence</span></span>
+<span class="line"><span>Current State</span></span>
+<span class="line"><span>Requested Action</span></span>
+<span class="line"><span>Constraints</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以 Multi-Agent 中需要逐渐建立：</p>
+<blockquote>
+<p><strong>Agent-to-Agent Protocol。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-10-15">10.15 Shared State：多个 Agent 看同一个状态</h2>
+<p>最简单的协作方式：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>           Shared State</span></span>
+<span class="line"><span>          /      |      \</span></span>
+<span class="line"><span>         ↓       ↓       ↓</span></span>
+<span class="line"><span>        A        B       C</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "task_id"</span><span style="color:#24292E">: </span><span style="color:#032F62">"1001"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "order_id"</span><span style="color:#24292E">: </span><span style="color:#032F62">"10001"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "investigation_status"</span><span style="color:#24292E">: </span><span style="color:#032F62">"in_progress"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "evidence"</span><span style="color:#24292E">: [],</span></span>
+<span class="line"><span style="color:#005CC5">  "decision"</span><span style="color:#24292E">: </span><span style="color:#005CC5">null</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<p>多个 Agent 都可以读取。</p>
+<hr>
+<h2 id="sec-10-16">10.16 Shared State 的优点</h2>
+<p>优点：</p>
+<ul>
+<li>简单</li>
+<li>状态集中</li>
+<li>容易回放</li>
+<li>容易恢复</li>
+</ul>
+<p>但也有问题：</p>
+<blockquote>
+<p><strong>谁可以修改？</strong></p>
+</blockquote>
+<p>如果：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent A</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>和：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent B</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>同时修改同一个字段，会发生什么？</p>
+<p>这已经出现：</p>
+<blockquote>
+<p>Concurrency Problem。</p>
+</blockquote>
+<hr>
+<h2 id="sec-10-17">10.17 Shared State 的危险：谁拥有状态？</h2>
+<p>假设：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>diagnosis = "battery_failure"</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Analysis Agent 写入：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>battery_failure</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Research Agent 稍后写入：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>charger_failure</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>最终：</p>
+<blockquote>
+<p>谁是正确的？</p>
+</blockquote>
+<p>如果没有明确的：</p>
+<blockquote>
+<p>Ownership。</p>
+</blockquote>
+<p>系统就会很混乱。</p>
+<p>因此 Shared State 需要：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Field Ownership</span></span>
+<span class="line"><span>Update Rules</span></span>
+<span class="line"><span>Conflict Resolution</span></span>
+<span class="line"><span>Version</span></span>
+<span class="line"><span>Timestamp</span></span>
+<span class="line"><span>Source</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这与传统分布式状态管理非常类似。</p>
+<hr>
+<h2 id="sec-10-18">10.18 Independent Context + Message Passing</h2>
+<p>还有一种完全不同的设计。</p>
+<p>不是所有 Agent 都共享 Context。</p>
+<p>而是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent A</span></span>
+<span class="line"><span>Context A</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Message</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Agent B</span></span>
+<span class="line"><span>Context B</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>A 只传给 B：</p>
+<blockquote>
+<p>必要的信息。</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Agent</span></span>
+<span class="line"><span>Context:</span></span>
+<span class="line"><span>500 个网页</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>        ↓</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Message:</span></span>
+<span class="line"><span>3 条核心证据</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>        ↓</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Analysis Agent</span></span>
+<span class="line"><span>Context:</span></span>
+<span class="line"><span>3 条证据</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这样可以减少：</p>
+<blockquote>
+<p>Context 污染。</p>
+</blockquote>
+<p>也保护：</p>
+<blockquote>
+<p>Agent 的职责边界。</p>
+</blockquote>
+<hr>
+<h2 id="sec-10-19">10.19 Shared Context 和 Independent Context 谁更好？</h2>
+<p>还是没有统一答案。</p>
+<h3 id="sec-shared-context">Shared Context</h3>
+<p>优点：</p>
+<ul>
+<li>信息完整</li>
+<li>实现简单</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>Context 膨胀</li>
+<li>职责边界模糊</li>
+<li>Agent 容易互相污染</li>
+</ul>
+<h3 id="sec-independent-context">Independent Context</h3>
+<p>优点：</p>
+<ul>
+<li>隔离</li>
+<li>Context 更小</li>
+<li>权限清晰</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>需要消息设计</li>
+<li>信息可能丢失</li>
+<li>通信成本增加</li>
+</ul>
+<p>所以：</p>
+<blockquote>
+<p><strong>Context Architecture 也是 Multi-Agent Architecture 的核心。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-10-20">10.20 Concurrency：为什么 Multi-Agent 一定会遇到并发？</h2>
+<p>假设：</p>
+<blockquote>
+<p>Research Agent 需要同时调查四个供应商。</p>
+</blockquote>
+<p>四个任务完全独立。</p>
+<p>那么最合理的方式可能是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>           Planner</span></span>
+<span class="line"><span>              ↓</span></span>
+<span class="line"><span>      ┌───────┼───────┐</span></span>
+<span class="line"><span>      ↓       ↓       ↓</span></span>
+<span class="line"><span>     A        B       C</span></span>
+<span class="line"><span>      └───────┼───────┘</span></span>
+<span class="line"><span>              ↓</span></span>
+<span class="line"><span>          Aggregator</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是并行。</p>
+<p>但并行以后会出现：</p>
+<ul>
+<li>一个 Agent 快</li>
+<li>一个 Agent 慢</li>
+<li>一个 Agent 失败</li>
+<li>一个 Agent 返回脏数据</li>
+</ul>
+<p>Aggregator 怎么办？</p>
+<hr>
+<h2 id="sec-10-21">10.21 Partial Failure：不是所有 Agent 都会成功</h2>
+<p>假设：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>A → SUCCESS</span></span>
+<span class="line"><span>B → SUCCESS</span></span>
+<span class="line"><span>C → TIMEOUT</span></span>
+<span class="line"><span>D → SUCCESS</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>最终要不要继续？</p>
+<p>可以选择：</p>
+<h3 id="sec-strict">Strict</h3>
+<blockquote>
+<p>C 失败，整体失败。</p>
+</blockquote>
+<p>适合：</p>
+<blockquote>
+<p>所有证据都必须齐全的任务。</p>
+</blockquote>
+<hr>
+<h3 id="sec-best-effort">Best-effort</h3>
+<blockquote>
+<p>C 失败，但 A/B/D 足够，继续。</p>
+</blockquote>
+<p>适合：</p>
+<blockquote>
+<p>允许部分结果缺失的研究任务。</p>
+</blockquote>
+<hr>
+<h3 id="sec-retry">Retry</h3>
+<blockquote>
+<p>C 失败，重新执行。</p>
+</blockquote>
+<p>适合：</p>
+<blockquote>
+<p>临时错误。</p>
+</blockquote>
+<hr>
+<h3 id="sec-alternative">Alternative</h3>
+<blockquote>
+<p>C 失败，换另一个数据源。</p>
+</blockquote>
+<p>适合：</p>
+<blockquote>
+<p>有替代能力。</p>
+</blockquote>
+<p>这其实就是传统分布式系统的 Failure Semantics。</p>
+<hr>
+<h2 id="sec-10-22">10.22 Failure Propagation：A 的错误会不会影响 B？</h2>
+<p>假设：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research A</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Analysis B</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Execution C</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果 A 错了：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Wrong Evidence</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么 B 可能分析错。</p>
+<p>然后 C 执行错。</p>
+<p>最终：</p>
+<blockquote>
+<p>一个早期错误沿着 Agent 链传播。</p>
+</blockquote>
+<p>因此 Multi-Agent 不只是：</p>
+<blockquote>
+<p>“每个 Agent 自己做好自己的事情。”</p>
+</blockquote>
+<p>而是需要考虑：</p>
+<blockquote>
+<p><strong>错误会怎样跨 Agent 传播？</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-10-23">10.23 Provenance：结果来自谁？</h2>
+<p>假设 Analysis Agent 得到：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>结论：</span></span>
+<span class="line"><span>这个设备最可能是电池问题。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么必须知道：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>这个结论来自哪些证据？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>哪些证据由谁找到？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>什么时候找到？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>是否经过验证？</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以 Multi-Agent 中会逐渐需要：</p>
+<blockquote>
+<p><strong>Provenance。</strong></p>
+</blockquote>
+<p>也就是：</p>
+<blockquote>
+<p>数据和结论的来源链。</p>
+</blockquote>
+<hr>
+<h2 id="sec-10-24">10.24 为什么 Provenance 很重要？</h2>
+<p>尤其是企业环境。</p>
+<p>如果 Agent 最终给出：</p>
+<blockquote>
+<p>“建议停机检修。”</p>
+</blockquote>
+<p>工程师会问：</p>
+<blockquote>
+<p>为什么？</p>
+</blockquote>
+<p>如果系统能够回答：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Evidence 1:</span></span>
+<span class="line"><span>Diagnostic API</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Evidence 2:</span></span>
+<span class="line"><span>Repair Manual v5</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Evidence 3:</span></span>
+<span class="line"><span>Historical Case #192</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>并且：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Agent</span></span>
+<span class="line"><span> → collected evidence</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Analysis Agent</span></span>
+<span class="line"><span> → synthesized conclusion</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么整个系统更容易：</p>
+<ul>
+<li>审计</li>
+<li>调试</li>
+<li>Review</li>
+<li>追责</li>
+</ul>
+<hr>
+<h2 id="sec-10-25">10.25 Permission Boundary：Multi-Agent 一个非常实际的价值</h2>
+<p>考虑一个企业系统。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>需要：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Search Web</span></span>
+<span class="line"><span>Query Database</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Execution Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>才拥有：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Create Ticket</span></span>
+<span class="line"><span>Send Notification</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么拆成两个 Agent 以后：</p>
+<blockquote>
+<p>权限边界天然更加清晰。</p>
+</blockquote>
+<p>可以形成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Agent</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Read Only</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Analysis Agent</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Read Only</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Execution Agent</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Write</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这其实是 Multi-Agent 的一个非常现实、而且容易被忽略的价值：</p>
+<blockquote>
+<p><strong>Agent Isolation can be a Security Mechanism.</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-10-26">10.26 但是不要为了“安全”把每件事都拆成 Agent</h2>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Read Agent</span></span>
+<span class="line"><span>Write Agent</span></span>
+<span class="line"><span>Validate Agent</span></span>
+<span class="line"><span>Notify Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果每个都只做一两个非常简单的动作，</p>
+<p>系统最后会变成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent → Agent → Agent → Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而实际上一个：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Workflow + Permission</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>可能就够了。</p>
+<p>所以：</p>
+<blockquote>
+<p><strong>隔离有价值，但隔离本身也有成本。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-10-27">10.27 Multi-Agent 的成本会怎样增长？</h2>
+<p>假设一个 Agent 任务平均：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>3 model calls</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>现在拆成三个 Agent：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent A = 3</span></span>
+<span class="line"><span>Agent B = 3</span></span>
+<span class="line"><span>Agent C = 3</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>已经是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>9 model calls</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>再加 Supervisor：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>+ 2~3</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>再加验证：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>+ 1~2</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>最后：</p>
+<blockquote>
+<p>一个用户请求可能产生十几次模型调用。</p>
+</blockquote>
+<p>所以：</p>
+<blockquote>
+<p><strong>Multi-Agent 往往是一个成本乘数器。</strong></p>
+</blockquote>
+<p>这也是为什么 Multi-Agent 必须经过 Evaluation。</p>
+<hr>
+<h2 id="sec-10-28">10.28 一个重要公式</h2>
+<p>可以用一个非常粗略的工程思维模型：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Total Cost</span></span>
+<span class="line"><span>≈</span></span>
+<span class="line"><span>Σ Agent Model Cost</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Coordination Cost</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Retrieval Cost</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Tool Cost</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Total Latency</span></span>
+<span class="line"><span>≈</span></span>
+<span class="line"><span>Critical Path</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Coordination Overhead</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果任务可以并行：</p>
+<blockquote>
+<p>Latency 可能下降。</p>
+</blockquote>
+<p>如果任务高度串行：</p>
+<blockquote>
+<p>Multi-Agent 可能让 Latency 上升。</p>
+</blockquote>
+<p>因此：</p>
+<blockquote>
+<p><strong>Multi-Agent 是否更快，取决于任务图，而不是 Agent 数量。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-10-29">10.29 DAG：把 Multi-Agent 看成任务图</h2>
+<p>这时候，可以借用一个后端工程中很熟悉的思想：</p>
+<blockquote>
+<p>DAG。</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>           Start</span></span>
+<span class="line"><span>             ↓</span></span>
+<span class="line"><span>       ┌─────┼─────┐</span></span>
+<span class="line"><span>       ↓     ↓     ↓</span></span>
+<span class="line"><span>       A     B     C</span></span>
+<span class="line"><span>       └─────┼─────┘</span></span>
+<span class="line"><span>             ↓</span></span>
+<span class="line"><span>             D</span></span>
+<span class="line"><span>             ↓</span></span>
+<span class="line"><span>           Finish</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这里：</p>
+<ul>
+<li>A、B、C 可以并行</li>
+<li>D 依赖 A/B/C</li>
+</ul>
+<p>这比简单的：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>A → B → C → D</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>更高效。</p>
+<p>所以 Multi-Agent 系统经常可以被理解成：</p>
+<blockquote>
+<p><strong>模型驱动的任务 DAG。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-10-30">10.30 但是 DAG 只是控制结构，不是 Agent</h2>
+<p>这一点也要注意。</p>
+<p>你可以让：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>A</span></span>
+<span class="line"><span>B</span></span>
+<span class="line"><span>C</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>都是普通函数。</p>
+<p>也可以让它们是 Workflow。</p>
+<p>也可以让它们是 Agent。</p>
+<p>因此：</p>
+<blockquote>
+<p>Multi-Agent 并不是 DAG。</p>
+</blockquote>
+<p>DAG 是：</p>
+<blockquote>
+<p><strong>任务组织方式。</strong></p>
+</blockquote>
+<p>Agent 是：</p>
+<blockquote>
+<p><strong>承担动态决策和执行的实体。</strong></p>
+</blockquote>
+<p>二者可以结合。</p>
+<hr>
+<h2 id="sec-10-31">10.31 Multi-Agent Evaluation：比 Single Agent 更难</h2>
+<p>Part 6 中我们已经知道：</p>
+<blockquote>
+<p>Single Agent 要评估。</p>
+</blockquote>
+<p>Multi-Agent 更复杂。</p>
+<p>因为现在至少需要同时看：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Individual Agent Performance</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Coordination Quality</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Message Quality</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Task Decomposition</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Failure Propagation</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Overall Task Success</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-10-32">10.32 不要只评估最终答案</h2>
+<p>假设最终：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Overall Success = 95%</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>看起来不错。</p>
+<p>但再看：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Agent</span></span>
+<span class="line"><span>Accuracy = 90%</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Analysis Agent</span></span>
+<span class="line"><span>Accuracy = 98%</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Execution Agent</span></span>
+<span class="line"><span>Accuracy = 99%</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果 Research 错误：</p>
+<blockquote>
+<p>很可能已经影响了后面所有 Agent。</p>
+</blockquote>
+<p>所以需要进一步评估：</p>
+<blockquote>
+<p>每个节点的输入和输出。</p>
+</blockquote>
+<hr>
+<h2 id="sec-10-33">10.33 Coordination Quality</h2>
+<p>你甚至可以单独测试：</p>
+<blockquote>
+<p>Agent A 给 Agent B 的消息是否清楚？</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>A:</span></span>
+<span class="line"><span>“我觉得这个订单有问题，你再看看。”</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>显然很差。</p>
+<p>而：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "order_id"</span><span style="color:#24292E">: </span><span style="color:#005CC5">10001</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "evidence"</span><span style="color:#24292E">: [</span></span>
+<span class="line"><span style="color:#032F62">    "shipped_72h_no_update"</span></span>
+<span class="line"><span style="color:#24292E">  ],</span></span>
+<span class="line"><span style="color:#005CC5">  "confidence"</span><span style="color:#24292E">: </span><span style="color:#005CC5">0.91</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "requested_action"</span><span style="color:#24292E">: </span><span style="color:#032F62">"investigate_logistics"</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<p>更适合作为系统消息。</p>
+<p>所以：</p>
+<blockquote>
+<p><strong>Agent-to-Agent communication 也应该被评估。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-10-34">10.34 Multi-Agent 的核心实验</h2>
+<p>现在我们正式设计 Part 10 的核心实验。</p>
+<p>任务：</p>
+<blockquote>
+<p><strong>调查一个复杂业务问题，并形成最终处理建议。</strong></p>
+</blockquote>
+<p>例如：</p>
+<blockquote>
+<p>“分析一笔异常售后订单，找出最可能原因，并给出建议处理方案。”</p>
+</blockquote>
+<p>系统拥有：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Order API</span></span>
+<span class="line"><span>Logistics API</span></span>
+<span class="line"><span>Inventory API</span></span>
+<span class="line"><span>Policy Knowledge</span></span>
+<span class="line"><span>Historical Cases</span></span>
+<span class="line"><span>Service Ticket API</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<p>配套仓库的 <code>labs/lab10_multi_agent/</code> 将这个问题变成同一数据集上的四种可比较架构。主线使用默认的 8 个合成 Incident Investigation 案例；如果主线结果已经能解释清楚，再把 24 个扰动案例作为深入实验。先读 <code>TASK.md</code>，再运行：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab10_multi_agent.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> fake</span></span>
+<span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> pytest</span><span style="color:#032F62"> labs/lab10_multi_agent/tests</span></span>
+<span class="line"></span></code></pre>
+<p>比较 Single Agent、Shared Context Multi-Agent、Independent Context + Message Passing 和 Supervisor 时，必须复用同一 Dataset 与 Evaluator。除了最终任务分数，也要看模型/Agent 调用数、消息量、证据覆盖、成本、延迟、未解决而需人工复核的案例，以及一个 specialist 失败后错误如何传播。扩展集可以这样运行：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab10_multi_agent.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> fake</span><span style="color:#005CC5"> --dataset</span><span style="color:#032F62"> labs/lab10_multi_agent/fixtures/cases_extended.json</span><span style="color:#005CC5"> --output</span><span style="color:#032F62"> artifacts/results_extended</span></span>
+<span class="line"></span></code></pre>
+<p>这 24 例是从快速集合派生的可重复扰动案例，不是 24 起独立生产事故。Fake 使用受控的响应路径来验证比较与轨迹管线，不能证明真实模型会以相同方式协作，更不能证明多 Agent 的结论可以直接执行。</p>
+<h2 id="sec-10-35">10.35 Architecture A：Single Agent</h2>
+<p>先做一个 Agent：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>One Agent</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>All Tools</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>All Context</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>它自己完成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Investigate</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Analyze</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Recommend</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这是 Baseline。</p>
+<p>非常重要：</p>
+<blockquote>
+<p><strong>Multi-Agent 实验必须有 Single Agent Baseline。</strong></p>
+</blockquote>
+<p>否则你根本不知道拆分以后有没有价值。</p>
+<hr>
+<h2 id="sec-10-36">10.36 Architecture B：Shared Context Multi-Agent</h2>
+<p>拆成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Agent</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>Analysis Agent</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>Execution Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>但它们共享：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Shared State</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-10-37">10.37 Architecture C：Independent Context + Message Passing</h2>
+<p>每个 Agent 拥有独立 Context：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Context</span></span>
+<span class="line"><span>Analysis Context</span></span>
+<span class="line"><span>Execution Context</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>通过结构化消息传递。</p>
+<hr>
+<h2 id="sec-10-38">10.38 Architecture D：Supervisor</h2>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>             Supervisor</span></span>
+<span class="line"><span>            /    |     \</span></span>
+<span class="line"><span>           ↓     ↓      ↓</span></span>
+<span class="line"><span>      Research Analysis Execution</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Supervisor 决定：</p>
+<blockquote>
+<p>当前任务交给谁。</p>
+</blockquote>
+<hr>
+<h2 id="sec-10-39">10.39 四种架构必须使用同一套任务集合</h2>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>case_001</span></span>
+<span class="line"><span>case_002</span></span>
+<span class="line"><span>...</span></span>
+<span class="line"><span>case_050</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>分别运行：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Single Agent</span></span>
+<span class="line"><span>Shared Multi-Agent</span></span>
+<span class="line"><span>Message Multi-Agent</span></span>
+<span class="line"><span>Supervisor Multi-Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这样才能公平比较。</p>
+<hr>
+<h2 id="sec-10-40">10.40 比较什么？</h2>
+<p>至少比较：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Task Success</span></span>
+<span class="line"><span>Cost</span></span>
+<span class="line"><span>Latency</span></span>
+<span class="line"><span>Model Calls</span></span>
+<span class="line"><span>Tool Calls</span></span>
+<span class="line"><span>Coordination Messages</span></span>
+<span class="line"><span>Failure Rate</span></span>
+<span class="line"><span>Failure Propagation</span></span>
+<span class="line"><span>Human Intervention</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果是并行结构，还需要：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Critical Path</span></span>
+<span class="line"><span>Parallelism</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-10-41">10.41 一个非常可能出现的结果</h2>
+<p>例如：</p>
+<table>
+<thead>
+<tr>
+<th>Architecture</th>
+<th style="text-align:right">Success</th>
+<th style="text-align:right">Cost</th>
+<th style="text-align:right">Latency</th>
+<th style="text-align:right">Complexity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Single Agent</td>
+<td style="text-align:right">94%</td>
+<td style="text-align:right">1.0x</td>
+<td style="text-align:right">1.0x</td>
+<td style="text-align:right">Low</td>
+</tr>
+<tr>
+<td>Shared Multi-Agent</td>
+<td style="text-align:right">95%</td>
+<td style="text-align:right">1.8x</td>
+<td style="text-align:right">1.3x</td>
+<td style="text-align:right">Medium</td>
+</tr>
+<tr>
+<td>Message Multi-Agent</td>
+<td style="text-align:right">96%</td>
+<td style="text-align:right">2.1x</td>
+<td style="text-align:right">1.5x</td>
+<td style="text-align:right">High</td>
+</tr>
+<tr>
+<td>Supervisor</td>
+<td style="text-align:right">97%</td>
+<td style="text-align:right">2.8x</td>
+<td style="text-align:right">1.9x</td>
+<td style="text-align:right">Very High</td>
+</tr>
+</tbody>
+</table>
+<p>如果业务是：</p>
+<blockquote>
+<p>普通内部查询。</p>
+</blockquote>
+<p>那么 Single Agent 可能最佳。</p>
+<p>如果业务是：</p>
+<blockquote>
+<p>高价值复杂调查，而且不同角色需要不同权限。</p>
+</blockquote>
+<p>那么 Multi-Agent 可能更值得。</p>
+<p>因此：</p>
+<blockquote>
+<p><strong>最终答案依然不是“Multi-Agent”。</strong></p>
+</blockquote>
+<p>最终答案应该是：</p>
+<blockquote>
+<p><strong>最符合业务约束的架构。</strong></p>
+</blockquote>
+<hr>
+<h3 id="sec-x53">可选真实模型实验：观察真实模型的协作开销</h3>
+<p>只有在同一 8 例基线、Fake 回归和消息契约都已完成后才考虑运行。真实模式需要 Provider 配置与匹配的价格参数，可能产生费用；运行前确认数据处理与留存条件。请检查逐案证据、各 Agent 消息、未解决案例、usage 与延迟。不要让演练建议直接触发生产整改，也不要只凭汇总分数声称 Multi-Agent 更优。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab10_multi_agent.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> real</span></span>
+<span class="line"></span></code></pre>
+<h2 id="sec-10-42">10.42 故障实验：让 Multi-Agent 真正发生故障</h2>
+<hr>
+<h3 id="sec-failure-a-agent-a">Failure A：Agent A 输出不完整</h3>
+<p>Research Agent 漏了一条关键证据。</p>
+<p>观察：</p>
+<blockquote>
+<p>Analysis Agent 是否发现？</p>
+</blockquote>
+<hr>
+<h3 id="sec-failure-b-agent-a">Failure B：Agent A 输出错误</h3>
+<p>Research Agent 给了错误结论。</p>
+<p>观察：</p>
+<blockquote>
+<p>Analysis Agent 是否盲目信任？</p>
+</blockquote>
+<hr>
+<h3 id="sec-failure-c-agent-b-timeout">Failure C：Agent B Timeout</h3>
+<p>观察：</p>
+<blockquote>
+<p>Supervisor 如何处理？</p>
+</blockquote>
+<hr>
+<h3 id="sec-failure-d-agent-c">Failure D：Agent C 权限不足</h3>
+<p>观察：</p>
+<blockquote>
+<p>系统是否让它越权？</p>
+</blockquote>
+<p>答案必须是：</p>
+<blockquote>
+<p>不允许。</p>
+</blockquote>
+<hr>
+<h3 id="sec-failure-e-message-schema">Failure E：Message Schema 错误</h3>
+<p>Research Agent 发：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "evidence"</span><span style="color:#24292E">: </span><span style="color:#032F62">"..."</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<p>但 Analysis Agent 需要：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>evidence[]</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>观察：</p>
+<blockquote>
+<p>系统在哪里发现错误？</p>
+</blockquote>
+<hr>
+<h3 id="sec-failure-f">Failure F：循环</h3>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Analysis</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Research</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Analysis</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>观察：</p>
+<blockquote>
+<p>是否有 Message Budget / Iteration Budget？</p>
+</blockquote>
+<hr>
+<h2 id="sec-10-43">10.43 一个很重要的工程问题：谁是最终负责人？</h2>
+<p>Multi-Agent 很容易产生：</p>
+<blockquote>
+<p><strong>Responsibility Ambiguity。</strong></p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Agent：</span></span>
+<span class="line"><span>“我只是收集资料。”</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Analysis Agent：</span></span>
+<span class="line"><span>“我只是分析。”</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Execution Agent：</span></span>
+<span class="line"><span>“我是按 Analysis 的结果执行。”</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>最终出错了：</p>
+<blockquote>
+<p>谁负责？</p>
+</blockquote>
+<p>所以生产 Multi-Agent 系统需要明确：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Task Owner</span></span>
+<span class="line"><span>Decision Owner</span></span>
+<span class="line"><span>Execution Owner</span></span>
+<span class="line"><span>Approval Owner</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>即使它们都是 Agent，也必须存在：</p>
+<blockquote>
+<p><strong>清晰的责任边界。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-10-44">10.44 Multi-Agent 不是组织模拟游戏</h2>
+<p>有些设计喜欢：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>CEO Agent</span></span>
+<span class="line"><span>Manager Agent</span></span>
+<span class="line"><span>Engineer Agent</span></span>
+<span class="line"><span>Reviewer Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>看起来非常像一家公司。</p>
+<p>但组织结构本身并不带来价值。</p>
+<p>真正需要的是：</p>
+<blockquote>
+<p>每个角色是否拥有不同的能力边界？</p>
+</blockquote>
+<p>如果没有：</p>
+<blockquote>
+<p>只是换了几套 Prompt。</p>
+</blockquote>
+<p>所以：</p>
+<blockquote>
+<p><strong>Agent Role 应该由工程职责定义，而不是由人类组织学名词定义。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-10-45">10.45 一个实用的拆分方法：按 Capability 拆</h2>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research</span></span>
+<span class="line"><span>Capability:</span></span>
+<span class="line"><span>获取证据</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Analysis</span></span>
+<span class="line"><span>Capability:</span></span>
+<span class="line"><span>解释证据</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Execution</span></span>
+<span class="line"><span>Capability:</span></span>
+<span class="line"><span>执行动作</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这种拆分比较清晰。</p>
+<p>而：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Manager Agent</span></span>
+<span class="line"><span>Engineer Agent</span></span>
+<span class="line"><span>Intern Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果没有不同 Tool / Context / Permission：</p>
+<blockquote>
+<p>很可能只是人为套角色名字。</p>
+</blockquote>
+<hr>
+<h2 id="sec-10-46">10.46 另一个实用的拆分方法：按 Risk 拆</h2>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Read Agent</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>分析</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Write Agent</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>执行</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Approval Agent</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>高风险动作</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这样拆分的意义是：</p>
+<blockquote>
+<p><strong>减少一个 Agent 同时拥有过多能力。</strong></p>
+</blockquote>
+<p>尤其适合：</p>
+<blockquote>
+<p>金融、制造控制、生产运维等高风险系统。</p>
+</blockquote>
+<hr>
+<h2 id="sec-10-47">10.47 再一个实用的拆分方法：按 Context 拆</h2>
+<p>假设：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>需要阅读：</p>
+<blockquote>
+<p>50,000 页文档。</p>
+</blockquote>
+<p>而：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span></span></span></code></pre>
+<p>只需要知道：</p>
+<blockquote>
+<p>最终结构化方案。</p>
+</blockquote>
+<p>让它们共享一个巨大的 Context 显然没有必要。</p>
+<p>所以：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Big Context</span></span>
+<span class="line"><span>     ↓</span></span>
+<span class="line"><span>Research</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Compact Result</span></span>
+<span class="line"><span>     ↓</span></span>
+<span class="line"><span>Execution</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是：</p>
+<blockquote>
+<p><strong>Context Isolation。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-10-48">10.48 Multi-Agent 的真正成熟状态</h2>
+<p>成熟的 Multi-Agent 系统通常不是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent 越多越好</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent 数量最少</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>职责最清晰</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>权限最小</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>通信最少</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>状态边界明确</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>失败可以恢复</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>也就是说：</p>
+<blockquote>
+<p><strong>Multi-Agent 也在追求“最小必要复杂度”。</strong></p>
+</blockquote>
+<p>这和 Part 5 的原则完全一致。</p>
+<hr>
+<h2 id="sec-10-49">10.49 一个非常重要的统一视角</h2>
+<p>到这里，可以把：</p>
+<blockquote>
+<p>Workflow、Agent、Multi-Agent</p>
+</blockquote>
+<p>放进同一个框架。</p>
+<h3 id="sec-workflow">Workflow</h3>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Program controls flow</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="sec-single-agent">Single Agent</h3>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>One model-driven decision-maker controls part of flow</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="sec-multi-agent">Multi-Agent</h3>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Multiple model-driven decision-makers</span></span>
+<span class="line"><span>coordinate part of the flow</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以复杂度增加的真正原因是：</p>
+<blockquote>
+<p><strong>决策与控制边界增加。</strong></p>
+</blockquote>
+<p>而不是：</p>
+<blockquote>
+<p>“Agent 数量变多。”</p>
+</blockquote>
+<hr>
+<h2 id="sec-10-50">10.50 Part 10 小结</h2>
+<p>这一 Part 我们表面上学习了：</p>
+<ul>
+<li>Supervisor</li>
+<li>Planner / Worker</li>
+<li>Peer-to-peer</li>
+<li>Shared State</li>
+<li>Message Passing</li>
+<li>Concurrency</li>
+</ul>
+<p>但真正应该留下来的，不是这些名词。</p>
+<p>而是下面这套思考方式。</p>
+<hr>
+<h3 id="sec-x72">第一</h3>
+<blockquote>
+<p>一个 Agent 能解决的问题，不要因为“可以多 Agent”就强行拆开。</p>
+</blockquote>
+<hr>
+<h3 id="sec-x73">第二</h3>
+<blockquote>
+<p>Multi-Agent 的价值来自真正的分工。</p>
+</blockquote>
+<p>分工可以来自：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>不同目标</span></span>
+<span class="line"><span>不同 Context</span></span>
+<span class="line"><span>不同 Tool</span></span>
+<span class="line"><span>不同权限</span></span>
+<span class="line"><span>不同执行节奏</span></span>
+<span class="line"><span>并行性</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h3 id="sec-x74">第三</h3>
+<blockquote>
+<p>Agent-to-Agent 通信应该像 API / Event Protocol 一样被设计。</p>
+</blockquote>
+<p>需要：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Schema</span></span>
+<span class="line"><span>Ownership</span></span>
+<span class="line"><span>Validation</span></span>
+<span class="line"><span>Version</span></span>
+<span class="line"><span>Trace</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h3 id="sec-x75">第四</h3>
+<blockquote>
+<p>Shared State 与 Independent Context 都有价值。</p>
+</blockquote>
+<p>选择依据是：</p>
+<blockquote>
+<p>信息共享需求和隔离需求之间的平衡。</p>
+</blockquote>
+<hr>
+<h3 id="sec-x76">第五</h3>
+<blockquote>
+<p>Multi-Agent 本质上开始接近分布式系统。</p>
+</blockquote>
+<p>因此需要认真考虑：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Timeout</span></span>
+<span class="line"><span>Retry</span></span>
+<span class="line"><span>Idempotency</span></span>
+<span class="line"><span>Concurrency</span></span>
+<span class="line"><span>Partial Failure</span></span>
+<span class="line"><span>Failure Propagation</span></span>
+<span class="line"><span>Tracing</span></span>
+<span class="line"><span>State Consistency</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h3 id="sec-x77">第六</h3>
+<blockquote>
+<p>Multi-Agent 必须有 Single Agent Baseline。</p>
+</blockquote>
+<p>否则你无法证明：</p>
+<blockquote>
+<p>拆分产生了价值。</p>
+</blockquote>
+<hr>
+<h3 id="sec-x78">第七</h3>
+<blockquote>
+<p>Agent 的数量不是系统质量指标。</p>
+</blockquote>
+<p>一个好的 Multi-Agent 系统不是：</p>
+<blockquote>
+<p>“我有 20 个 Agent。”</p>
+</blockquote>
+<p>而是：</p>
+<blockquote>
+<p><strong>“我能解释为什么这 3 个 Agent 是必要的，而且为什么其他部分不需要拆。”</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-10-51">10.51 最终 Mental Model</h2>
+<p>把整个 Multi-Agent Engineering 压缩成一张图：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>                         Business Task</span></span>
+<span class="line"><span>                               │</span></span>
+<span class="line"><span>                               ↓</span></span>
+<span class="line"><span>                     Is One Agent Enough?</span></span>
+<span class="line"><span>                        /              \</span></span>
+<span class="line"><span>                      YES              NO</span></span>
+<span class="line"><span>                       ↓                ↓</span></span>
+<span class="line"><span>                  Single Agent     Identify Boundary</span></span>
+<span class="line"><span>                                        │</span></span>
+<span class="line"><span>                         ┌──────────────┼──────────────┐</span></span>
+<span class="line"><span>                         ↓              ↓              ↓</span></span>
+<span class="line"><span>                       Goal          Context        Permission</span></span>
+<span class="line"><span>                         │              │              │</span></span>
+<span class="line"><span>                         └──────────────┼──────────────┘</span></span>
+<span class="line"><span>                                        ↓</span></span>
+<span class="line"><span>                                  Agent Decomposition</span></span>
+<span class="line"><span>                                        │</span></span>
+<span class="line"><span>                     ┌──────────────────┼──────────────────┐</span></span>
+<span class="line"><span>                     ↓                  ↓                  ↓</span></span>
+<span class="line"><span>                  Agent A            Agent B            Agent C</span></span>
+<span class="line"><span>                     │                  │                  │</span></span>
+<span class="line"><span>                     └───────── Message / State ──────────┘</span></span>
+<span class="line"><span>                                        ↓</span></span>
+<span class="line"><span>                                  Coordination</span></span>
+<span class="line"><span>                                        ↓</span></span>
+<span class="line"><span>                              Partial Failure Handling</span></span>
+<span class="line"><span>                                        ↓</span></span>
+<span class="line"><span>                                   Evaluation</span></span>
+<span class="line"><span>                                        ↓</span></span>
+<span class="line"><span>                              Architecture Decision</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这张图里最重要的不是“Agent A、B、C”。</p>
+<p>真正重要的是：</p>
+<blockquote>
+<p><strong>为什么它们应该存在。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-10-52">10.52 一个最终练习</h2>
+<p>现在假设你拿到一个任务：</p>
+<blockquote>
+<p>“分析一个复杂制造设备异常，结合实时传感器、历史维修记录、设备手册和备件库存，最终给出维修方案。”</p>
+</blockquote>
+<p>先不要设计 Multi-Agent。</p>
+<p>先问：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>一个 Agent 能不能完成？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>如果不能：</span></span>
+<span class="line"><span>为什么？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>是 Context 太大？</span></span>
+<span class="line"><span>是工具太多？</span></span>
+<span class="line"><span>是权限需要隔离？</span></span>
+<span class="line"><span>是可以并行？</span></span>
+<span class="line"><span>是不同阶段职责完全不同？</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后再考虑：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Single Agent</span></span>
+<span class="line"><span>vs</span></span>
+<span class="line"><span>Supervisor</span></span>
+<span class="line"><span>vs</span></span>
+<span class="line"><span>Planner / Worker</span></span>
+<span class="line"><span>vs</span></span>
+<span class="line"><span>Independent Context + Message Passing</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>最后必须回答：</p>
+<blockquote>
+<p><strong>为什么最终选择这个架构，而不是其他架构？</strong></p>
+</blockquote>
+<p>做到这里，你才真正进入了：</p>
+<blockquote>
+<p><strong>Multi-Agent Architecture Design。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-part-part-11">本 Part → Part 11：从协作架构到持续演进</h2>
+<p>多 Agent 系统仍然需要同样的证据：统一数据集、可解释的轨迹、失败归因、成本与延迟，以及与单 Agent 的有效比较。复杂的协作拓扑不是免于评估的理由。</p>
+<p>下一部分把视角从一次构建转向系统生命周期：模型、Prompt、Tool、知识、Skill 和任务分布都会变化。我们要建立的是由真实或明确标注的合成失败驱动、经过评估和回归保护的改进过程，而不是无依据地持续改动。</p>
+
+</article>
+<nav class="pager"><a class="pg prev" href="part-09.html"><span class="pg-dir">上一部分</span><span class="pg-name">Part 9｜Coding Agent：让 Agent 真正参与软件开发</span></a><a class="pg next" href="part-11.html"><span class="pg-dir">下一部分</span><span class="pg-name">Part 11｜Agent Evolution：让 Agent 不只是上线，而是持续变好</span></a></nav>
+<footer class="book-foot"><span>Enterprise Agent Engineering</span><span>v0.4</span><span>文本校审候选，非出版定稿</span></footer>
+</main>
+</div>
+<div class="scrim" id="scrim"></div>
+<script src="assets/nav.js"></script>
+</body>
+</html>

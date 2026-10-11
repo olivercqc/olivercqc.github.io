@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 3｜Tools &amp; Agent Harness：让模型开始与真实世界交互 · Enterprise Agent Engineering</title>
+<meta name="description" content="Tools 与 Agent Harness —— 让模型在受控边界内与真实世界交互。 —— Enterprise Agent Engineering v0.4">
+<meta property="og:title" content="Part 3｜Tools &amp; Agent Harness：让模型开始与真实世界交互">
+<meta property="og:type" content="article">
+<link rel="stylesheet" href="assets/book.css">
+</head>
+<body>
+<a class="skip-link" href="#content">跳到正文</a>
+<header class="topbar"><button class="toc-toggle" id="tocToggle" aria-label="打开目录" aria-controls="sidebar"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button><a class="brand" href="index.html"><span class="brand-title">Enterprise Agent Engineering</span><span class="brand-sub">企业级 Agent 工程</span></a><span class="ver">v0.4</span></header>
+<div class="layout">
+<aside class="sidebar" id="sidebar"><nav class="book-nav"><div class="book-nav-head"><a class="bn-title" href="index.html">Enterprise Agent Engineering</a><span class="bn-ver">v0.4</span></div><ol class="parts"><li class="part"><a class="part-link" href="part-00.html"><span class="part-no">0</span><span class="part-name">先别急着做 Agent</span></a></li>
+<li class="part"><a class="part-link" href="part-01.html"><span class="part-no">1</span><span class="part-name">把 LLM 当成一个真正的软件组件</span></a></li>
+<li class="part"><a class="part-link" href="part-02.html"><span class="part-no">2</span><span class="part-name">Context Engineering：决定模型到底能看到什么</span></a></li>
+<li class="part is-active"><a class="part-link" href="part-03.html"><span class="part-no">3</span><span class="part-name">Tools &amp; Agent Harness：让模型开始与真实世界交互</span></a><ul class="secs"><li class="lvl2"><a class="sec" href="#sec-3-1" data-id="sec-3-1">3.1 从“回答问题”到“做事情”</a></li><li class="lvl2"><a class="sec" href="#sec-3-2" data-id="sec-3-2">3.2 Tool 到底是什么？</a></li><li class="lvl2"><a class="sec" href="#sec-3-3" data-id="sec-3-3">3.3 第一个 Tool</a></li><li class="lvl3"><a class="sec" href="#sec-tool-name" data-id="sec-tool-name">Tool Name</a></li><li class="lvl3"><a class="sec" href="#sec-tool-description" data-id="sec-tool-description">Tool Description</a></li><li class="lvl3"><a class="sec" href="#sec-input-schema" data-id="sec-input-schema">Input Schema</a></li><li class="lvl2"><a class="sec" href="#sec-3-4" data-id="sec-3-4">3.4 为什么 Tool Description 很重要？</a></li><li class="lvl2"><a class="sec" href="#sec-3-5" data-id="sec-3-5">3.5 Tool Granularity：工具到底应该多大？</a></li><li class="lvl2"><a class="sec" href="#sec-3-6" data-id="sec-3-6">3.6 Tool 是“能力”，不是“魔法”</a></li><li class="lvl2"><a class="sec" href="#sec-3-7" data-id="sec-3-7">3.7 Read Tool 和 Write Tool</a></li><li class="lvl3"><a class="sec" href="#sec-read-tool" data-id="sec-read-tool">Read Tool</a></li><li class="lvl3"><a class="sec" href="#sec-write-tool" data-id="sec-write-tool">Write Tool</a></li><li class="lvl3"><a class="sec" href="#sec-irreversible-tool" data-id="sec-irreversible-tool">Irreversible Tool</a></li><li class="lvl2"><a class="sec" href="#sec-3-8" data-id="sec-3-8">3.8 Tool Result：模型执行完以后得到了什么？</a></li><li class="lvl2"><a class="sec" href="#sec-3-9" data-id="sec-3-9">3.9 Agent Loop：真正的核心来了</a></li><li class="lvl3"><a class="sec" href="#sec-x17" data-id="sec-x17">第一步：调用模型</a></li><li class="lvl3"><a class="sec" href="#sec-x18" data-id="sec-x18">第二步：判断结果</a></li><li class="lvl3"><a class="sec" href="#sec-tool" data-id="sec-tool">第三步：执行 Tool</a></li><li class="lvl3"><a class="sec" href="#sec-context" data-id="sec-context">第四步：把结果重新放入 Context</a></li><li class="lvl3"><a class="sec" href="#sec-x21" data-id="sec-x21">第五步：继续</a></li><li class="lvl2"><a class="sec" href="#sec-3-10" data-id="sec-3-10">3.10 Agent Loop 最重要的不是“循环”</a></li><li class="lvl2"><a class="sec" href="#sec-3-11" data-id="sec-3-11">3.11 Stop Condition：Agent 怎么知道该停？</a></li><li class="lvl2"><a class="sec" href="#sec-3-12" data-id="sec-3-12">3.12 Tool Dispatcher：不要让 Agent 直接执行 Python 函数</a></li><li class="lvl2"><a class="sec" href="#sec-3-13" data-id="sec-3-13">3.13 Tool Schema Validation</a></li><li class="lvl2"><a class="sec" href="#sec-3-14" data-id="sec-3-14">3.14 Tool Error 是 Context 的一部分</a></li><li class="lvl2"><a class="sec" href="#sec-3-15" data-id="sec-3-15">3.15 但是，不要把所有错误都交给模型</a></li><li class="lvl2"><a class="sec" href="#sec-3-16" data-id="sec-3-16">3.16 Agent State：Agent 到底记住了什么？</a></li><li class="lvl2"><a class="sec" href="#sec-3-17" data-id="sec-3-17">3.17 Context 与 State：在 Runtime 中分别承担什么责任？</a></li><li class="lvl2"><a class="sec" href="#sec-3-18" data-id="sec-3-18">3.18 Agent Harness：运行时究竟管理什么？</a></li><li class="lvl2"><a class="sec" href="#sec-3-19" data-id="sec-3-19">3.19 Policy：Agent 不是想干什么就干什么</a></li><li class="lvl2"><a class="sec" href="#sec-3-20" data-id="sec-3-20">3.20 第一个 From-scratch Agent</a></li><li class="lvl2"><a class="sec" href="#sec-3-21" data-id="sec-3-21">3.21 一个最小 Runtime</a></li><li class="lvl3"><a class="sec" href="#sec-x34" data-id="sec-x34">可选真实模型实验：观察工具选择与证据引用</a></li><li class="lvl2"><a class="sec" href="#sec-3-22" data-id="sec-3-22">3.22 不要马上追求“聪明”</a></li><li class="lvl2"><a class="sec" href="#sec-3-23" data-id="sec-3-23">3.23 然后开始 Break</a></li><li class="lvl3"><a class="sec" href="#sec-failure-1-tool" data-id="sec-failure-1-tool">Failure 1：模型选择错误 Tool</a></li><li class="lvl3"><a class="sec" href="#sec-failure-2-tool" data-id="sec-failure-2-tool">Failure 2：Tool 参数错误</a></li><li class="lvl3"><a class="sec" href="#sec-failure-3-tool-timeout" data-id="sec-failure-3-tool-timeout">Failure 3：Tool Timeout</a></li><li class="lvl3"><a class="sec" href="#sec-failure-4" data-id="sec-failure-4">Failure 4：重复执行</a></li><li class="lvl2"><a class="sec" href="#sec-3-24" data-id="sec-3-24">3.24 Failure 5：Agent 陷入循环</a></li><li class="lvl2"><a class="sec" href="#sec-3-25" data-id="sec-3-25">3.25 从一个 Loop 到一个 Harness</a></li><li class="lvl2"><a class="sec" href="#sec-3-26" data-id="sec-3-26">3.26 Framework 到底解决什么？</a></li><li class="lvl2"><a class="sec" href="#sec-3-27" data-id="sec-3-27">3.27 为什么不能永远 From Scratch？</a></li><li class="lvl2"><a class="sec" href="#sec-3-28" data-id="sec-3-28">3.28 一个成熟的 Agent Runtime 开始长什么样？</a></li><li class="lvl2"><a class="sec" href="#sec-3-29" data-id="sec-3-29">3.29 一个非常重要的工程分层</a></li><li class="lvl3"><a class="sec" href="#sec-model-layer" data-id="sec-model-layer">Model Layer</a></li><li class="lvl3"><a class="sec" href="#sec-agent-runtime" data-id="sec-agent-runtime">Agent Runtime</a></li><li class="lvl3"><a class="sec" href="#sec-business-system" data-id="sec-business-system">Business System</a></li><li class="lvl2"><a class="sec" href="#sec-3-30" data-id="sec-3-30">3.30 练习：设计自己的三个 Tool</a></li><li class="lvl2"><a class="sec" href="#sec-3-31" data-id="sec-3-31">3.31 练习：哪些事情不应该成为 Tool？</a></li><li class="lvl2"><a class="sec" href="#sec-3-32" data-id="sec-3-32">3.32 练习：给 Tool 分级</a></li><li class="lvl2"><a class="sec" href="#sec-3-33" data-id="sec-3-33">3.33 Part 3 小结</a></li><li class="lvl2"><a class="sec" href="#sec-3-34" data-id="sec-3-34">3.34 你现在应该能回答几个问题</a></li><li class="lvl3"><a class="sec" href="#sec-agent-tool" data-id="sec-agent-tool">为什么 Agent 需要 Tool？</a></li><li class="lvl3"><a class="sec" href="#sec-tool-2" data-id="sec-tool-2">Tool 是什么？</a></li><li class="lvl3"><a class="sec" href="#sec-tool-3" data-id="sec-tool-3">Tool 是由模型执行的吗？</a></li><li class="lvl3"><a class="sec" href="#sec-tool-call-schema" data-id="sec-tool-call-schema">Tool Call 为什么需要 Schema？</a></li><li class="lvl3"><a class="sec" href="#sec-agent-loop" data-id="sec-agent-loop">Agent Loop 的核心是什么？</a></li><li class="lvl3"><a class="sec" href="#sec-agent-state" data-id="sec-agent-state">Agent 为什么需要 State？</a></li><li class="lvl3"><a class="sec" href="#sec-agent-harness" data-id="sec-agent-harness">Agent Harness 是什么？</a></li><li class="lvl2"><a class="sec" href="#sec-part-part-4" data-id="sec-part-part-4">本 Part → Part 4：从行动能力到知识来源</a></li></ul></li>
+<li class="part"><a class="part-link" href="part-04.html"><span class="part-no">4</span><span class="part-name">RAG &amp; Memory：让 Agent 获得知识，并记住真正值得记住的东西</span></a></li>
+<li class="part"><a class="part-link" href="part-05.html"><span class="part-no">5</span><span class="part-name">Workflow → Agent：什么时候真的需要 Agent？</span></a></li>
+<li class="part"><a class="part-link" href="part-06.html"><span class="part-no">6</span><span class="part-name">Evaluation Engineering：从“看起来不错”到“有证据证明”</span></a></li>
+<li class="part"><a class="part-link" href="part-07.html"><span class="part-no">7</span><span class="part-name">Production Agent Engineering：让一个“能跑的 Agent”变成“敢上线的 Agent”</span></a></li>
+<li class="part"><a class="part-link" href="part-08.html"><span class="part-no">8</span><span class="part-name">Advanced Agent Patterns：当简单 Agent 已经不够用了</span></a></li>
+<li class="part"><a class="part-link" href="part-09.html"><span class="part-no">9</span><span class="part-name">Coding Agent：让 Agent 真正参与软件开发</span></a></li>
+<li class="part"><a class="part-link" href="part-10.html"><span class="part-no">10</span><span class="part-name">Multi-Agent Engineering：当一个 Agent 不再够用</span></a></li>
+<li class="part"><a class="part-link" href="part-11.html"><span class="part-no">11</span><span class="part-name">Agent Evolution：让 Agent 不只是上线，而是持续变好</span></a></li>
+<li class="part"><a class="part-link" href="part-12.html"><span class="part-no">12</span><span class="part-name">Agent Application Architecture：把工程能力迁移到陌生领域</span></a></li></ol><div class="bn-foot"><a href="index.html">全书目录</a></div></nav></aside>
+<main class="content" id="content">
+<article class="prose">
+<h1>Part 3｜Tools &amp; Agent Harness：让模型开始与真实世界交互</h1>
+<blockquote>
+<p>一个模型如果只能说话，它更像一个顾问。<br>
+一个模型如果能够调用工具、观察结果，并决定下一步做什么，它才开始真正成为一个 Agent。</p>
+</blockquote>
+<p>Part 1 让模型调用具备了软件依赖应有的边界，Part 2 则解释了每次决策的输入应如何构造。即便输入合适，模型也不能直接改变业务世界：它最多提出下一步行动，真正执行仍要经过应用程序的检查。</p>
+<p>本 Part 要把“建议”与“执行”之间的边界做成一个可观察、可测试的闭环。</p>
+<hr>
+<h2 id="sec-3-1">3.1 从“回答问题”到“做事情”</h2>
+<p>先看两个请求。</p>
+<p>第一个：</p>
+<blockquote>
+<p>“解释一下为什么我的订单还没有发货。”</p>
+</blockquote>
+<p>模型可以直接回答。</p>
+<p>它不需要访问任何真实系统，只需要根据给它的上下文生成文字。</p>
+<p>所以：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>User</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Answer</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这是一个典型的 LLM Application。</p>
+<p>现在换一个请求：</p>
+<blockquote>
+<p>“帮我查一下订单 10001 现在到哪里了。”</p>
+</blockquote>
+<p>模型自己知道订单号，但它并不知道订单系统当前的数据。</p>
+<p>它必须访问：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Order Service</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这时候事情发生了变化。</p>
+<p>模型需要表达：</p>
+<blockquote>
+<p>“我想调用查询订单这个能力。”</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "name"</span><span style="color:#24292E">: </span><span style="color:#032F62">"query_order"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "arguments"</span><span style="color:#24292E">: {</span></span>
+<span class="line"><span style="color:#005CC5">    "order_id"</span><span style="color:#24292E">: </span><span style="color:#005CC5">10001</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<p>应用程序收到这个请求以后：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>LLM</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool Call</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Backend Tool</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Order Service</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool Result</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后把结果再交给模型。</p>
+<p>最终模型才能告诉用户：</p>
+<blockquote>
+<p>“订单 10001 已于昨天出库，目前正在运输中。”</p>
+</blockquote>
+<p>这一刻，一个重要变化出现了。</p>
+<p>模型不再只是：</p>
+<blockquote>
+<p><strong>生成内容。</strong></p>
+</blockquote>
+<p>它开始：</p>
+<blockquote>
+<p><strong>参与系统执行。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-3-2">3.2 Tool 到底是什么？</h2>
+<p>如果你是一名后端工程师，可以用一个非常熟悉的概念理解 Tool：</p>
+<blockquote>
+<p><strong>Tool 本质上就是一个供 AI 使用的接口。</strong></p>
+</blockquote>
+<p>你以前设计 API：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">GET</span><span style="color:#24292E"> /orders/{order_id}</span></span>
+<span class="line"></span></code></pre>
+<p>现在只是给 Agent 一个可以使用的能力：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">query_order(order_id: </span><span style="color:#005CC5">int</span><span style="color:#24292E">)</span></span>
+<span class="line"></span></code></pre>
+<p>从这个角度看，Tool 和 API 有很多相似之处：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>API</span></span>
+<span class="line"><span>├── Name</span></span>
+<span class="line"><span>├── Input</span></span>
+<span class="line"><span>├── Output</span></span>
+<span class="line"><span>├── Permission</span></span>
+<span class="line"><span>├── Error</span></span>
+<span class="line"><span>└── Side Effect</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Tool 同样需要这些东西。</p>
+<p>但是 Tool 又多了一层非常关键的东西：</p>
+<blockquote>
+<p><strong>模型需要“理解”这个工具是什么。</strong></p>
+</blockquote>
+<p>传统 API 的消费者通常是：</p>
+<ul>
+<li>前端</li>
+<li>后端</li>
+<li>其他机器程序</li>
+</ul>
+<p>它们不需要通过自然语言理解 API。</p>
+<p>Agent 不一样。</p>
+<p>模型必须知道：</p>
+<blockquote>
+<p>什么时候应该使用这个 Tool？</p>
+</blockquote>
+<blockquote>
+<p>这个 Tool 能解决什么问题？</p>
+</blockquote>
+<blockquote>
+<p>参数应该怎么填写？</p>
+</blockquote>
+<p>因此 Tool 的描述质量会直接影响 Agent 的行为。</p>
+<hr>
+<h2 id="sec-3-3">3.3 第一个 Tool</h2>
+<p>假设我们有：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">def</span><span style="color:#6F42C1"> query_order</span><span style="color:#24292E">(order_id: </span><span style="color:#005CC5">int</span><span style="color:#24292E">) -> </span><span style="color:#005CC5">dict</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#005CC5">    ...</span></span>
+<span class="line"></span></code></pre>
+<p>从人的角度看，这已经很清楚了。</p>
+<p>但模型看到的接口，通常还需要更明确的 Schema。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "name"</span><span style="color:#24292E">: </span><span style="color:#032F62">"query_order"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "description"</span><span style="color:#24292E">: </span><span style="color:#032F62">"根据订单 ID 查询订单当前状态、商品信息和物流状态。"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "input_schema"</span><span style="color:#24292E">: {</span></span>
+<span class="line"><span style="color:#005CC5">    "type"</span><span style="color:#24292E">: </span><span style="color:#032F62">"object"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">    "properties"</span><span style="color:#24292E">: {</span></span>
+<span class="line"><span style="color:#005CC5">      "order_id"</span><span style="color:#24292E">: {</span></span>
+<span class="line"><span style="color:#005CC5">        "type"</span><span style="color:#24292E">: </span><span style="color:#032F62">"integer"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">        "description"</span><span style="color:#24292E">: </span><span style="color:#032F62">"要查询的订单 ID"</span></span>
+<span class="line"><span style="color:#24292E">      }</span></span>
+<span class="line"><span style="color:#24292E">    },</span></span>
+<span class="line"><span style="color:#005CC5">    "required"</span><span style="color:#24292E">: [</span><span style="color:#032F62">"order_id"</span><span style="color:#24292E">]</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<p>这里实际上存在三种信息：</p>
+<h3 id="sec-tool-name">Tool Name</h3>
+<blockquote>
+<p>叫什么？</p>
+</blockquote>
+<h3 id="sec-tool-description">Tool Description</h3>
+<blockquote>
+<p>能做什么？</p>
+</blockquote>
+<h3 id="sec-input-schema">Input Schema</h3>
+<blockquote>
+<p>应该怎么调用？</p>
+</blockquote>
+<p>这三个信息共同决定了模型能否正确使用工具。</p>
+<hr>
+<h2 id="sec-3-4">3.4 为什么 Tool Description 很重要？</h2>
+<p>假设你的系统有两个工具：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order()</span></span>
+<span class="line"><span>query_customer()</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>用户说：</p>
+<blockquote>
+<p>“帮我看看张三那个订单。”</p>
+</blockquote>
+<p>模型必须知道：</p>
+<blockquote>
+<p>先查订单还是先查客户？</p>
+</blockquote>
+<p>如果 Tool Description 写得非常模糊：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order:</span></span>
+<span class="line"><span>查询数据。</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>query_customer:</span></span>
+<span class="line"><span>查询数据。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>模型很容易选错。</p>
+<p>如果描述清楚：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order:</span></span>
+<span class="line"><span>根据已知订单 ID 查询订单状态、商品和物流信息。</span></span>
+<span class="line"><span>不要用于搜索未知订单。</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>query_customer:</span></span>
+<span class="line"><span>根据客户姓名、手机号等身份信息查询客户记录。</span></span>
+<span class="line"><span>不用于查询订单状态。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>模型就拥有了更明确的能力边界。</p>
+<p>因此：</p>
+<blockquote>
+<p><strong>Tool Description 不是注释。</strong></p>
+</blockquote>
+<p>它是：</p>
+<blockquote>
+<p><strong>模型进行工具选择时的重要输入。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-3-5">3.5 Tool Granularity：工具到底应该多大？</h2>
+<p>这是 Agent Engineering 中一个非常值得认真思考的问题。</p>
+<p>假设你要给 Agent 一个“订单管理”工具。</p>
+<p>你可以设计成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>manage_order(...)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>让它传：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "action"</span><span style="color:#24292E">: </span><span style="color:#032F62">"query / update / cancel / refund"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "order_id"</span><span style="color:#24292E">: </span><span style="color:#032F62">"..."</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "..."</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<p>看起来非常灵活。</p>
+<p>但问题也很明显。</p>
+<p>模型必须同时决定：</p>
+<ul>
+<li>操作类型</li>
+<li>参数</li>
+<li>风险</li>
+<li>副作用</li>
+</ul>
+<p>于是工具变得非常复杂。</p>
+<p>另一种设计：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order()</span></span>
+<span class="line"><span>update_shipping_address()</span></span>
+<span class="line"><span>cancel_order()</span></span>
+<span class="line"><span>request_refund()</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>每个工具只负责一个清晰能力。</p>
+<p>这样模型面对的是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>我需要查询</span></span>
+<span class="line"><span>→ query_order</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>我需要改地址</span></span>
+<span class="line"><span>→ update_shipping_address</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>我需要取消订单</span></span>
+<span class="line"><span>→ cancel_order</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>模型更容易理解。</p>
+<p>但工具太细也有问题：</p>
+<blockquote>
+<p>工具数量过多。</p>
+</blockquote>
+<p>所以 Tool Design 没有一个绝对标准。</p>
+<p>你需要在：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool Granularity</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>和：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool Count</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>之间做平衡。</p>
+<p>可以先记住一个非常实用的原则：</p>
+<blockquote>
+<p><strong>一个 Tool 最好表达一个相对清晰、容易描述、容易授权和容易验证的能力。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-3-6">3.6 Tool 是“能力”，不是“魔法”</h2>
+<p>再看一个非常危险的设计：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>execute_sql(sql: str)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你可能觉得这很方便。</p>
+<p>模型只要会 SQL，就能访问数据库。</p>
+<p>但从工程角度看，这相当于：</p>
+<blockquote>
+<p>给了模型非常大的权限。</p>
+</blockquote>
+<p>模型可能生成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">DROP</span><span style="color:#D73A49"> TABLE</span><span style="color:#24292E"> orders;</span></span>
+<span class="line"></span></code></pre>
+<p>当然，优秀模型不一定会这么做。</p>
+<p>但工程系统不能建立在：</p>
+<blockquote>
+<p>“模型应该不会这么做。”</p>
+</blockquote>
+<p>之上。</p>
+<p>一个更合理的思想是：</p>
+<blockquote>
+<p><strong>不要给 Agent 最大权限，而应该给它完成任务所需要的最小权限。</strong></p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order(order_id)</span></span>
+<span class="line"><span>query_inventory(part_id)</span></span>
+<span class="line"><span>create_service_ticket(data)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而不是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>execute_anything(...)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这其实就是我们在传统安全工程里非常熟悉的：</p>
+<blockquote>
+<p><strong>Least Privilege。</strong></p>
+</blockquote>
+<p>只是现在权限的使用者从“程序代码”扩展到了“模型驱动的程序”。</p>
+<hr>
+<h2 id="sec-3-7">3.7 Read Tool 和 Write Tool</h2>
+<p>到这里，可以做一个非常有用的区分。</p>
+<h3 id="sec-read-tool">Read Tool</h3>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order()</span></span>
+<span class="line"><span>query_inventory()</span></span>
+<span class="line"><span>search_policy()</span></span>
+<span class="line"><span>get_vehicle_status()</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>它们主要：</p>
+<blockquote>
+<p>获取信息。</p>
+</blockquote>
+<p>通常风险较低。</p>
+<hr>
+<h3 id="sec-write-tool">Write Tool</h3>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>update_order()</span></span>
+<span class="line"><span>create_ticket()</span></span>
+<span class="line"><span>cancel_order()</span></span>
+<span class="line"><span>issue_refund()</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>它们会：</p>
+<blockquote>
+<p>改变真实世界。</p>
+</blockquote>
+<p>因此风险更高。</p>
+<hr>
+<h3 id="sec-irreversible-tool">Irreversible Tool</h3>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>refund_money()</span></span>
+<span class="line"><span>delete_customer_data()</span></span>
+<span class="line"><span>shutdown_production_line()</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>一旦执行，可能很难恢复。</p>
+<p>风险进一步上升。</p>
+<p>所以在 Agent 设计中，可以形成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Read</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Low Risk</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Write</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Higher Risk</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Irreversible</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>High Risk</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这会直接连接到我们以后学习的：</p>
+<ul>
+<li>Authorization</li>
+<li>Human Approval</li>
+<li>Safety</li>
+<li>Production</li>
+</ul>
+<hr>
+<h2 id="sec-3-8">3.8 Tool Result：模型执行完以后得到了什么？</h2>
+<p>假设 Agent 调用：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order(10001)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>系统返回：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "order_id"</span><span style="color:#24292E">: </span><span style="color:#005CC5">10001</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "status"</span><span style="color:#24292E">: </span><span style="color:#032F62">"shipped"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "warehouse"</span><span style="color:#24292E">: </span><span style="color:#032F62">"Hefei"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "tracking_number"</span><span style="color:#24292E">: </span><span style="color:#032F62">"SF123456"</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<p>这个结果不能只返回给用户。</p>
+<p>因为用户的问题是：</p>
+<blockquote>
+<p>“为什么订单没发货？”</p>
+</blockquote>
+<p>模型需要看到这个结果，再决定：</p>
+<blockquote>
+<p>是否还需要查物流？</p>
+</blockquote>
+<p>因此 Tool Result 必须进入 Context。</p>
+<p>于是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>User</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool Call</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool Execution</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool Result</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>到这里，你应该开始感觉到：</p>
+<blockquote>
+<p><strong>Agent 的本质正在出现。</strong></p>
+</blockquote>
+<p>它不是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Prompt</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Answer</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Context</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Decision</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Action</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Observation</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Decision</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Action</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-3-9">3.9 Agent Loop：真正的核心来了</h2>
+<p>把刚才的过程抽象一下。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">while</span><span style="color:#005CC5"> True</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#24292E">    response </span><span style="color:#D73A49">=</span><span style="color:#24292E"> model(context)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    if</span><span style="color:#24292E"> response.tool_call:</span></span>
+<span class="line"><span style="color:#24292E">        result </span><span style="color:#D73A49">=</span><span style="color:#24292E"> execute_tool(response.tool_call)</span></span>
+<span class="line"><span style="color:#24292E">        context.append(result)</span></span>
+<span class="line"><span style="color:#D73A49">    else</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#D73A49">        break</span></span>
+<span class="line"></span></code></pre>
+<p>这段代码很短。</p>
+<p>但它实际上已经表达出了 Agent 的核心机制。</p>
+<p>我们逐步读。</p>
+<hr>
+<h3 id="sec-x17">第一步：调用模型</h3>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">response </span><span style="color:#D73A49">=</span><span style="color:#24292E"> model(context)</span></span>
+<span class="line"></span></code></pre>
+<p>模型看到：</p>
+<ul>
+<li>当前任务</li>
+<li>当前状态</li>
+<li>历史信息</li>
+<li>Tool 定义</li>
+<li>已有结果</li>
+</ul>
+<p>然后产生一个结果。</p>
+<hr>
+<h3 id="sec-x18">第二步：判断结果</h3>
+<p>如果模型说：</p>
+<blockquote>
+<p>我要调用 <code>query_order</code>。</p>
+</blockquote>
+<p>那么进入：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">if</span><span style="color:#24292E"> response.tool_call:</span></span>
+<span class="line"></span></code></pre>
+<hr>
+<h3 id="sec-tool">第三步：执行 Tool</h3>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">result </span><span style="color:#D73A49">=</span><span style="color:#24292E"> execute_tool(response.tool_call)</span></span>
+<span class="line"></span></code></pre>
+<p>注意：</p>
+<blockquote>
+<p>这里不是模型执行 Tool。</p>
+</blockquote>
+<p>而是：</p>
+<blockquote>
+<p><strong>你的程序执行 Tool。</strong></p>
+</blockquote>
+<p>这是一个极其重要的边界。</p>
+<p>模型只提出：</p>
+<blockquote>
+<p>“我想调用这个能力。”</p>
+</blockquote>
+<p>真正执行：</p>
+<blockquote>
+<p>由你的 Runtime / Backend 负责。</p>
+</blockquote>
+<hr>
+<h3 id="sec-context">第四步：把结果重新放入 Context</h3>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">context.append(result)</span></span>
+<span class="line"></span></code></pre>
+<p>模型下一次调用就能看到：</p>
+<blockquote>
+<p>刚刚发生了什么。</p>
+</blockquote>
+<hr>
+<h3 id="sec-x21">第五步：继续</h3>
+<p>再次：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">response </span><span style="color:#D73A49">=</span><span style="color:#24292E"> model(context)</span></span>
+<span class="line"></span></code></pre>
+<p>模型可能决定：</p>
+<blockquote>
+<p>继续查询物流。</p>
+</blockquote>
+<p>也可能：</p>
+<blockquote>
+<p>已经足够了，可以回答用户。</p>
+</blockquote>
+<p>于是整个过程就形成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Decision</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Action</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Observation</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Decision</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Action</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Observation</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Final</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是 Agent Loop。</p>
+<hr>
+<h2 id="sec-3-10">3.10 Agent Loop 最重要的不是“循环”</h2>
+<p>很多人第一次看到 Agent Loop，会觉得：</p>
+<blockquote>
+<p>“不就是 while True 吗？”</p>
+</blockquote>
+<p>从代码结构来说，确实如此。</p>
+<p>但真正重要的是：</p>
+<blockquote>
+<p><strong>谁决定下一步？</strong></p>
+</blockquote>
+<p>传统 Workflow：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>程序决定：</span></span>
+<span class="line"><span>Step 1</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Step 2</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Step 3</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Agent：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>模型根据当前状态决定：</span></span>
+<span class="line"><span>下一步做什么</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>当然，这里的“决定”仍然受到：</p>
+<ul>
+<li>Tool 权限</li>
+<li>Runtime Policy</li>
+<li>Schema</li>
+<li>最大迭代次数</li>
+<li>程序约束</li>
+</ul>
+<p>等机制限制。</p>
+<p>所以真正的 Agent 并不是：</p>
+<blockquote>
+<p>模型拥有无限权限。</p>
+</blockquote>
+<p>而是：</p>
+<blockquote>
+<p><strong>模型拥有受工程系统约束的动态行动能力。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-3-11">3.11 Stop Condition：Agent 怎么知道该停？</h2>
+<p>如果代码是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">while</span><span style="color:#005CC5"> True</span><span style="color:#24292E">:</span></span>
+<span class="line"></span></code></pre>
+<p>那就存在一个问题：</p>
+<blockquote>
+<p>它什么时候退出？</p>
+</blockquote>
+<p>最简单的方法：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">if</span><span style="color:#D73A49"> not</span><span style="color:#24292E"> response.tool_call:</span></span>
+<span class="line"><span style="color:#D73A49">    break</span></span>
+<span class="line"></span></code></pre>
+<p>但真实系统通常还需要更多保护。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Max Iterations</span></span>
+<span class="line"><span>Timeout</span></span>
+<span class="line"><span>Budget</span></span>
+<span class="line"><span>Task Completion</span></span>
+<span class="line"><span>Fatal Error</span></span>
+<span class="line"><span>Human Approval</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">if</span><span style="color:#24292E"> iteration </span><span style="color:#D73A49">>=</span><span style="color:#24292E"> max_iterations:</span></span>
+<span class="line"><span style="color:#24292E">    stop()</span></span>
+<span class="line"></span></code></pre>
+<p>为什么一定需要：</p>
+<blockquote>
+<p><code>max_iterations</code>？</p>
+</blockquote>
+<p>因为 Agent 可能陷入：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool A</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool B</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool A</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool B</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>...</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>或者：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>重新查询</span></span>
+<span class="line"><span>↓</span></span>
+<span class="line"><span>再次查询</span></span>
+<span class="line"><span>↓</span></span>
+<span class="line"><span>还是不确定</span></span>
+<span class="line"><span>↓</span></span>
+<span class="line"><span>再查询</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这种情况下，没有停止条件的 Agent 可能：</p>
+<blockquote>
+<p>无限消耗 Token 和资源。</p>
+</blockquote>
+<p>所以：</p>
+<blockquote>
+<p><strong>Agent Loop 一定需要 Runtime Boundary。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-3-12">3.12 Tool Dispatcher：不要让 Agent 直接执行 Python 函数</h2>
+<p>最初你可能写：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">if</span><span style="color:#24292E"> tool_name </span><span style="color:#D73A49">==</span><span style="color:#032F62"> "query_order"</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> query_order(</span><span style="color:#005CC5">...</span><span style="color:#24292E">)</span></span>
+<span class="line"></span></code></pre>
+<p>工具少的时候当然可以。</p>
+<p>但工具一多，这段代码很快失控。</p>
+<p>所以可以建立：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool Registry</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Tool Dispatcher</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Tool Executor</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">tools </span><span style="color:#D73A49">=</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#032F62">    "query_order"</span><span style="color:#24292E">: query_order,</span></span>
+<span class="line"><span style="color:#032F62">    "query_inventory"</span><span style="color:#24292E">: query_inventory,</span></span>
+<span class="line"><span style="color:#032F62">    "create_ticket"</span><span style="color:#24292E">: create_ticket,</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<p>然后：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">def</span><span style="color:#6F42C1"> dispatch</span><span style="color:#24292E">(tool_call):</span></span>
+<span class="line"><span style="color:#24292E">    tool </span><span style="color:#D73A49">=</span><span style="color:#24292E"> tools.get(tool_call.name)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    if</span><span style="color:#24292E"> tool </span><span style="color:#D73A49">is</span><span style="color:#005CC5"> None</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#D73A49">        raise</span><span style="color:#24292E"> UnknownToolError(tool_call.name)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    validate_arguments(tool_call)</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> tool(</span><span style="color:#D73A49">**</span><span style="color:#24292E">tool_call.arguments)</span></span>
+<span class="line"></span></code></pre>
+<p>这样以后可以在 Dispatcher 层统一加入：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Validation</span></span>
+<span class="line"><span>Authorization</span></span>
+<span class="line"><span>Logging</span></span>
+<span class="line"><span>Timeout</span></span>
+<span class="line"><span>Retry</span></span>
+<span class="line"><span>Tracing</span></span>
+<span class="line"><span>Audit</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>于是 Tool 执行不再是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Function</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool Call</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Dispatcher</span></span>
+<span class="line"><span> ├── Validate</span></span>
+<span class="line"><span> ├── Authorize</span></span>
+<span class="line"><span> ├── Execute</span></span>
+<span class="line"><span> ├── Observe</span></span>
+<span class="line"><span> └── Record</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool Result</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这已经开始非常像真正的 Runtime 了。</p>
+<hr>
+<h2 id="sec-3-13">3.13 Tool Schema Validation</h2>
+<p>假设模型产生：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "tool"</span><span style="color:#24292E">: </span><span style="color:#032F62">"query_order"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "arguments"</span><span style="color:#24292E">: {</span></span>
+<span class="line"><span style="color:#005CC5">    "order_id"</span><span style="color:#24292E">: </span><span style="color:#032F62">"abc"</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<p>但你的函数要求：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">order_id: </span><span style="color:#005CC5">int</span></span>
+<span class="line"></span></code></pre>
+<p>此时不能直接调用。</p>
+<p>应该：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool Call</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Schema Validation</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Invalid</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后决定：</p>
+<ul>
+<li>返回错误给模型</li>
+<li>请求修复</li>
+<li>重试</li>
+<li>终止任务</li>
+</ul>
+<p>这与 Part 1 学过的 Structured Output 很类似。</p>
+<p>事实上：</p>
+<blockquote>
+<p><strong>Tool Call 本身就是另一种 Structured Output。</strong></p>
+</blockquote>
+<p>模型不是自由生成一句：</p>
+<blockquote>
+<p>“我想查一下订单。”</p>
+</blockquote>
+<p>而是在告诉系统：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool = query_order</span></span>
+<span class="line"><span>Arguments = {"order_id": 10001}</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这样程序才能可靠地执行。</p>
+<hr>
+<h2 id="sec-3-14">3.14 Tool Error 是 Context 的一部分</h2>
+<p>假设：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order(10001)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>结果：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>OrderNotFound</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你有两种方式。</p>
+<p>第一种：</p>
+<blockquote>
+<p>直接给用户报错。</p>
+</blockquote>
+<p>第二种：</p>
+<blockquote>
+<p>把这个错误作为 Agent 的观察结果。</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool:</span></span>
+<span class="line"><span>query_order(10001)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Result:</span></span>
+<span class="line"><span>ORDER_NOT_FOUND</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后模型可能决定：</p>
+<blockquote>
+<p>“那我应该先搜索这个客户的订单。”</p>
+</blockquote>
+<p>于是调用：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>search_customer_orders(...)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这件事情非常重要。</p>
+<p>因为：</p>
+<blockquote>
+<p><strong>Tool Error 不一定意味着整个 Agent Task 失败。</strong></p>
+</blockquote>
+<p>有些错误是：</p>
+<blockquote>
+<p>下一步决策需要知道的信息。</p>
+</blockquote>
+<p>这也是 Agent 与传统 API 调用模式开始产生区别的地方。</p>
+<hr>
+<h2 id="sec-3-15">3.15 但是，不要把所有错误都交给模型</h2>
+<p>这又涉及一个重要工程边界。</p>
+<p>假设：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>数据库连接彻底断了。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你没有必要让模型思考：</p>
+<blockquote>
+<p>“是不是应该再调用数据库？”</p>
+</blockquote>
+<p>因为：</p>
+<blockquote>
+<p>基础设施已经挂了。</p>
+</blockquote>
+<p>再比如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户没有执行退款的权限。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>也不是一个：</p>
+<blockquote>
+<p>“让模型想办法解决”的问题。</p>
+</blockquote>
+<p>权限失败应该直接阻止操作。</p>
+<p>所以可以把错误分成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Recoverable / Informational</span></span>
+<span class="line"><span>        ↓</span></span>
+<span class="line"><span>可以进入 Agent Context</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Hard Failure</span></span>
+<span class="line"><span>        ↓</span></span>
+<span class="line"><span>Runtime 处理</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Security / Authorization Failure</span></span>
+<span class="line"><span>        ↓</span></span>
+<span class="line"><span>必须阻止</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是为什么：</p>
+<blockquote>
+<p><strong>Agent Runtime 不能只是一个 while loop。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-3-16">3.16 Agent State：Agent 到底记住了什么？</h2>
+<p>现在我们开始进入另一个问题。</p>
+<p>假设 Agent 已经完成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Step 1</span></span>
+<span class="line"><span>查询订单</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Step 2</span></span>
+<span class="line"><span>查询物流</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Step 3</span></span>
+<span class="line"><span>查询维修记录</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>它现在处于：</p>
+<blockquote>
+<p>“已经发现订单本身没有问题，物流存在异常。”</p>
+</blockquote>
+<p>这个状态必须保存。</p>
+<p>因此 Agent 需要一个 State。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> AgentState</span><span style="color:#24292E">(</span><span style="color:#6F42C1">BaseModel</span><span style="color:#24292E">):</span></span>
+<span class="line"><span style="color:#24292E">    task_id: </span><span style="color:#005CC5">str</span></span>
+<span class="line"><span style="color:#24292E">    status: </span><span style="color:#005CC5">str</span></span>
+<span class="line"><span style="color:#24292E">    current_goal: </span><span style="color:#005CC5">str</span></span>
+<span class="line"><span style="color:#24292E">    tool_results: list[</span><span style="color:#005CC5">dict</span><span style="color:#24292E">]</span></span>
+<span class="line"><span style="color:#24292E">    pending_actions: list[</span><span style="color:#005CC5">str</span><span style="color:#24292E">]</span></span>
+<span class="line"><span style="color:#24292E">    completed_actions: list[</span><span style="color:#005CC5">str</span><span style="color:#24292E">]</span></span>
+<span class="line"></span></code></pre>
+<p>这样：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>State</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Decision</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>State Update</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Next Decision</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这和你以前设计 Workflow、State Machine 时的思路已经非常接近。</p>
+<hr>
+<h2 id="sec-3-17">3.17 Context 与 State：在 Runtime 中分别承担什么责任？</h2>
+<p>Part 2 已经说明，Context 是面向当前决策构造的输入视图，State 则是系统管理的任务状态。进入 Runtime 后，这个区别变成了实现约束：模型看到的状态只是一次调用的快照，不能因为模型返回了不同文本，就自动把权威状态改掉。</p>
+<p>例如，Runtime 当前记录 <code>diagnosis_status = waiting_for_logistics</code>，本次 Context 可以把它连同最近工具结果一起提供给模型。模型建议“调查结束”后，Runtime 仍需检查证据、权限和终止条件，再通过受控状态转换把任务更新为完成或待人工复核。</p>
+<p>因此，Context Builder 可以读取 State，但状态更新必须走明确的应用逻辑；不能将模型生成的自然语言当作唯一状态来源。</p>
+<h2 id="sec-3-18">3.18 Agent Harness：运行时究竟管理什么？</h2>
+<p>我们前面一直在说 Agent Harness。现在需要把它与 Evaluation Harness 区分开来。</p>
+<p><strong>Agent Harness / Runtime</strong> 负责把一次模型决策变成受约束的执行循环。常见职责包括：</p>
+<ul>
+<li>Model Client：调用模型并处理响应格式；</li>
+<li>Context Builder：按当前任务组装输入；</li>
+<li>Tool Registry / Dispatcher：验证和调用获准的工具；</li>
+<li>State Transition：通过应用逻辑更新权威状态；</li>
+<li>Policy：检查权限、参数、目标和副作用边界；</li>
+<li>Loop / Stop / Budget：限制循环、设置终止条件与预算；</li>
+<li>Trace / Observability：记录此次运行发生了什么。</li>
+</ul>
+<p>具体模块可以合并，也可以由框架提供；这里列的是职责，不是要求每个项目都创建同名文件。Memory、独立输出校验器和更强的安全控制可以作为外围服务或按需接入，并非每一个最小 Runtime 都必须全部内建。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>User Task</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Agent Runtime / Harness</span></span>
+<span class="line"><span>   ├── Model Client</span></span>
+<span class="line"><span>   ├── Context Builder</span></span>
+<span class="line"><span>   ├── Tool Dispatcher</span></span>
+<span class="line"><span>   ├── State + Policy</span></span>
+<span class="line"><span>   ├── Loop / Stop / Budget</span></span>
+<span class="line"><span>   └── Trace</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Business Systems</span></span>
+<span class="line"><span></span></span></code></pre>
+<p><strong>Evaluation Harness 是另一条独立的验证路径。</strong> 它管理固定 Dataset、重复运行、Evaluator、指标汇总和报告，用于判断某个 Agent 版本是否达到要求，而不是每次在线调用都必须参与 Runtime 决策。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Dataset → Runner → Agent Runtime → Trace / Results</span></span>
+<span class="line"><span>                                     ↓</span></span>
+<span class="line"><span>                         Evaluators → Metrics / Report</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>因此，不要把 Agent 定义成“Model + Context + Tools + State + Memory + Policy + Runtime + Evaluator”。这会把运行时职责与离线/外部评估职责混为一谈。更有用的问题是：Runtime 能否安全、可观测地执行一次任务？Evaluation Harness 能否用可重复的证据判断其表现？</p>
+<p>以后查看任意 Agent Framework 时，可以分别问：它为 Runtime 提供了哪些能力？又如何支持离线评估、回归与报告？</p>
+<h2 id="sec-3-19">3.19 Policy：Agent 不是想干什么就干什么</h2>
+<p>假设用户说：</p>
+<blockquote>
+<p>“帮我把订单取消。”</p>
+</blockquote>
+<p>模型决定：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>cancel_order(10001)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这并不意味着系统就应该执行。</p>
+<p>Runtime 可能先检查：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>User Identity</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>Permission</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>Order Ownership</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>Cancellation Policy</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>Risk</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>Human Approval?</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>只有通过以后：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Execute Tool</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是 Policy。</p>
+<p>所以：</p>
+<blockquote>
+<p><strong>Agent 决策不等于 Agent 权限。</strong></p>
+</blockquote>
+<p>这是生产 Agent 必须牢牢记住的边界。</p>
+<hr>
+<h2 id="sec-3-20">3.20 第一个 From-scratch Agent</h2>
+<p>现在，终于轮到我们真正写一个 Agent。</p>
+<p>不要使用 LangChain、LangGraph、AutoGen 或其他 Agent Framework。</p>
+<p>我们先自己实现。</p>
+<p>目标非常简单：</p>
+<blockquote>
+<p>做一个订单查询 Agent。</p>
+</blockquote>
+<p>可用 Tool：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order()</span></span>
+<span class="line"><span>query_logistics()</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>用户输入：</p>
+<blockquote>
+<p>“帮我看看订单 10001 为什么还没到。”</p>
+</blockquote>
+<p>Agent 应该能够：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>理解任务</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>决定查询订单</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>执行 query_order</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>读取结果</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>决定是否查询物流</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>执行 query_logistics</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>综合结果</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>回答</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-3-21">3.21 一个最小 Runtime</h2>
+<p>可以先写成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">while</span><span style="color:#24292E"> iteration </span><span style="color:#D73A49">&#x3C;</span><span style="color:#24292E"> max_iterations:</span></span>
+<span class="line"><span style="color:#24292E">    response </span><span style="color:#D73A49">=</span><span style="color:#24292E"> model.generate(</span></span>
+<span class="line"><span style="color:#E36209">        context</span><span style="color:#D73A49">=</span><span style="color:#24292E">context,</span></span>
+<span class="line"><span style="color:#E36209">        tools</span><span style="color:#D73A49">=</span><span style="color:#24292E">tool_definitions,</span></span>
+<span class="line"><span style="color:#24292E">    )</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">    if</span><span style="color:#24292E"> response.tool_call </span><span style="color:#D73A49">is</span><span style="color:#005CC5"> None</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#24292E">        final_answer </span><span style="color:#D73A49">=</span><span style="color:#24292E"> response.content</span></span>
+<span class="line"><span style="color:#D73A49">        break</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    result </span><span style="color:#D73A49">=</span><span style="color:#24292E"> dispatcher.dispatch(response.tool_call)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    context.append({</span></span>
+<span class="line"><span style="color:#032F62">        "type"</span><span style="color:#24292E">: </span><span style="color:#032F62">"tool_result"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#032F62">        "tool_call_id"</span><span style="color:#24292E">: response.tool_call_id,</span></span>
+<span class="line"><span style="color:#032F62">        "result"</span><span style="color:#24292E">: result,</span></span>
+<span class="line"><span style="color:#24292E">    })</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">    iteration </span><span style="color:#D73A49">+=</span><span style="color:#005CC5"> 1</span></span>
+<span class="line"></span></code></pre>
+<p>代码依然不长。</p>
+<p>但是现在你应该已经知道每一层为什么存在。</p>
+<hr>
+<p>配套实验把这个最小 Loop 落在 <code>labs/lab03_agent/</code>。实际任务不只包含订单和物流查询，还会把 Lab 04 的 <code>search_knowledge</code> 纳入工具集合；<code>create_support_ticket</code> 则用于讨论有副作用的 Tool，默认不应开放。先读 <code>TASK.md</code>，再执行：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab03_agent.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> fake</span></span>
+<span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> pytest</span><span style="color:#032F62"> labs/lab03_agent/tests</span></span>
+<span class="line"></span></code></pre>
+<p>建议以仓库给出的合成问题为基线，例如查询 <code>ORD-1001</code> 的物流状态并找到适用于告警 <code>A-204</code> 的批准规程。观察工具调用、实际返回的订单事实、检索文档 ID、每一步 Observation 和停止原因。不要把评估器的预期标签塞进模型输入，也不要因为模型请求了写工具就允许它执行。</p>
+<h3 id="sec-x34">可选真实模型实验：观察工具选择与证据引用</h3>
+<p>先完成 Fake 主线与契约测试，再决定是否观察当前 Provider 的工具选择行为。运行前确认模型支持当前工具调用契约、调用费用和输入数据处理条件。本例不要求开启真实写操作；不要为完成实验而启用远端业务副作用。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab03_agent.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> real</span><span style="color:#005CC5"> --question</span><span style="color:#032F62"> "Where is ORD-1001, and which approved procedure applies to alarm A-204? Cite the document ID."</span></span>
+<span class="line"></span></code></pre>
+<p>这一轨道需要 Provider 配置，可能产生调用费用，但本例只查询受控数据，不需要为主线开启真实写入。<code>AI_ENABLE_WRITE_TOOLS</code>、远端授权与目标确认不是 Prompt 指令，而是执行边界；不要为完成只读观察而打开真实写权限。这里的 <code>fake</code> 主要用于验证循环、工具契约和轨迹接线；它不能证明真实模型每次都会选择正确工具。</p>
+<h2 id="sec-3-22">3.22 不要马上追求“聪明”</h2>
+<p>第一版 Agent 最重要的不是：</p>
+<blockquote>
+<p>“它能不能解决特别复杂的问题？”</p>
+</blockquote>
+<p>而是：</p>
+<blockquote>
+<p><strong>你是否真正理解整个执行闭环？</strong></p>
+</blockquote>
+<p>所以实验应该先限制在：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>2 Tools</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>1 Task</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Simple State</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Max Iterations</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>把整个过程跑通。</p>
+<hr>
+<h2 id="sec-3-23">3.23 然后开始 Break</h2>
+<p>正常运行以后，真正有价值的实验才开始。</p>
+<hr>
+<h3 id="sec-failure-1-tool">Failure 1：模型选择错误 Tool</h3>
+<p>用户问：</p>
+<blockquote>
+<p>“订单现在到哪里了？”</p>
+</blockquote>
+<p>模型调用：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_inventory()</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你的 Runtime 应该怎样处理？</p>
+<p>不要只是：</p>
+<blockquote>
+<p>“模型错了。”</p>
+</blockquote>
+<p>你要开始问：</p>
+<blockquote>
+<p>为什么选错？</p>
+</blockquote>
+<p>可能是：</p>
+<ul>
+<li>Tool Description 不清楚</li>
+<li>Tool Name 不好理解</li>
+<li>两个工具语义太接近</li>
+<li>Context 信息不足</li>
+</ul>
+<p>这才是工程调试。</p>
+<hr>
+<h3 id="sec-failure-2-tool">Failure 2：Tool 参数错误</h3>
+<p>模型生成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "order_id"</span><span style="color:#24292E">: </span><span style="color:#032F62">"unknown"</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<p>怎么办？</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Validate</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Reject</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Return structured error</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>LLM decides next step</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h3 id="sec-failure-3-tool-timeout">Failure 3：Tool Timeout</h3>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_logistics()</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Timeout</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你的 Runtime 是否：</p>
+<ul>
+<li>Retry？</li>
+<li>等待？</li>
+<li>换 Tool？</li>
+<li>结束？</li>
+<li>通知用户？</li>
+</ul>
+<p>这个问题没有固定答案。</p>
+<p>需要结合：</p>
+<blockquote>
+<p>Tool 类型、业务风险、成本和可恢复性。</p>
+</blockquote>
+<hr>
+<h3 id="sec-failure-4">Failure 4：重复执行</h3>
+<p>假设：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>create_service_ticket()</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>执行成功。</p>
+<p>但是网络在返回结果之前断了。</p>
+<p>Agent 没看到结果。</p>
+<p>于是它又执行一次：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>create_service_ticket()</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>现在可能产生两个工单。</p>
+<p>这就是：</p>
+<blockquote>
+<p><strong>Idempotency 问题。</strong></p>
+</blockquote>
+<p>你应该开始意识到：</p>
+<blockquote>
+<p>Agent 会重新执行动作。</p>
+</blockquote>
+<p>所以 Tool 必须考虑：</p>
+<blockquote>
+<p>重复执行是否安全？</p>
+</blockquote>
+<hr>
+<h2 id="sec-3-24">3.24 Failure 5：Agent 陷入循环</h2>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>query_logistics</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>query_order</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>query_logistics</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>...</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>最终：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Max Iterations</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>触发。</p>
+<p>这时你应该问：</p>
+<blockquote>
+<p>为什么模型没有完成任务？</p>
+</blockquote>
+<p>可能是：</p>
+<ul>
+<li>Tool Result 信息不完整</li>
+<li>Context 状态没有正确更新</li>
+<li>Stop Condition 不明确</li>
+<li>Task 定义模糊</li>
+<li>模型无法判断何时足够</li>
+</ul>
+<p>你会发现：</p>
+<blockquote>
+<p>Agent Loop 出问题，往往不是 Loop 本身的问题。</p>
+</blockquote>
+<p>而可能是：</p>
+<blockquote>
+<p>Context、Tool、State、Task Definition 任意一层出了问题。</p>
+</blockquote>
+<hr>
+<h2 id="sec-3-25">3.25 从一个 Loop 到一个 Harness</h2>
+<p>当这些东西越来越多以后，你会自然开始拆模块。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>agent/</span></span>
+<span class="line"><span>├── model.py</span></span>
+<span class="line"><span>├── context.py</span></span>
+<span class="line"><span>├── state.py</span></span>
+<span class="line"><span>├── tools.py</span></span>
+<span class="line"><span>├── dispatcher.py</span></span>
+<span class="line"><span>├── policy.py</span></span>
+<span class="line"><span>├── runtime.py</span></span>
+<span class="line"><span>└── agent.py</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这样：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Runtime</span></span>
+<span class="line"><span> ├── Model</span></span>
+<span class="line"><span> ├── Context</span></span>
+<span class="line"><span> ├── State</span></span>
+<span class="line"><span> ├── Tool Dispatcher</span></span>
+<span class="line"><span> ├── Policy</span></span>
+<span class="line"><span> └── Limits</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是 Harness 的雏形。</p>
+<p>它不一定需要几千行代码。</p>
+<p>真正重要的是：</p>
+<blockquote>
+<p><strong>职责开始分离。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-3-26">3.26 Framework 到底解决什么？</h2>
+<p>现在终于可以谈 Agent Framework 了。</p>
+<p>为什么不一开始谈？</p>
+<p>因为如果你一开始看到：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">agent </span><span style="color:#D73A49">=</span><span style="color:#24292E"> create_agent(</span><span style="color:#005CC5">...</span><span style="color:#24292E">)</span></span>
+<span class="line"></span></code></pre>
+<p>你只能知道：</p>
+<blockquote>
+<p>“这个框架很好用。”</p>
+</blockquote>
+<p>但你不知道：</p>
+<blockquote>
+<p>它帮你做了什么。</p>
+</blockquote>
+<p>现在你已经自己实现过：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool Schema</span></span>
+<span class="line"><span>Tool Registry</span></span>
+<span class="line"><span>Tool Dispatcher</span></span>
+<span class="line"><span>Agent Loop</span></span>
+<span class="line"><span>State</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span>Stop Condition</span></span>
+<span class="line"><span>Error Handling</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>再看 Framework：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Framework</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>抽象这些重复工作</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你就会有不同的理解。</p>
+<p>Framework 的价值通常不是：</p>
+<blockquote>
+<p>让 Agent magically 变聪明。</p>
+</blockquote>
+<p>而是：</p>
+<blockquote>
+<p><strong>让 Agent Runtime 的通用工程能力可以复用。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-3-27">3.27 为什么不能永远 From Scratch？</h2>
+<p>有人可能会产生另一个极端：</p>
+<blockquote>
+<p>“既然自己写最清楚，那以后都不要框架。”</p>
+</blockquote>
+<p>也不是。</p>
+<p>真实企业系统里，你通常不会自己重新实现：</p>
+<ul>
+<li>HTTP Server</li>
+<li>Database Driver</li>
+<li>Message Queue Client</li>
+<li>Authentication Library</li>
+</ul>
+<p>同样，也没有必要永远自己维护所有 Agent Infrastructure。</p>
+<p>问题在于：</p>
+<blockquote>
+<p><strong>你必须知道抽象下面发生了什么。</strong></p>
+</blockquote>
+<p>否则 Framework 一旦出现：</p>
+<ul>
+<li>State Bug</li>
+<li>Tool Bug</li>
+<li>Context Bug</li>
+<li>Retry Bug</li>
+<li>Concurrency Bug</li>
+</ul>
+<p>你就只能：</p>
+<blockquote>
+<p>“这个框架怎么不工作了？”</p>
+</blockquote>
+<p>而不会知道：</p>
+<blockquote>
+<p>“Runtime 在 Tool Result 注入这里出了问题。”</p>
+</blockquote>
+<p>所以：</p>
+<blockquote>
+<p><strong>From Scratch 是认知训练，不是生产开发规范。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-3-28">3.28 一个成熟的 Agent Runtime 开始长什么样？</h2>
+<p>经过这一 Part，你可以把一个基本 Agent 想象成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>                       User</span></span>
+<span class="line"><span>                        ↓</span></span>
+<span class="line"><span>                Application / API</span></span>
+<span class="line"><span>                        ↓</span></span>
+<span class="line"><span>                 Agent Runtime</span></span>
+<span class="line"><span>                        │</span></span>
+<span class="line"><span>        ┌───────────────┼────────────────┐</span></span>
+<span class="line"><span>        ↓               ↓                ↓</span></span>
+<span class="line"><span>      Model          Context           State</span></span>
+<span class="line"><span>        │               │                │</span></span>
+<span class="line"><span>        └───────────────┼────────────────┘</span></span>
+<span class="line"><span>                        ↓</span></span>
+<span class="line"><span>                  Tool Decision</span></span>
+<span class="line"><span>                        ↓</span></span>
+<span class="line"><span>                  Tool Dispatcher</span></span>
+<span class="line"><span>                        ↓</span></span>
+<span class="line"><span>            ┌───────────┼───────────┐</span></span>
+<span class="line"><span>            ↓           ↓           ↓</span></span>
+<span class="line"><span>          Order      Logistics    Inventory</span></span>
+<span class="line"><span>           API         API          API</span></span>
+<span class="line"><span>            └───────────┼───────────┘</span></span>
+<span class="line"><span>                        ↓</span></span>
+<span class="line"><span>                   Tool Result</span></span>
+<span class="line"><span>                        ↓</span></span>
+<span class="line"><span>                     State</span></span>
+<span class="line"><span>                        ↓</span></span>
+<span class="line"><span>                    Context</span></span>
+<span class="line"><span>                        ↓</span></span>
+<span class="line"><span>                      Model</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你现在会发现：</p>
+<blockquote>
+<p>Agent 已经越来越像一个真正的后端系统。</p>
+</blockquote>
+<p>因为它开始拥有：</p>
+<ul>
+<li>Runtime</li>
+<li>State</li>
+<li>Tools</li>
+<li>Errors</li>
+<li>Permissions</li>
+<li>Limits</li>
+<li>Observability</li>
+</ul>
+<p>这就是为什么 Agent Engineering 从来不是简单的 Prompt Engineering。</p>
+<hr>
+<h2 id="sec-3-29">3.29 一个非常重要的工程分层</h2>
+<p>到这里，可以把责任分成三层。</p>
+<h3 id="sec-model-layer">Model Layer</h3>
+<p>负责：</p>
+<blockquote>
+<p>语言理解、生成、工具选择建议等概率性能力。</p>
+</blockquote>
+<hr>
+<h3 id="sec-agent-runtime">Agent Runtime</h3>
+<p>负责：</p>
+<blockquote>
+<p>执行、状态、约束、工具调度、错误处理。</p>
+</blockquote>
+<hr>
+<h3 id="sec-business-system">Business System</h3>
+<p>负责：</p>
+<blockquote>
+<p>数据、业务规则、权限、事务、真实副作用。</p>
+</blockquote>
+<p>于是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model</span></span>
+<span class="line"><span>“我建议调用退款工具。”</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Runtime</span></span>
+<span class="line"><span>“你有权限吗？</span></span>
+<span class="line"><span>参数合法吗？</span></span>
+<span class="line"><span>当前状态允许吗？</span></span>
+<span class="line"><span>需要人工审批吗？”</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Business System</span></span>
+<span class="line"><span>“执行退款。”</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这三个层次不要轻易混在一起。</p>
+<p>这是以后设计生产 Agent 时非常重要的架构原则。</p>
+<hr>
+<h2 id="sec-3-30">3.30 练习：设计自己的三个 Tool</h2>
+<p>现在选择一个业务。</p>
+<p>例如：</p>
+<blockquote>
+<p>售后维修。</p>
+</blockquote>
+<p>设计三个 Tool：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool 1</span></span>
+<span class="line"><span>查询车辆状态</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Tool 2</span></span>
+<span class="line"><span>查询维修历史</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Tool 3</span></span>
+<span class="line"><span>创建维修工单</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>每个 Tool 必须写：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Name</span></span>
+<span class="line"><span>Description</span></span>
+<span class="line"><span>Input Schema</span></span>
+<span class="line"><span>Output Schema</span></span>
+<span class="line"><span>Permission</span></span>
+<span class="line"><span>Side Effect</span></span>
+<span class="line"><span>Error</span></span>
+<span class="line"><span>Idempotency</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你会发现：</p>
+<blockquote>
+<p>设计一个 Tool，其实越来越像设计一个 API。</p>
+</blockquote>
+<p>这正是我们希望你建立的感觉。</p>
+<hr>
+<h2 id="sec-3-31">3.31 练习：哪些事情不应该成为 Tool？</h2>
+<p>现在做一个反向练习。</p>
+<p>假设业务数据库中存在：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>users</span></span>
+<span class="line"><span>orders</span></span>
+<span class="line"><span>payments</span></span>
+<span class="line"><span>inventory</span></span>
+<span class="line"><span>employees</span></span>
+<span class="line"><span>salary</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>不要直接把每张表都做成 Tool。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_users</span></span>
+<span class="line"><span>query_orders</span></span>
+<span class="line"><span>query_payments</span></span>
+<span class="line"><span>query_inventory</span></span>
+<span class="line"><span>query_salary</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后问自己：</p>
+<blockquote>
+<p>哪些信息真的应该暴露给 Agent？</p>
+</blockquote>
+<p>这个练习实际上是在训练：</p>
+<blockquote>
+<p><strong>Capability Boundary。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-3-32">3.32 练习：给 Tool 分级</h2>
+<p>把你的 Tools 分成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Read</span></span>
+<span class="line"><span>Write</span></span>
+<span class="line"><span>Irreversible</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后对每个 Tool 再问：</p>
+<blockquote>
+<p>Agent 可以自动执行吗？</p>
+</blockquote>
+<p>可能最终得到：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order</span></span>
+<span class="line"><span>→ Auto</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>update_address</span></span>
+<span class="line"><span>→ Conditional</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>cancel_order</span></span>
+<span class="line"><span>→ Confirmation</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>refund</span></span>
+<span class="line"><span>→ Human Approval</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是你第一次真正开始设计：</p>
+<blockquote>
+<p><strong>Agent Autonomy Boundary。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-3-33">3.33 Part 3 小结</h2>
+<p>现在回头看看我们这一 Part 做了什么。</p>
+<p>表面上，我们只是：</p>
+<blockquote>
+<p>给模型增加了几个 Tool。</p>
+</blockquote>
+<p>但实际上，发生的是一次架构跃迁。</p>
+<p>Part 1：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Application</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Response</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Part 2：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Application</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Response</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Part 3：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Application</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Agent Runtime</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Decision</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Observation</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>...</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是我们真正开始进入 Agent 的地方。</p>
+<hr>
+<h2 id="sec-3-34">3.34 你现在应该能回答几个问题</h2>
+<h3 id="sec-agent-tool">为什么 Agent 需要 Tool？</h3>
+<p>因为模型本身不能直接访问你的业务系统和真实世界。</p>
+<hr>
+<h3 id="sec-tool-2">Tool 是什么？</h3>
+<p>可以把它理解成：</p>
+<blockquote>
+<p><strong>暴露给模型使用的、经过工程约束的业务能力接口。</strong></p>
+</blockquote>
+<hr>
+<h3 id="sec-tool-3">Tool 是由模型执行的吗？</h3>
+<p>不是。</p>
+<p>模型提出 Tool Call。</p>
+<p>真正的执行由你的 Runtime 完成。</p>
+<hr>
+<h3 id="sec-tool-call-schema">Tool Call 为什么需要 Schema？</h3>
+<p>因为：</p>
+<blockquote>
+<p>自然语言不能直接作为可靠的程序调用接口。</p>
+</blockquote>
+<hr>
+<h3 id="sec-agent-loop">Agent Loop 的核心是什么？</h3>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Decision</span></span>
+<span class="line"><span>→ Action</span></span>
+<span class="line"><span>→ Observation</span></span>
+<span class="line"><span>→ Decision</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>不是 <code>while True</code> 本身。</p>
+<hr>
+<h3 id="sec-agent-state">Agent 为什么需要 State？</h3>
+<p>因为长期任务需要知道：</p>
+<blockquote>
+<p>当前已经完成了什么，现在处于什么阶段。</p>
+</blockquote>
+<hr>
+<h3 id="sec-agent-harness">Agent Harness 是什么？</h3>
+<p>可以把它理解成：</p>
+<blockquote>
+<p><strong>围绕模型、Context、Tools、State 和 Policy 构建起来的运行时系统。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-part-part-4">本 Part → Part 4：从行动能力到知识来源</h2>
+<p>现在已有一个能够提出工具调用、接收结果并继续运行的最小闭环。它可以访问业务系统，但这不意味着它已经能从大量文档中找到可靠依据，也不意味着它拥有跨任务的长期记忆。</p>
+<p>下一部分拆开两个容易混淆的问题：RAG 如何从外部资料中检索当前需要的证据；Memory 又在什么条件下保存值得未来继续使用的信息。两者都要接受质量和生命周期管理。</p>
+
+</article>
+<nav class="pager"><a class="pg prev" href="part-02.html"><span class="pg-dir">上一部分</span><span class="pg-name">Part 2｜Context Engineering：决定模型到底能看到什么</span></a><a class="pg next" href="part-04.html"><span class="pg-dir">下一部分</span><span class="pg-name">Part 4｜RAG &amp; Memory：让 Agent 获得知识，并记住真正值得记住的东西</span></a></nav>
+<footer class="book-foot"><span>Enterprise Agent Engineering</span><span>v0.4</span><span>文本校审候选，非出版定稿</span></footer>
+</main>
+</div>
+<div class="scrim" id="scrim"></div>
+<script src="assets/nav.js"></script>
+</body>
+</html>

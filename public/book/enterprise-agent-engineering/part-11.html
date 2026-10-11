@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 11｜Agent Evolution：让 Agent 不只是上线，而是持续变好 · Enterprise Agent Engineering</title>
+<meta name="description" content="Agent Evolution —— 让 Agent 不只是上线，而是持续变好。 —— Enterprise Agent Engineering v0.4">
+<meta property="og:title" content="Part 11｜Agent Evolution：让 Agent 不只是上线，而是持续变好">
+<meta property="og:type" content="article">
+<link rel="stylesheet" href="assets/book.css">
+</head>
+<body>
+<a class="skip-link" href="#content">跳到正文</a>
+<header class="topbar"><button class="toc-toggle" id="tocToggle" aria-label="打开目录" aria-controls="sidebar"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button><a class="brand" href="index.html"><span class="brand-title">Enterprise Agent Engineering</span><span class="brand-sub">企业级 Agent 工程</span></a><span class="ver">v0.4</span></header>
+<div class="layout">
+<aside class="sidebar" id="sidebar"><nav class="book-nav"><div class="book-nav-head"><a class="bn-title" href="index.html">Enterprise Agent Engineering</a><span class="bn-ver">v0.4</span></div><ol class="parts"><li class="part"><a class="part-link" href="part-00.html"><span class="part-no">0</span><span class="part-name">先别急着做 Agent</span></a></li>
+<li class="part"><a class="part-link" href="part-01.html"><span class="part-no">1</span><span class="part-name">把 LLM 当成一个真正的软件组件</span></a></li>
+<li class="part"><a class="part-link" href="part-02.html"><span class="part-no">2</span><span class="part-name">Context Engineering：决定模型到底能看到什么</span></a></li>
+<li class="part"><a class="part-link" href="part-03.html"><span class="part-no">3</span><span class="part-name">Tools &amp; Agent Harness：让模型开始与真实世界交互</span></a></li>
+<li class="part"><a class="part-link" href="part-04.html"><span class="part-no">4</span><span class="part-name">RAG &amp; Memory：让 Agent 获得知识，并记住真正值得记住的东西</span></a></li>
+<li class="part"><a class="part-link" href="part-05.html"><span class="part-no">5</span><span class="part-name">Workflow → Agent：什么时候真的需要 Agent？</span></a></li>
+<li class="part"><a class="part-link" href="part-06.html"><span class="part-no">6</span><span class="part-name">Evaluation Engineering：从“看起来不错”到“有证据证明”</span></a></li>
+<li class="part"><a class="part-link" href="part-07.html"><span class="part-no">7</span><span class="part-name">Production Agent Engineering：让一个“能跑的 Agent”变成“敢上线的 Agent”</span></a></li>
+<li class="part"><a class="part-link" href="part-08.html"><span class="part-no">8</span><span class="part-name">Advanced Agent Patterns：当简单 Agent 已经不够用了</span></a></li>
+<li class="part"><a class="part-link" href="part-09.html"><span class="part-no">9</span><span class="part-name">Coding Agent：让 Agent 真正参与软件开发</span></a></li>
+<li class="part"><a class="part-link" href="part-10.html"><span class="part-no">10</span><span class="part-name">Multi-Agent Engineering：当一个 Agent 不再够用</span></a></li>
+<li class="part is-active"><a class="part-link" href="part-11.html"><span class="part-no">11</span><span class="part-name">Agent Evolution：让 Agent 不只是上线，而是持续变好</span></a><ul class="secs"><li class="lvl2"><a class="sec" href="#sec-11-1" data-id="sec-11-1">11.1 为什么 Agent 上线以后反而更需要工程？</a></li><li class="lvl2"><a class="sec" href="#sec-11-2" data-id="sec-11-2">11.2 一个 Agent 到底由什么组成？</a></li><li class="lvl2"><a class="sec" href="#sec-11-3" data-id="sec-11-3">11.3 第一种变化：模型变了</a></li><li class="lvl2"><a class="sec" href="#sec-11-4" data-id="sec-11-4">11.4 第二种变化：Prompt 变了</a></li><li class="lvl2"><a class="sec" href="#sec-11-5" data-id="sec-11-5">11.5 第三种变化：Tool 变了</a></li><li class="lvl2"><a class="sec" href="#sec-11-6" data-id="sec-11-6">11.6 第四种变化：知识变了</a></li><li class="lvl2"><a class="sec" href="#sec-11-7" data-id="sec-11-7">11.7 第五种变化：用户变了</a></li><li class="lvl3"><a class="sec" href="#sec-dataset-evolution" data-id="sec-dataset-evolution">Dataset Evolution</a></li><li class="lvl2"><a class="sec" href="#sec-11-8" data-id="sec-11-8">11.8 Production Failure 是最有价值的新数据</a></li><li class="lvl2"><a class="sec" href="#sec-11-9" data-id="sec-11-9">11.9 Production Data → Evaluation Dataset</a></li><li class="lvl2"><a class="sec" href="#sec-11-10" data-id="sec-11-10">11.10 Failure Taxonomy：先把失败归类</a></li><li class="lvl2"><a class="sec" href="#sec-11-11" data-id="sec-11-11">11.11 为什么分类比“修一次”更有价值？</a></li><li class="lvl2"><a class="sec" href="#sec-11-12" data-id="sec-11-12">11.12 从 Failure 到 Improvement Hypothesis</a></li><li class="lvl2"><a class="sec" href="#sec-11-13" data-id="sec-11-13">11.13 Agent Evolution 不是“不断改”</a></li><li class="lvl2"><a class="sec" href="#sec-11-14" data-id="sec-11-14">11.14 Prompt Evolution：什么时候应该改 Prompt？</a></li><li class="lvl2"><a class="sec" href="#sec-11-15" data-id="sec-11-15">11.15 Skill Evolution：把重复成功经验固定下来</a></li><li class="lvl2"><a class="sec" href="#sec-11-16" data-id="sec-11-16">11.16 Skill 也需要版本管理</a></li><li class="lvl2"><a class="sec" href="#sec-11-17" data-id="sec-11-17">11.17 Tool Evolution：工具也应该被“设计反馈”推动</a></li><li class="lvl2"><a class="sec" href="#sec-11-18" data-id="sec-11-18">11.18 但不要为了减少 Tool Calls 就不断增加大 Tool</a></li><li class="lvl2"><a class="sec" href="#sec-11-19" data-id="sec-11-19">11.19 Memory Evolution：记忆也会“腐烂”</a></li><li class="lvl2"><a class="sec" href="#sec-11-20" data-id="sec-11-20">11.20 一个很容易被忽略的问题：Memory Pollution</a></li><li class="lvl2"><a class="sec" href="#sec-11-21" data-id="sec-11-21">11.21 Dataset Evolution：Dataset 也不是一成不变</a></li><li class="lvl2"><a class="sec" href="#sec-11-22" data-id="sec-11-22">11.22 Golden Set 和 Production Set</a></li><li class="lvl3"><a class="sec" href="#sec-golden-set" data-id="sec-golden-set">Golden Set</a></li><li class="lvl3"><a class="sec" href="#sec-production-derived-set" data-id="sec-production-derived-set">Production-derived Set</a></li><li class="lvl2"><a class="sec" href="#sec-11-23" data-id="sec-11-23">11.23 Evolution Pipeline</a></li><li class="lvl2"><a class="sec" href="#sec-11-24" data-id="sec-11-24">11.24 Agent Evolution 和传统 CI/CD 有什么关系？</a></li><li class="lvl2"><a class="sec" href="#sec-11-25" data-id="sec-11-25">11.25 Agent Configuration 也需要 Versioning</a></li><li class="lvl2"><a class="sec" href="#sec-11-26" data-id="sec-11-26">11.26 Reproducibility：为什么今天的 Agent 和昨天可能不一样？</a></li><li class="lvl2"><a class="sec" href="#sec-11-27" data-id="sec-11-27">11.27 Replaying：重新播放一次 Agent 执行</a></li><li class="lvl2"><a class="sec" href="#sec-11-28" data-id="sec-11-28">11.28 但真正生产环境不能简单“重放真实副作用”</a></li><li class="lvl2"><a class="sec" href="#sec-11-29" data-id="sec-11-29">11.29 Evolution 不是无限优化</a></li><li class="lvl2"><a class="sec" href="#sec-11-30" data-id="sec-11-30">11.30 Evolution 也需要 Architecture Review</a></li><li class="lvl2"><a class="sec" href="#sec-11-31" data-id="sec-11-31">11.31 核心实验：Agent Improvement Loop</a></li><li class="lvl2"><a class="sec" href="#sec-11-32" data-id="sec-11-32">11.32 Stage 1：Collect</a></li><li class="lvl2"><a class="sec" href="#sec-11-33" data-id="sec-11-33">11.33 Stage 2：Classify</a></li><li class="lvl2"><a class="sec" href="#sec-11-34" data-id="sec-11-34">11.34 Stage 3：Hypothesis</a></li><li class="lvl2"><a class="sec" href="#sec-11-35" data-id="sec-11-35">11.35 Stage 4：Change</a></li><li class="lvl2"><a class="sec" href="#sec-11-36" data-id="sec-11-36">11.36 Stage 5：Evaluate</a></li><li class="lvl2"><a class="sec" href="#sec-11-37" data-id="sec-11-37">11.37 Stage 6：Regression</a></li><li class="lvl2"><a class="sec" href="#sec-11-38" data-id="sec-11-38">11.38 Stage 7：Release</a></li><li class="lvl2"><a class="sec" href="#sec-11-39" data-id="sec-11-39">11.39 Stage 8：Observe Again</a></li><li class="lvl3"><a class="sec" href="#sec-build-measure-improve-release-observe-re" data-id="sec-build-measure-improve-release-observe-re">Build → Measure → Improve → Release → Observe → Repeat</a></li><li class="lvl3"><a class="sec" href="#sec-prompt-skill" data-id="sec-prompt-skill">可选真实模型实验：验证 Prompt / Skill 是否改变当前模型行为</a></li><li class="lvl2"><a class="sec" href="#sec-11-40" data-id="sec-11-40">11.40 一个非常重要的工程资产：Failure Dataset</a></li><li class="lvl2"><a class="sec" href="#sec-11-41" data-id="sec-11-41">11.41 为什么失败案例比成功案例更有价值？</a></li><li class="lvl2"><a class="sec" href="#sec-11-42" data-id="sec-11-42">11.42 Part 11 的一个重要思想：经验资产化</a></li><li class="lvl2"><a class="sec" href="#sec-11-43" data-id="sec-11-43">11.43 Agent Evolution 与模型训练不是一回事</a></li><li class="lvl2"><a class="sec" href="#sec-11-44" data-id="sec-11-44">11.44 甚至可以反过来：模型不是第一优化点</a></li><li class="lvl2"><a class="sec" href="#sec-11-45" data-id="sec-11-45">11.45 Part 11 小结</a></li><li class="lvl2"><a class="sec" href="#sec-11-46" data-id="sec-11-46">11.46 现在回头看 Agent 的“版本”</a></li><li class="lvl2"><a class="sec" href="#sec-11-47" data-id="sec-11-47">11.47 一个最终 Mental Model</a></li><li class="lvl2"><a class="sec" href="#sec-11-48" data-id="sec-11-48">11.48 Part 11 最重要的几个认识</a></li><li class="lvl3"><a class="sec" href="#sec-x55" data-id="sec-x55">第一</a></li><li class="lvl3"><a class="sec" href="#sec-x56" data-id="sec-x56">第二</a></li><li class="lvl3"><a class="sec" href="#sec-x57" data-id="sec-x57">第三</a></li><li class="lvl3"><a class="sec" href="#sec-x58" data-id="sec-x58">第四</a></li><li class="lvl3"><a class="sec" href="#sec-x59" data-id="sec-x59">第五</a></li><li class="lvl3"><a class="sec" href="#sec-x60" data-id="sec-x60">第六</a></li><li class="lvl3"><a class="sec" href="#sec-x61" data-id="sec-x61">第七</a></li><li class="lvl3"><a class="sec" href="#sec-x62" data-id="sec-x62">第八</a></li><li class="lvl2"><a class="sec" href="#sec-11-49" data-id="sec-11-49">11.49 一个最终练习</a></li><li class="lvl2"><a class="sec" href="#sec-part-part-12" data-id="sec-part-part-12">本 Part → Part 12：把工程判断迁移到陌生领域</a></li></ul></li>
+<li class="part"><a class="part-link" href="part-12.html"><span class="part-no">12</span><span class="part-name">Agent Application Architecture：把工程能力迁移到陌生领域</span></a></li></ol><div class="bn-foot"><a href="index.html">全书目录</a></div></nav></aside>
+<main class="content" id="content">
+<article class="prose">
+<h1>Part 11｜Agent Evolution：让 Agent 不只是上线，而是持续变好</h1>
+<blockquote>
+<p>一个传统软件系统发布以后，通常是“代码变了”。<br>
+一个 Agent 发布以后，可能是<strong>模型变了、Prompt 变了、Context 变了、知识变了、Tool 变了、用户变了，甚至任务本身也变了。</strong></p>
+</blockquote>
+<p>无论系统采用 Single Agent、Multi-Agent 还是 Coding Agent，交付后都不会停止变化。模型或 Provider 可能升级，Prompt、工具、知识源、数据分布和用户行为也会变化。单次上线前测试不能自动覆盖这些变化；本 Part 关注如何把变化转化成明确假设，并通过有归因的对照和回归来判断是否值得发布。</p>
+<blockquote>
+<p><strong>这个系统上线以后怎么办？</strong></p>
+</blockquote>
+<p>假设你今天发布了：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent v1</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>运行一个月以后，你发现：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户越来越多</span></span>
+<span class="line"><span>业务规则发生变化</span></span>
+<span class="line"><span>知识库更新</span></span>
+<span class="line"><span>工具接口升级</span></span>
+<span class="line"><span>模型能力变化</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>同时：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>生产失败案例</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>也不断积累。</p>
+<p>如果你只是不断：</p>
+<blockquote>
+<p>“改 Prompt。”</p>
+</blockquote>
+<p>这个 Agent 很可能最终变成一堆没人敢动的配置。</p>
+<p>所以这一部分，我们要解决的是：</p>
+<blockquote>
+<p><strong>如何让 Agent 形成持续改进的工程闭环。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-1">11.1 为什么 Agent 上线以后反而更需要工程？</h2>
+<p>传统项目经常有一种感觉：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>开发</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>测试</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>上线</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>完成</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>当然真实软件也会持续迭代。</p>
+<p>但 Agent 有一个非常特殊的地方：</p>
+<blockquote>
+<p><strong>它面对的是变化中的概率性环境。</strong></p>
+</blockquote>
+<p>例如你今天的 Agent：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Task Success = 95%</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>三个月以后：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Task Success = 90%</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>代码可能完全没变。</p>
+<p>为什么？</p>
+<p>可能是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户问题变了</span></span>
+<span class="line"><span>知识库变了</span></span>
+<span class="line"><span>Tool API 变了</span></span>
+<span class="line"><span>业务规则变了</span></span>
+<span class="line"><span>模型 Provider 变了</span></span>
+<span class="line"><span>模型版本变了</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以：</p>
+<blockquote>
+<p><strong>Agent 的行为不是只由代码版本决定。</strong></p>
+</blockquote>
+<p>这意味着：</p>
+<blockquote>
+<p>Agent 需要一种比传统代码版本管理更完整的演进机制。</p>
+</blockquote>
+<hr>
+<h2 id="sec-11-2">11.2 一个 Agent 到底由什么组成？</h2>
+<p>现在回头看我们在 Part 3 建立的公式：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent</span></span>
+<span class="line"><span>=</span></span>
+<span class="line"><span>Model</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Tools</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>State</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Memory</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Policy</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Runtime</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Evaluator</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这张图其实也可以理解成：</p>
+<blockquote>
+<p><strong>Agent 的演进面。</strong></p>
+</blockquote>
+<p>因为每一项都可能发生变化。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model        → 新模型</span></span>
+<span class="line"><span>Context      → 新策略</span></span>
+<span class="line"><span>Tools        → 新 API</span></span>
+<span class="line"><span>State        → 新 State Schema</span></span>
+<span class="line"><span>Memory       → 新记忆规则</span></span>
+<span class="line"><span>Policy       → 新权限</span></span>
+<span class="line"><span>Runtime      → 新执行逻辑</span></span>
+<span class="line"><span>Evaluator    → 新评测标准</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>因此：</p>
+<blockquote>
+<p><strong>Agent Version 并不只是 Prompt Version。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-3">11.3 第一种变化：模型变了</h2>
+<p>假设你原来使用：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model A</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>后来换成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model B</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>原因可能是：</p>
+<ul>
+<li>成本更低</li>
+<li>延迟更低</li>
+<li>工具调用更好</li>
+<li>长上下文更强</li>
+<li>复杂任务更好</li>
+</ul>
+<p>从传统软件角度看，这可能只是：</p>
+<blockquote>
+<p>“换了一个依赖。”</p>
+</blockquote>
+<p>但对 Agent 来说，这可能改变：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool Selection</span></span>
+<span class="line"><span>Output Format</span></span>
+<span class="line"><span>Reasoning Behavior</span></span>
+<span class="line"><span>Latency</span></span>
+<span class="line"><span>Cost</span></span>
+<span class="line"><span>Safety Behavior</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以模型切换必须经过：</p>
+<blockquote>
+<p><strong>Evaluation + Regression。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-4">11.4 第二种变化：Prompt 变了</h2>
+<p>例如 Agent v1 的指令：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>你是一个售后助手。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>后来变成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>你是企业售后诊断助手。</span></span>
+<span class="line"><span>回答时必须基于已验证的信息，</span></span>
+<span class="line"><span>不要对缺失信息做假设。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>看起来只是多了几句话。</p>
+<p>但这其实是：</p>
+<blockquote>
+<p><strong>系统行为发生变化。</strong></p>
+</blockquote>
+<p>所以 Prompt 应该像代码一样：</p>
+<blockquote>
+<p>进入版本控制。</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>prompt_v1</span></span>
+<span class="line"><span>prompt_v2</span></span>
+<span class="line"><span>prompt_v3</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后通过 Evaluation 比较：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>v1</span></span>
+<span class="line"><span>vs</span></span>
+<span class="line"><span>v2</span></span>
+<span class="line"><span>vs</span></span>
+<span class="line"><span>v3</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-11-5">11.5 第三种变化：Tool 变了</h2>
+<p>假设原来的：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">query_order(order_id)</span></span>
+<span class="line"></span></code></pre>
+<p>后来改成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">query_order(</span></span>
+<span class="line"><span style="color:#24292E">    order_id,</span></span>
+<span class="line"><span style="color:#E36209">    include_logistics</span><span style="color:#D73A49">=</span><span style="color:#005CC5">True</span></span>
+<span class="line"><span style="color:#24292E">)</span></span>
+<span class="line"></span></code></pre>
+<p>看起来只是参数变化。</p>
+<p>但如果 Tool Schema 变化以后：</p>
+<blockquote>
+<p>Agent 仍然按照旧方式调用。</p>
+</blockquote>
+<p>就可能产生：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool Call Failure</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>甚至更糟：</p>
+<blockquote>
+<p>Tool 参数“看起来合法”，但是语义发生了变化。</p>
+</blockquote>
+<p>所以：</p>
+<blockquote>
+<p><strong>Tool 是 Agent 的依赖，也是 Agent Evolution 的重要对象。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-6">11.6 第四种变化：知识变了</h2>
+<p>这一点在 RAG 系统中尤其明显。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Warranty Policy v3</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>更新成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Warranty Policy v4</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Agent 的代码完全没变。</p>
+<p>但回答行为可能已经变了。</p>
+<p>所以：</p>
+<blockquote>
+<p><strong>知识库本身也是一个“版本化的系统依赖”。</strong></p>
+</blockquote>
+<p>这意味着：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Document</span></span>
+<span class="line"><span>Version</span></span>
+<span class="line"><span>Effective Date</span></span>
+<span class="line"><span>Source</span></span>
+<span class="line"><span>Authority</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>都应该成为知识系统的一部分。</p>
+<hr>
+<h2 id="sec-11-7">11.7 第五种变化：用户变了</h2>
+<p>刚上线时，用户可能只问：</p>
+<blockquote>
+<p>“订单在哪？”</p>
+</blockquote>
+<p>后来用户逐渐开始：</p>
+<blockquote>
+<p>用缩写。</p>
+</blockquote>
+<blockquote>
+<p>使用行业术语。</p>
+</blockquote>
+<blockquote>
+<p>输入超长内容。</p>
+</blockquote>
+<blockquote>
+<p>一次问三个问题。</p>
+</blockquote>
+<blockquote>
+<p>给出不完整信息。</p>
+</blockquote>
+<blockquote>
+<p>通过文件上传输入资料。</p>
+</blockquote>
+<p>于是：</p>
+<blockquote>
+<p><strong>任务分布发生了变化。</strong></p>
+</blockquote>
+<p>Part 6 里我们已经学过：</p>
+<blockquote>
+<p>Evaluation Dataset 应该尽可能覆盖真实任务分布。</p>
+</blockquote>
+<p>现在又会发现：</p>
+<blockquote>
+<p>Dataset 也不能永远不变。</p>
+</blockquote>
+<p>这就是 Agent Evolution 的一个重要组成部分：</p>
+<h3 id="sec-dataset-evolution">Dataset Evolution</h3>
+<hr>
+<h2 id="sec-11-8">11.8 Production Failure 是最有价值的新数据</h2>
+<p>假设 Agent 在线上出现：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Case #8472</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>用户说：</p>
+<blockquote>
+<p>“你为什么让我更换电池？明明故障已经在充电桩侧确认了。”</p>
+</blockquote>
+<p>工程师一看：</p>
+<blockquote>
+<p>Agent 确实误判了。</p>
+</blockquote>
+<p>以前你可能会：</p>
+<blockquote>
+<p>改 Prompt。</p>
+</blockquote>
+<p>但更成熟的方式是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Production Failure</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Capture</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Classify</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Add to Evaluation Dataset</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Fix</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Regression</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>也就是说：</p>
+<blockquote>
+<p><strong>每一个生产失败，都应该有机会变成下一轮测试资产。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-9">11.9 Production Data → Evaluation Dataset</h2>
+<p>这会形成一条非常重要的闭环：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Production</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>User Interaction</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Failure</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Review</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Case Extraction</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Evaluation Dataset</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>于是 Dataset 会不断成长。</p>
+<p>最开始：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>dataset_v1</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>后来：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>dataset_v2</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>再后来：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>dataset_v3</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>越来越接近真实世界。</p>
+<p>这时候：</p>
+<blockquote>
+<p><strong>生产系统正在反过来训练你的工程过程。</strong></p>
+</blockquote>
+<p>注意，这里的“训练”不一定是训练模型。</p>
+<p>更多时候是：</p>
+<blockquote>
+<p><strong>训练你的 Evaluation 和 Engineering System。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-10">11.10 Failure Taxonomy：先把失败归类</h2>
+<p>线上收集到 100 个失败案例。</p>
+<p>不要直接：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Case 1</span></span>
+<span class="line"><span>Fix</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Case 2</span></span>
+<span class="line"><span>Fix</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Case 3</span></span>
+<span class="line"><span>Fix</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>因为这样很快会陷入：</p>
+<blockquote>
+<p>头痛医头。</p>
+</blockquote>
+<p>更好的方式是归类。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Context Failure        20</span></span>
+<span class="line"><span>Retrieval Failure      25</span></span>
+<span class="line"><span>Tool Failure           15</span></span>
+<span class="line"><span>Model Capability       10</span></span>
+<span class="line"><span>State Failure          10</span></span>
+<span class="line"><span>Prompt Failure          8</span></span>
+<span class="line"><span>Policy Failure          5</span></span>
+<span class="line"><span>Infrastructure          4</span></span>
+<span class="line"><span>Other                   3</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这时候你终于能看到：</p>
+<blockquote>
+<p>系统的主要短板到底在哪里。</p>
+</blockquote>
+<hr>
+<h2 id="sec-11-11">11.11 为什么分类比“修一次”更有价值？</h2>
+<p>假设最近 100 个失败里：</p>
+<blockquote>
+<p>25 个来自 Retrieval。</p>
+</blockquote>
+<p>那么：</p>
+<blockquote>
+<p>你应该优先改 Retrieval。</p>
+</blockquote>
+<p>而不是：</p>
+<blockquote>
+<p>再写一版 Prompt。</p>
+</blockquote>
+<p>再比如：</p>
+<blockquote>
+<p>20 个失败都来自 Context。</p>
+</blockquote>
+<p>那么你可能需要重新设计：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Context Builder</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以：</p>
+<blockquote>
+<p><strong>Failure Taxonomy 把零散 Bug 变成系统性改进方向。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-12">11.12 从 Failure 到 Improvement Hypothesis</h2>
+<p>这里需要建立一个非常重要的工程习惯。</p>
+<p>不要：</p>
+<blockquote>
+<p>“我觉得把 Prompt 改一下会更好。”</p>
+</blockquote>
+<p>而应该形成：</p>
+<blockquote>
+<p><strong>Hypothesis。</strong></p>
+</blockquote>
+<p>例如：</p>
+<blockquote>
+<p>假设 30% 的工具误用来自 Tool Description 不清晰。</p>
+</blockquote>
+<p>于是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Hypothesis</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Change Tool Description</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Evaluation</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Compare</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool Selection</span></span>
+<span class="line"><span>92% → 97%</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你的假设得到了支持。</p>
+<p>如果：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>92% → 91%</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>说明：</p>
+<blockquote>
+<p>这个方向可能不是正确答案。</p>
+</blockquote>
+<p>这就是非常典型的：</p>
+<blockquote>
+<p><strong>Experiment-driven Agent Improvement。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-13">11.13 Agent Evolution 不是“不断改”</h2>
+<p>真正成熟的演进过程应该是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Observe</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Hypothesis</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Change</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Evaluate</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Compare</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Accept / Reject</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而不是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Change</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>感觉好多了</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>上线</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以 Part 6 的 Evaluation 在这里再次发挥作用。</p>
+<p>Part 6 告诉你：</p>
+<blockquote>
+<p><strong>怎么测。</strong></p>
+</blockquote>
+<p>Part 11 开始告诉你：</p>
+<blockquote>
+<p><strong>怎么利用测试结果持续改进。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-14">11.14 Prompt Evolution：什么时候应该改 Prompt？</h2>
+<p>Prompt 当然需要演进。</p>
+<p>但不要把所有失败都理解为：</p>
+<blockquote>
+<p>Prompt Problem。</p>
+</blockquote>
+<p>假设：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent 没找到正确文档。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那是 Retrieval 问题。</p>
+<p>如果：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>正确文档已经进入 Context，</span></span>
+<span class="line"><span>但模型错误理解。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>才可能更像：</p>
+<blockquote>
+<p>Model / Prompt / Context 问题。</p>
+</blockquote>
+<p>所以：</p>
+<blockquote>
+<p><strong>Prompt Evolution 应该建立在 Failure Attribution 之上。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-15">11.15 Skill Evolution：把重复成功经验固定下来</h2>
+<p>假设 Agent 经常做：</p>
+<blockquote>
+<p>Python Bug Fix。</p>
+</blockquote>
+<p>最开始：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent 自己探索</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>运行 100 次以后，你发现：</p>
+<blockquote>
+<p>一个稳定的流程总是有效。</p>
+</blockquote>
+<p>比如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Inspect Repository</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Read Tests</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Reproduce</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Minimal Patch</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Targeted Test</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Regression</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么可以把它沉淀成：</p>
+<blockquote>
+<p>Skill。</p>
+</blockquote>
+<p>也就是说：</p>
+<blockquote>
+<p><strong>成功经验可以被固化成 Agent Procedure。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-16">11.16 Skill 也需要版本管理</h2>
+<p>今天的：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>debug_python_issue_v1</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>后来发现：</p>
+<blockquote>
+<p>应该先检查类型检查，再运行测试。</p>
+</blockquote>
+<p>于是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>debug_python_issue_v2</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>同样需要：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Dataset</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Evaluation</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>去验证：</p>
+<blockquote>
+<p>v2 是否真的更好。</p>
+</blockquote>
+<p>因此：</p>
+<blockquote>
+<p>Skill 也不是静态 Prompt。</p>
+</blockquote>
+<p>它是一种可演进的行为资产。</p>
+<hr>
+<h2 id="sec-11-17">11.17 Tool Evolution：工具也应该被“设计反馈”推动</h2>
+<p>假设线上日志显示：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent 经常：</span></span>
+<span class="line"><span>query_customer()</span></span>
+<span class="line"><span>→ query_orders()</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>也就是说：</p>
+<blockquote>
+<p>它需要先查客户，再查订单。</p>
+</blockquote>
+<p>而你的 Tool 设计要求：</p>
+<blockquote>
+<p>两步调用。</p>
+</blockquote>
+<p>如果这个路径几乎总是固定，那么你可能发现：</p>
+<blockquote>
+<p>Tool 本身设计得不够贴近 Agent 任务。</p>
+</blockquote>
+<p>于是可以增加：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>find_customer_orders()</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>把两个高度耦合的动作组合起来。</p>
+<p>这说明：</p>
+<blockquote>
+<p><strong>Agent 的失败数据，也可以反过来优化 Tool Architecture。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-18">11.18 但不要为了减少 Tool Calls 就不断增加大 Tool</h2>
+<p>假设原来：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_customer</span></span>
+<span class="line"><span>query_orders</span></span>
+<span class="line"><span>query_logistics</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>于是你又创建：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>do_everything_customer_order_logistics()</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>看起来调用少了。</p>
+<p>但 Tool 可能又变得：</p>
+<blockquote>
+<p>太大。</p>
+</blockquote>
+<p>所以 Tool Evolution 也应该接受：</p>
+<blockquote>
+<p>Evaluation + Complexity Review。</p>
+</blockquote>
+<p>这再次回到一个老原则：</p>
+<blockquote>
+<p><strong>不要为优化一个指标，破坏整体架构。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-19">11.19 Memory Evolution：记忆也会“腐烂”</h2>
+<p>前面我们已经知道：</p>
+<blockquote>
+<p>Memory 不是越多越好。</p>
+</blockquote>
+<p>现在更进一步。</p>
+<p>Memory 可能出现：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Stale</span></span>
+<span class="line"><span>Duplicate</span></span>
+<span class="line"><span>Conflicting</span></span>
+<span class="line"><span>Irrelevant</span></span>
+<span class="line"><span>Over-generalized</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以 Memory 系统需要不断清理。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>New Fact</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Conflict Detection</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Update</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>或者：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Old Memory</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Expiration</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Archive / Delete</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这意味着：</p>
+<blockquote>
+<p><strong>Memory 也需要自己的 Evolution Pipeline。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-20">11.20 一个很容易被忽略的问题：Memory Pollution</h2>
+<p>假设 Agent 错误地记录：</p>
+<blockquote>
+<p>“用户喜欢所有回答都非常长。”</p>
+</blockquote>
+<p>后来用户每次都要求：</p>
+<blockquote>
+<p>“简洁一点。”</p>
+</blockquote>
+<p>如果旧 Memory 一直存在：</p>
+<blockquote>
+<p>系统就会不断产生冲突。</p>
+</blockquote>
+<p>所以 Memory 的更新应该考虑：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Source</span></span>
+<span class="line"><span>Timestamp</span></span>
+<span class="line"><span>Confidence</span></span>
+<span class="line"><span>Authority</span></span>
+<span class="line"><span>Conflict</span></span>
+<span class="line"><span>Expiration</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这已经非常像：</p>
+<blockquote>
+<p>企业数据治理。</p>
+</blockquote>
+<hr>
+<h2 id="sec-11-21">11.21 Dataset Evolution：Dataset 也不是一成不变</h2>
+<p>假设最初 Dataset：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>100 cases</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>运行几个月以后：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Production Failures</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>不断进入。</p>
+<p>那么应该：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Production</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Mine Cases</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Deduplicate</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Label</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Add to Dataset</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>但要注意：</p>
+<blockquote>
+<p>线上所有数据并不都应该自动进入 Golden Dataset。</p>
+</blockquote>
+<p>仍然需要：</p>
+<ul>
+<li>清洗</li>
+<li>去重</li>
+<li>标注</li>
+<li>分类</li>
+<li>隐私处理</li>
+<li>质量审查</li>
+</ul>
+<hr>
+<h2 id="sec-11-22">11.22 Golden Set 和 Production Set</h2>
+<p>可以把 Evaluation Dataset 再分层。</p>
+<h3 id="sec-golden-set">Golden Set</h3>
+<p>经过严格审查：</p>
+<blockquote>
+<p>用来做核心回归。</p>
+</blockquote>
+<p>应该比较稳定。</p>
+<hr>
+<h3 id="sec-production-derived-set">Production-derived Set</h3>
+<p>从真实线上失败中不断增长。</p>
+<p>它更贴近：</p>
+<blockquote>
+<p>最新真实问题。</p>
+</blockquote>
+<hr>
+<p>于是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Golden Set</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Production-derived Set</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Evaluation</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这是非常有价值的体系。</p>
+<hr>
+<h2 id="sec-11-23">11.23 Evolution Pipeline</h2>
+<p>现在可以把整条链正式画出来：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>                   Production</span></span>
+<span class="line"><span>                       │</span></span>
+<span class="line"><span>                       ↓</span></span>
+<span class="line"><span>                  User Tasks</span></span>
+<span class="line"><span>                       │</span></span>
+<span class="line"><span>                       ↓</span></span>
+<span class="line"><span>                    Traces</span></span>
+<span class="line"><span>                       │</span></span>
+<span class="line"><span>                       ↓</span></span>
+<span class="line"><span>                    Failures</span></span>
+<span class="line"><span>                       │</span></span>
+<span class="line"><span>                       ↓</span></span>
+<span class="line"><span>                 Failure Taxonomy</span></span>
+<span class="line"><span>                       │</span></span>
+<span class="line"><span>                ┌──────┼──────┐</span></span>
+<span class="line"><span>                ↓      ↓      ↓</span></span>
+<span class="line"><span>             Prompt  Tool   Context</span></span>
+<span class="line"><span>                ↓      ↓      ↓</span></span>
+<span class="line"><span>             Change  Change Change</span></span>
+<span class="line"><span>                └──────┼──────┘</span></span>
+<span class="line"><span>                       ↓</span></span>
+<span class="line"><span>                  Evaluation</span></span>
+<span class="line"><span>                       ↓</span></span>
+<span class="line"><span>                  Regression</span></span>
+<span class="line"><span>                       ↓</span></span>
+<span class="line"><span>                Accept / Reject</span></span>
+<span class="line"><span>                       ↓</span></span>
+<span class="line"><span>                    Release</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是：</p>
+<blockquote>
+<p><strong>Agent Evolution Loop。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-24">11.24 Agent Evolution 和传统 CI/CD 有什么关系？</h2>
+<p>你可以把它类比成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Traditional:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Code</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Test</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Build</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Deploy</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Agent：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent Change</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Evaluation</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Regression</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Release</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>但 Agent 的变化对象更多：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Code</span></span>
+<span class="line"><span>Prompt</span></span>
+<span class="line"><span>Model</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span>Knowledge</span></span>
+<span class="line"><span>Memory</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以真正成熟的 Agent 系统可能需要：</p>
+<blockquote>
+<p><strong>AI-specific CI/CD。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-25">11.25 Agent Configuration 也需要 Versioning</h2>
+<p>一个完整 Agent Release 可能包含：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#22863A">agent_version</span><span style="color:#24292E">: </span><span style="color:#032F62">"1.8.0"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#22863A">model</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#22863A">  provider</span><span style="color:#24292E">: </span><span style="color:#032F62">"..."</span></span>
+<span class="line"><span style="color:#22863A">  name</span><span style="color:#24292E">: </span><span style="color:#032F62">"..."</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#22863A">prompt_version</span><span style="color:#24292E">: </span><span style="color:#032F62">"12"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#22863A">tool_schema_version</span><span style="color:#24292E">: </span><span style="color:#032F62">"7"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#22863A">knowledge_base_version</span><span style="color:#24292E">: </span><span style="color:#032F62">"2026-10"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#22863A">memory_policy_version</span><span style="color:#24292E">: </span><span style="color:#032F62">"3"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#22863A">evaluation_dataset_version</span><span style="color:#24292E">: </span><span style="color:#032F62">"15"</span></span>
+<span class="line"></span></code></pre>
+<p>你不一定一开始就实现这么复杂。</p>
+<p>但必须理解：</p>
+<blockquote>
+<p><strong>Agent 的行为由多个变量共同决定。</strong></p>
+</blockquote>
+<p>如果这些变量都不记录：</p>
+<blockquote>
+<p>出问题以后很难复现。</p>
+</blockquote>
+<hr>
+<h2 id="sec-11-26">11.26 Reproducibility：为什么今天的 Agent 和昨天可能不一样？</h2>
+<p>假设用户投诉：</p>
+<blockquote>
+<p>“昨天同样的问题回答是 A，今天变成 B。”</p>
+</blockquote>
+<p>如果你只记录：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>user input</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>很难复现。</p>
+<p>真正需要知道：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model Version</span></span>
+<span class="line"><span>Prompt Version</span></span>
+<span class="line"><span>Knowledge Version</span></span>
+<span class="line"><span>Tool Version</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span>State</span></span>
+<span class="line"><span>Memory</span></span>
+<span class="line"><span>Runtime Config</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这其实就是：</p>
+<blockquote>
+<p><strong>Agent Reproducibility。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-27">11.27 Replaying：重新播放一次 Agent 执行</h2>
+<p>如果你有完整 Trajectory：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Input</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool Call</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool Result</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Final</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>就可以尝试：</p>
+<blockquote>
+<p>Replay。</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Historical Input</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Historical Context</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>New Agent Version</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>重新运行。</p>
+<p>然后比较：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Old Result</span></span>
+<span class="line"><span>vs</span></span>
+<span class="line"><span>New Result</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这对：</p>
+<blockquote>
+<p>Debugging、Evaluation、Regression</p>
+</blockquote>
+<p>都非常重要。</p>
+<hr>
+<h2 id="sec-11-28">11.28 但真正生产环境不能简单“重放真实副作用”</h2>
+<p>这是一个非常重要的安全问题。</p>
+<p>如果历史 Agent 当时调用过：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>refund_order()</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你不能因为想 Replay，就真的再次退款。</p>
+<p>所以 Replay 需要：</p>
+<blockquote>
+<p><strong>Simulation / Mock / Read-only Tool。</strong></p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Historical Tool Result</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>直接回放当时结果。</p>
+<p>这样：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Historical Environment</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而不是：</p>
+<blockquote>
+<p>再次触碰真实业务系统。</p>
+</blockquote>
+<hr>
+<h2 id="sec-11-29">11.29 Evolution 不是无限优化</h2>
+<p>这是最后一个非常重要的问题。</p>
+<p>假设你不断：</p>
+<ul>
+<li>改 Prompt</li>
+<li>换模型</li>
+<li>改 Tool</li>
+<li>改 Context</li>
+<li>改 Memory</li>
+</ul>
+<p>最终可能得到一个：</p>
+<blockquote>
+<p>没有人真正理解为什么这么设计。</p>
+</blockquote>
+<p>于是系统开始出现：</p>
+<blockquote>
+<p><strong>Optimization Drift。</strong></p>
+</blockquote>
+<p>也就是：</p>
+<blockquote>
+<p>为了提高某一个指标，不断增加局部优化，最终让整体系统越来越复杂。</p>
+</blockquote>
+<p>所以每次改动都应该问：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Improvement</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Complexity</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Maintenance Cost</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-11-30">11.30 Evolution 也需要 Architecture Review</h2>
+<p>假设：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent v12</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>比：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent v11</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>准确率高 2%。</p>
+<p>但 v12：</p>
+<ul>
+<li>多了三个 Tool</li>
+<li>多了一个 Reflection Loop</li>
+<li>成本高两倍</li>
+<li>维护复杂度明显提高</li>
+</ul>
+<p>这时候不能只说：</p>
+<blockquote>
+<p>“v12 更好。”</p>
+</blockquote>
+<p>应该问：</p>
+<blockquote>
+<p><strong>这 2% 值不值得这些复杂度？</strong></p>
+</blockquote>
+<p>这又一次回到了 Part 5：</p>
+<blockquote>
+<p>Architecture Decision。</p>
+</blockquote>
+<p>所以课程到这里已经形成了完整闭环：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Architecture</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Build</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Evaluation</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Production</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Observation</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Evolution</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Architecture Reassessment</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-11-31">11.31 核心实验：Agent Improvement Loop</h2>
+<p>现在正式开始本 Part 的核心实验。</p>
+<p>继续使用前面已经完成的 Agent。</p>
+<p>假设当前有一个 v1 基线。此处先不要预填成功率；只有运行同一数据集后，才能写入实际观测值。为说明后面的决策过程，若示例中出现百分比或成本变化，它们都是演示用的假设数字，不是当前仓库已经测得的结果。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent v1.0</span></span>
+<span class="line"><span>Task Success = &#x3C;待运行并测量></span></span>
+<span class="line"><span></span></span></code></pre>
+<p>同时我们已经有：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Evaluation Dataset</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>以及：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Production Failure Cases</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<p>配套的 <code>labs/lab11_evolution/</code> 用一个合成工单分类任务展示可归因的 2×2 消融：保持数据集不变，分别比较只改 Prompt、只改 Skill、两者都改和完全不改。先跑快速主路径与测试：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab11_evolution.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> fake</span></span>
+<span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> pytest</span><span style="color:#032F62"> labs/lab11_evolution/tests</span></span>
+<span class="line"></span></code></pre>
+<p>如果希望观察更广的扰动情形，再运行 100 例合成扩展集：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab11_evolution.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> fake</span><span style="color:#005CC5"> --dataset</span><span style="color:#032F62"> labs/lab11_evolution/fixtures/extension_dataset.json</span><span style="color:#005CC5"> --output</span><span style="color:#032F62"> artifacts/lab11-extension-fake</span></span>
+<span class="line"></span></code></pre>
+<p>从 <code>comparison.json</code> / <code>comparison.md</code> 中核对每项变化对应哪个对照组、是否出现回归，以及 usage/cost 是否完整。当前 Fake prediction override 是脚本夹具，只证明实验臂与回归门禁接线正确；它不是实际模型因修改 Prompt 或 Skill 而变好的证据。合成生产失败也必须明确标注，不能写成真实生产遥测。</p>
+<h2 id="sec-11-32">11.32 Stage 1：Collect</h2>
+<p>收集线上或模拟生产环境中的失败。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Failure 001</span></span>
+<span class="line"><span>Retrieval Failure</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Failure 002</span></span>
+<span class="line"><span>Tool Selection</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Failure 003</span></span>
+<span class="line"><span>Context Loss</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Failure 004</span></span>
+<span class="line"><span>State Conflict</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-11-33">11.33 Stage 2：Classify</h2>
+<p>统计：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Retrieval       30%</span></span>
+<span class="line"><span>Tool             25%</span></span>
+<span class="line"><span>Context          20%</span></span>
+<span class="line"><span>State            10%</span></span>
+<span class="line"><span>Model             8%</span></span>
+<span class="line"><span>Other             7%</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-11-34">11.34 Stage 3：Hypothesis</h2>
+<p>选择最大的失败类别：</p>
+<blockquote>
+<p>Retrieval。</p>
+</blockquote>
+<p>提出假设：</p>
+<blockquote>
+<p>“当前 Chunking 策略导致相似维修文档之间难以区分。”</p>
+</blockquote>
+<hr>
+<h2 id="sec-11-35">11.35 Stage 4：Change</h2>
+<p>只改变：</p>
+<blockquote>
+<p>Chunking / Metadata / Ranking。</p>
+</blockquote>
+<p>其他东西不动。</p>
+<p>这是一个很重要的实验原则：</p>
+<blockquote>
+<p><strong>一次实验尽量只改变一个主要变量。</strong></p>
+</blockquote>
+<p>否则即使结果变好了，你也不知道：</p>
+<blockquote>
+<p>到底是谁带来的。</p>
+</blockquote>
+<hr>
+<h2 id="sec-11-36">11.36 Stage 5：Evaluate</h2>
+<p>运行：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Golden Set</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Production-derived Set</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>得到：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Retrieval Success</span></span>
+<span class="line"><span>85% → 93%</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-11-37">11.37 Stage 6：Regression</h2>
+<p>检查其他指标：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Overall Task Success</span></span>
+<span class="line"><span>90% → 92%</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Cost</span></span>
+<span class="line"><span>+3%</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Latency</span></span>
+<span class="line"><span>+4%</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Tool Selection</span></span>
+<span class="line"><span>90% → 90%</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果都可接受：</p>
+<blockquote>
+<p>可以进入下一阶段。</p>
+</blockquote>
+<hr>
+<h2 id="sec-11-38">11.38 Stage 7：Release</h2>
+<p>发布：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent v1.1</span></span>
+<span class="line"><span>Knowledge Pipeline v2</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>并记录：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Why Changed</span></span>
+<span class="line"><span>What Changed</span></span>
+<span class="line"><span>Evaluation Result</span></span>
+<span class="line"><span>Known Risks</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-11-39">11.39 Stage 8：Observe Again</h2>
+<p>新的线上运行继续产生：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>New Tasks</span></span>
+<span class="line"><span>New Failures</span></span>
+<span class="line"><span>New Successes</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后重新进入：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Collect</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>最终形成：</p>
+<h3 id="sec-build-measure-improve-release-observe-re">Build → Measure → Improve → Release → Observe → Repeat</h3>
+<hr>
+<h3 id="sec-prompt-skill">可选真实模型实验：验证 Prompt / Skill 是否改变当前模型行为</h3>
+<p>只有在实验目标确实需要真实模型证据时，才对四个实验臂运行同一组 100 个合成案例。该设置约有 400 个 case-arm 评估，重试还可能增加调用次数与费用。运行前确认 Provider、价格、数据处理和留存方式；保存逐案例原始输出及失败样本。Fake prediction override 只验证对照组与回归门禁接线，不代表 Prompt 或 Skill 对真实模型产生了同样的影响。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab11_evolution.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> real</span><span style="color:#005CC5"> --dataset</span><span style="color:#032F62"> labs/lab11_evolution/fixtures/extension_dataset.json</span><span style="color:#005CC5"> --output</span><span style="color:#032F62"> artifacts/lab11-extension-real</span></span>
+<span class="line"></span></code></pre>
+<h2 id="sec-11-40">11.40 一个非常重要的工程资产：Failure Dataset</h2>
+<p>如果你真正维护一个 Agent 一年以上，你会逐渐发现：</p>
+<blockquote>
+<p>最有价值的资料之一，不是 Prompt。</p>
+</blockquote>
+<p>也不是：</p>
+<blockquote>
+<p>“最好的 Agent 配置。”</p>
+</blockquote>
+<p>而是：</p>
+<blockquote>
+<p><strong>过去失败过什么。</strong></p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>failure_dataset/</span></span>
+<span class="line"><span>├── context/</span></span>
+<span class="line"><span>├── retrieval/</span></span>
+<span class="line"><span>├── tool/</span></span>
+<span class="line"><span>├── state/</span></span>
+<span class="line"><span>├── safety/</span></span>
+<span class="line"><span>├── model/</span></span>
+<span class="line"><span>└── infrastructure/</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这些失败案例会成为：</p>
+<blockquote>
+<p>下一版本最重要的回归测试资产。</p>
+</blockquote>
+<hr>
+<h2 id="sec-11-41">11.41 为什么失败案例比成功案例更有价值？</h2>
+<p>成功案例告诉你：</p>
+<blockquote>
+<p>系统现在能做什么。</p>
+</blockquote>
+<p>失败案例告诉你：</p>
+<blockquote>
+<p><strong>系统在哪里会崩。</strong></p>
+</blockquote>
+<p>而工程优化最需要的，恰恰是：</p>
+<blockquote>
+<p>哪里会崩。</p>
+</blockquote>
+<p>所以：</p>
+<blockquote>
+<p><strong>Production Failure 是 Agent Engineering 的宝贵资产。</strong></p>
+</blockquote>
+<p>当然，真实生产数据还需要考虑：</p>
+<ul>
+<li>隐私</li>
+<li>数据脱敏</li>
+<li>权限</li>
+<li>合规</li>
+</ul>
+<p>不能未经处理直接复制到开发环境。</p>
+<hr>
+<h2 id="sec-11-42">11.42 Part 11 的一个重要思想：经验资产化</h2>
+<p>如果每次失败都只是：</p>
+<blockquote>
+<p>“工程师手工修一下。”</p>
+</blockquote>
+<p>那么经验会随着工程师离开而消失。</p>
+<p>更好的做法：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Failure</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Document</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Dataset</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Regression Test</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Rule / Skill / Tool Improvement</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>System Evolution</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>于是：</p>
+<blockquote>
+<p><strong>经验开始成为系统的一部分。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-43">11.43 Agent Evolution 与模型训练不是一回事</h2>
+<p>这是一个需要提前澄清的概念。</p>
+<p>Agent Evolution 并不意味着：</p>
+<blockquote>
+<p>你必须训练自己的大模型。</p>
+</blockquote>
+<p>很多 Agent 的持续改进实际上来自：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Prompt Improvement</span></span>
+<span class="line"><span>Context Improvement</span></span>
+<span class="line"><span>Tool Improvement</span></span>
+<span class="line"><span>Retrieval Improvement</span></span>
+<span class="line"><span>Memory Improvement</span></span>
+<span class="line"><span>Policy Improvement</span></span>
+<span class="line"><span>Evaluation Improvement</span></span>
+<span class="line"><span>Workflow Improvement</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>甚至：</p>
+<blockquote>
+<p>模型本身完全不变。</p>
+</blockquote>
+<p>Agent 仍然可以明显进化。</p>
+<p>所以：</p>
+<blockquote>
+<p><strong>AI Application Engineering 不应该把“模型训练”作为唯一的进化手段。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-44">11.44 甚至可以反过来：模型不是第一优化点</h2>
+<p>假设一个 Agent：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Success = 80%</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你发现：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>正确知识没有被检索出来。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这时候：</p>
+<blockquote>
+<p>换一个更大的模型。</p>
+</blockquote>
+<p>可能几乎没有效果。</p>
+<p>更合理的是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Fix Retrieval</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>再假设：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Success = 91%</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是：</p>
+<blockquote>
+<p><strong>System Engineering often beats model upgrading.</strong></p>
+</blockquote>
+<p>这句话不是说模型不重要。</p>
+<p>而是提醒你：</p>
+<blockquote>
+<p><strong>不要把所有 AI 问题都归结为模型问题。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-45">11.45 Part 11 小结</h2>
+<p>到这里，我们已经建立了一个完整的 Agent 生命周期：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Discover</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Design</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Build</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Evaluate</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Deploy</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Observe</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Collect Failures</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Classify</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Improve</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Regression</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Release</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Observe Again</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这意味着：</p>
+<blockquote>
+<p><strong>Agent 不是一个项目，而是一个长期运行的工程系统。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-46">11.46 现在回头看 Agent 的“版本”</h2>
+<p>你以后看到：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent v1</span></span>
+<span class="line"><span>Agent v2</span></span>
+<span class="line"><span>Agent v3</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>不要只理解成：</p>
+<blockquote>
+<p>Prompt 换了。</p>
+</blockquote>
+<p>真正可能发生的是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span>State</span></span>
+<span class="line"><span>Memory</span></span>
+<span class="line"><span>Knowledge</span></span>
+<span class="line"><span>Policy</span></span>
+<span class="line"><span>Runtime</span></span>
+<span class="line"><span>Evaluator</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>其中任何一个发生变化。</p>
+<p>所以一个成熟 Agent 系统需要逐渐建立：</p>
+<blockquote>
+<p><strong>Configuration + Version + Evaluation + Reproducibility。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-47">11.47 一个最终 Mental Model</h2>
+<p>把整个 Agent Evolution 压缩成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>                    Production Agent</span></span>
+<span class="line"><span>                           │</span></span>
+<span class="line"><span>                           ↓</span></span>
+<span class="line"><span>                      Real Tasks</span></span>
+<span class="line"><span>                           │</span></span>
+<span class="line"><span>                           ↓</span></span>
+<span class="line"><span>                       Telemetry</span></span>
+<span class="line"><span>                           │</span></span>
+<span class="line"><span>                           ↓</span></span>
+<span class="line"><span>                        Failures</span></span>
+<span class="line"><span>                           │</span></span>
+<span class="line"><span>                           ↓</span></span>
+<span class="line"><span>                  Failure Classification</span></span>
+<span class="line"><span>                           │</span></span>
+<span class="line"><span>             ┌─────────────┼─────────────┐</span></span>
+<span class="line"><span>             ↓             ↓             ↓</span></span>
+<span class="line"><span>          Context         Tool         Model</span></span>
+<span class="line"><span>          Problem        Problem       Problem</span></span>
+<span class="line"><span>             │             │             │</span></span>
+<span class="line"><span>             └─────────────┼─────────────┘</span></span>
+<span class="line"><span>                           ↓</span></span>
+<span class="line"><span>                       Hypothesis</span></span>
+<span class="line"><span>                           ↓</span></span>
+<span class="line"><span>                          Change</span></span>
+<span class="line"><span>                           ↓</span></span>
+<span class="line"><span>                       Evaluation</span></span>
+<span class="line"><span>                           ↓</span></span>
+<span class="line"><span>                      Regression</span></span>
+<span class="line"><span>                     /          \</span></span>
+<span class="line"><span>                Reject          Accept</span></span>
+<span class="line"><span>                                  ↓</span></span>
+<span class="line"><span>                               Release</span></span>
+<span class="line"><span>                                  ↓</span></span>
+<span class="line"><span>                              Production</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这张图实际上就是：</p>
+<blockquote>
+<p><strong>Agent Engineering 的持续反馈系统。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-48">11.48 Part 11 最重要的几个认识</h2>
+<h3 id="sec-x55">第一</h3>
+<blockquote>
+<p>Agent 的行为由多个版本化组件共同决定。</p>
+</blockquote>
+<h3 id="sec-x56">第二</h3>
+<blockquote>
+<p>生产失败应该进入下一轮 Evaluation。</p>
+</blockquote>
+<h3 id="sec-x57">第三</h3>
+<blockquote>
+<p>Failure Taxonomy 比零散修 Bug 更有价值。</p>
+</blockquote>
+<h3 id="sec-x58">第四</h3>
+<blockquote>
+<p>改 Agent 应该从 Hypothesis 出发，而不是从“感觉”出发。</p>
+</blockquote>
+<h3 id="sec-x59">第五</h3>
+<blockquote>
+<p>Prompt、Tool、Skill、Memory、Knowledge 都可以演进。</p>
+</blockquote>
+<h3 id="sec-x60">第六</h3>
+<blockquote>
+<p>Agent Evolution 不等于重新训练模型。</p>
+</blockquote>
+<h3 id="sec-x61">第七</h3>
+<blockquote>
+<p>每一个改动都应该经过 Evaluation 和 Regression。</p>
+</blockquote>
+<h3 id="sec-x62">第八</h3>
+<blockquote>
+<p>Agent 的最终目标不是“越来越复杂”，而是：</p>
+</blockquote>
+<blockquote>
+<p><strong>越来越适合真实任务。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-11-49">11.49 一个最终练习</h2>
+<p>现在假设你的 Agent 在线上运行了三个月。</p>
+<p>你收集到：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>100 个失败案例</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>请完成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>1. Failure Taxonomy</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>2. Top 3 Failure Categories</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>3. 每类提出一个 Improvement Hypothesis</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>4. 为每个 Hypothesis 设计一次实验</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>5. 定义 Evaluation Metrics</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>6. 定义 Regression Dataset</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>7. 决定是否 Release</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>注意：</p>
+<blockquote>
+<p><strong>不要同时修改十个东西。</strong></p>
+</blockquote>
+<p>你正在训练的不是：</p>
+<blockquote>
+<p>“改 Agent 的能力。”</p>
+</blockquote>
+<p>而是：</p>
+<blockquote>
+<p><strong>科学地改 Agent 的能力。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-part-part-12">本 Part → Part 12：把工程判断迁移到陌生领域</h2>
+<p>持续演进的闭环让我们知道如何从失败中提出假设、进行有归因的修改，再通过同一评估集检查收益与回归。最后一部分不再教授一种新的 Agent Pattern，而是要求你在没有现成架构答案的陌生业务里，重新完成问题拆解、架构选择、证据设计和风险控制。</p>
+<p>Capstone 的成功标准不是“运行出一个答案”，而是你的设计、实现、评估与安全边界是否共同支撑了结论。</p>
+
+</article>
+<nav class="pager"><a class="pg prev" href="part-10.html"><span class="pg-dir">上一部分</span><span class="pg-name">Part 10｜Multi-Agent Engineering：当一个 Agent 不再够用</span></a><a class="pg next" href="part-12.html"><span class="pg-dir">下一部分</span><span class="pg-name">Part 12｜Agent Application Architecture：把工程能力迁移到陌生领域</span></a></nav>
+<footer class="book-foot"><span>Enterprise Agent Engineering</span><span>v0.4</span><span>文本校审候选，非出版定稿</span></footer>
+</main>
+</div>
+<div class="scrim" id="scrim"></div>
+<script src="assets/nav.js"></script>
+</body>
+</html>

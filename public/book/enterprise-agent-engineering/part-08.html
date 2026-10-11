@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 8｜Advanced Agent Patterns：当简单 Agent 已经不够用了 · Enterprise Agent Engineering</title>
+<meta name="description" content="Advanced Agent Patterns —— 当简单 Agent 已经不够用。 —— Enterprise Agent Engineering v0.4">
+<meta property="og:title" content="Part 8｜Advanced Agent Patterns：当简单 Agent 已经不够用了">
+<meta property="og:type" content="article">
+<link rel="stylesheet" href="assets/book.css">
+</head>
+<body>
+<a class="skip-link" href="#content">跳到正文</a>
+<header class="topbar"><button class="toc-toggle" id="tocToggle" aria-label="打开目录" aria-controls="sidebar"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button><a class="brand" href="index.html"><span class="brand-title">Enterprise Agent Engineering</span><span class="brand-sub">企业级 Agent 工程</span></a><span class="ver">v0.4</span></header>
+<div class="layout">
+<aside class="sidebar" id="sidebar"><nav class="book-nav"><div class="book-nav-head"><a class="bn-title" href="index.html">Enterprise Agent Engineering</a><span class="bn-ver">v0.4</span></div><ol class="parts"><li class="part"><a class="part-link" href="part-00.html"><span class="part-no">0</span><span class="part-name">先别急着做 Agent</span></a></li>
+<li class="part"><a class="part-link" href="part-01.html"><span class="part-no">1</span><span class="part-name">把 LLM 当成一个真正的软件组件</span></a></li>
+<li class="part"><a class="part-link" href="part-02.html"><span class="part-no">2</span><span class="part-name">Context Engineering：决定模型到底能看到什么</span></a></li>
+<li class="part"><a class="part-link" href="part-03.html"><span class="part-no">3</span><span class="part-name">Tools &amp; Agent Harness：让模型开始与真实世界交互</span></a></li>
+<li class="part"><a class="part-link" href="part-04.html"><span class="part-no">4</span><span class="part-name">RAG &amp; Memory：让 Agent 获得知识，并记住真正值得记住的东西</span></a></li>
+<li class="part"><a class="part-link" href="part-05.html"><span class="part-no">5</span><span class="part-name">Workflow → Agent：什么时候真的需要 Agent？</span></a></li>
+<li class="part"><a class="part-link" href="part-06.html"><span class="part-no">6</span><span class="part-name">Evaluation Engineering：从“看起来不错”到“有证据证明”</span></a></li>
+<li class="part"><a class="part-link" href="part-07.html"><span class="part-no">7</span><span class="part-name">Production Agent Engineering：让一个“能跑的 Agent”变成“敢上线的 Agent”</span></a></li>
+<li class="part is-active"><a class="part-link" href="part-08.html"><span class="part-no">8</span><span class="part-name">Advanced Agent Patterns：当简单 Agent 已经不够用了</span></a><ul class="secs"><li class="lvl2"><a class="sec" href="#sec-8-1" data-id="sec-8-1">8.1 先回到最小 Agent</a></li><li class="lvl3"><a class="sec" href="#sec-planning" data-id="sec-planning">Planning</a></li><li class="lvl2"><a class="sec" href="#sec-8-2" data-id="sec-8-2">8.2 Planning：先想清楚要做什么</a></li><li class="lvl2"><a class="sec" href="#sec-8-3" data-id="sec-8-3">8.3 为什么不能直接让 Agent 边做边想？</a></li><li class="lvl2"><a class="sec" href="#sec-8-4" data-id="sec-8-4">8.4 Planning 最重要的价值：降低任务复杂度</a></li><li class="lvl3"><a class="sec" href="#sec-planning-2" data-id="sec-planning-2">没有 Planning</a></li><li class="lvl3"><a class="sec" href="#sec-planning-3" data-id="sec-planning-3">有 Planning</a></li><li class="lvl2"><a class="sec" href="#sec-8-5" data-id="sec-8-5">8.5 Static Plan 和 Dynamic Plan</a></li><li class="lvl3"><a class="sec" href="#sec-static-plan" data-id="sec-static-plan">Static Plan</a></li><li class="lvl3"><a class="sec" href="#sec-dynamic-plan" data-id="sec-dynamic-plan">Dynamic Plan</a></li><li class="lvl2"><a class="sec" href="#sec-8-6" data-id="sec-8-6">8.6 Replanning：现实世界不会按照你的计划运行</a></li><li class="lvl2"><a class="sec" href="#sec-8-7" data-id="sec-8-7">8.7 Planning 不是把所有步骤提前想完</a></li><li class="lvl2"><a class="sec" href="#sec-8-8" data-id="sec-8-8">8.8 Reflection：执行完以后再检查一次</a></li><li class="lvl2"><a class="sec" href="#sec-8-9" data-id="sec-8-9">8.9 Reflection 其实很像传统软件里的 Validator</a></li><li class="lvl2"><a class="sec" href="#sec-8-10" data-id="sec-8-10">8.10 什么时候 Reflection 真正有价值？</a></li><li class="lvl2"><a class="sec" href="#sec-8-11" data-id="sec-8-11">8.11 不要只让模型“再想一遍”</a></li><li class="lvl2"><a class="sec" href="#sec-8-12" data-id="sec-8-12">8.12 External Verification 比 Self-reflection 更可靠的场景</a></li><li class="lvl2"><a class="sec" href="#sec-8-13" data-id="sec-8-13">8.13 Research Agent：从“查一次”到“研究问题”</a></li><li class="lvl2"><a class="sec" href="#sec-8-14" data-id="sec-8-14">8.14 Research Agent 真正复杂在哪里？</a></li><li class="lvl2"><a class="sec" href="#sec-8-15" data-id="sec-8-15">8.15 Evidence：Research Agent 为什么需要证据意识？</a></li><li class="lvl2"><a class="sec" href="#sec-8-16" data-id="sec-8-16">8.16 Research Agent 的一个核心循环</a></li><li class="lvl2"><a class="sec" href="#sec-8-17" data-id="sec-8-17">8.17 Browser Agent：为什么“有 API”还不够？</a></li><li class="lvl2"><a class="sec" href="#sec-8-18" data-id="sec-8-18">8.18 API Tool 和 Browser Tool 的根本区别</a></li><li class="lvl2"><a class="sec" href="#sec-8-19" data-id="sec-8-19">8.19 Browser Agent 的核心问题：环境状态</a></li><li class="lvl2"><a class="sec" href="#sec-8-20" data-id="sec-8-20">8.20 Computer-use Agent：从 API 世界进入 GUI 世界</a></li><li class="lvl2"><a class="sec" href="#sec-8-21" data-id="sec-8-21">8.21 Computer-use Agent 为什么需要 Sandbox？</a></li><li class="lvl2"><a class="sec" href="#sec-8-22" data-id="sec-8-22">8.22 Long-running Agent：一次 HTTP Request 已经不够了</a></li><li class="lvl3"><a class="sec" href="#sec-long-running-agent" data-id="sec-long-running-agent">Long-running Agent</a></li><li class="lvl2"><a class="sec" href="#sec-8-23" data-id="sec-8-23">8.23 Long-running Agent 与普通 Agent 的根本差别</a></li><li class="lvl2"><a class="sec" href="#sec-8-24" data-id="sec-8-24">8.24 Checkpoint：为什么必须保存中间状态？</a></li><li class="lvl2"><a class="sec" href="#sec-8-25" data-id="sec-8-25">8.25 Resume：Agent 必须学会“继续工作”</a></li><li class="lvl2"><a class="sec" href="#sec-8-26" data-id="sec-8-26">8.26 Long-running Agent 其实更像一个有状态服务</a></li><li class="lvl2"><a class="sec" href="#sec-8-27" data-id="sec-8-27">8.27 Stateful Agent：为什么“状态”开始越来越重要？</a></li><li class="lvl2"><a class="sec" href="#sec-8-28" data-id="sec-8-28">8.28 Agent Artifact：不是所有中间结果都应该塞回 Context</a></li><li class="lvl2"><a class="sec" href="#sec-8-29" data-id="sec-8-29">8.29 Artifact 与 Memory 的区别</a></li><li class="lvl2"><a class="sec" href="#sec-8-30" data-id="sec-8-30">8.30 一个完整的 Long-running Research Agent</a></li><li class="lvl2"><a class="sec" href="#sec-8-31" data-id="sec-8-31">8.31 但不要把所有 Pattern 都装上</a></li><li class="lvl2"><a class="sec" href="#sec-8-32" data-id="sec-8-32">8.32 Pattern Selection：真正需要的是选择能力</a></li><li class="lvl2"><a class="sec" href="#sec-8-33" data-id="sec-8-33">8.33 一个非常值得掌握的思考方式</a></li><li class="lvl2"><a class="sec" href="#sec-8-34" data-id="sec-8-34">8.34 一个小型 Architecture Review</a></li><li class="lvl3"><a class="sec" href="#sec-x42" data-id="sec-x42">第一层：信息从哪里来？</a></li><li class="lvl3"><a class="sec" href="#sec-x43" data-id="sec-x43">第二层：任务是不是多步骤？</a></li><li class="lvl3"><a class="sec" href="#sec-x44" data-id="sec-x44">第三层：资料可能互相矛盾吗？</a></li><li class="lvl3"><a class="sec" href="#sec-x45" data-id="sec-x45">第四层：任务要不要一次做完？</a></li><li class="lvl3"><a class="sec" href="#sec-x46" data-id="sec-x46">第五层：最终是否直接下采购订单？</a></li><li class="lvl2"><a class="sec" href="#sec-8-35" data-id="sec-8-35">8.35 故障实验：高级 Agent 最容易在哪里失败？</a></li><li class="lvl2"><a class="sec" href="#sec-8-36" data-id="sec-8-36">8.36 Pattern Explosion</a></li><li class="lvl2"><a class="sec" href="#sec-8-37" data-id="sec-8-37">8.37 如何避免 Pattern Explosion？</a></li><li class="lvl3"><a class="sec" href="#sec-x50" data-id="sec-x50">问题一</a></li><li class="lvl3"><a class="sec" href="#sec-x51" data-id="sec-x51">问题二</a></li><li class="lvl3"><a class="sec" href="#sec-x52" data-id="sec-x52">问题三</a></li><li class="lvl2"><a class="sec" href="#sec-8-38" data-id="sec-8-38">8.38 Build → Break → Measure → Improve</a></li><li class="lvl3"><a class="sec" href="#sec-stage-1-build" data-id="sec-stage-1-build">Stage 1：BUILD</a></li><li class="lvl3"><a class="sec" href="#sec-stage-2-break" data-id="sec-stage-2-break">Stage 2：BREAK</a></li><li class="lvl3"><a class="sec" href="#sec-stage-3-measure" data-id="sec-stage-3-measure">Stage 3：MEASURE</a></li><li class="lvl3"><a class="sec" href="#sec-stage-4-improve" data-id="sec-stage-4-improve">Stage 4：IMPROVE</a></li><li class="lvl2"><a class="sec" href="#sec-8-39" data-id="sec-8-39">8.39 最终实验：Pattern Shootout</a></li><li class="lvl3"><a class="sec" href="#sec-x59" data-id="sec-x59">可选真实模型实验：单独观察最小模式</a></li><li class="lvl2"><a class="sec" href="#sec-8-40" data-id="sec-8-40">8.40 Part 8 最重要的认知变化</a></li><li class="lvl2"><a class="sec" href="#sec-8-41" data-id="sec-8-41">8.41 Part 8 的几个核心结论</a></li><li class="lvl3"><a class="sec" href="#sec-planning-4" data-id="sec-planning-4">Planning</a></li><li class="lvl3"><a class="sec" href="#sec-replanning" data-id="sec-replanning">Replanning</a></li><li class="lvl3"><a class="sec" href="#sec-reflection" data-id="sec-reflection">Reflection</a></li><li class="lvl3"><a class="sec" href="#sec-research-agent" data-id="sec-research-agent">Research Agent</a></li><li class="lvl3"><a class="sec" href="#sec-browser-computer-use" data-id="sec-browser-computer-use">Browser / Computer-use</a></li><li class="lvl3"><a class="sec" href="#sec-long-running-agent-2" data-id="sec-long-running-agent-2">Long-running Agent</a></li><li class="lvl3"><a class="sec" href="#sec-checkpoint-state" data-id="sec-checkpoint-state">Checkpoint / State</a></li><li class="lvl3"><a class="sec" href="#sec-artifact" data-id="sec-artifact">Artifact</a></li><li class="lvl2"><a class="sec" href="#sec-8-42" data-id="sec-8-42">8.42 还有一个非常重要的边界</a></li><li class="lvl2"><a class="sec" href="#sec-part-part-9-agent" data-id="sec-part-part-9-agent">本 Part → Part 9：从复杂 Agent 模式到一个可审查的工程现场</a></li></ul></li>
+<li class="part"><a class="part-link" href="part-09.html"><span class="part-no">9</span><span class="part-name">Coding Agent：让 Agent 真正参与软件开发</span></a></li>
+<li class="part"><a class="part-link" href="part-10.html"><span class="part-no">10</span><span class="part-name">Multi-Agent Engineering：当一个 Agent 不再够用</span></a></li>
+<li class="part"><a class="part-link" href="part-11.html"><span class="part-no">11</span><span class="part-name">Agent Evolution：让 Agent 不只是上线，而是持续变好</span></a></li>
+<li class="part"><a class="part-link" href="part-12.html"><span class="part-no">12</span><span class="part-name">Agent Application Architecture：把工程能力迁移到陌生领域</span></a></li></ol><div class="bn-foot"><a href="index.html">全书目录</a></div></nav></aside>
+<main class="content" id="content">
+<article class="prose">
+<h1>Part 8｜Advanced Agent Patterns：当简单 Agent 已经不够用了</h1>
+<blockquote>
+<p>当一个 Agent 做得越来越复杂时，第一反应不应该是“再加一个 Agent”。<br>
+真正应该问的是：<strong>当前的任务复杂性，到底来自哪里？</strong></p>
+</blockquote>
+<p>Part 7 为基本 Agent 建立了超时、重试、预算、授权和可观察性等运行底线。高级模式并不是在这套系统上无条件叠加更多组件，而是应对任务中新出现的复杂性：是否需要先规划、主动寻找更多证据、验证中间结果，或跨进程恢复长任务？</p>
+<p>有些任务需要先规划。</p>
+<p>有些任务需要不断搜索。</p>
+<p>有些任务需要操作浏览器。</p>
+<p>有些任务需要运行几十分钟甚至几个小时。</p>
+<p>还有一些任务，在执行过程中会不断产生新的信息，导致原来的计划失效。</p>
+<p>这时候，一个最基本的：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Think</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Observe</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Think</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>可能开始显得不够。</p>
+<p>于是，业界逐渐出现了很多不同的 Agent Pattern：</p>
+<ul>
+<li>Planning</li>
+<li>Reflection</li>
+<li>Research Agent</li>
+<li>Browser Agent</li>
+<li>Computer-use Agent</li>
+<li>Long-running Agent</li>
+<li>Stateful Agent</li>
+</ul>
+<p>这些名字很容易让人产生一种错觉：</p>
+<blockquote>
+<p>“这些都是更高级的 Agent。”</p>
+</blockquote>
+<p>其实不是。</p>
+<p>它们更像是：</p>
+<blockquote>
+<p><strong>面对不同问题时，对基本 Agent Loop 做出的不同结构化扩展。</strong></p>
+</blockquote>
+<p>这一 Part 不希望你背下来一堆 Pattern。</p>
+<p>这一 Part 希望你真正理解一件事情：</p>
+<blockquote>
+<p><strong>一个 Agent 为什么需要这些结构？</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-8-1">8.1 先回到最小 Agent</h2>
+<p>我们已经见过一个最基本的 Agent：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Task</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Model</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Observation</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Model</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Observation</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Final</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这个结构非常强。</p>
+<p>例如：</p>
+<blockquote>
+<p>“查询订单 10001 为什么还没有收到。”</p>
+</blockquote>
+<p>可能几步就完成了。</p>
+<p>但现在换一个问题：</p>
+<blockquote>
+<p>“帮我研究一下最近新能源汽车售后投诉中，充电问题主要有哪些原因，并根据历史案例和维修手册提出改善建议。”</p>
+</blockquote>
+<p>你马上会发现：</p>
+<blockquote>
+<p>这不是一个简单的查询问题。</p>
+</blockquote>
+<p>它有很多隐含任务：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>理解研究问题</span></span>
+<span class="line"><span>↓</span></span>
+<span class="line"><span>收集资料</span></span>
+<span class="line"><span>↓</span></span>
+<span class="line"><span>筛选资料</span></span>
+<span class="line"><span>↓</span></span>
+<span class="line"><span>分析数据</span></span>
+<span class="line"><span>↓</span></span>
+<span class="line"><span>寻找规律</span></span>
+<span class="line"><span>↓</span></span>
+<span class="line"><span>验证结论</span></span>
+<span class="line"><span>↓</span></span>
+<span class="line"><span>形成报告</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果完全依赖最基本的 Agent Loop：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>现在应该做什么？</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>模型可能会自己摸索。</p>
+<p>但任务越复杂，摸索成本越高。</p>
+<p>于是第一个高级 Pattern 出现了：</p>
+<h3 id="sec-planning">Planning</h3>
+<hr>
+<h2 id="sec-8-2">8.2 Planning：先想清楚要做什么</h2>
+<p>Planning 最简单的理解是：</p>
+<blockquote>
+<p><strong>在真正行动之前，先建立一个任务计划。</strong></p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Goal</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Plan</span></span>
+<span class="line"><span> ├── Collect Complaint Data</span></span>
+<span class="line"><span> ├── Classify Complaint</span></span>
+<span class="line"><span> ├── Analyze Main Causes</span></span>
+<span class="line"><span> ├── Retrieve Repair Knowledge</span></span>
+<span class="line"><span> ├── Compare Historical Cases</span></span>
+<span class="line"><span> └── Produce Recommendation</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Plan</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Execute Step 1</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Execute Step 2</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>...</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这和传统工程里的任务分解其实非常接近。</p>
+<hr>
+<h2 id="sec-8-3">8.3 为什么不能直接让 Agent 边做边想？</h2>
+<p>可以。</p>
+<p>而且很多任务完全应该这么做。</p>
+<p>例如：</p>
+<blockquote>
+<p>“订单 10001 为什么还没发货？”</p>
+</blockquote>
+<p>没必要先写一个十步计划。</p>
+<p>但如果任务：</p>
+<ul>
+<li>周期长</li>
+<li>步骤多</li>
+<li>有明显任务结构</li>
+<li>需要并行处理</li>
+<li>需要跟踪进度</li>
+</ul>
+<p>那么 Planning 就开始有价值。</p>
+<p>因此：</p>
+<blockquote>
+<p><strong>Planning 主要解决的是任务组织问题。</strong></p>
+</blockquote>
+<p>而不是：</p>
+<blockquote>
+<p>“让模型看起来更聪明。”</p>
+</blockquote>
+<hr>
+<h2 id="sec-8-4">8.4 Planning 最重要的价值：降低任务复杂度</h2>
+<p>想象两种情况。</p>
+<h3 id="sec-planning-2">没有 Planning</h3>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Task</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Agent</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>“现在做什么？”</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>“现在做什么？”</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>“现在做什么？”</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>模型一直在局部决策。</p>
+<hr>
+<h3 id="sec-planning-3">有 Planning</h3>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Task</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Plan</span></span>
+<span class="line"><span> ├── A</span></span>
+<span class="line"><span> ├── B</span></span>
+<span class="line"><span> ├── C</span></span>
+<span class="line"><span> └── D</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Execute</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>模型首先获得了一个：</p>
+<blockquote>
+<p><strong>任务地图。</strong></p>
+</blockquote>
+<p>这对于复杂任务尤其有帮助。</p>
+<p>但它也带来一个新的问题：</p>
+<blockquote>
+<p>计划如果错了怎么办？</p>
+</blockquote>
+<hr>
+<h2 id="sec-8-5">8.5 Static Plan 和 Dynamic Plan</h2>
+<p>这时可以进一步区分。</p>
+<h3 id="sec-static-plan">Static Plan</h3>
+<p>计划一旦产生，基本按既定路径执行。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>A</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>B</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>C</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>D</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>适合：</p>
+<blockquote>
+<p>目标明确、环境稳定的任务。</p>
+</blockquote>
+<hr>
+<h3 id="sec-dynamic-plan">Dynamic Plan</h3>
+<p>计划只是当前状态下的最佳方案。</p>
+<p>执行过程中，如果出现新信息：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Plan</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Execute</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>New Information</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Replan</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Continue</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这更适合：</p>
+<blockquote>
+<p>探索性任务。</p>
+</blockquote>
+<p>例如：</p>
+<blockquote>
+<p>调查复杂故障。</p>
+</blockquote>
+<p>第一次以为是：</p>
+<blockquote>
+<p>电池问题。</p>
+</blockquote>
+<p>后来检测结果显示：</p>
+<blockquote>
+<p>电池正常。</p>
+</blockquote>
+<p>那原来的计划就必须改变。</p>
+<hr>
+<h2 id="sec-8-6">8.6 Replanning：现实世界不会按照你的计划运行</h2>
+<p>这是所有复杂 Agent 最终都会遇到的问题。</p>
+<p>例如一个维修调查 Agent：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Plan:</span></span>
+<span class="line"><span>1. 查故障码</span></span>
+<span class="line"><span>2. 查电池</span></span>
+<span class="line"><span>3. 查充电模块</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>第一步之后得到：</p>
+<blockquote>
+<p>没有故障码。</p>
+</blockquote>
+<p>原来的计划是否还合理？</p>
+<p>不一定。</p>
+<p>也许现在更应该：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>查历史充电曲线</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以：</p>
+<blockquote>
+<p><strong>真正的长期任务系统，计划不能被当成不可修改的脚本。</strong></p>
+</blockquote>
+<p>应该更像：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Current State</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Current Plan</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Action</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>New State</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Plan Validation</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Continue / Replan</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这已经非常接近传统分布式任务系统中的：</p>
+<blockquote>
+<p>Stateful Workflow。</p>
+</blockquote>
+<hr>
+<h2 id="sec-8-7">8.7 Planning 不是把所有步骤提前想完</h2>
+<p>这是另一个常见误区。</p>
+<p>有人认为 Planning 就是：</p>
+<blockquote>
+<p>先生成一个 30 步完整计划。</p>
+</blockquote>
+<p>然后执行。</p>
+<p>问题是：</p>
+<blockquote>
+<p>现实环境可能在第 3 步就发生变化。</p>
+</blockquote>
+<p>所以一个更成熟的思路通常是：</p>
+<blockquote>
+<p><strong>计划到足以支持当前行动，而不是试图提前预测整个世界。</strong></p>
+</blockquote>
+<p>这其实和工程项目管理很像。</p>
+<p>你可以有：</p>
+<blockquote>
+<p>大方向。</p>
+</blockquote>
+<p>但具体细节在执行过程中不断调整。</p>
+<hr>
+<h2 id="sec-8-8">8.8 Reflection：执行完以后再检查一次</h2>
+<p>现在来看另一个问题。</p>
+<p>假设 Agent 已经完成了一份分析报告。</p>
+<p>它可能看起来非常漂亮。</p>
+<p>但你知道：</p>
+<blockquote>
+<p>它有没有漏掉什么？</p>
+</blockquote>
+<p>一种办法是增加一个 Review 环节：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Generate</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Review</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Repair</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Final</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是 Reflection 类模式最基础的思想。</p>
+<hr>
+<h2 id="sec-8-9">8.9 Reflection 其实很像传统软件里的 Validator</h2>
+<p>你可以用一个非常熟悉的方式理解：</p>
+<p>传统后端：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Generate Object</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Validate</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Accept / Reject</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Agent：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Generate Answer</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Evaluate / Critique</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Accept / Repair</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>因此：</p>
+<blockquote>
+<p>Reflection 并不神秘。</p>
+</blockquote>
+<p>它本质上是在生成流程中增加：</p>
+<blockquote>
+<p><strong>额外验证。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-8-10">8.10 什么时候 Reflection 真正有价值？</h2>
+<p>不是所有结果都值得二次检查。</p>
+<p>例如：</p>
+<blockquote>
+<p>“今天日期是多少？”</p>
+</blockquote>
+<p>没必要。</p>
+<p>而对于：</p>
+<blockquote>
+<p>“生成一份涉及多个资料来源的分析报告。”</p>
+</blockquote>
+<p>额外检查可能非常有价值。</p>
+<p>可以把 Reflection 的价值粗略理解为：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Task Risk</span></span>
+<span class="line"><span>×</span></span>
+<span class="line"><span>Error Cost</span></span>
+<span class="line"><span>×</span></span>
+<span class="line"><span>Detectability</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果任务：</p>
+<ul>
+<li>错误成本高</li>
+<li>错误容易被检查出来</li>
+<li>二次验证成本低</li>
+</ul>
+<p>那么 Reflection 比较值得。</p>
+<hr>
+<h2 id="sec-8-11">8.11 不要只让模型“再想一遍”</h2>
+<p>这是很多简单实现的问题。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>“请再检查一下你的答案。”</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后又让同一个模型生成一次。</p>
+<p>这种方法有时有效。</p>
+<p>但工程上更值得思考的问题是：</p>
+<blockquote>
+<p><strong>“第二次检查，到底依据什么判断？”</strong></p>
+</blockquote>
+<p>例如可以检查：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>是否满足 Schema？</span></span>
+<span class="line"><span>是否引用真实资料？</span></span>
+<span class="line"><span>是否违反业务规则？</span></span>
+<span class="line"><span>是否遗漏关键字段？</span></span>
+<span class="line"><span>是否调用了不允许的 Tool？</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这时候，Reflection 开始从：</p>
+<blockquote>
+<p>“让模型重新思考。”</p>
+</blockquote>
+<p>升级成：</p>
+<blockquote>
+<p><strong>“让系统增加一个明确的验证阶段。”</strong></p>
+</blockquote>
+<p>后者更加工程化。</p>
+<hr>
+<h2 id="sec-8-12">8.12 External Verification 比 Self-reflection 更可靠的场景</h2>
+<p>假设 Agent 计算了一笔订单金额。</p>
+<p>你当然可以：</p>
+<blockquote>
+<p>让模型检查自己的计算。</p>
+</blockquote>
+<p>但更可靠的方法是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>LLM</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>提出结果</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Deterministic Calculator</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>验证</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是 External Verification。</p>
+<p>再比如代码 Agent：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>LLM 生成代码</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Run Tests</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>测试结果</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>测试系统比：</p>
+<blockquote>
+<p>“模型请自己判断代码有没有问题。”</p>
+</blockquote>
+<p>更加可靠。</p>
+<p>因此：</p>
+<blockquote>
+<p><strong>真正成熟的 Reflection 往往不是单纯让模型自我反思，而是引入外部证据。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-8-13">8.13 Research Agent：从“查一次”到“研究问题”</h2>
+<p>现在看另一类任务。</p>
+<p>用户说：</p>
+<blockquote>
+<p>“请研究一下某项技术在企业应用中的主要实践方式，并比较它们的优缺点。”</p>
+</blockquote>
+<p>这时候 Agent 需要：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Search</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Read</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Extract</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Compare</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Identify Gaps</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Search More</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Validate</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Synthesize</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就开始接近：</p>
+<blockquote>
+<p>Research Agent。</p>
+</blockquote>
+<hr>
+<h2 id="sec-8-14">8.14 Research Agent 真正复杂在哪里？</h2>
+<p>不只是：</p>
+<blockquote>
+<p>“它会搜索。”</p>
+</blockquote>
+<p>真正复杂的是：</p>
+<blockquote>
+<p><strong>它需要判断什么时候已经获得足够的信息。</strong></p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>第一次搜索</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>找到 3 个来源</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>发现观点冲突</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>继续搜索</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>找到原始资料</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>重新判断</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>于是 Research Agent 不只是一个：</p>
+<blockquote>
+<p>Search + Summarize。</p>
+</blockquote>
+<p>它实际上需要：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Search Strategy</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Source Selection</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Evidence Management</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Conflict Detection</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Synthesis</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-8-15">8.15 Evidence：Research Agent 为什么需要证据意识？</h2>
+<p>假设 Agent 最终说：</p>
+<blockquote>
+<p>“行业已经普遍采用这种架构。”</p>
+</blockquote>
+<p>这句话的问题是什么？</p>
+<p>你会问：</p>
+<blockquote>
+<p>“依据呢？”</p>
+</blockquote>
+<p>如果它只有：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model's Knowledge</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么说服力很弱。</p>
+<p>但如果它能够关联：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Source A</span></span>
+<span class="line"><span>Source B</span></span>
+<span class="line"><span>Source C</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>并明确：</p>
+<blockquote>
+<p>哪个结论来自哪个来源。</p>
+</blockquote>
+<p>系统就开始拥有：</p>
+<blockquote>
+<p><strong>Evidence Chain。</strong></p>
+</blockquote>
+<p>这对于 Research Agent 非常重要。</p>
+<hr>
+<h2 id="sec-8-16">8.16 Research Agent 的一个核心循环</h2>
+<p>可以抽象成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Question</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Search</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Collect Evidence</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Evaluate Evidence</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Need More?</span></span>
+<span class="line"><span> ├── Yes → Search Again</span></span>
+<span class="line"><span> └── No</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>    Synthesize</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>    Validate</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>     Report</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这其实已经是一个典型的：</p>
+<blockquote>
+<p><strong>Longer-horizon Agent。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-8-17">8.17 Browser Agent：为什么“有 API”还不够？</h2>
+<p>现实世界并不是所有系统都有漂亮的 API。</p>
+<p>有时候你必须：</p>
+<blockquote>
+<p>打开网页。</p>
+</blockquote>
+<p>找到按钮。</p>
+<p>输入内容。</p>
+<p>点击。</p>
+<p>等待页面变化。</p>
+<p>再读取结果。</p>
+<p>这时 Agent 面对的不再是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Structured API</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Dynamic Environment</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Browser</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Page</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>DOM</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Link</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Click</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>New Page</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Read</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是 Browser Agent 所面对的问题。</p>
+<hr>
+<h2 id="sec-8-18">8.18 API Tool 和 Browser Tool 的根本区别</h2>
+<p>API：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order(order_id=10001)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>接口清楚。</p>
+<p>参数明确。</p>
+<p>结果结构化。</p>
+<p>而 Browser：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>“找到订单查询入口”</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>点击</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>页面加载</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>找到输入框</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>输入订单号</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>提交</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>判断是不是进入正确页面</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这里存在大量：</p>
+<blockquote>
+<p>状态不确定性。</p>
+</blockquote>
+<p>所以 Browser Agent 的工程难度明显更高。</p>
+<hr>
+<h2 id="sec-8-19">8.19 Browser Agent 的核心问题：环境状态</h2>
+<p>浏览器不是一个简单函数。</p>
+<p>它更像一个动态世界。</p>
+<p>当前状态可能是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>URL</span></span>
+<span class="line"><span>Page DOM</span></span>
+<span class="line"><span>Cookies</span></span>
+<span class="line"><span>Login State</span></span>
+<span class="line"><span>Modal</span></span>
+<span class="line"><span>Selected Tab</span></span>
+<span class="line"><span>Loading State</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Agent 做一步操作：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>click()</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>环境就发生变化。</p>
+<p>然后 Agent 需要重新观察：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Observe New State</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>于是 Browser Agent 的 Loop 更像：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Observe</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Decide</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Act</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Observe New State</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Decide</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-8-20">8.20 Computer-use Agent：从 API 世界进入 GUI 世界</h2>
+<p>如果 Browser Agent 已经复杂，那么 Computer-use 会进一步扩大范围。</p>
+<p>Agent 可能需要操作：</p>
+<ul>
+<li>浏览器</li>
+<li>桌面软件</li>
+<li>文件管理器</li>
+<li>IDE</li>
+<li>Terminal</li>
+<li>GUI</li>
+</ul>
+<p>此时 Tool 不再只是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>调用 API</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而可能变成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Mouse</span></span>
+<span class="line"><span>Keyboard</span></span>
+<span class="line"><span>Screen</span></span>
+<span class="line"><span>Window</span></span>
+<span class="line"><span>Application</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>系统的不确定性进一步增加。</p>
+<hr>
+<h2 id="sec-8-21">8.21 Computer-use Agent 为什么需要 Sandbox？</h2>
+<p>现在 Part 7 的内容再次出现。</p>
+<p>假设 Agent 能：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>打开终端</span></span>
+<span class="line"><span>执行命令</span></span>
+<span class="line"><span>读取文件</span></span>
+<span class="line"><span>访问网络</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么它实际已经获得了非常大的系统能力。</p>
+<p>因此：</p>
+<blockquote>
+<p>Computer-use Agent 的安全问题，本质上是执行环境问题。</p>
+</blockquote>
+<p>不能只依赖 Prompt。</p>
+<p>更合理的是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Sandbox</span></span>
+<span class="line"><span> ├── Filesystem</span></span>
+<span class="line"><span> ├── Network</span></span>
+<span class="line"><span> ├── Process</span></span>
+<span class="line"><span> └── Resources</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这是 Agent 工程中：</p>
+<blockquote>
+<p><strong>Capability 与 Containment</strong></p>
+</blockquote>
+<p>的一次直接结合。</p>
+<hr>
+<h2 id="sec-8-22">8.22 Long-running Agent：一次 HTTP Request 已经不够了</h2>
+<p>现在考虑一个任务：</p>
+<blockquote>
+<p>“分析过去一年所有客户投诉，并生成季度级别改进建议。”</p>
+</blockquote>
+<p>它可能需要：</p>
+<ul>
+<li>读取几十万条数据</li>
+<li>多次检索</li>
+<li>多轮分析</li>
+<li>生成中间结果</li>
+<li>处理错误</li>
+<li>持续运行</li>
+</ul>
+<p>这时候，你不可能让：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">POST</span><span style="color:#24292E"> /run-agent</span></span>
+<span class="line"></span></code></pre>
+<p>保持一个 HTTP 连接几个小时。</p>
+<p>问题就变成：</p>
+<blockquote>
+<p>Agent 怎么在请求结束以后继续工作？</p>
+</blockquote>
+<p>于是：</p>
+<h3 id="sec-long-running-agent">Long-running Agent</h3>
+<p>开始出现。</p>
+<hr>
+<h2 id="sec-8-23">8.23 Long-running Agent 与普通 Agent 的根本差别</h2>
+<p>普通 Agent：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Request</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Agent</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Response</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Long-running Agent：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Request</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Create Task</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Persist State</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Queue</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Worker</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Agent Execution</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Checkpoint</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>More Work</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Checkpoint</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Complete</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你会发现：</p>
+<blockquote>
+<p>它已经非常像一个传统分布式任务系统。</p>
+</blockquote>
+<hr>
+<h2 id="sec-8-24">8.24 Checkpoint：为什么必须保存中间状态？</h2>
+<p>假设 Agent 已经运行了 40 分钟。</p>
+<p>完成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Step 1</span></span>
+<span class="line"><span>Step 2</span></span>
+<span class="line"><span>Step 3</span></span>
+<span class="line"><span>Step 4</span></span>
+<span class="line"><span>Step 5</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后：</p>
+<blockquote>
+<p>Worker 崩了。</p>
+</blockquote>
+<p>如果没有 Checkpoint：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>从头开始</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>成本巨大。</p>
+<p>如果有：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Checkpoint after Step 5</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么系统可以：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Resume from Step 5</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>因此：</p>
+<blockquote>
+<p><strong>Checkpoint 是 Long-running Agent 的基础能力。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-8-25">8.25 Resume：Agent 必须学会“继续工作”</h2>
+<p>这会带来一个很重要的变化。</p>
+<p>普通应用最常见的是：</p>
+<blockquote>
+<p>Request → Response。</p>
+</blockquote>
+<p>Long-running Agent 更像：</p>
+<blockquote>
+<p>Task → State → Resume → Continue。</p>
+</blockquote>
+<p>因此它开始拥有：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Task ID</span></span>
+<span class="line"><span>State</span></span>
+<span class="line"><span>Checkpoint</span></span>
+<span class="line"><span>Progress</span></span>
+<span class="line"><span>Failure</span></span>
+<span class="line"><span>Resume</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果你做过分布式任务系统，这应该非常熟悉。</p>
+<hr>
+<h2 id="sec-8-26">8.26 Long-running Agent 其实更像一个有状态服务</h2>
+<p>这时候你会发现：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent</span></span>
+<span class="line"><span> +</span></span>
+<span class="line"><span>Database</span></span>
+<span class="line"><span> +</span></span>
+<span class="line"><span>Queue</span></span>
+<span class="line"><span> +</span></span>
+<span class="line"><span>Worker</span></span>
+<span class="line"><span> +</span></span>
+<span class="line"><span>Scheduler</span></span>
+<span class="line"><span> +</span></span>
+<span class="line"><span>Checkpoint</span></span>
+<span class="line"><span> +</span></span>
+<span class="line"><span>Observability</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>已经不太像一个简单的模型调用。</p>
+<p>它更像：</p>
+<blockquote>
+<p><strong>一个以模型驱动决策的分布式任务系统。</strong></p>
+</blockquote>
+<p>这就是为什么 Agent Engineering 最终会不断与传统后端、分布式系统交汇。</p>
+<hr>
+<h2 id="sec-8-27">8.27 Stateful Agent：为什么“状态”开始越来越重要？</h2>
+<p>前面我们已经学习过 State。</p>
+<p>但是在 Long-running Agent 中，State 的重要性进一步提高。</p>
+<p>一个状态可能包括：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Task</span></span>
+<span class="line"><span>Plan</span></span>
+<span class="line"><span>Completed Steps</span></span>
+<span class="line"><span>Pending Steps</span></span>
+<span class="line"><span>Tool Results</span></span>
+<span class="line"><span>Artifacts</span></span>
+<span class="line"><span>Errors</span></span>
+<span class="line"><span>Approvals</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>系统必须能够回答：</p>
+<blockquote>
+<p>当前做到哪里？</p>
+</blockquote>
+<blockquote>
+<p>下一步应该从哪里继续？</p>
+</blockquote>
+<blockquote>
+<p>前面已经做过什么？</p>
+</blockquote>
+<blockquote>
+<p>哪些结果可以复用？</p>
+</blockquote>
+<hr>
+<h2 id="sec-8-28">8.28 Agent Artifact：不是所有中间结果都应该塞回 Context</h2>
+<p>这是复杂 Agent 中一个非常重要的问题。</p>
+<p>假设 Research Agent 已经产生：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>100 页报告</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你不会把这 100 页全部塞回下一次模型 Context。</p>
+<p>可以存成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Artifact</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>research_report.md</span></span>
+<span class="line"><span>analysis.json</span></span>
+<span class="line"><span>dataset.csv</span></span>
+<span class="line"><span>chart.png</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后 Context 里只保留：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Artifact Metadata</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Relevant Excerpt</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这实际上是 Part 2 Context Engineering 的进一步演化。</p>
+<hr>
+<h2 id="sec-8-29">8.29 Artifact 与 Memory 的区别</h2>
+<p>这里也要避免混淆。</p>
+<p>Artifact：</p>
+<blockquote>
+<p>一个具体产生的工作成果。</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>analysis_report_v2.md</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Memory：</p>
+<blockquote>
+<p>值得未来继续记住的信息。</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户偏好先看原始数据。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>State：</p>
+<blockquote>
+<p>当前任务执行到了哪里。</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>analysis_status = "draft_ready"</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>三者再次被分开。</p>
+<hr>
+<h2 id="sec-8-30">8.30 一个完整的 Long-running Research Agent</h2>
+<p>现在可以把前面多个 Pattern 组合起来：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>User Goal</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Planner</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Research Tasks</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Worker</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Search / Browse</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Evidence Store</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Synthesis</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Reflection / Validation</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Checkpoint</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Final Report</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>其中：</p>
+<ul>
+<li>Planning 负责任务结构。</li>
+<li>Research 负责信息收集。</li>
+<li>Browser 负责访问动态环境。</li>
+<li>State 负责进度。</li>
+<li>Checkpoint 负责恢复。</li>
+<li>Reflection 负责验证。</li>
+<li>Artifact 负责保存中间成果。</li>
+</ul>
+<p>现在你开始真正看到：</p>
+<blockquote>
+<p><strong>Advanced Agent Patterns 并不是一个个孤立功能。</strong></p>
+</blockquote>
+<p>它们是可以组合起来的工程模块。</p>
+<hr>
+<h2 id="sec-8-31">8.31 但不要把所有 Pattern 都装上</h2>
+<p>这是这一 Part 最重要的一条原则。</p>
+<p>假设你的任务只是：</p>
+<blockquote>
+<p>“查一下订单。”</p>
+</blockquote>
+<p>你如果设计：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Planner</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Research Agent</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Reflection</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Memory</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Browser</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Long-running Runtime</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Multi-Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这个系统虽然听起来很厉害。</p>
+<p>但工程师应该毫不犹豫地说：</p>
+<blockquote>
+<p><strong>不需要。</strong></p>
+</blockquote>
+<p>因为：</p>
+<blockquote>
+<p>问题太简单。</p>
+</blockquote>
+<hr>
+<h2 id="sec-8-32">8.32 Pattern Selection：真正需要的是选择能力</h2>
+<p>可以建立一个非常实用的映射。</p>
+<table>
+<thead>
+<tr>
+<th>问题特征</th>
+<th>可能需要的 Pattern</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>多步骤且有明确结构</td>
+<td>Planning</td>
+</tr>
+<tr>
+<td>执行过程可能改变方向</td>
+<td>Replanning</td>
+</tr>
+<tr>
+<td>结果需要额外验证</td>
+<td>Reflection / Validation</td>
+</tr>
+<tr>
+<td>需要大量信息搜索</td>
+<td>Research</td>
+</tr>
+<tr>
+<td>需要操作动态网页</td>
+<td>Browser Agent</td>
+</tr>
+<tr>
+<td>需要操作 GUI</td>
+<td>Computer-use</td>
+</tr>
+<tr>
+<td>执行时间长</td>
+<td>Long-running</td>
+</tr>
+<tr>
+<td>需要中断恢复</td>
+<td>Checkpoint / Stateful</td>
+</tr>
+<tr>
+<td>中间结果庞大</td>
+<td>Artifact</td>
+</tr>
+</tbody>
+</table>
+<p>再次强调：</p>
+<blockquote>
+<p>这不是“遇到这个词就使用这个模式”。</p>
+</blockquote>
+<p>而是：</p>
+<blockquote>
+<p><strong>先识别问题，再选择能力。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-8-33">8.33 一个非常值得掌握的思考方式</h2>
+<p>以后你看到一个复杂 Agent，不要先问：</p>
+<blockquote>
+<p>“用了哪些 Pattern？”</p>
+</blockquote>
+<p>而应该反过来问：</p>
+<blockquote>
+<p><strong>“这里的复杂性到底来自哪里？”</strong></p>
+</blockquote>
+<p>如果答案是：</p>
+<blockquote>
+<p>路径复杂。</p>
+</blockquote>
+<p>考虑：</p>
+<blockquote>
+<p>Planning / Replanning。</p>
+</blockquote>
+<p>如果答案是：</p>
+<blockquote>
+<p>信息太多。</p>
+</blockquote>
+<p>考虑：</p>
+<blockquote>
+<p>Research / Retrieval / Context / Artifact。</p>
+</blockquote>
+<p>如果答案是：</p>
+<blockquote>
+<p>环境动态。</p>
+</blockquote>
+<p>考虑：</p>
+<blockquote>
+<p>Browser / Computer-use。</p>
+</blockquote>
+<p>如果答案是：</p>
+<blockquote>
+<p>执行时间长。</p>
+</blockquote>
+<p>考虑：</p>
+<blockquote>
+<p>Long-running / Checkpoint。</p>
+</blockquote>
+<p>如果答案是：</p>
+<blockquote>
+<p>正确性风险高。</p>
+</blockquote>
+<p>考虑：</p>
+<blockquote>
+<p>Validation / Reflection / Human Approval。</p>
+</blockquote>
+<p>这就变成一种：</p>
+<blockquote>
+<p><strong>Problem → Complexity → Pattern</strong></p>
+</blockquote>
+<p>的思考方法。</p>
+<hr>
+<h2 id="sec-8-34">8.34 一个小型 Architecture Review</h2>
+<p>假设产品经理给你需求：</p>
+<blockquote>
+<p>“做一个 Agent，自动研究供应商的产品信息，并生成采购建议。”</p>
+</blockquote>
+<p>你可以先分析：</p>
+<h3 id="sec-x42">第一层：信息从哪里来？</h3>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Web</span></span>
+<span class="line"><span>Company Database</span></span>
+<span class="line"><span>Product Documents</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以需要：</p>
+<blockquote>
+<p>Retrieval / Browser。</p>
+</blockquote>
+<h3 id="sec-x43">第二层：任务是不是多步骤？</h3>
+<p>是。</p>
+<p>需要：</p>
+<blockquote>
+<p>Planning。</p>
+</blockquote>
+<h3 id="sec-x44">第三层：资料可能互相矛盾吗？</h3>
+<p>可能。</p>
+<p>需要：</p>
+<blockquote>
+<p>Evidence Validation。</p>
+</blockquote>
+<h3 id="sec-x45">第四层：任务要不要一次做完？</h3>
+<p>可能需要几十分钟。</p>
+<p>需要：</p>
+<blockquote>
+<p>Long-running。</p>
+</blockquote>
+<h3 id="sec-x46">第五层：最终是否直接下采购订单？</h3>
+<p>如果是高风险动作：</p>
+<blockquote>
+<p>Human Approval。</p>
+</blockquote>
+<p>于是最终架构可能变成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>User</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Planner</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Research</span></span>
+<span class="line"><span> ├── Search</span></span>
+<span class="line"><span> ├── Browser</span></span>
+<span class="line"><span> └── Internal Knowledge</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Evidence Store</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Analysis</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Validation</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Recommendation</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Human Approval</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Procurement Workflow</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你会发现：</p>
+<blockquote>
+<p>这才叫架构设计。</p>
+</blockquote>
+<p>而不是：</p>
+<blockquote>
+<p>“我们用了 6 个 Agent，所以很先进。”</p>
+</blockquote>
+<hr>
+<h2 id="sec-8-35">8.35 故障实验：高级 Agent 最容易在哪里失败？</h2>
+<p>复杂 Agent 的一个危险，是：</p>
+<blockquote>
+<p>每增加一个 Pattern，就增加一个新的失败面。</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Planning Failure</span></span>
+<span class="line"><span>Research Failure</span></span>
+<span class="line"><span>Retrieval Failure</span></span>
+<span class="line"><span>Browser Failure</span></span>
+<span class="line"><span>State Failure</span></span>
+<span class="line"><span>Checkpoint Failure</span></span>
+<span class="line"><span>Reflection Failure</span></span>
+<span class="line"><span>Artifact Failure</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>再加上：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model Failure</span></span>
+<span class="line"><span>Tool Failure</span></span>
+<span class="line"><span>Infrastructure Failure</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>于是：</p>
+<blockquote>
+<p><strong>复杂度本身就是风险。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-8-36">8.36 Pattern Explosion</h2>
+<p>这是高级 Agent 项目特别容易出现的现象。</p>
+<p>项目开始时：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后：</p>
+<blockquote>
+<p>加 Planning。</p>
+</blockquote>
+<p>再：</p>
+<blockquote>
+<p>加 Reflection。</p>
+</blockquote>
+<p>再：</p>
+<blockquote>
+<p>加 Memory。</p>
+</blockquote>
+<p>再：</p>
+<blockquote>
+<p>加 Research。</p>
+</blockquote>
+<p>再：</p>
+<blockquote>
+<p>加 Browser。</p>
+</blockquote>
+<p>再：</p>
+<blockquote>
+<p>加 Multi-Agent。</p>
+</blockquote>
+<p>最后：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>┌────────────────────────┐</span></span>
+<span class="line"><span>│        Agent           │</span></span>
+<span class="line"><span>├────────────────────────┤</span></span>
+<span class="line"><span>│ Planner                │</span></span>
+<span class="line"><span>│ Researcher             │</span></span>
+<span class="line"><span>│ Reflector              │</span></span>
+<span class="line"><span>│ Memory                 │</span></span>
+<span class="line"><span>│ Browser                │</span></span>
+<span class="line"><span>│ State Manager          │</span></span>
+<span class="line"><span>│ Artifact Manager       │</span></span>
+<span class="line"><span>│ Supervisor             │</span></span>
+<span class="line"><span>│ ...                    │</span></span>
+<span class="line"><span>└────────────────────────┘</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>结果没有人说得清：</p>
+<blockquote>
+<p><strong>每一层到底解决了什么问题。</strong></p>
+</blockquote>
+<p>这就是：</p>
+<blockquote>
+<p><strong>Pattern Explosion。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-8-37">8.37 如何避免 Pattern Explosion？</h2>
+<p>每增加一个 Pattern，都强制问三个问题。</p>
+<h3 id="sec-x50">问题一</h3>
+<blockquote>
+<p>它解决了什么具体失败？</p>
+</blockquote>
+<h3 id="sec-x51">问题二</h3>
+<blockquote>
+<p>没有它，系统会发生什么？</p>
+</blockquote>
+<h3 id="sec-x52">问题三</h3>
+<blockquote>
+<p>增加它以后，新增了什么成本和风险？</p>
+</blockquote>
+<p>如果回答不清楚：</p>
+<blockquote>
+<p>不加。</p>
+</blockquote>
+<p>这可以成为整门课程的一条统一原则。</p>
+<hr>
+<h2 id="sec-8-38">8.38 Build → Break → Measure → Improve</h2>
+<p>现在我们终于可以设计 Part 8 的核心实验。</p>
+<p>不要分别做：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Planner Demo</span></span>
+<span class="line"><span>Research Demo</span></span>
+<span class="line"><span>Browser Demo</span></span>
+<span class="line"><span>Reflection Demo</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这样会再次变成 Demo 集合。</p>
+<p>更好的方法是：</p>
+<blockquote>
+<p><strong>选择一个具有足够复杂度的 Long-running Research Task。</strong></p>
+</blockquote>
+<p>例如：</p>
+<blockquote>
+<p>“研究某个制造问题的技术解决方案，并形成带证据的分析报告。”</p>
+</blockquote>
+<hr>
+<h3 id="sec-stage-1-build">Stage 1：BUILD</h3>
+<p>先做：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Simple Agent</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Search Tool</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>看看它能不能完成。</p>
+<hr>
+<h3 id="sec-stage-2-break">Stage 2：BREAK</h3>
+<p>制造：</p>
+<ul>
+<li>搜索结果不足</li>
+<li>资料互相冲突</li>
+<li>页面不可访问</li>
+<li>Tool Timeout</li>
+<li>任务执行时间过长</li>
+</ul>
+<p>观察系统在哪里失败。</p>
+<hr>
+<h3 id="sec-stage-3-measure">Stage 3：MEASURE</h3>
+<p>记录：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Task Success</span></span>
+<span class="line"><span>Evidence Quality</span></span>
+<span class="line"><span>Search Count</span></span>
+<span class="line"><span>Tool Calls</span></span>
+<span class="line"><span>Latency</span></span>
+<span class="line"><span>Cost</span></span>
+<span class="line"><span>Failure Rate</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h3 id="sec-stage-4-improve">Stage 4：IMPROVE</h3>
+<p>逐步加入：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Planning</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Evidence Store</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Validation</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Checkpoint</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Resume</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>每加入一个 Pattern：</p>
+<blockquote>
+<p><strong>重新 Evaluation。</strong></p>
+</blockquote>
+<p>而不是：</p>
+<blockquote>
+<p>“这个功能看起来挺高级。”</p>
+</blockquote>
+<hr>
+<h2 id="sec-8-39">8.39 最终实验：Pattern Shootout</h2>
+<p>现在可以把前面讨论过的模式放在同一组案例里比较。但请先从最小模式开始，而不是一次性打开所有能力。配套实验位于 <code>labs/lab08_advanced/</code>：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab08_advanced.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> fake</span><span style="color:#005CC5"> --pattern</span><span style="color:#032F62"> simple</span></span>
+<span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> pytest</span><span style="color:#032F62"> labs/lab08_advanced/tests</span></span>
+<span class="line"></span></code></pre>
+<p>先看 <code>simple</code> 的输出与轨迹，再对照运行已经实现的其他模式：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab08_advanced.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> fake</span><span style="color:#005CC5"> --pattern</span><span style="color:#032F62"> planning</span></span>
+<span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab08_advanced.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> fake</span><span style="color:#005CC5"> --pattern</span><span style="color:#032F62"> evidence_validation</span></span>
+<span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab08_advanced.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> fake</span><span style="color:#005CC5"> --pattern</span><span style="color:#032F62"> reflection</span></span>
+<span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab08_advanced.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> fake</span><span style="color:#005CC5"> --pattern</span><span style="color:#032F62"> browser</span></span>
+<span class="line"></span></code></pre>
+<p>当前可运行的模式和它们帮助你观察的问题如下：</p>
+<table>
+<thead>
+<tr>
+<th>仓库模式</th>
+<th>主要观察问题</th>
+<th>学习边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>simple</code></td>
+<td>最小 Agent 基线是否足以完成任务？</td>
+<td>基线，不代表最优架构</td>
+</tr>
+<tr>
+<td><code>planning</code></td>
+<td>显式计划是否减少遗漏，代价是什么？</td>
+<td>计划质量要看具体案例</td>
+</tr>
+<tr>
+<td><code>evidence_validation</code></td>
+<td>外部证据检查能否阻止无依据结论？</td>
+<td>检查通过不等于完整语义证明</td>
+</tr>
+<tr>
+<td><code>reflection</code></td>
+<td>再检查一次是否改善结果，还是只增加调用？</td>
+<td>需要对照成本与失败案例</td>
+</tr>
+<tr>
+<td><code>browser</code></td>
+<td>模型能否对受控文档语料执行搜索与打开？</td>
+<td>只操作仓库内的受控语料，不访问公共互联网</td>
+</tr>
+<tr>
+<td><code>long_running</code></td>
+<td>中断后能否从 checkpoint 恢复？</td>
+<td>需要显式持久化授权；不等于加密存储</td>
+</tr>
+</tbody>
+</table>
+<p>不要用一张表预先写好谁得了五星。运行后记录任务得分、成功/失败样本、模型与工具调用、延迟、成本状态和恢复语义，再判断复杂模式有没有带来足够收益。<code>Fake</code> 路径用于比较固定条件下的工程接线与轨迹；它不是实际模型自主规划或真实 Browser Agent 能力的证据。</p>
+<p>长任务实验会读写 checkpoint，因此默认受保护、拒绝持久化。只有在受控本地实验中显式启用后，才能执行：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab08_advanced.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> fake</span><span style="color:#005CC5"> --pattern</span><span style="color:#032F62"> long_running</span><span style="color:#005CC5"> --checkpoint-path</span><span style="color:#032F62"> artifacts/lab08-checkpoint.json</span></span>
+<span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab08_advanced.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> fake</span><span style="color:#005CC5"> --pattern</span><span style="color:#032F62"> long_running</span><span style="color:#005CC5"> --checkpoint-path</span><span style="color:#032F62"> artifacts/lab08-checkpoint.json</span><span style="color:#005CC5"> --resume</span></span>
+<span class="line"></span></code></pre>
+<p>启用前只在当前实验终端临时设置 <code>AI_ALLOW_CHECKPOINT_PERSISTENCE=true</code>，不要通过改写仓库默认值绕过保护。Windows PowerShell 使用：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">$</span><span style="color:#005CC5">env:</span><span style="color:#24292E">AI_ALLOW_CHECKPOINT_PERSISTENCE </span><span style="color:#D73A49">=</span><span style="color:#032F62"> "true"</span></span>
+<span class="line"></span></code></pre>
+<p>Bash / Zsh 使用：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">export</span><span style="color:#24292E"> AI_ALLOW_CHECKPOINT_PERSISTENCE</span><span style="color:#D73A49">=</span><span style="color:#24292E">true</span></span>
+<span class="line"></span></code></pre>
+<p>第一次命令模拟中断并保存进度，第二次恢复同一文件继续运行。记录恢复前后的状态和写入次数，不要把“有文件”当作恢复成功。实验结束后关闭本终端中的开关：PowerShell 使用 <code>Remove-Item Env:AI_ALLOW_CHECKPOINT_PERSISTENCE</code>；Bash / Zsh 使用 <code>unset AI_ALLOW_CHECKPOINT_PERSISTENCE</code>。这只是当前 shell 的临时设置，不要将它写入 <code>.env</code> 或项目默认配置。</p>
+<h3 id="sec-x59">可选真实模型实验：单独观察最小模式</h3>
+<p>以下命令只运行 <code>simple</code> 模式，不触发长任务 checkpoint。它会调用当前 Provider，可能产生费用，并只用于观察该配置在这组受控任务中的回答与工具使用；不代表其他高级模式已经通过验证。只有在 Fake 主线通过、已批准使用 Provider、确认价格与数据处理/留存安排且输入不含未经批准的敏感资料时才运行。不要为这项只读观察开启 checkpoint 持久化或真实写操作。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab08_advanced.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> real</span><span style="color:#005CC5"> --pattern</span><span style="color:#032F62"> simple</span><span style="color:#005CC5"> --output</span><span style="color:#032F62"> artifacts/lab08-simple-real</span></span>
+<span class="line"></span></code></pre>
+<p>Computer-use / GUI 自动化在本章用于解释环境状态、观察与执行风险；当前 Lab 并没有控制宿主机桌面或公共互联网的真实 Computer-use 实现。若需要此能力，应另行设计受控环境、授权和审计，而不是把概念示例写成现成的可运行实验。</p>
+<h2 id="sec-8-40">8.40 Part 8 最重要的认知变化</h2>
+<p>Part 3 学 Agent Loop。</p>
+<p>Part 4 学知识与 Memory。</p>
+<p>Part 5 学 Workflow 与 Agent 的边界。</p>
+<p>Part 6 学 Evaluation。</p>
+<p>Part 7 学 Production。</p>
+<p>到了 Part 8，我们开始面对：</p>
+<blockquote>
+<p><strong>复杂任务。</strong></p>
+</blockquote>
+<p>此时你应该形成一种新的思考模式：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>复杂问题</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>先找复杂性的来源</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>判断是哪种工程问题</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>选择对应 Pattern</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>验证 Pattern 是否真的带来收益</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而不是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>复杂问题</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>多加 Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-8-41">8.41 Part 8 的几个核心结论</h2>
+<h3 id="sec-planning-4">Planning</h3>
+<blockquote>
+<p>解决任务组织问题。</p>
+</blockquote>
+<h3 id="sec-replanning">Replanning</h3>
+<blockquote>
+<p>解决环境变化问题。</p>
+</blockquote>
+<h3 id="sec-reflection">Reflection</h3>
+<blockquote>
+<p>解决结果验证问题。</p>
+</blockquote>
+<h3 id="sec-research-agent">Research Agent</h3>
+<blockquote>
+<p>解决信息探索与证据综合问题。</p>
+</blockquote>
+<h3 id="sec-browser-computer-use">Browser / Computer-use</h3>
+<blockquote>
+<p>解决缺少结构化 API、需要与动态环境交互的问题。</p>
+</blockquote>
+<h3 id="sec-long-running-agent-2">Long-running Agent</h3>
+<blockquote>
+<p>解决执行时间长、任务无法绑定单次 Request 的问题。</p>
+</blockquote>
+<h3 id="sec-checkpoint-state">Checkpoint / State</h3>
+<blockquote>
+<p>解决跨时间持续执行与恢复问题。</p>
+</blockquote>
+<h3 id="sec-artifact">Artifact</h3>
+<blockquote>
+<p>解决中间成果太大、不能全部塞入 Context 的问题。</p>
+</blockquote>
+<hr>
+<h2 id="sec-8-42">8.42 还有一个非常重要的边界</h2>
+<p>这些 Pattern 并不会神奇地消除 Agent 的不确定性。</p>
+<p>恰恰相反：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Pattern ↑</span></span>
+<span class="line"><span>Complexity ↑</span></span>
+<span class="line"><span>Failure Surface ↑</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以：</p>
+<blockquote>
+<p><strong>Advanced Agent 不是为了逃避 Engineering，而是需要更多 Engineering。</strong></p>
+</blockquote>
+<p>一个简单 Agent 可能只需要：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>一个 Long-running Research Agent 可能需要：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Tools</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Planning</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>State</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Checkpoint</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Artifacts</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Evaluation</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Observability</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Recovery</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Security</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>因此高级 Agent 的本质并不是：</p>
+<blockquote>
+<p>Prompt 更复杂。</p>
+</blockquote>
+<p>而是：</p>
+<blockquote>
+<p><strong>系统工程更复杂。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-part-part-9-agent">本 Part → Part 9：从复杂 Agent 模式到一个可审查的工程现场</h2>
+<p>前面讨论的高级模式覆盖计划调整、证据检查、研究循环和中断恢复。它们共同依赖状态、工具、外部验证与受控执行，并不是一套可以无条件套用的功能清单。</p>
+<p>Coding Agent 是这些能力汇聚得很具体的场景：它要理解 Issue、检索仓库、形成补丁、运行测试、解释失败并交付可审查的差异。下一部分把“行动必须可验证”的原则放进真实软件开发流程中。</p>
+
+</article>
+<nav class="pager"><a class="pg prev" href="part-07.html"><span class="pg-dir">上一部分</span><span class="pg-name">Part 7｜Production Agent Engineering：让一个“能跑的 Agent”变成“敢上线的 Agent”</span></a><a class="pg next" href="part-09.html"><span class="pg-dir">下一部分</span><span class="pg-name">Part 9｜Coding Agent：让 Agent 真正参与软件开发</span></a></nav>
+<footer class="book-foot"><span>Enterprise Agent Engineering</span><span>v0.4</span><span>文本校审候选，非出版定稿</span></footer>
+</main>
+</div>
+<div class="scrim" id="scrim"></div>
+<script src="assets/nav.js"></script>
+</body>
+</html>

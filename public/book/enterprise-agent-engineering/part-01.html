@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 1｜把 LLM 当成一个真正的软件组件 · Enterprise Agent Engineering</title>
+<meta name="description" content="把 LLM 当成一个真正的软件组件，明确调用的边界与契约。 —— Enterprise Agent Engineering v0.4">
+<meta property="og:title" content="Part 1｜把 LLM 当成一个真正的软件组件">
+<meta property="og:type" content="article">
+<link rel="stylesheet" href="assets/book.css">
+</head>
+<body>
+<a class="skip-link" href="#content">跳到正文</a>
+<header class="topbar"><button class="toc-toggle" id="tocToggle" aria-label="打开目录" aria-controls="sidebar"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button><a class="brand" href="index.html"><span class="brand-title">Enterprise Agent Engineering</span><span class="brand-sub">企业级 Agent 工程</span></a><span class="ver">v0.4</span></header>
+<div class="layout">
+<aside class="sidebar" id="sidebar"><nav class="book-nav"><div class="book-nav-head"><a class="bn-title" href="index.html">Enterprise Agent Engineering</a><span class="bn-ver">v0.4</span></div><ol class="parts"><li class="part"><a class="part-link" href="part-00.html"><span class="part-no">0</span><span class="part-name">先别急着做 Agent</span></a></li>
+<li class="part is-active"><a class="part-link" href="part-01.html"><span class="part-no">1</span><span class="part-name">把 LLM 当成一个真正的软件组件</span></a><ul class="secs"><li class="lvl2"><a class="sec" href="#sec-1-1" data-id="sec-1-1">1.1 先把已经选中的 LLM 机会工程化</a></li><li class="lvl2"><a class="sec" href="#sec-1-2" data-id="sec-1-2">1.2 LLM API 看起来像函数，实际上不是函数</a></li><li class="lvl2"><a class="sec" href="#sec-1-3" data-id="sec-1-3">1.3 第一个问题：模型到底接收什么？</a></li><li class="lvl2"><a class="sec" href="#sec-1-4" data-id="sec-1-4">1.4 Token：为什么一句话不是“一句话”？</a></li><li class="lvl2"><a class="sec" href="#sec-1-5" data-id="sec-1-5">1.5 一个你很快会遇到的问题</a></li><li class="lvl2"><a class="sec" href="#sec-1-6" data-id="sec-1-6">1.6 输出也不是“随便返回一个字符串”</a></li><li class="lvl3"><a class="sec" href="#sec-structured-output" data-id="sec-structured-output">Structured Output</a></li><li class="lvl2"><a class="sec" href="#sec-1-7" data-id="sec-1-7">1.7 从自然语言进入结构化世界</a></li><li class="lvl2"><a class="sec" href="#sec-1-8" data-id="sec-1-8">1.8 为什么 Schema 是 AI Engineering 的重要工具？</a></li><li class="lvl2"><a class="sec" href="#sec-1-9" data-id="sec-1-9">1.9 这时候你应该想到 Retry 了</a></li><li class="lvl2"><a class="sec" href="#sec-1-10" data-id="sec-1-10">1.10 Timeout：最容易被忽略的生产问题</a></li><li class="lvl2"><a class="sec" href="#sec-1-11" data-id="sec-1-11">1.11 Streaming：为什么有时候用户感觉“更快了”？</a></li><li class="lvl2"><a class="sec" href="#sec-1-12" data-id="sec-1-12">1.12 模型不是一种商品，而是一组能力</a></li><li class="lvl2"><a class="sec" href="#sec-1-13" data-id="sec-1-13">1.13 给模型加一层抽象</a></li><li class="lvl2"><a class="sec" href="#sec-1-14" data-id="sec-1-14">1.14 成本：为什么“效果更好”不是唯一目标？</a></li><li class="lvl2"><a class="sec" href="#sec-1-15" data-id="sec-1-15">1.15 一个很有意思的工程问题</a></li><li class="lvl2"><a class="sec" href="#sec-1-16" data-id="sec-1-16">1.16 实验：把一个后端 API 变成 AI Application</a></li><li class="lvl3"><a class="sec" href="#sec-x19" data-id="sec-x19">第一步：最小版本</a></li><li class="lvl3"><a class="sec" href="#sec-structured-output-2" data-id="sec-structured-output-2">第二步：Structured Output</a></li><li class="lvl3"><a class="sec" href="#sec-timeout" data-id="sec-timeout">第三步：Timeout</a></li><li class="lvl3"><a class="sec" href="#sec-retry" data-id="sec-retry">第四步：Retry</a></li><li class="lvl3"><a class="sec" href="#sec-logging" data-id="sec-logging">第五步：Logging</a></li><li class="lvl3"><a class="sec" href="#sec-cost-tracking" data-id="sec-cost-tracking">第六步：Cost Tracking</a></li><li class="lvl3"><a class="sec" href="#sec-provider" data-id="sec-provider">可选真实模型实验：观察当前 Provider 行为</a></li><li class="lvl2"><a class="sec" href="#sec-1-17" data-id="sec-1-17">1.17 故障实验：现在主动把系统弄坏</a></li><li class="lvl3"><a class="sec" href="#sec-failure-a" data-id="sec-failure-a">Failure A：模型超时</a></li><li class="lvl3"><a class="sec" href="#sec-failure-b" data-id="sec-failure-b">Failure B：结构化输出失败</a></li><li class="lvl3"><a class="sec" href="#sec-failure-c-provider-error" data-id="sec-failure-c-provider-error">Failure C：Provider Error</a></li><li class="lvl3"><a class="sec" href="#sec-failure-d" data-id="sec-failure-d">Failure D：超长输入</a></li><li class="lvl3"><a class="sec" href="#sec-failure-e" data-id="sec-failure-e">Failure E：结果为空</a></li><li class="lvl2"><a class="sec" href="#sec-1-18" data-id="sec-1-18">1.18 不要急着修，先测</a></li><li class="lvl2"><a class="sec" href="#sec-1-19" data-id="sec-1-19">1.19 一个非常重要的转变</a></li><li class="lvl2"><a class="sec" href="#sec-1-20" data-id="sec-1-20">1.20 练习：自己设计一个 AI Backend Endpoint</a></li><li class="lvl2"><a class="sec" href="#sec-1-21" data-id="sec-1-21">1.21 一个小小的架构升级</a></li><li class="lvl2"><a class="sec" href="#sec-1-22" data-id="sec-1-22">1.22 现在重新回答一个问题</a></li><li class="lvl2"><a class="sec" href="#sec-1-23" data-id="sec-1-23">1.23 为什么我们现在还不能直接做 Agent？</a></li><li class="lvl2"><a class="sec" href="#sec-part" data-id="sec-part">本 Part 小结</a></li><li class="lvl2"><a class="sec" href="#sec-part-part-2" data-id="sec-part-part-2">本 Part → Part 2：从模型调用到输入设计</a></li></ul></li>
+<li class="part"><a class="part-link" href="part-02.html"><span class="part-no">2</span><span class="part-name">Context Engineering：决定模型到底能看到什么</span></a></li>
+<li class="part"><a class="part-link" href="part-03.html"><span class="part-no">3</span><span class="part-name">Tools &amp; Agent Harness：让模型开始与真实世界交互</span></a></li>
+<li class="part"><a class="part-link" href="part-04.html"><span class="part-no">4</span><span class="part-name">RAG &amp; Memory：让 Agent 获得知识，并记住真正值得记住的东西</span></a></li>
+<li class="part"><a class="part-link" href="part-05.html"><span class="part-no">5</span><span class="part-name">Workflow → Agent：什么时候真的需要 Agent？</span></a></li>
+<li class="part"><a class="part-link" href="part-06.html"><span class="part-no">6</span><span class="part-name">Evaluation Engineering：从“看起来不错”到“有证据证明”</span></a></li>
+<li class="part"><a class="part-link" href="part-07.html"><span class="part-no">7</span><span class="part-name">Production Agent Engineering：让一个“能跑的 Agent”变成“敢上线的 Agent”</span></a></li>
+<li class="part"><a class="part-link" href="part-08.html"><span class="part-no">8</span><span class="part-name">Advanced Agent Patterns：当简单 Agent 已经不够用了</span></a></li>
+<li class="part"><a class="part-link" href="part-09.html"><span class="part-no">9</span><span class="part-name">Coding Agent：让 Agent 真正参与软件开发</span></a></li>
+<li class="part"><a class="part-link" href="part-10.html"><span class="part-no">10</span><span class="part-name">Multi-Agent Engineering：当一个 Agent 不再够用</span></a></li>
+<li class="part"><a class="part-link" href="part-11.html"><span class="part-no">11</span><span class="part-name">Agent Evolution：让 Agent 不只是上线，而是持续变好</span></a></li>
+<li class="part"><a class="part-link" href="part-12.html"><span class="part-no">12</span><span class="part-name">Agent Application Architecture：把工程能力迁移到陌生领域</span></a></li></ol><div class="bn-foot"><a href="index.html">全书目录</a></div></nav></aside>
+<main class="content" id="content">
+<article class="prose">
+<h1>Part 1｜把 LLM 当成一个真正的软件组件</h1>
+<blockquote>
+<p>Agent 不是从 Agent Framework 开始的。<br>
+Agent 的起点，是你第一次认真地把一个 LLM 当成系统中的软件依赖。</p>
+</blockquote>
+<hr>
+<h2 id="sec-1-1">1.1 先把已经选中的 LLM 机会工程化</h2>
+<p>Part 0 已经讨论过何时需要 AI、何时不需要 Agent。这里先假设机会评估得出了一个有限结论：某类客服工单适合用 LLM 分类并提取字段，但整个流程仍由普通后端程序控制。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>客服工单 → LLM 分类与提取 → 结构校验 → 业务系统</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这个任务不需要先引入 Agent Loop。它需要的是一个可靠的模型调用边界：输入怎么组织、输出如何校验、超时和限流怎么处理、调用情况怎样记录，以及失败时业务系统应该收到什么结果。</p>
+<p>这正是本 Part 的目标：把不完全确定的远程计算依赖，封装成行为可观察、失败可处理、结果可验证的软件组件。后面讨论 Context 与 Agent 时，我们会复用这层基础，而不是从头再造一次 API 客户端。</p>
+<h2 id="sec-1-2">1.2 LLM API 看起来像函数，实际上不是函数</h2>
+<p>先看一个最简单的程序。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">result </span><span style="color:#D73A49">=</span><span style="color:#24292E"> add(</span><span style="color:#005CC5">1</span><span style="color:#24292E">, </span><span style="color:#005CC5">2</span><span style="color:#24292E">)</span></span>
+<span class="line"></span></code></pre>
+<p>你大概知道：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>输入</span></span>
+<span class="line"><span>1, 2</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>输出</span></span>
+<span class="line"><span>3</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后再看：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">result </span><span style="color:#D73A49">=</span><span style="color:#24292E"> model.generate(</span><span style="color:#032F62">"帮我总结这段文本"</span><span style="color:#24292E">)</span></span>
+<span class="line"></span></code></pre>
+<p>代码形式非常像。</p>
+<p>但工程性质完全不同。</p>
+<p>我们先不要管模型内部到底怎么计算，只看应用层。</p>
+<p>你的程序其实是在发送：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Request</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Remote Model Service</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Response</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>也就是说，LLM 更接近：</p>
+<blockquote>
+<p><strong>一个远程计算服务。</strong></p>
+</blockquote>
+<p>而且这是一个特殊的远程计算服务：</p>
+<ul>
+<li>有网络延迟</li>
+<li>可能失败</li>
+<li>有调用成本</li>
+<li>输出可能变化</li>
+<li>输入受到上下文限制</li>
+<li>不同模型能力不同</li>
+<li>同一个任务可能存在多个合理答案</li>
+</ul>
+<p>于是，一个很重要的思维模型就出现了：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>传统函数</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>input</span></span>
+<span class="line"><span>  ↓</span></span>
+<span class="line"><span>function</span></span>
+<span class="line"><span>  ↓</span></span>
+<span class="line"><span>output</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而 LLM：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>request</span></span>
+<span class="line"><span>  ↓</span></span>
+<span class="line"><span>network</span></span>
+<span class="line"><span>  ↓</span></span>
+<span class="line"><span>model service</span></span>
+<span class="line"><span>  ↓</span></span>
+<span class="line"><span>probabilistic computation</span></span>
+<span class="line"><span>  ↓</span></span>
+<span class="line"><span>response</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你作为后端工程师，应该立刻想到：</p>
+<blockquote>
+<p>那么它是不是应该像其他远程服务一样，被封装起来？</p>
+</blockquote>
+<p>答案是：</p>
+<p><strong>应该。</strong></p>
+<p>而且这恰恰是 AI Application Engineering 开始真正“像工程”的地方。</p>
+<hr>
+<h2 id="sec-1-3">1.3 第一个问题：模型到底接收什么？</h2>
+<p>当你第一次调用 LLM API 时，最容易犯的错误是把模型理解成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>prompt → answer</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>实际上，应用层真正发送的通常是一组结构化消息。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "messages"</span><span style="color:#24292E">: [</span></span>
+<span class="line"><span style="color:#24292E">    {</span></span>
+<span class="line"><span style="color:#005CC5">      "role"</span><span style="color:#24292E">: </span><span style="color:#032F62">"system"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">      "content"</span><span style="color:#24292E">: </span><span style="color:#032F62">"你是一名客服分类助手。"</span></span>
+<span class="line"><span style="color:#24292E">    },</span></span>
+<span class="line"><span style="color:#24292E">    {</span></span>
+<span class="line"><span style="color:#005CC5">      "role"</span><span style="color:#24292E">: </span><span style="color:#032F62">"user"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">      "content"</span><span style="color:#24292E">: </span><span style="color:#032F62">"我的快递三天没有更新了。"</span></span>
+<span class="line"><span style="color:#24292E">    }</span></span>
+<span class="line"><span style="color:#24292E">  ]</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<p>这里至少存在两个概念：</p>
+<ul>
+<li><code>role</code></li>
+<li><code>content</code></li>
+</ul>
+<p>你暂时可以把它理解成：</p>
+<blockquote>
+<p><strong>模型不是只看到“一个字符串”，而是在特定上下文中看到一组有角色的消息。</strong></p>
+</blockquote>
+<p>角色信息为什么重要？</p>
+<p>假设你这样写：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>请判断下面内容属于哪类问题：</span></span>
+<span class="line"><span>用户说：“物流三天没更新。”</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>和：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>system:</span></span>
+<span class="line"><span>你负责客服分类。</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>user:</span></span>
+<span class="line"><span>物流三天没更新。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>从人的角度看，它们都在表达同一件事。</p>
+<p>但对于模型系统来说，消息结构本身就是输入的一部分。</p>
+<p>这也是为什么后面我们会不断回到一个词：</p>
+<blockquote>
+<p><strong>Context。</strong></p>
+</blockquote>
+<p>现在你不需要马上掌握 Context Engineering。</p>
+<p>你只需要记住：</p>
+<blockquote>
+<p><strong>模型最终做什么，取决于你给它什么输入，而这个输入远不只是用户最后打出的那句话。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-1-4">1.4 Token：为什么一句话不是“一句话”？</h2>
+<p>如果你以前没有接触过 LLM，第一次看到 <code>token</code> 时，可能会觉得：</p>
+<blockquote>
+<p>“为什么模型不用字符数或者字数计算？”</p>
+</blockquote>
+<p>因为模型实际处理的，并不是我们平常理解的“单词”或者“汉字”。</p>
+<p>模型会把输入文本转换成某种 token 序列。</p>
+<p>因此：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>文本长度</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>和：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Token 数量</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>并不是简单的一一对应关系。</p>
+<p>这件事情为什么重要？</p>
+<p>因为你以后会发现三个非常现实的问题。</p>
+<p>第一，模型通常存在上下文容量限制。</p>
+<p>第二，模型调用成本往往和输入、输出 token 有直接关系。</p>
+<p>第三，输入越长，不一定越好。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>输入 500 tokens</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>和：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>输入 50,000 tokens</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>当然可能表达更多信息。</p>
+<p>但第二种方式也意味着：</p>
+<ul>
+<li>更高成本</li>
+<li>更高延迟</li>
+<li>更复杂上下文</li>
+<li>更大的信息污染风险</li>
+</ul>
+<p>所以以后看到：</p>
+<blockquote>
+<p>“把所有历史记录全塞进去。”</p>
+</blockquote>
+<p>不要觉得这是最稳妥的方案。</p>
+<p>很多时候，恰恰相反。</p>
+<hr>
+<h2 id="sec-1-5">1.5 一个你很快会遇到的问题</h2>
+<p>假设你的客服 Agent 需要分析一个工单。</p>
+<p>用户可能提交：</p>
+<blockquote>
+<p>“车昨天开始充电特别慢，我已经换过两个充电桩，还是一样，而且之前从来没有出现过这种情况。”</p>
+</blockquote>
+<p>然后系统还需要补充：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>车辆型号</span></span>
+<span class="line"><span>电池状态</span></span>
+<span class="line"><span>最近故障记录</span></span>
+<span class="line"><span>最近维修记录</span></span>
+<span class="line"><span>充电记录</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>于是你的输入慢慢变成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Instructions</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>User Message</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Vehicle Information</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Battery Information</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Historical Records</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Business Rules</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这时候你就会发现：</p>
+<blockquote>
+<p>模型收到的东西，正在越来越多。</p>
+</blockquote>
+<p>这就是为什么以后我们会专门学习：</p>
+<blockquote>
+<p><strong>Context Engineering。</strong></p>
+</blockquote>
+<p>Part 1 只需要建立一个意识：</p>
+<blockquote>
+<p><strong>LLM 的输入是有预算的。</strong></p>
+</blockquote>
+<p>不要把 Context 当成免费的。</p>
+<hr>
+<h2 id="sec-1-6">1.6 输出也不是“随便返回一个字符串”</h2>
+<p>再来看一个非常典型的后端需求。</p>
+<p>我们希望模型把客服工单分类成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>物流</span></span>
+<span class="line"><span>商品</span></span>
+<span class="line"><span>退款</span></span>
+<span class="line"><span>其他</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>同时提取：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>order_id</span></span>
+<span class="line"><span>customer_name</span></span>
+<span class="line"><span>priority</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>初学者很容易做成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">result </span><span style="color:#D73A49">=</span><span style="color:#24292E"> model.generate(prompt)</span></span>
+<span class="line"></span></code></pre>
+<p>然后直接：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">save_to_database(result)</span></span>
+<span class="line"></span></code></pre>
+<p>问题是：</p>
+<blockquote>
+<p><code>result</code> 究竟是什么？</p>
+</blockquote>
+<p>它可能返回：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>物流</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>订单号：10001</span></span>
+<span class="line"><span>客户：张三</span></span>
+<span class="line"><span>优先级：高</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>也可能返回：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>{</span></span>
+<span class="line"><span>  "category": "物流",</span></span>
+<span class="line"><span>  "order_id": 10001,</span></span>
+<span class="line"><span>  "customer_name": "张三",</span></span>
+<span class="line"><span>  "priority": "high"</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>甚至：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>好的，这个问题应该属于物流类。</span></span>
+<span class="line"><span>订单号看起来是 10001，优先级比较高。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果你的数据库期待：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">TicketClassification(</span></span>
+<span class="line"><span style="color:#E36209">    category</span><span style="color:#D73A49">=</span><span style="color:#032F62">"物流"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#E36209">    order_id</span><span style="color:#D73A49">=</span><span style="color:#005CC5">10001</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#E36209">    customer_name</span><span style="color:#D73A49">=</span><span style="color:#032F62">"张三"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#E36209">    priority</span><span style="color:#D73A49">=</span><span style="color:#032F62">"high"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#24292E">)</span></span>
+<span class="line"></span></code></pre>
+<p>那么显然：</p>
+<blockquote>
+<p><strong>自然语言输出并不适合作为业务系统的稳定接口。</strong></p>
+</blockquote>
+<p>于是我们需要一个新的概念：</p>
+<h3 id="sec-structured-output">Structured Output</h3>
+<hr>
+<h2 id="sec-1-7">1.7 从自然语言进入结构化世界</h2>
+<p>想象一下：</p>
+<p>你让一个同事帮你处理一批工单。</p>
+<p>如果你只是告诉他：</p>
+<blockquote>
+<p>“帮我看看这些工单。”</p>
+</blockquote>
+<p>每个人可能都会给出不同格式的结果。</p>
+<p>但如果你明确规定：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>category: 物流 / 商品 / 退款 / 其他</span></span>
+<span class="line"><span>order_id: integer | null</span></span>
+<span class="line"><span>customer_name: string | null</span></span>
+<span class="line"><span>priority: low / medium / high</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>事情就完全不同了。</p>
+<p>这就是 Schema。</p>
+<p>在程序世界里，我们可以进一步使用：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">from</span><span style="color:#24292E"> pydantic </span><span style="color:#D73A49">import</span><span style="color:#24292E"> BaseModel</span></span>
+<span class="line"><span style="color:#D73A49">from</span><span style="color:#24292E"> typing </span><span style="color:#D73A49">import</span><span style="color:#24292E"> Literal</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> TicketClassification</span><span style="color:#24292E">(</span><span style="color:#6F42C1">BaseModel</span><span style="color:#24292E">):</span></span>
+<span class="line"><span style="color:#24292E">    category: Literal[</span><span style="color:#032F62">"物流"</span><span style="color:#24292E">, </span><span style="color:#032F62">"商品"</span><span style="color:#24292E">, </span><span style="color:#032F62">"退款"</span><span style="color:#24292E">, </span><span style="color:#032F62">"其他"</span><span style="color:#24292E">]</span></span>
+<span class="line"><span style="color:#24292E">    order_id: </span><span style="color:#005CC5">int</span><span style="color:#D73A49"> |</span><span style="color:#005CC5"> None</span></span>
+<span class="line"><span style="color:#24292E">    customer_name: </span><span style="color:#005CC5">str</span><span style="color:#D73A49"> |</span><span style="color:#005CC5"> None</span></span>
+<span class="line"><span style="color:#24292E">    priority: Literal[</span><span style="color:#032F62">"low"</span><span style="color:#24292E">, </span><span style="color:#032F62">"medium"</span><span style="color:#24292E">, </span><span style="color:#032F62">"high"</span><span style="color:#24292E">]</span></span>
+<span class="line"></span></code></pre>
+<p>现在我们的系统可以变成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>User Text</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Structured Output</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Pydantic Validation</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Business Object</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Backend Logic</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这一步特别重要。</p>
+<p>因为它第一次建立了：</p>
+<blockquote>
+<p><strong>AI 世界和传统软件世界之间的接口。</strong></p>
+</blockquote>
+<p>LLM 负责：</p>
+<blockquote>
+<p>从自然语言中提取和判断。</p>
+</blockquote>
+<p>Pydantic / Schema 负责：</p>
+<blockquote>
+<p>把结果约束成程序能够可靠处理的结构。</p>
+</blockquote>
+<p>业务系统负责：</p>
+<blockquote>
+<p>决定下一步怎么执行。</p>
+</blockquote>
+<p>三者职责开始分离。</p>
+<hr>
+<h2 id="sec-1-8">1.8 为什么 Schema 是 AI Engineering 的重要工具？</h2>
+<p>想象一个没有 Schema 的 AI 系统。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>LLM</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>自然语言</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>业务代码自己猜怎么解析</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这会非常脆弱。</p>
+<p>再看：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>LLM</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Schema</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Validation</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Business Object</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>此时系统多了一道边界。</p>
+<p>例如模型返回：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "category"</span><span style="color:#24292E">: </span><span style="color:#032F62">"logistics"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "order_id"</span><span style="color:#24292E">: </span><span style="color:#032F62">"10001"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "priority"</span><span style="color:#24292E">: </span><span style="color:#032F62">"urgent"</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<p>Schema 校验可能马上发现：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>priority 不在允许范围</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>于是系统可以：</p>
+<ul>
+<li>拒绝</li>
+<li>重试</li>
+<li>修复</li>
+<li>降级</li>
+<li>请求人工处理</li>
+</ul>
+<p>而不是：</p>
+<blockquote>
+<p>把一个奇怪的数据直接写入生产数据库。</p>
+</blockquote>
+<p>这其实和传统后端的很多思想非常相似。</p>
+<p>你以前会校验：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">amount </span><span style="color:#D73A49">></span><span style="color:#005CC5"> 0</span></span>
+<span class="line"></span></code></pre>
+<p>现在只是多了一个新的边界：</p>
+<blockquote>
+<p><strong>AI Output Validation。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-1-9">1.9 这时候你应该想到 Retry 了</h2>
+<p>现在假设模型偶尔返回一个无法解析的结果。</p>
+<p>作为后端工程师，你通常不会说：</p>
+<blockquote>
+<p>“服务器有时候报错很正常。”</p>
+</blockquote>
+<p>你会考虑：</p>
+<ul>
+<li>Retry</li>
+<li>Timeout</li>
+<li>Backoff</li>
+<li>Fallback</li>
+</ul>
+<p>LLM 也一样。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Request</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Model</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Malformed Output</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Validation Failed</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Retry / Repair</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>但是这里有一个很重要的问题：</p>
+<blockquote>
+<p><strong>什么时候重试是合理的？</strong></p>
+</blockquote>
+<p>假设模型输出格式错误。</p>
+<p>可以考虑重试。</p>
+<p>如果是网络超时。</p>
+<p>也可以重试。</p>
+<p>如果服务端暂时繁忙。</p>
+<p>可能也可以重试。</p>
+<p>但如果模型连续三次都无法完成这个任务：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Attempt 1 → wrong</span></span>
+<span class="line"><span>Attempt 2 → wrong</span></span>
+<span class="line"><span>Attempt 3 → wrong</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>继续无脑重试可能只是：</p>
+<blockquote>
+<p>增加成本，而不是增加正确率。</p>
+</blockquote>
+<p>所以 AI 系统里的 Retry 也不能照搬传统数据库 API 的思路。</p>
+<p>以后你会发现：</p>
+<blockquote>
+<p><strong>Retry 本身也应该被 Evaluation。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-1-10">1.10 Timeout：最容易被忽略的生产问题</h2>
+<p>本地 Demo 最容易给工程师制造一种错觉：</p>
+<blockquote>
+<p>“调用模型，好像也就几秒。”</p>
+</blockquote>
+<p>但一旦上线，模型调用就可能出现：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>100 ms</span></span>
+<span class="line"><span>800 ms</span></span>
+<span class="line"><span>2 s</span></span>
+<span class="line"><span>5 s</span></span>
+<span class="line"><span>10 s</span></span>
+<span class="line"><span>...</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>甚至失败。</p>
+<p>假设你的接口：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">POST</span><span style="color:#24292E"> /ticket</span></span>
+<span class="line"></span></code></pre>
+<p>同步调用 LLM。</p>
+<p>如果：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Frontend Timeout = 10s</span></span>
+<span class="line"><span>Backend Timeout = 30s</span></span>
+<span class="line"><span>LLM Timeout = 60s</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么你的系统设计其实已经存在明显的问题。</p>
+<p>用户已经放弃等待了。</p>
+<p>后端还在等模型。</p>
+<p>所以：</p>
+<blockquote>
+<p><strong>LLM 的延迟必须被当成系统设计的一部分，而不是调用细节。</strong></p>
+</blockquote>
+<p>这会进一步影响：</p>
+<ul>
+<li>API timeout</li>
+<li>async task</li>
+<li>queue</li>
+<li>streaming</li>
+<li>background worker</li>
+<li>fallback</li>
+</ul>
+<p>这些概念会在后面逐渐展开。</p>
+<p>现在你只需要形成一个感觉：</p>
+<blockquote>
+<p><strong>LLM 是一个慢而且可能失败的远程依赖。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-1-11">1.11 Streaming：为什么有时候用户感觉“更快了”？</h2>
+<p>假设模型最终会生成：</p>
+<blockquote>
+<p>“根据订单状态和物流信息……”</p>
+</blockquote>
+<p>如果你等到全部生成完再返回：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Request</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>[ 等待 5 秒 ]</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>Complete Response</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>用户会感觉：</p>
+<blockquote>
+<p>“这个系统好慢。”</p>
+</blockquote>
+<p>如果模型支持逐步发送输出，那么用户可能看到：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Request</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>“根据订单状态……”</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>“根据订单状态和物流信息……”</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>“目前订单已经发出……”</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>即使完整响应总耗时没有变化，用户也会觉得：</p>
+<blockquote>
+<p>“系统开始工作了。”</p>
+</blockquote>
+<p>因此，Streaming 不只是一个 UI 技巧。</p>
+<p>它其实涉及：</p>
+<blockquote>
+<p><strong>系统响应模型。</strong></p>
+</blockquote>
+<p>你需要开始区分：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Time to First Token</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>和：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Time to Complete Response</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这两个指标以后都会影响 AI Application 的设计。</p>
+<hr>
+<h2 id="sec-1-12">1.12 模型不是一种商品，而是一组能力</h2>
+<p>到现在为止，我们还可以假设：</p>
+<blockquote>
+<p>“模型就是模型。”</p>
+</blockquote>
+<p>但真正开始做工程以后，你很快会发现：</p>
+<p>不同模型可能在不同任务上表现不同。</p>
+<p>例如一个模型：</p>
+<ul>
+<li>长文本很好</li>
+<li>工具调用不错</li>
+<li>成本比较高</li>
+</ul>
+<p>另一个模型：</p>
+<ul>
+<li>分类已经足够准确</li>
+<li>成本更低</li>
+<li>延迟更低</li>
+</ul>
+<p>第三个模型：</p>
+<ul>
+<li>复杂推理更强</li>
+<li>但普通提取任务完全没必要使用</li>
+</ul>
+<p>所以一个成熟的 AI Application 不应该在业务代码里到处写：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">call_specific_model_xxx(</span><span style="color:#005CC5">...</span><span style="color:#24292E">)</span></span>
+<span class="line"></span></code></pre>
+<p>否则以后业务逻辑会被模型供应商和模型名称绑死。</p>
+<hr>
+<h2 id="sec-1-13">1.13 给模型加一层抽象</h2>
+<p>你可能已经在后端系统里见过类似设计。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>PaymentService</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>下面可以有：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>AlipayAdapter</span></span>
+<span class="line"><span>WechatPayAdapter</span></span>
+<span class="line"><span>StripeAdapter</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>上层业务只关心：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">payment_service.pay(</span><span style="color:#005CC5">...</span><span style="color:#24292E">)</span></span>
+<span class="line"></span></code></pre>
+<p>而不是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">stripe_create_payment(</span><span style="color:#005CC5">...</span><span style="color:#24292E">)</span></span>
+<span class="line"></span></code></pre>
+<p>LLM 也可以采用类似思想：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Application</span></span>
+<span class="line"><span>     ↓</span></span>
+<span class="line"><span>Model Interface</span></span>
+<span class="line"><span>     ↓</span></span>
+<span class="line"><span>Provider Adapter</span></span>
+<span class="line"><span> ┌─────┼─────┐</span></span>
+<span class="line"><span> ↓     ↓     ↓</span></span>
+<span class="line"><span>Model A Model B Model C</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>例如定义一个最小接口：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> ModelClient</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#D73A49">    def</span><span style="color:#6F42C1"> generate</span><span style="color:#24292E">(...):</span></span>
+<span class="line"><span style="color:#005CC5">        ...</span></span>
+<span class="line"></span></code></pre>
+<p>上层业务不关心具体是哪一家 Provider。</p>
+<p>这里不是要求你现在就建立一个巨大抽象层。</p>
+<p>恰恰相反：</p>
+<blockquote>
+<p><strong>抽象的目标不是为了“看起来架构高级”，而是为了保护业务系统。</strong></p>
+</blockquote>
+<p>如果你只有一个模型、一个项目、一个调用点，那么简单封装就足够。</p>
+<p>如果未来有：</p>
+<ul>
+<li>多 Provider</li>
+<li>多模型</li>
+<li>Fallback</li>
+<li>Routing</li>
+<li>Cost Optimization</li>
+</ul>
+<p>那么抽象层的价值会越来越明显。</p>
+<hr>
+<h2 id="sec-1-14">1.14 成本：为什么“效果更好”不是唯一目标？</h2>
+<p>假设有两个模型。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model A</span></span>
+<span class="line"><span>准确率：90%</span></span>
+<span class="line"><span>成本：1</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Model B</span></span>
+<span class="line"><span>准确率：92%</span></span>
+<span class="line"><span>成本：10</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你会选哪个？</p>
+<p>很多人第一反应是：</p>
+<blockquote>
+<p>Model B。</p>
+</blockquote>
+<p>因为 92% 更高。</p>
+<p>但是如果一个业务每天调用 100 万次：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>A：</span></span>
+<span class="line"><span>1 × 1,000,000</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>B：</span></span>
+<span class="line"><span>10 × 1,000,000</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>成本差距就非常明显。</p>
+<p>更重要的是：</p>
+<p>如果 Model A 已经满足业务目标，</p>
+<p>那么为了多获得几个百分点的准确率支付十倍成本，</p>
+<p>可能根本不是一个好的工程选择。</p>
+<p>所以 AI Application Engineering 开始出现新的优化目标：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Quality</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Cost</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Latency</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Reliability</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而不是只有：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Quality</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-1-15">1.15 一个很有意思的工程问题</h2>
+<p>假设一个 Agent 会连续调用三次模型：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model Call 1</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Model Call 2</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Model Call 3</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么单次调用成本不是总成本。</p>
+<p>粗略地说：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Total Cost</span></span>
+<span class="line"><span>≈</span></span>
+<span class="line"><span>Σ Model Cost</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Tool Cost</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Retrieval Cost</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Infrastructure Cost</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>同样：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Total Latency</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>也可能来自：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Network</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Database</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Retrieval</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Serialization</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是为什么：</p>
+<blockquote>
+<p><strong>后面学习 Agent 时，我们绝不能只盯着模型 Prompt。</strong></p>
+</blockquote>
+<p>Agent 是一个系统。</p>
+<hr>
+<h2 id="sec-1-16">1.16 实验：把一个后端 API 变成 AI Application</h2>
+<p>现在我们终于开始动手。</p>
+<p>假设你已有一个：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">POST</span><span style="color:#24292E"> /ticket</span></span>
+<span class="line"></span></code></pre>
+<p>请求：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "text"</span><span style="color:#24292E">: </span><span style="color:#032F62">"我的订单已经三天没有物流更新了"</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<p>你需要增加一个 AI 能力：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>classify_ticket</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>让系统返回：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "category"</span><span style="color:#24292E">: </span><span style="color:#032F62">"物流"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "priority"</span><span style="color:#24292E">: </span><span style="color:#032F62">"high"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "summary"</span><span style="color:#24292E">: </span><span style="color:#032F62">"订单物流三天没有更新"</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<hr>
+<h3 id="sec-x19">第一步：最小版本</h3>
+<p>先只做：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>API</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Text Output</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>不要急着优化。</p>
+<p>先让它跑起来。</p>
+<hr>
+<h3 id="sec-structured-output-2">第二步：Structured Output</h3>
+<p>增加：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>JSON Schema</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Pydantic</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Validation</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h3 id="sec-timeout">第三步：Timeout</h3>
+<p>给模型调用增加：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Request Timeout</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h3 id="sec-retry">第四步：Retry</h3>
+<p>仅对明确可恢复的错误进行有限重试。</p>
+<hr>
+<h3 id="sec-logging">第五步：Logging</h3>
+<p>记录：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>request_id</span></span>
+<span class="line"><span>model</span></span>
+<span class="line"><span>latency</span></span>
+<span class="line"><span>input_tokens</span></span>
+<span class="line"><span>output_tokens</span></span>
+<span class="line"><span>status</span></span>
+<span class="line"><span>error</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h3 id="sec-cost-tracking">第六步：Cost Tracking</h3>
+<p>根据调用结果记录：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>input tokens</span></span>
+<span class="line"><span>output tokens</span></span>
+<span class="line"><span>estimated cost</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>不需要一开始就做复杂计费系统。</p>
+<p>我们首先要培养的是：</p>
+<blockquote>
+<p><strong>可观测意识。</strong></p>
+</blockquote>
+<hr>
+<p>在把系统故意弄坏之前，先为这个最小版本建立一个可重复的基线。配套仓库中的对应实验是 <code>labs/lab01_llm_api/</code>。先阅读其中的 <code>TASK.md</code>，确认要实现的接口契约，再阅读 <code>README.md</code> 了解真实运行边界。主线不要求 API Key：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab01_llm_api.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> fake</span></span>
+<span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> pytest</span><span style="color:#032F62"> labs/lab01_llm_api/tests</span></span>
+<span class="line"></span></code></pre>
+<p>第一条命令让你观察确定性工程路径是否按契约输出；第二条命令检查格式错误、超时、重试等边界。之后再执行本节的 Failure Lab，把超时或无效输出变成可以复现的输入。</p>
+<h3 id="sec-provider">可选真实模型实验：观察当前 Provider 行为</h3>
+<p>这条轨道不是主线的前置条件。只有在已经配置并获准使用 Provider、确认输入不包含未授权的敏感业务数据、了解调用费用与数据处理条件后，才执行。它用于观察当前模型在指定配置下的实际表现，不替代离线契约测试，也不能单独证明生产质量。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab01_llm_api.src.run</span><span style="color:#005CC5"> --mode</span><span style="color:#032F62"> real</span></span>
+<span class="line"></span></code></pre>
+<p>运行前先按本书的公共实验手册配置 <code>AI_BASE_URL</code>、<code>AI_API_KEY</code> 与 <code>AI_MODEL</code>。保留实际报告和失败案例，不要把 Fake 返回值当成模型质量结果，也不要将缺失的 usage/cost 填成零。推荐交付 <code>part01-report.md</code>：记录输入条件、接口契约、失败样例、重试行为、指标已知性，以及这次实验能够支持和不能支持的结论。</p>
+<h2 id="sec-1-17">1.17 故障实验：现在主动把系统弄坏</h2>
+<p>真正的实验从这里开始。</p>
+<p>不要满足于：</p>
+<blockquote>
+<p>“调用成功。”</p>
+</blockquote>
+<p>我们主动创造失败。</p>
+<hr>
+<h3 id="sec-failure-a">Failure A：模型超时</h3>
+<p>模拟：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Timeout</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>系统应该怎样表现？</p>
+<p>不能让请求无限等待。</p>
+<hr>
+<h3 id="sec-failure-b">Failure B：结构化输出失败</h3>
+<p>模型返回：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "category"</span><span style="color:#24292E">: </span><span style="color:#032F62">"物流"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "priority"</span><span style="color:#24292E">: </span><span style="color:#032F62">"超级紧急"</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<p>而 Schema 不允许：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>超级紧急</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你应该怎么办？</p>
+<hr>
+<h3 id="sec-failure-c-provider-error">Failure C：Provider Error</h3>
+<p>模拟：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>429</span></span>
+<span class="line"><span>500</span></span>
+<span class="line"><span>503</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>看看你的应用如何处理。</p>
+<hr>
+<h3 id="sec-failure-d">Failure D：超长输入</h3>
+<p>把一条工单扩大到远超正常长度。</p>
+<p>看看系统发生什么。</p>
+<hr>
+<h3 id="sec-failure-e">Failure E：结果为空</h3>
+<p>模型没有给出有效结果。</p>
+<p>系统应该：</p>
+<blockquote>
+<p>Retry？</p>
+</blockquote>
+<p>还是：</p>
+<blockquote>
+<p>Fallback？</p>
+</blockquote>
+<p>还是：</p>
+<blockquote>
+<p>交给人工？</p>
+</blockquote>
+<hr>
+<h2 id="sec-1-18">1.18 不要急着修，先测</h2>
+<p>现在回到 Part 0 学到的原则：</p>
+<blockquote>
+<p><strong>Build → Break → Measure → Improve</strong></p>
+</blockquote>
+<p>先记录：</p>
+<table>
+<thead>
+<tr>
+<th>Case</th>
+<th>Result</th>
+<th style="text-align:right">Latency</th>
+<th style="text-align:right">Tokens</th>
+<th style="text-align:right">Cost</th>
+<th>Failure</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Normal</td>
+<td></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td></td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td></td>
+</tr>
+<tr>
+<td>Bad Output</td>
+<td></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td></td>
+</tr>
+<tr>
+<td>Long Input</td>
+<td></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td></td>
+</tr>
+<tr>
+<td>Provider Error</td>
+<td></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>你会发现，一个看起来只有几十行代码的 LLM 调用，开始拥有：</p>
+<blockquote>
+<p><strong>真正的软件工程特征。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-1-19">1.19 一个非常重要的转变</h2>
+<p>到这里，你已经可以回头重新看待：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">response </span><span style="color:#D73A49">=</span><span style="color:#24292E"> model.generate(</span><span style="color:#005CC5">...</span><span style="color:#24292E">)</span></span>
+<span class="line"></span></code></pre>
+<p>这行代码。</p>
+<p>以前你可能把它理解成：</p>
+<blockquote>
+<p>“调用 AI。”</p>
+</blockquote>
+<p>现在应该把它理解成：</p>
+<blockquote>
+<p>“调用一个可能慢、可能失败、有成本、输出存在不确定性的远程计算服务。”</p>
+</blockquote>
+<p>这两个理解看起来差别不大。</p>
+<p>实际上，它们决定了完全不同的代码质量。</p>
+<hr>
+<h2 id="sec-1-20">1.20 练习：自己设计一个 AI Backend Endpoint</h2>
+<p>现在选择一个你比较熟悉的后端功能。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>工单分类</span></span>
+<span class="line"><span>商品描述生成</span></span>
+<span class="line"><span>客户意图识别</span></span>
+<span class="line"><span>文本信息提取</span></span>
+<span class="line"><span>风险说明生成</span></span>
+<span class="line"><span>报告摘要</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>实现一个 API。</p>
+<p>要求至少包含：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>1. Model Client</span></span>
+<span class="line"><span>2. Structured Output</span></span>
+<span class="line"><span>3. Validation</span></span>
+<span class="line"><span>4. Timeout</span></span>
+<span class="line"><span>5. Retry</span></span>
+<span class="line"><span>6. Logging</span></span>
+<span class="line"><span>7. Token Tracking</span></span>
+<span class="line"><span>8. Cost Tracking</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>但不要把所有东西塞进一个函数。</p>
+<p>建议最少分成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>API Layer</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Application Service</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Model Client</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Provider</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这样你会开始发现：</p>
+<blockquote>
+<p>LLM 只是其中一层。</p>
+</blockquote>
+<hr>
+<h2 id="sec-1-21">1.21 一个小小的架构升级</h2>
+<p>最初你可能写成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>API</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Response</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>现在应该变成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>API</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Application Service</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Model Client</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Provider</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Structured Output</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Validation</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Business Logic</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果再加上：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Timeout</span></span>
+<span class="line"><span>Retry</span></span>
+<span class="line"><span>Logging</span></span>
+<span class="line"><span>Cost</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>它就开始变成一个真正的 AI Application。</p>
+<hr>
+<h2 id="sec-1-22">1.22 现在重新回答一个问题</h2>
+<blockquote>
+<p><strong>AI Application Engineer 和普通后端工程师有什么区别？</strong></p>
+</blockquote>
+<p>不是：</p>
+<blockquote>
+<p>会写 Python。</p>
+</blockquote>
+<p>也不是：</p>
+<blockquote>
+<p>会调用模型。</p>
+</blockquote>
+<p>更准确地说：</p>
+<blockquote>
+<p><strong>他知道如何把 LLM 的概率性能力放在系统适合的位置，并通过软件工程手段控制它的输入、输出、成本、延迟、失败和边界。</strong></p>
+</blockquote>
+<p>而这恰恰是我们在 Part 0 里说过的：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>AI Capability</span></span>
+<span class="line"><span>       +</span></span>
+<span class="line"><span>Engineering Control</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>AI Application</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="sec-1-23">1.23 为什么我们现在还不能直接做 Agent？</h2>
+<p>你可能已经发现，我们目前已经拥有：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>LLM</span></span>
+<span class="line"><span>Structured Output</span></span>
+<span class="line"><span>Timeout</span></span>
+<span class="line"><span>Retry</span></span>
+<span class="line"><span>Logging</span></span>
+<span class="line"><span>Cost Tracking</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么：</p>
+<blockquote>
+<p>Agent 还差什么？</p>
+</blockquote>
+<p>答案其实很有意思。</p>
+<p>差的不是“更大的 Prompt”。</p>
+<p>也不是“更高级的模型”。</p>
+<p>而是：</p>
+<blockquote>
+<p><strong>模型开始参与决定下一步应该做什么。</strong></p>
+</blockquote>
+<p>比如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户：</span></span>
+<span class="line"><span>帮我看看订单 10001 为什么还没发货。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>系统可能先调用：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_order()</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后发现：</p>
+<blockquote>
+<p>订单已经出库。</p>
+</blockquote>
+<p>于是模型决定：</p>
+<blockquote>
+<p>那我下一步需要查询物流。</p>
+</blockquote>
+<p>再调用：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>query_logistics()</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后根据物流结果继续判断。</p>
+<p>现在系统开始出现：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Decision</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Action</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Observation</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Decision</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Action</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这才是真正走向 Agent 的地方。</p>
+<hr>
+<h2 id="sec-part">本 Part 小结</h2>
+<p>如果你认真完成了这一部分，你应该已经建立了几个非常重要的工程习惯。</p>
+<p>第一：</p>
+<blockquote>
+<p><strong>LLM 是软件系统中的一个组件，不是整个系统。</strong></p>
+</blockquote>
+<p>第二：</p>
+<blockquote>
+<p><strong>LLM 调用应该像远程依赖一样被管理。</strong></p>
+</blockquote>
+<p>第三：</p>
+<blockquote>
+<p><strong>自然语言输出不能直接等价于业务对象。</strong></p>
+</blockquote>
+<p>第四：</p>
+<blockquote>
+<p><strong>Structured Output + Validation 是连接 AI 与传统软件的重要边界。</strong></p>
+</blockquote>
+<p>第五：</p>
+<blockquote>
+<p><strong>Latency、Cost、Failure 都是 AI Application 的一部分。</strong></p>
+</blockquote>
+<p>第六：</p>
+<blockquote>
+<p><strong>模型应该被抽象为一种可替换的计算能力，而不是写死在业务代码里的供应商 API。</strong></p>
+</blockquote>
+<p>第七：</p>
+<blockquote>
+<p><strong>一个 AI Demo 能运行，不等于它已经是一个工程系统。</strong></p>
+</blockquote>
+<p>而你现在已经站在 Agent 的门口了。</p>
+<hr>
+<h2 id="sec-part-part-2">本 Part → Part 2：从模型调用到输入设计</h2>
+<p>现在你已经能把 LLM 接入一个后端端点，并为结构化输出、超时、有限重试、日志和成本状态建立基本边界。但模型每次作答的质量，不只取决于它自身，还取决于本次调用实际提供了什么信息。</p>
+<p>下一部分研究 Context：怎样在任务、状态、历史、知识和工具结果之间做选择，构造一个足以支持当前决策、又不会无节制膨胀的输入视图。</p>
+
+</article>
+<nav class="pager"><a class="pg prev" href="part-00.html"><span class="pg-dir">上一部分</span><span class="pg-name">Part 0｜先别急着做 Agent</span></a><a class="pg next" href="part-02.html"><span class="pg-dir">下一部分</span><span class="pg-name">Part 2｜Context Engineering：决定模型到底能看到什么</span></a></nav>
+<footer class="book-foot"><span>Enterprise Agent Engineering</span><span>v0.4</span><span>文本校审候选，非出版定稿</span></footer>
+</main>
+</div>
+<div class="scrim" id="scrim"></div>
+<script src="assets/nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,1898 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 0｜先别急着做 Agent · Enterprise Agent Engineering</title>
+<meta name="description" content="先判断一件事：这个问题到底需不需要 Agent。 —— Enterprise Agent Engineering v0.4">
+<meta property="og:title" content="Part 0｜先别急着做 Agent">
+<meta property="og:type" content="article">
+<link rel="stylesheet" href="assets/book.css">
+</head>
+<body>
+<a class="skip-link" href="#content">跳到正文</a>
+<header class="topbar"><button class="toc-toggle" id="tocToggle" aria-label="打开目录" aria-controls="sidebar"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button><a class="brand" href="index.html"><span class="brand-title">Enterprise Agent Engineering</span><span class="brand-sub">企业级 Agent 工程</span></a><span class="ver">v0.4</span></header>
+<div class="layout">
+<aside class="sidebar" id="sidebar"><nav class="book-nav"><div class="book-nav-head"><a class="bn-title" href="index.html">Enterprise Agent Engineering</a><span class="bn-ver">v0.4</span></div><ol class="parts"><li class="part is-active"><a class="part-link" href="part-00.html"><span class="part-no">0</span><span class="part-name">先别急着做 Agent</span></a><ul class="secs"><li class="lvl2"><a class="sec" href="#sec-x2" data-id="sec-x2">开始之前</a></li><li class="lvl3"><a class="sec" href="#sec-x3" data-id="sec-x3">本书的实验怎样安排</a></li><li class="lvl2"><a class="sec" href="#sec-0-1" data-id="sec-0-1">0.1 从后端工程师到 AI Application Engineer</a></li><li class="lvl3"><a class="sec" href="#sec-0-1-1" data-id="sec-0-1-1">0.1.1 你其实已经拥有了很多 AI 工程能力</a></li><li class="lvl3"><a class="sec" href="#sec-0-1-2" data-id="sec-0-1-2">0.1.2 LLM 到底是什么？</a></li><li class="lvl3"><a class="sec" href="#sec-0-1-3" data-id="sec-0-1-3">0.1.3 AI Application 并不等于 Agent</a></li><li class="lvl3"><a class="sec" href="#sec-0-1-4" data-id="sec-0-1-4">0.1.4 后端工程师真正需要增加什么能力？</a></li><li class="lvl3"><a class="sec" href="#sec-0-1-5" data-id="sec-0-1-5">0.1.5 一个重要的工程边界</a></li><li class="lvl3"><a class="sec" href="#sec-0-1-6" data-id="sec-0-1-6">0.1.6 一个小练习</a></li><li class="lvl3"><a class="sec" href="#sec-x11" data-id="sec-x11">本章留下一个问题</a></li><li class="lvl2"><a class="sec" href="#sec-0-2" data-id="sec-0-2">0.2 当软件开始“没那么确定”</a></li><li class="lvl3"><a class="sec" href="#sec-0-2-1" data-id="sec-0-2-1">0.2.1 传统软件最舒服的地方</a></li><li class="lvl3"><a class="sec" href="#sec-0-2-2" data-id="sec-0-2-2">0.2.2 现在换成一个语言任务</a></li><li class="lvl3"><a class="sec" href="#sec-0-2-3" data-id="sec-0-2-3">0.2.3 这并不意味着 AI 是“不可靠的软件”</a></li><li class="lvl3"><a class="sec" href="#sec-0-2-4" data-id="sec-0-2-4">0.2.4 为什么“Demo 成功”毫无意义？</a></li><li class="lvl3"><a class="sec" href="#sec-0-2-5" data-id="sec-0-2-5">0.2.5 AI 系统多了一层“失败面”</a></li><li class="lvl3"><a class="sec" href="#sec-0-2-6" data-id="sec-0-2-6">0.2.6 第一次建立 Dataset 意识</a></li><li class="lvl3"><a class="sec" href="#sec-0-2-7" data-id="sec-0-2-7">0.2.7 遇到失败时，不要急着改 Prompt</a></li><li class="lvl3"><a class="sec" href="#sec-0-2-8" data-id="sec-0-2-8">0.2.8 小练习：把一次成功变成十次测试</a></li><li class="lvl3"><a class="sec" href="#sec-x21" data-id="sec-x21">本章最重要的一句话</a></li><li class="lvl2"><a class="sec" href="#sec-0-3" data-id="sec-0-3">0.3 几类不同的技术选择：哪些能力需要组合？</a></li><li class="lvl3"><a class="sec" href="#sec-0-3-1" data-id="sec-0-3-1">0.3.1 软件架构不是游戏里的装备等级</a></li><li class="lvl3"><a class="sec" href="#sec-x24" data-id="sec-x24">架构复杂度应该由问题复杂度驱动</a></li><li class="lvl3"><a class="sec" href="#sec-agent-agent" data-id="sec-agent-agent">因为我学会了 Agent，所以问题必须用 Agent</a></li><li class="lvl3"><a class="sec" href="#sec-0-3-2" data-id="sec-0-3-2">0.3.2 规则清楚时，传统软件就够了</a></li><li class="lvl3"><a class="sec" href="#sec-0-3-3" data-id="sec-0-3-3">0.3.3 需要语言理解或生成时，加入 LLM</a></li><li class="lvl3"><a class="sec" href="#sec-0-3-4" data-id="sec-0-3-4">0.3.4 缺少外部知识时，增加检索路径（RAG）</a></li><li class="lvl3"><a class="sec" href="#sec-0-3-5" data-id="sec-0-3-5">0.3.5 需要访问业务系统时，提供 Tool</a></li><li class="lvl3"><a class="sec" href="#sec-0-3-6" data-id="sec-0-3-6">0.3.6 流程可以预先定义时，使用 Workflow</a></li><li class="lvl3"><a class="sec" href="#sec-0-3-7" data-id="sec-0-3-7">0.3.7 需要动态选择下一步时，再考虑 Agent</a></li><li class="lvl3"><a class="sec" href="#sec-0-3-8" data-id="sec-0-3-8">0.3.8 需要有意义的分工时，再考虑 Multi-Agent</a></li><li class="lvl3"><a class="sec" href="#sec-0-3-9" data-id="sec-0-3-9">0.3.9 把能力选择与控制流选择分开</a></li><li class="lvl3"><a class="sec" href="#sec-0-3-10" data-id="sec-0-3-10">0.3.10 一个判断技巧</a></li><li class="lvl2"><a class="sec" href="#sec-0-4" data-id="sec-0-4">0.4 有些问题，你真的不应该用 Agent</a></li><li class="lvl3"><a class="sec" href="#sec-0-4-1" data-id="sec-0-4-1">0.4.1 一个很诱人的需求</a></li><li class="lvl3"><a class="sec" href="#sec-0-4-2" data-id="sec-0-4-2">0.4.2 为什么“能做”不等于“适合做”</a></li><li class="lvl3"><a class="sec" href="#sec-0-4-3" data-id="sec-0-4-3">0.4.3 确定性规则应该留在确定性系统里</a></li><li class="lvl3"><a class="sec" href="#sec-0-4-4" data-id="sec-0-4-4">0.4.4 风险越高，自治边界越重要</a></li><li class="lvl3"><a class="sec" href="#sec-0-4-5" data-id="sec-0-4-5">0.4.5 Agent 的自治程度不是越高越好</a></li><li class="lvl3"><a class="sec" href="#sec-0-4-6" data-id="sec-0-4-6">0.4.6 一个反直觉的例子</a></li><li class="lvl2"><a class="sec" href="#sec-0-5" data-id="sec-0-5">0.5 从一个陌生业务里找到真正值得做的事情</a></li><li class="lvl3"><a class="sec" href="#sec-0-5-1" data-id="sec-0-5-1">0.5.1 你被调去了一个完全陌生的行业</a></li><li class="lvl3"><a class="sec" href="#sec-0-5-2" data-id="sec-0-5-2">0.5.2 第一步：先理解业务</a></li><li class="lvl3"><a class="sec" href="#sec-0-5-3" data-id="sec-0-5-3">0.5.3 第二步：把流程拆开</a></li><li class="lvl3"><a class="sec" href="#sec-0-5-4" data-id="sec-0-5-4">0.5.4 哪些步骤真正需要“智能”？</a></li><li class="lvl3"><a class="sec" href="#sec-0-5-5" data-id="sec-0-5-5">0.5.5 一张业务机会分析表</a></li><li class="lvl3"><a class="sec" href="#sec-0-5-6" data-id="sec-0-5-6">0.5.6 找三个不同的机会</a></li><li class="lvl3"><a class="sec" href="#sec-x49" data-id="sec-x49">机会一：知识查询</a></li><li class="lvl3"><a class="sec" href="#sec-x50" data-id="sec-x50">机会二：跨系统调查</a></li><li class="lvl3"><a class="sec" href="#sec-x51" data-id="sec-x51">机会三：查询零件库存</a></li><li class="lvl3"><a class="sec" href="#sec-0-5-7" data-id="sec-0-5-7">0.5.7 这才是真正的 AI Opportunity Discovery</a></li><li class="lvl2"><a class="sec" href="#sec-part-0" data-id="sec-part-0">Part 0 实验：把工程判断变成一份机会评估记录</a></li><li class="lvl3"><a class="sec" href="#sec-x54" data-id="sec-x54">先明确：你正在为谁解决什么问题？</a></li><li class="lvl3"><a class="sec" href="#sec-agent" data-id="sec-agent">第一步：还原现有流程，而不是画一张 Agent 图</a></li><li class="lvl3"><a class="sec" href="#sec-agent-2" data-id="sec-agent-2">第二步：寻找机会，也刻意寻找不该使用 Agent 的地方</a></li><li class="lvl3"><a class="sec" href="#sec-x57" data-id="sec-x57">第三步：比较方案，而不是直接选中最复杂的方案</a></li><li class="lvl3"><a class="sec" href="#sec-x58" data-id="sec-x58">第四步：在实现前写下怎样判断成功</a></li><li class="lvl3"><a class="sec" href="#sec-x59" data-id="sec-x59">第五步：划定行动和风险边界</a></li><li class="lvl3"><a class="sec" href="#sec-x60" data-id="sec-x60">最终交付：一份别人可以审查的机会评估记录</a></li><li class="lvl3"><a class="sec" href="#sec-x61" data-id="sec-x61">怎样判断这份实验是否完成？</a></li><li class="lvl3"><a class="sec" href="#sec-x62" data-id="sec-x62">把评估结论带回业务现场</a></li><li class="lvl2"><a class="sec" href="#sec-part" data-id="sec-part">本 Part 小结</a></li><li class="lvl2"><a class="sec" href="#sec-part-part-1" data-id="sec-part-part-1">本 Part → Part 1：从判断问题到接入模型</a></li></ul></li>
+<li class="part"><a class="part-link" href="part-01.html"><span class="part-no">1</span><span class="part-name">把 LLM 当成一个真正的软件组件</span></a></li>
+<li class="part"><a class="part-link" href="part-02.html"><span class="part-no">2</span><span class="part-name">Context Engineering：决定模型到底能看到什么</span></a></li>
+<li class="part"><a class="part-link" href="part-03.html"><span class="part-no">3</span><span class="part-name">Tools &amp; Agent Harness：让模型开始与真实世界交互</span></a></li>
+<li class="part"><a class="part-link" href="part-04.html"><span class="part-no">4</span><span class="part-name">RAG &amp; Memory：让 Agent 获得知识，并记住真正值得记住的东西</span></a></li>
+<li class="part"><a class="part-link" href="part-05.html"><span class="part-no">5</span><span class="part-name">Workflow → Agent：什么时候真的需要 Agent？</span></a></li>
+<li class="part"><a class="part-link" href="part-06.html"><span class="part-no">6</span><span class="part-name">Evaluation Engineering：从“看起来不错”到“有证据证明”</span></a></li>
+<li class="part"><a class="part-link" href="part-07.html"><span class="part-no">7</span><span class="part-name">Production Agent Engineering：让一个“能跑的 Agent”变成“敢上线的 Agent”</span></a></li>
+<li class="part"><a class="part-link" href="part-08.html"><span class="part-no">8</span><span class="part-name">Advanced Agent Patterns：当简单 Agent 已经不够用了</span></a></li>
+<li class="part"><a class="part-link" href="part-09.html"><span class="part-no">9</span><span class="part-name">Coding Agent：让 Agent 真正参与软件开发</span></a></li>
+<li class="part"><a class="part-link" href="part-10.html"><span class="part-no">10</span><span class="part-name">Multi-Agent Engineering：当一个 Agent 不再够用</span></a></li>
+<li class="part"><a class="part-link" href="part-11.html"><span class="part-no">11</span><span class="part-name">Agent Evolution：让 Agent 不只是上线，而是持续变好</span></a></li>
+<li class="part"><a class="part-link" href="part-12.html"><span class="part-no">12</span><span class="part-name">Agent Application Architecture：把工程能力迁移到陌生领域</span></a></li></ol><div class="bn-foot"><a href="index.html">全书目录</a></div></nav></aside>
+<main class="content" id="content">
+<article class="prose">
+<h1>Part 0｜先别急着做 Agent</h1>
+<blockquote>
+<p>真正优秀的 AI 工程师，往往不是最先想到“用 Agent”的那个人，而是最先问“这个问题到底需不需要 Agent”的那个人。</p>
+</blockquote>
+<hr>
+<h2 id="sec-x2">开始之前</h2>
+<p>如果你是一名后端工程师，那么你大概已经见过很多这样的技术浪潮。</p>
+<p>微服务出现的时候，大家开始讨论服务拆分。</p>
+<p>容器流行的时候，大家开始讨论 Docker。</p>
+<p>Serverless 出现的时候，大家开始讨论函数是不是会取代服务器。</p>
+<p>而现在，轮到了 Agent。</p>
+<p>你可能已经在工作中看到过类似的需求：</p>
+<blockquote>
+<p>“大模型现在这么强，我们是不是也应该做个 Agent？”</p>
+</blockquote>
+<p>或者：</p>
+<blockquote>
+<p>“隔壁部门已经有 AI 助手了，我们这个业务是不是也能接一个？”</p>
+</blockquote>
+<p>再或者：</p>
+<blockquote>
+<p>“老板说今年要搞 Agent，大家看看我们有什么场景可以上。”</p>
+</blockquote>
+<p>如果你已经开始接触 LLM，你甚至可能已经会调用 GPT、Claude、DeepSeek、Qwen 或其他模型。</p>
+<p>那么看起来，你离“AI 工程师”似乎只差一步：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>调用模型</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>加个 Prompt</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>接几个 Tool</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>再套一个 Agent Framework</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>完成</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>事实上，真正困难的地方恰恰不在这里。</p>
+<p>困难的是：</p>
+<blockquote>
+<p>当一个模型进入你的软件系统以后，你到底应该让它做什么？</p>
+</blockquote>
+<p>更重要的是：</p>
+<blockquote>
+<p><strong>什么事情可以交给它，什么事情不能交给它？</strong></p>
+</blockquote>
+<p>这门课从这里开始。</p>
+<p>我们暂时不写 Agent。</p>
+<p>也暂时不讨论某个框架有多漂亮。</p>
+<p>甚至先不讨论 Prompt Engineering。</p>
+<p>我们先做一件更基础、也更重要的事情：</p>
+<blockquote>
+<p><strong>重新认识我们正在解决的问题。</strong></p>
+</blockquote>
+<hr>
+<h3 id="sec-x3">本书的实验怎样安排</h3>
+<p>本书的实验先服务于一个认知目标，而不是要求你一次读懂整个仓库。通常先完成<strong>主实验</strong>：使用本地 Fixture、FakeModel 或确定性测试，观察接口、状态、行动边界和失败处理是否符合契约。每一步都要回答三个问题：我在验证什么、观察到了什么、这个结果能支持什么结论？</p>
+<p>只有明确写有 <strong>“可选真实模型实验”</strong> 的小节才会调用真实 Provider。它不是主线的前置条件；运行前要确认 Provider、模型、费用和输入数据处理条件。真实模型结果只代表本次配置与样本下的观察，不能替代离线契约测试，也不能自动证明生产效果。任何远端业务写操作都不属于默认学生主线。</p>
+<p>章节中的作者参考实现、完整测试矩阵和生产加固细节，也不意味着每个读者都必须逐项重做。先完成本节明确的主路径，再根据目标进入深入实验。</p>
+<h2 id="sec-0-1">0.1 从后端工程师到 AI Application Engineer</h2>
+<h3 id="sec-0-1-1">0.1.1 你其实已经拥有了很多 AI 工程能力</h3>
+<p>假设你现在维护一个订单系统。</p>
+<p>它可能有这样的接口：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">@app.get</span><span style="color:#24292E">(</span><span style="color:#032F62">"/orders/</span><span style="color:#005CC5">{order_id}</span><span style="color:#032F62">"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">def</span><span style="color:#6F42C1"> get_order</span><span style="color:#24292E">(order_id: </span><span style="color:#005CC5">int</span><span style="color:#24292E">):</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> order_service.get_order(order_id)</span></span>
+<span class="line"></span></code></pre>
+<p>请求进来以后，系统查数据库，然后把结果返回出去。</p>
+<p>如果需求是：</p>
+<blockquote>
+<p>查询订单 10001 当前状态。</p>
+</blockquote>
+<p>那么整个过程非常明确：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>HTTP Request</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>API</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>Business Logic</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>Database</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>Response</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>作为后端工程师，你会自然地考虑：</p>
+<ul>
+<li>参数是否合法？</li>
+<li>用户有没有权限？</li>
+<li>数据库查询是否正确？</li>
+<li>超时怎么办？</li>
+<li>查询失败怎么办？</li>
+<li>是否需要缓存？</li>
+<li>日志记在哪里？</li>
+<li>怎么测试？</li>
+<li>QPS 上来怎么办？</li>
+</ul>
+<p>这些都是非常成熟的工程问题。</p>
+<p>现在换一种需求：</p>
+<blockquote>
+<p>“用户不要输入订单号了。用户直接说：帮我看看张伟上周买的那台车现在为什么还没发货。”</p>
+</blockquote>
+<p>表面上看，似乎只是多了一个聊天框。</p>
+<p>但从系统角度看，问题马上发生了变化。</p>
+<p>系统需要先理解：</p>
+<blockquote>
+<p>“张伟”是谁？</p>
+</blockquote>
+<blockquote>
+<p>“上周买的那台车”对应哪个订单？</p>
+</blockquote>
+<p>然后它可能需要查询订单系统。</p>
+<p>如果发现订单已经发出，又需要查询物流系统。</p>
+<p>如果物流状态异常，还可能需要查询售后系统。</p>
+<p>最后再把多个系统的信息组织成用户能够理解的语言。</p>
+<p>执行过程可能变成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户问题</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>理解用户意图</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>识别订单</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>查询订单系统</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>观察结果</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>决定是否继续查询</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>查询物流系统</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>综合信息</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>生成回答</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>注意，这里面真正新出现的东西并不是“后端”。</p>
+<p>订单 API 还是后端。</p>
+<p>数据库还是数据库。</p>
+<p>物流服务还是后端。</p>
+<p>权限系统还是后端。</p>
+<p>日志、缓存、队列、事务，这些仍然都是后端问题。</p>
+<p>变化的是：</p>
+<blockquote>
+<p>系统里多了一个能够处理自然语言、进行一定程度判断，并可能参与下一步决策的组件。</p>
+</blockquote>
+<p>这个组件，就是 LLM。</p>
+<hr>
+<h3 id="sec-0-1-2">0.1.2 LLM 到底是什么？</h3>
+<p>很多初学者会问：</p>
+<blockquote>
+<p>“LLM 是不是一种新的数据库？”</p>
+</blockquote>
+<p>不是。</p>
+<p>也有人会问：</p>
+<blockquote>
+<p>“LLM 是不是新的后端服务？”</p>
+</blockquote>
+<p>从部署形态上看，它当然可以通过服务提供给你的应用调用，但从软件工程角色上说，这个理解仍然不够准确。</p>
+<p>更合适的理解是：</p>
+<blockquote>
+<p><strong>LLM 是一种具有概率性的计算组件。</strong></p>
+</blockquote>
+<p>你把输入和上下文交给它，它会根据训练得到的模型能力生成一个输出。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>输入：</span></span>
+<span class="line"><span>“这个用户的投诉属于哪种类型？”</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>输出：</span></span>
+<span class="line"><span>“物流延迟”</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>或者：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>输入：</span></span>
+<span class="line"><span>“解释为什么订单一直没有发货。”</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>输出：</span></span>
+<span class="line"><span>“一段自然语言解释”</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这里最重要的区别是：</p>
+<p>对于传统函数，我们经常期待：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">result </span><span style="color:#D73A49">=</span><span style="color:#24292E"> calculate_price(order)</span></span>
+<span class="line"></span></code></pre>
+<p>它应该遵循明确的计算规则。</p>
+<p>而对于：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">result </span><span style="color:#D73A49">=</span><span style="color:#24292E"> model.generate(prompt)</span></span>
+<span class="line"></span></code></pre>
+<p>你面对的是一种概率性输出。</p>
+<p>这意味着：</p>
+<blockquote>
+<p><strong>LLM 更像一种新的计算能力，而不是传统业务规则的替代品。</strong></p>
+</blockquote>
+<p>于是，AI Application Engineering 的第一个核心问题出现了：</p>
+<blockquote>
+<p><strong>如何把这种概率性的计算能力，放进一个原本高度强调确定性、可控性和可靠性的工程系统里？</strong></p>
+</blockquote>
+<p>这就是我们真正要学习的东西。</p>
+<hr>
+<h3 id="sec-0-1-3">0.1.3 AI Application 并不等于 Agent</h3>
+<p>这是我们在整门课程中要尽早建立的第一个概念边界。</p>
+<p>假设我们有下面这个功能：</p>
+<blockquote>
+<p>用户输入一段客服工单，系统自动判断它属于哪一类。</p>
+</blockquote>
+<p>系统可能只是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>User Input</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Structured Output</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Business Logic</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这已经是一个 AI Application。</p>
+<p>但它并不是 Agent。</p>
+<p>再比如：</p>
+<blockquote>
+<p>根据公司制度回答员工报销问题。</p>
+</blockquote>
+<p>系统可能是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Question</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Retrieve Documents</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Answer</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这也是 AI Application。</p>
+<p>同样不一定需要 Agent。</p>
+<p>所以：</p>
+<blockquote>
+<p><strong>AI Application 是更大的概念，Agent 只是其中一种系统形态。</strong></p>
+</blockquote>
+<p>你可以做 AI Application，而完全不做 Agent。</p>
+<p>这一点听起来似乎非常简单，但它会影响整个课程的学习方式。</p>
+<p>如果把“AI Application”误解成“Agent”，你很容易形成一种错误习惯：</p>
+<blockquote>
+<p>看到任何 AI 问题，就开始设计 Agent。</p>
+</blockquote>
+<p>我们希望你形成的恰恰相反：</p>
+<blockquote>
+<p>看到问题，先判断它需要什么能力。</p>
+</blockquote>
+<hr>
+<h3 id="sec-0-1-4">0.1.4 后端工程师真正需要增加什么能力？</h3>
+<p>这里有一个好消息。</p>
+<p>你不需要把自己过去学过的东西扔掉。</p>
+<p>恰恰相反，你过去积累的工程经验非常重要。</p>
+<p>传统后端已经解决了很多 AI 系统仍然需要解决的问题：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>API</span></span>
+<span class="line"><span>Database</span></span>
+<span class="line"><span>Authentication</span></span>
+<span class="line"><span>Authorization</span></span>
+<span class="line"><span>State</span></span>
+<span class="line"><span>Concurrency</span></span>
+<span class="line"><span>Caching</span></span>
+<span class="line"><span>Queue</span></span>
+<span class="line"><span>Transaction</span></span>
+<span class="line"><span>Observability</span></span>
+<span class="line"><span>Reliability</span></span>
+<span class="line"><span>Testing</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>AI 系统只是增加了一组新的问题：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span>Retrieval</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span>Memory</span></span>
+<span class="line"><span>Evaluation</span></span>
+<span class="line"><span>AI Runtime</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以可以用这样一个模型来理解：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Backend Engineering</span></span>
+<span class="line"><span>        +</span></span>
+<span class="line"><span>AI-specific Engineering</span></span>
+<span class="line"><span>        ↓</span></span>
+<span class="line"><span>AI Application Engineering</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>更具体一点：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>传统后端负责：</span></span>
+<span class="line"><span>数据、状态、权限、事务、执行、可靠性</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>AI 层负责：</span></span>
+<span class="line"><span>理解、生成、分类、推理、动态决策</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>应用工程负责：</span></span>
+<span class="line"><span>把两者安全、可靠地组合起来</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这也是为什么，从后端工程师转向 AI Application Engineer，实际上是一种<strong>能力叠加</strong>，而不是推倒重来。</p>
+<p>你已经会盖房子。</p>
+<p>现在只是房子里多了一种过去没有的、行为并不完全确定的“新型施工材料”。</p>
+<p>问题变成了：</p>
+<blockquote>
+<p>这种材料应该放在哪里？</p>
+</blockquote>
+<hr>
+<h3 id="sec-0-1-5">0.1.5 一个重要的工程边界</h3>
+<p>考虑这样一种架构：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>直接操作数据库</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>返回结果</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>它看起来很“智能”。</p>
+<p>用户说一句话，模型自己决定 SQL，自己执行，自己修改数据。</p>
+<p>但如果你真正做过生产系统，应该会本能地产生怀疑：</p>
+<p>谁负责权限？</p>
+<p>谁保证事务？</p>
+<p>谁保证只能修改允许修改的数据？</p>
+<p>谁记录审计？</p>
+<p>谁处理重复执行？</p>
+<p>谁保证金额不会算错？</p>
+<p>谁阻止恶意输入？</p>
+<p>谁处理数据库异常？</p>
+<p>这时你会发现：</p>
+<blockquote>
+<p><strong>LLM 可以参与决策，但不意味着 LLM 应该拥有整个系统的控制权。</strong></p>
+</blockquote>
+<p>更常见的工程思路是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>                    ┌─────────────┐</span></span>
+<span class="line"><span>User ─────────────→ │ AI Runtime  │</span></span>
+<span class="line"><span>                    └──────┬──────┘</span></span>
+<span class="line"><span>                           │</span></span>
+<span class="line"><span>                    产生决策 / 请求</span></span>
+<span class="line"><span>                           │</span></span>
+<span class="line"><span>                           ↓</span></span>
+<span class="line"><span>                    ┌─────────────┐</span></span>
+<span class="line"><span>                    │ Backend     │</span></span>
+<span class="line"><span>                    │ Controls    │</span></span>
+<span class="line"><span>                    └──────┬──────┘</span></span>
+<span class="line"><span>                           │</span></span>
+<span class="line"><span>                  权限 / 校验 / 执行</span></span>
+<span class="line"><span>                           │</span></span>
+<span class="line"><span>                           ↓</span></span>
+<span class="line"><span>                    Business System</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>AI 决定“可能应该做什么”。</p>
+<p>传统工程体系负责保证：</p>
+<blockquote>
+<p>“即使 AI 决定错了，系统也不能随便把事情做坏。”</p>
+</blockquote>
+<p>这个边界以后会贯穿：</p>
+<ul>
+<li>Tool Calling</li>
+<li>Agent</li>
+<li>Security</li>
+<li>Production</li>
+<li>Human-in-the-loop</li>
+</ul>
+<hr>
+<h3 id="sec-0-1-6">0.1.6 一个小练习</h3>
+<p>找一个你比较熟悉的后端系统。</p>
+<p>可以是：</p>
+<ul>
+<li>用户系统</li>
+<li>订单系统</li>
+<li>数据查询系统</li>
+<li>工单系统</li>
+<li>报表系统</li>
+</ul>
+<p>先画出现在的架构。</p>
+<p>然后再问自己：</p>
+<blockquote>
+<p>如果我要给这个系统增加 AI 能力，AI 应该出现在哪里？</p>
+</blockquote>
+<p>注意，不要求你马上做 Agent。</p>
+<p>甚至不要求一定使用 LLM。</p>
+<p>你只需要回答：</p>
+<blockquote>
+<p><strong>哪里值得增加智能，哪里最好保持原样？</strong></p>
+</blockquote>
+<p>这个问题会成为你以后做 AI 应用时的第一反应。</p>
+<hr>
+<h3 id="sec-x11">本章留下一个问题</h3>
+<p>你现在应该已经发现：</p>
+<blockquote>
+<p>AI Application 并不是“把 LLM API 接进后端”这么简单。</p>
+</blockquote>
+<p>但是还有一个更麻烦的问题。</p>
+<p>传统软件最让工程师安心的一件事是：</p>
+<blockquote>
+<p><strong>同样的输入，系统应该稳定地给出同样的结果。</strong></p>
+</blockquote>
+<p>那么 LLM 呢？</p>
+<p>答案并不一样。</p>
+<p>下一章，我们来看一件会彻底改变工程方法的事情：</p>
+<blockquote>
+<p><strong>概率性软件。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-0-2">0.2 当软件开始“没那么确定”</h2>
+<h3 id="sec-0-2-1">0.2.1 传统软件最舒服的地方</h3>
+<p>想象这样一个函数：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">def</span><span style="color:#6F42C1"> calculate_total_price</span><span style="color:#24292E">(price: </span><span style="color:#005CC5">float</span><span style="color:#24292E">, quantity: </span><span style="color:#005CC5">int</span><span style="color:#24292E">) -> </span><span style="color:#005CC5">float</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> price </span><span style="color:#D73A49">*</span><span style="color:#24292E"> quantity</span></span>
+<span class="line"></span></code></pre>
+<p>输入：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>price = 100</span></span>
+<span class="line"><span>quantity = 3</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你期待输出：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>300</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>不是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>299</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>也不是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>“差不多是 300”</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>更不是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>“根据我的理解，这件商品总价应该在 280～320 之间。”</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>传统软件之所以好用，很大程度上就是因为它遵循确定的规则。</p>
+<p>你可以写：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">assert</span><span style="color:#24292E"> calculate_total_price(</span><span style="color:#005CC5">100</span><span style="color:#24292E">, </span><span style="color:#005CC5">3</span><span style="color:#24292E">) </span><span style="color:#D73A49">==</span><span style="color:#005CC5"> 300</span></span>
+<span class="line"></span></code></pre>
+<p>然后把这类测试不断积累起来。</p>
+<p>这就是软件工程非常重要的一部分：</p>
+<blockquote>
+<p><strong>把系统行为固定下来，并持续验证。</strong></p>
+</blockquote>
+<hr>
+<h3 id="sec-0-2-2">0.2.2 现在换成一个语言任务</h3>
+<p>假设你希望程序判断：</p>
+<blockquote>
+<p>“这个用户是在投诉物流，还是投诉商品质量？”</p>
+</blockquote>
+<p>你把下面的文本给模型：</p>
+<blockquote>
+<p>“东西已经到了，但是包装完全坏了，里面的产品也有划痕。”</p>
+</blockquote>
+<p>模型可能回答：</p>
+<blockquote>
+<p>商品质量</p>
+</blockquote>
+<p>也可能认为：</p>
+<blockquote>
+<p>物流问题</p>
+</blockquote>
+<p>甚至给出：</p>
+<blockquote>
+<p>物流导致的商品损坏</p>
+</blockquote>
+<p>到底哪一个是错的？</p>
+<p>这件事比 <code>100 × 3 = 300</code> 复杂得多。</p>
+<p>因为这里不存在一个天然唯一的答案。</p>
+<p>有些任务本身就带有：</p>
+<ul>
+<li>语言歧义</li>
+<li>上下文依赖</li>
+<li>信息缺失</li>
+<li>多种合理解释</li>
+</ul>
+<p>因此，AI 系统中的“正确性”开始发生变化。</p>
+<hr>
+<h3 id="sec-0-2-3">0.2.3 这并不意味着 AI 是“不可靠的软件”</h3>
+<p>这里容易产生一个误解：</p>
+<blockquote>
+<p>“既然 AI 有概率性，那它是不是就不能做工程？”</p>
+</blockquote>
+<p>不是。</p>
+<p>真正的变化是：</p>
+<p>传统软件常常更接近：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Correct / Incorrect</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>AI 系统则经常更像：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>在一个任务分布上，</span></span>
+<span class="line"><span>它能有多大概率完成任务？</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>例如：</p>
+<p>一个分类 Agent 在 100 个测试案例中：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>正确 94 个</span></span>
+<span class="line"><span>错误 6 个</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>我们就可以讨论：</p>
+<blockquote>
+<p>Task Success Rate = 94%</p>
+</blockquote>
+<p>然后继续分析：</p>
+<blockquote>
+<p>那 6 个为什么错？</p>
+</blockquote>
+<p>这就引出了整个 AI Engineering 中非常重要的概念：</p>
+<blockquote>
+<p><strong>Evaluation。</strong></p>
+</blockquote>
+<hr>
+<h3 id="sec-0-2-4">0.2.4 为什么“Demo 成功”毫无意义？</h3>
+<p>假设你做了一个售后 Agent。</p>
+<p>你输入：</p>
+<blockquote>
+<p>“我的车充不上电怎么办？”</p>
+</blockquote>
+<p>Agent 回答得非常漂亮。</p>
+<p>你很高兴。</p>
+<p>于是你把截图发给领导。</p>
+<p>领导说：</p>
+<blockquote>
+<p>“不错，什么时候上线？”</p>
+</blockquote>
+<p>这时候真正的问题才刚刚开始。</p>
+<p>你有没有测试过：</p>
+<ul>
+<li>“我的车完全没反应。”</li>
+<li>“充电桩一直跳枪。”</li>
+<li>“换了三个充电桩都不行。”</li>
+<li>“充电速度比以前慢了一半。”</li>
+<li>“是车辆问题还是充电桩问题？”</li>
+<li>“昨天晚上开始发生。”</li>
+<li>“我不知道车辆具体型号。”</li>
+</ul>
+<p>更不用说：</p>
+<ul>
+<li>错误的工具调用</li>
+<li>工具超时</li>
+<li>数据缺失</li>
+<li>权限不足</li>
+<li>恶意输入</li>
+<li>极端边界条件</li>
+</ul>
+<p>所以：</p>
+<blockquote>
+<p><strong>一个成功回答的 Demo，只证明这个案例成功了。</strong></p>
+</blockquote>
+<p>它不能证明：</p>
+<blockquote>
+<p>系统在真实任务分布中表现良好。</p>
+</blockquote>
+<p>这是 AI Application Engineering 和传统 Demo-driven Development 的一个重要分界点。</p>
+<hr>
+<h3 id="sec-0-2-5">0.2.5 AI 系统多了一层“失败面”</h3>
+<p>传统系统当然也会失败。</p>
+<p>但是 AI 系统会多出一整类新的失败方式。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>模型理解错了</span></span>
+<span class="line"><span>模型选择错了</span></span>
+<span class="line"><span>模型产生幻觉</span></span>
+<span class="line"><span>模型用了错误的数据</span></span>
+<span class="line"><span>模型没有看到关键信息</span></span>
+<span class="line"><span>模型调用了错误工具</span></span>
+<span class="line"><span>模型参数填错了</span></span>
+<span class="line"><span>模型在多个步骤之间丢失状态</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你可以把它想象成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>传统系统</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Code</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Data</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Infrastructure</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而 AI 系统变成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Code</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Model</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>External Data</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>State</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Infrastructure</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>失败面自然变大。</p>
+<p>因此一个非常重要的工程转变出现了：</p>
+<blockquote>
+<p>以前我们主要问“代码有没有 Bug”。</p>
+</blockquote>
+<blockquote>
+<p>现在我们还必须问“模型在这些任务上表现得怎么样”。</p>
+</blockquote>
+<hr>
+<h3 id="sec-0-2-6">0.2.6 第一次建立 Dataset 意识</h3>
+<p>我们现在先不做复杂 Evaluation。</p>
+<p>只做一个很小的实验。</p>
+<p>假设任务是：</p>
+<blockquote>
+<p>把客服文本分类成 <code>物流 / 商品 / 退款 / 其他</code>。</p>
+</blockquote>
+<p>建立：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>case_001</span></span>
+<span class="line"><span>输入：为什么我的包裹三天没有更新？</span></span>
+<span class="line"><span>期望：物流</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>case_002</span></span>
+<span class="line"><span>输入：收到以后发现屏幕有划痕。</span></span>
+<span class="line"><span>期望：商品</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>case_003</span></span>
+<span class="line"><span>输入：我不想要了，怎么退款？</span></span>
+<span class="line"><span>期望：退款</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后让模型运行。</p>
+<p>记录：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Input</span></span>
+<span class="line"><span>Expected</span></span>
+<span class="line"><span>Actual</span></span>
+<span class="line"><span>Match</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这张表非常简单。</p>
+<p>但它其实已经是 Evaluation 的雏形。</p>
+<p>以后我们会把它逐渐发展成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Dataset</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>Runner</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>Evaluator</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>Metrics</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>Regression</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你可以暂时把它理解成：</p>
+<blockquote>
+<p><strong>我们开始把“感觉不错”变成“有数据证明”。</strong></p>
+</blockquote>
+<hr>
+<h3 id="sec-0-2-7">0.2.7 遇到失败时，不要急着改 Prompt</h3>
+<p>这是 AI 工程中非常常见的坏习惯。</p>
+<p>例如 Agent 选错了工具。</p>
+<p>初学者通常会马上说：</p>
+<blockquote>
+<p>“Prompt 再写详细一点。”</p>
+</blockquote>
+<p>有时候确实有效。</p>
+<p>但也有可能根本不是 Prompt 的问题。</p>
+<p>假设：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>模型没有看到必要的信息</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那应该修 Context。</p>
+<p>如果：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>工具的 description 写得很混乱</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那应该修 Tool Design。</p>
+<p>如果：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>数据库本身就没有数据</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那应该查 Data。</p>
+<p>如果：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>这个任务本身有多种合理答案</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那你可能需要重新定义 Evaluation。</p>
+<p>因此，碰到失败以后应该养成一个非常重要的习惯：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Failure</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Observe</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Classify</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Diagnose</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Fix</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而不是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Failure</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>修改 Prompt</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>再试一次</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h3 id="sec-0-2-8">0.2.8 小练习：把一次成功变成十次测试</h3>
+<p>给自己找一个简单的 AI 任务。</p>
+<p>例如：</p>
+<blockquote>
+<p>将一段工单分类。</p>
+</blockquote>
+<p>准备至少 10 个案例。</p>
+<p>其中故意加入：</p>
+<ul>
+<li>正常案例</li>
+<li>模糊案例</li>
+<li>缺失信息</li>
+<li>超长输入</li>
+<li>相互矛盾的信息</li>
+</ul>
+<p>然后记录每一次结果。</p>
+<p>你会第一次真正看到：</p>
+<blockquote>
+<p><strong>AI 系统不是“跑通”的，而是“测出来”的。</strong></p>
+</blockquote>
+<p>把这些案例里最容易失败的输入也记下来。到本 Part 的机会评估记录中，你会用它们定义初始的成功条件和停止条件；稍后在 Part 6，我们再把这样的案例组织成正式的评估集。</p>
+<hr>
+<h3 id="sec-x21">本章最重要的一句话</h3>
+<p>请记住：</p>
+<blockquote>
+<p><strong>在传统软件里，测试往往是在实现之后验证功能；在 AI 软件里，Evaluation 本身就是系统设计的一部分。</strong></p>
+</blockquote>
+<p>以后当你看到任何 AI 系统，都可以问：</p>
+<blockquote>
+<p>“你怎么证明它有效？”</p>
+</blockquote>
+<p>如果对方只能回答：</p>
+<blockquote>
+<p>“你自己试试，效果挺好的。”</p>
+</blockquote>
+<p>你就应该继续追问。</p>
+<hr>
+<h2 id="sec-0-3">0.3 几类不同的技术选择：哪些能力需要组合？</h2>
+<p>现在我们知道 AI 系统和传统软件不完全一样。</p>
+<p>但新的问题来了：</p>
+<blockquote>
+<p>那么，什么时候该使用什么样的 AI 架构？</p>
+</blockquote>
+<p>这时候很容易出现另一种误区：</p>
+<blockquote>
+<p>“越复杂的架构，能力越强，所以 Agent 应该是最终答案。”</p>
+</blockquote>
+<p>事实恰恰相反。</p>
+<hr>
+<h3 id="sec-0-3-1">0.3.1 软件架构不是游戏里的装备等级</h3>
+<p>在游戏里：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>普通装备</span></span>
+<span class="line"><span>↓</span></span>
+<span class="line"><span>高级装备</span></span>
+<span class="line"><span>↓</span></span>
+<span class="line"><span>传奇装备</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>通常越高级越强。</p>
+<p>但软件架构不是这样。</p>
+<p>一个简单的：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>if amount > 10000:</span></span>
+<span class="line"><span>    require_manager_approval()</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>可能比一个复杂的 Agent 更适合审批系统。</p>
+<p>因为软件的目标不是：</p>
+<blockquote>
+<p>看起来多先进。</p>
+</blockquote>
+<p>而是：</p>
+<blockquote>
+<p>用合适的复杂度解决问题。</p>
+</blockquote>
+<p>所以我们先建立一个非常重要的原则：</p>
+<h3 id="sec-x24">架构复杂度应该由问题复杂度驱动</h3>
+<p>而不是反过来：</p>
+<h3 id="sec-agent-agent">因为我学会了 Agent，所以问题必须用 Agent</h3>
+<hr>
+<h3 id="sec-0-3-2">0.3.2 规则清楚时，传统软件就够了</h3>
+<p>如果规则非常清楚：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>金额 &#x3C; 1000</span></span>
+<span class="line"><span>    → 自动通过</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>1000 ≤ 金额 &#x3C; 10000</span></span>
+<span class="line"><span>    → 主管审批</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>金额 ≥ 10000</span></span>
+<span class="line"><span>    → 财务审批</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那就写规则。</p>
+<p>没有必要调用 LLM。</p>
+<p>没有必要 RAG。</p>
+<p>没有必要 Agent。</p>
+<p>因为问题本身是：</p>
+<blockquote>
+<p>确定性的。</p>
+</blockquote>
+<p>传统软件已经能很好地解决。</p>
+<hr>
+<h3 id="sec-0-3-3">0.3.3 需要语言理解或生成时，加入 LLM</h3>
+<p>再看一个问题：</p>
+<blockquote>
+<p>“请把这段用户投诉总结成三句话。”</p>
+</blockquote>
+<p>这里没有复杂流程。</p>
+<p>也没有必要自主调用工具。</p>
+<p>你只需要：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Input</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Output</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是非常典型的 LLM Application。</p>
+<p>常见任务包括：</p>
+<ul>
+<li>分类</li>
+<li>提取</li>
+<li>总结</li>
+<li>改写</li>
+<li>翻译</li>
+<li>生成</li>
+</ul>
+<hr>
+<h3 id="sec-0-3-4">0.3.4 缺少外部知识时，增加检索路径（RAG）</h3>
+<p>现在问题变成：</p>
+<blockquote>
+<p>“根据公司的报销制度，告诉我这次差旅能不能报销。”</p>
+</blockquote>
+<p>普通 LLM 可能并不知道你公司的内部制度。</p>
+<p>怎么办？</p>
+<p>给它知识。</p>
+<p>于是出现：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Question</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Retrieve Relevant Documents</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Answer</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是 RAG。</p>
+<p>它解决的是：</p>
+<blockquote>
+<p><strong>模型缺少外部知识。</strong></p>
+</blockquote>
+<hr>
+<h3 id="sec-0-3-5">0.3.5 需要访问业务系统时，提供 Tool</h3>
+<p>再往前走一步。</p>
+<p>用户说：</p>
+<blockquote>
+<p>“帮我查一下订单 10001。”</p>
+</blockquote>
+<p>模型光知道文字是没用的。</p>
+<p>它需要访问真正的订单系统。</p>
+<p>于是出现：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>LLM</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Business System</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">query_order(</span><span style="color:#E36209">order_id</span><span style="color:#D73A49">=</span><span style="color:#005CC5">10001</span><span style="color:#24292E">)</span></span>
+<span class="line"></span></code></pre>
+<p>这时候模型可以：</p>
+<ol>
+<li>理解用户问题</li>
+<li>决定需要查询订单</li>
+<li>请求工具</li>
+<li>获得结果</li>
+</ol>
+<p>注意：</p>
+<blockquote>
+<p><strong>能调用 Tool，不等于已经是 Agent。</strong></p>
+</blockquote>
+<p>因为下一步是否继续、调用哪个工具、是否结束，仍然可以由你的 Workflow 明确规定。</p>
+<hr>
+<h3 id="sec-0-3-6">0.3.6 流程可以预先定义时，使用 Workflow</h3>
+<p>假设企业规定了一个固定流程：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>第一步：查询订单</span></span>
+<span class="line"><span>第二步：查询物流</span></span>
+<span class="line"><span>第三步：判断是否异常</span></span>
+<span class="line"><span>第四步：生成回答</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么你完全可以写：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Query Order</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Query Logistics</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Check Status</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Generate Answer</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这里可以有 LLM，也可以有 RAG，也可以有 Tool。</p>
+<p>但是：</p>
+<blockquote>
+<p><strong>控制流程依然是程序员决定的。</strong></p>
+</blockquote>
+<p>这就是 Workflow。</p>
+<hr>
+<h3 id="sec-0-3-7">0.3.7 需要动态选择下一步时，再考虑 Agent</h3>
+<p>什么时候 Workflow 开始不够用了？</p>
+<p>假设任务变成：</p>
+<blockquote>
+<p>“调查这个订单为什么延迟。”</p>
+</blockquote>
+<p>可能存在很多完全不同的情况：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>先查订单</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>如果订单没发货 → 查仓库</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>如果已经出库 → 查物流</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>如果物流停滞 → 查中转站</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>如果物流正常 → 查售后</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>如果数据冲突 → 再查另一套系统</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>此时你很难提前写死所有路径。</p>
+<p>系统需要根据当前观察结果动态选择下一步。</p>
+<p>于是开始出现：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Observe</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Decide</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Act</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Observe</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Decide</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Act</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是我们开始称之为 Agent 的地方。</p>
+<p>Agent 的关键不是：</p>
+<blockquote>
+<p>“它用了 LLM。”</p>
+</blockquote>
+<p>而是：</p>
+<blockquote>
+<p><strong>下一步做什么，不完全由预先写死的 Workflow 决定。</strong></p>
+</blockquote>
+<hr>
+<h3 id="sec-0-3-8">0.3.8 需要有意义的分工时，再考虑 Multi-Agent</h3>
+<p>最后再考虑一种更复杂的任务：</p>
+<blockquote>
+<p>“研究某个汽车故障问题，结合历史案例、维修手册和零件库存，形成诊断建议，并生成维修执行计划。”</p>
+</blockquote>
+<p>你可以让一个 Agent 全部完成。</p>
+<p>也可以拆成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Research Agent</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Analysis Agent</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Execution Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>为什么要拆？</p>
+<p>可能是因为：</p>
+<ul>
+<li>任务天然可以分工</li>
+<li>上下文差异很大</li>
+<li>权限边界不同</li>
+<li>某些任务可以并行</li>
+<li>一个 Agent 管理起来已经过于复杂</li>
+</ul>
+<p>但再次强调：</p>
+<blockquote>
+<p><strong>Multi-Agent 不是天然比 Single Agent 好。</strong></p>
+</blockquote>
+<p>多个 Agent 也会带来：</p>
+<ul>
+<li>更多 Token</li>
+<li>更多延迟</li>
+<li>更多状态</li>
+<li>更多通信</li>
+<li>更复杂的失败传播</li>
+</ul>
+<p>所以它也不是“升级版”。</p>
+<hr>
+<h3 id="sec-0-3-9">0.3.9 把能力选择与控制流选择分开</h3>
+<p>刚才出现的名字并不属于同一条互斥的架构阶梯。它们回答的是不同问题：</p>
+<table>
+<thead>
+<tr>
+<th>需要回答的问题</th>
+<th>可能采用的能力或设计</th>
+<th>它解决什么问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>规则能否直接表达？</td>
+<td>Traditional Software</td>
+<td>让确定性规则由程序执行</td>
+</tr>
+<tr>
+<td>需要理解或生成自然语言吗？</td>
+<td>LLM Application</td>
+<td>使用模型完成分类、提取、总结等任务</td>
+</tr>
+<tr>
+<td>当前任务需要外部知识吗？</td>
+<td>RAG</td>
+<td>从受控知识源取得相关证据</td>
+</tr>
+<tr>
+<td>当前任务需要访问业务系统吗？</td>
+<td>Tool</td>
+<td>让应用以受控接口查询或执行动作</td>
+</tr>
+<tr>
+<td>执行路径能提前确定吗？</td>
+<td>Workflow</td>
+<td>由程序掌握主要流程和分支</td>
+</tr>
+<tr>
+<td>下一步是否需要根据观察动态选择？</td>
+<td>Agent</td>
+<td>在运行时约束下把部分控制流交给模型</td>
+</tr>
+<tr>
+<td>是否存在真实的角色边界或并行收益？</td>
+<td>Multi-Agent</td>
+<td>在不同能力、上下文、权限或执行节奏之间协作</td>
+</tr>
+</tbody>
+</table>
+<p>这些选项可以组合。例如，一个系统可以采用 <strong>RAG + Tool + Workflow</strong>；也可以在固定 Workflow 的某个分支内放入一个 Agent。Multi-Agent 还可能调用 RAG 与 Tools。它们不是“由差到好”的等级，而是对知识、行动和控制流的不同选择。</p>
+<p>因此，正确的判断方式不是从上往下选一个名字，而是先把问题拆成几项独立判断：</p>
+<ol>
+<li>哪些规则应当由确定性代码执行？</li>
+<li>哪些步骤需要模型进行语言理解或生成？</li>
+<li>当前决策需要什么外部证据？</li>
+<li>需要查询或改变哪些业务系统？</li>
+<li>哪些流程可以预先定义，哪些步骤必须根据观察动态选择？</li>
+<li>是否有充分理由把任务拆给多个角色？</li>
+</ol>
+<p>最后再组合出最简单、能够达到目标的方案。</p>
+<hr>
+<h3 id="sec-0-3-10">0.3.10 一个判断技巧</h3>
+<p>以后当别人跟你说：</p>
+<blockquote>
+<p>“这个需求需要 Agent。”</p>
+</blockquote>
+<p>你可以连续问五个问题。</p>
+<p>第一：</p>
+<blockquote>
+<p>规则能解决吗？</p>
+</blockquote>
+<p>第二：</p>
+<blockquote>
+<p>如果不能，只需要语言理解吗？</p>
+</blockquote>
+<p>第三：</p>
+<blockquote>
+<p>是不是只是缺少知识？</p>
+</blockquote>
+<p>第四：</p>
+<blockquote>
+<p>是不是只是需要调用几个 API？</p>
+</blockquote>
+<p>第五：</p>
+<blockquote>
+<p>下一步到底为什么需要动态决策？</p>
+</blockquote>
+<p>最后这个问题尤其重要。</p>
+<p>如果你发现：</p>
+<blockquote>
+<p>所有步骤都能提前规定。</p>
+</blockquote>
+<p>那你很可能不需要 Agent。</p>
+<p>在最后的机会评估记录里，请把“为什么需要动态决策”写成一句可被反驳的假设，而不是只勾选一个架构名称。例如，写明固定 Workflow 可能在哪些真实分支中失效，以及你准备通过什么案例判断这种差异是否重要。</p>
+<hr>
+<h2 id="sec-0-4">0.4 有些问题，你真的不应该用 Agent</h2>
+<p>这一章非常容易被忽略。</p>
+<p>但它其实决定了一个工程师到底是：</p>
+<blockquote>
+<p>“会使用 Agent。”</p>
+</blockquote>
+<p>还是：</p>
+<blockquote>
+<p><strong>“懂 Agent 工程。”</strong></p>
+</blockquote>
+<hr>
+<h3 id="sec-0-4-1">0.4.1 一个很诱人的需求</h3>
+<p>假设老板说：</p>
+<blockquote>
+<p>“我们做一个 Agent，把公司的退款全部自动处理掉。”</p>
+</blockquote>
+<p>听起来非常先进。</p>
+<p>用户提出退款申请。</p>
+<p>Agent：</p>
+<ol>
+<li>读取订单。</li>
+<li>判断原因。</li>
+<li>查询政策。</li>
+<li>决定退款金额。</li>
+<li>执行退款。</li>
+</ol>
+<p>然后大家可能会兴奋：</p>
+<blockquote>
+<p>“这不就是 Agent 的典型场景吗？”</p>
+</blockquote>
+<p>从技术上说，当然可以做。</p>
+<p>但问题是：</p>
+<blockquote>
+<p><strong>应该这样做吗？</strong></p>
+</blockquote>
+<hr>
+<h3 id="sec-0-4-2">0.4.2 为什么“能做”不等于“适合做”</h3>
+<p>一个系统是否应该交给 Agent，不只取决于模型能力。</p>
+<p>至少还应该看：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Business Value</span></span>
+<span class="line"><span>Complexity</span></span>
+<span class="line"><span>Risk</span></span>
+<span class="line"><span>Reliability</span></span>
+<span class="line"><span>Cost</span></span>
+<span class="line"><span>Latency</span></span>
+<span class="line"><span>Auditability</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>假设退款规则其实非常明确：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>购买 7 天内</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>商品未使用</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>符合售后政策</span></span>
+<span class="line"><span>→</span></span>
+<span class="line"><span>允许退款</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么让 Agent 来决定：</p>
+<blockquote>
+<p>“到底退不退？”</p>
+</blockquote>
+<p>其实可能是在主动把一个确定性问题变成概率性问题。</p>
+<p>这是一种非常典型的：</p>
+<blockquote>
+<p><strong>Overengineering。</strong></p>
+</blockquote>
+<hr>
+<h3 id="sec-0-4-3">0.4.3 确定性规则应该留在确定性系统里</h3>
+<p>一个更合理的架构可能是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户申请退款</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span>理解用户描述 / 提取原因</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>结构化业务数据</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Deterministic Rules</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Refund Workflow</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Refund System</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这里 AI 仍然发挥价值。</p>
+<p>例如：</p>
+<blockquote>
+<p>从复杂的自然语言中提取退款原因。</p>
+</blockquote>
+<p>但是：</p>
+<blockquote>
+<p><strong>真正决定退款资格的核心规则，仍然由确定性逻辑执行。</strong></p>
+</blockquote>
+<p>这就是 AI Boundary。</p>
+<hr>
+<h3 id="sec-0-4-4">0.4.4 风险越高，自治边界越重要</h3>
+<p>考虑下面三件事情：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>查询订单</span></span>
+<span class="line"><span>修改订单</span></span>
+<span class="line"><span>退款 10000 元</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>三者显然不是同一个风险等级。</p>
+<p>我们可以粗略理解：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Read</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>低风险</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Write</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>中风险</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Irreversible / High-value Action</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>高风险</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这时候 Agent 的自治程度应该随风险变化。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>查询订单</span></span>
+<span class="line"><span>→ Agent 可自动完成</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>修改配送地址</span></span>
+<span class="line"><span>→ 可能需要额外校验</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>退款</span></span>
+<span class="line"><span>→ 根据金额/规则触发人工审批</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以一个成熟的 Agent 系统不会只问：</p>
+<blockquote>
+<p>“模型聪不聪明？”</p>
+</blockquote>
+<p>还会问：</p>
+<blockquote>
+<p><strong>“模型有多大的权限？”</strong></p>
+</blockquote>
+<hr>
+<h3 id="sec-0-4-5">0.4.5 Agent 的自治程度不是越高越好</h3>
+<p>可以把系统想象成一条连续谱：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>完全确定性</span></span>
+<span class="line"><span>│</span></span>
+<span class="line"><span>├── Rule</span></span>
+<span class="line"><span>│</span></span>
+<span class="line"><span>├── Workflow</span></span>
+<span class="line"><span>│</span></span>
+<span class="line"><span>├── LLM-assisted</span></span>
+<span class="line"><span>│</span></span>
+<span class="line"><span>├── Agent with constrained tools</span></span>
+<span class="line"><span>│</span></span>
+<span class="line"><span>├── Agent with broader autonomy</span></span>
+<span class="line"><span>│</span></span>
+<span class="line"><span>└── Highly autonomous Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>越往后：</p>
+<ul>
+<li>自主性更强</li>
+<li>潜在能力更大</li>
+</ul>
+<p>但同时也意味着：</p>
+<ul>
+<li>风险更高</li>
+<li>可控性更弱</li>
+<li>调试更复杂</li>
+<li>Evaluation 更重要</li>
+</ul>
+<p>所以真正成熟的设计通常不是：</p>
+<blockquote>
+<p>尽可能追求最大自治。</p>
+</blockquote>
+<p>而是：</p>
+<blockquote>
+<p><strong>在业务价值允许的前提下，给予 Agent 恰到好处的自治能力。</strong></p>
+</blockquote>
+<hr>
+<h3 id="sec-0-4-6">0.4.6 一个反直觉的例子</h3>
+<p>假设某公司的审批流程非常复杂。</p>
+<p>有人可能会说：</p>
+<blockquote>
+<p>“规则这么复杂，正好交给 Agent。”</p>
+</blockquote>
+<p>其实未必。</p>
+<p>如果流程虽然复杂，但每一步规则仍然是明确的，那么程序化 Workflow 反而更适合。</p>
+<p>真正需要 Agent 的地方，可能只是：</p>
+<blockquote>
+<p>把人类提供的自然语言材料转换为结构化信息。</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>员工描述</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>提取：</span></span>
+<span class="line"><span>金额</span></span>
+<span class="line"><span>出差地点</span></span>
+<span class="line"><span>日期</span></span>
+<span class="line"><span>事由</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Deterministic Workflow</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>审批</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以：</p>
+<blockquote>
+<p><strong>复杂，不代表一定需要 Agent。</strong></p>
+</blockquote>
+<p>我们真正关心的是：</p>
+<blockquote>
+<p><strong>复杂性来自哪里？</strong></p>
+</blockquote>
+<p>这是一个非常值得养成的工程习惯。</p>
+<hr>
+<h2 id="sec-0-5">0.5 从一个陌生业务里找到真正值得做的事情</h2>
+<p>前面四章，我们已经建立了一套基本认知：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>AI 不是 Agent</span></span>
+<span class="line"><span>Agent 不是万能</span></span>
+<span class="line"><span>复杂不等于先进</span></span>
+<span class="line"><span>概率性意味着需要 Evaluation</span></span>
+<span class="line"><span>AI 应该有边界</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>现在终于可以做一件真正接近工作现场的事情了。</p>
+<hr>
+<h3 id="sec-0-5-1">0.5.1 你被调去了一个完全陌生的行业</h3>
+<p>假设你原本是一名金融数据后端工程师。</p>
+<p>现在公司业务调整，你进入一家新能源汽车企业。</p>
+<p>你对新能源汽车的业务几乎不了解。</p>
+<p>第一天，你拿到这些东西：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Vehicle Service API</span></span>
+<span class="line"><span>Battery Diagnostic API</span></span>
+<span class="line"><span>Parts Inventory API</span></span>
+<span class="line"><span>Warranty Policy Documents</span></span>
+<span class="line"><span>Historical Service Records</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>产品经理告诉你：</p>
+<blockquote>
+<p>“我们想做一个 AI Agent，帮助维修人员诊断车辆问题。”</p>
+</blockquote>
+<p>你该怎么办？</p>
+<p>最危险的做法，是立即开始设计：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Supervisor Agent</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Research Agent</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Diagnosis Agent</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Execution Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>因为你其实还不知道：</p>
+<blockquote>
+<p>维修人员现在到底是怎么工作的。</p>
+</blockquote>
+<hr>
+<h3 id="sec-0-5-2">0.5.2 第一步：先理解业务</h3>
+<p>真正的第一步，是问：</p>
+<blockquote>
+<p>谁在使用？</p>
+</blockquote>
+<p>可能是：</p>
+<blockquote>
+<p>一线维修技师。</p>
+</blockquote>
+<p>然后问：</p>
+<blockquote>
+<p>他现在遇到什么问题？</p>
+</blockquote>
+<p>假设你进一步了解到：</p>
+<p>维修技师接到一辆故障车后，需要：</p>
+<ol>
+<li>查看车辆基本信息。</li>
+<li>查看故障码。</li>
+<li>查看电池诊断信息。</li>
+<li>查看历史维修记录。</li>
+<li>对照维修手册。</li>
+<li>判断可能原因。</li>
+<li>查询所需零件。</li>
+<li>形成维修建议。</li>
+</ol>
+<p>你终于开始看到真实的业务流程了。</p>
+<hr>
+<h3 id="sec-0-5-3">0.5.3 第二步：把流程拆开</h3>
+<p>现在先不要谈 Agent。</p>
+<p>把整个过程画出来：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>车辆进入维修</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>读取车辆信息</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>读取故障码</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>读取电池诊断</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>读取历史维修记录</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>查询维修手册</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>分析故障原因</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>查询零件库存</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>形成维修建议</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>接着继续问：</p>
+<blockquote>
+<p>哪些步骤是确定性的？</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>读取车辆信息</span></span>
+<span class="line"><span>读取故障码</span></span>
+<span class="line"><span>查询库存</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这些都非常适合：</p>
+<blockquote>
+<p>API / Database / Traditional Backend。</p>
+</blockquote>
+<hr>
+<h3 id="sec-0-5-4">0.5.4 哪些步骤真正需要“智能”？</h3>
+<p>再看：</p>
+<blockquote>
+<p>“结合故障码、历史案例、维修手册，分析这个问题最可能的原因。”</p>
+</blockquote>
+<p>这里可能需要：</p>
+<ul>
+<li>非结构化知识理解</li>
+<li>多来源信息综合</li>
+<li>自然语言解释</li>
+</ul>
+<p>这就是 AI 很可能有价值的地方。</p>
+<p>再看：</p>
+<blockquote>
+<p>“下一步应该查哪个系统？”</p>
+</blockquote>
+<p>如果故障类型非常多，而且无法提前写死所有路径，那么这里可能开始有 Agent 的价值。</p>
+<p>于是你得到：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>确定性数据访问</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>Traditional Backend</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>知识查询</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>RAG</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>故障理解 / 综合分析</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>LLM</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>动态决定下一步调查路径</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>注意：</p>
+<blockquote>
+<p><strong>Agent 只是整个系统中的一部分。</strong></p>
+</blockquote>
+<p>这才是我们想培养的 AI Application Engineer 思维。</p>
+<hr>
+<h3 id="sec-0-5-5">0.5.5 一张业务机会分析表</h3>
+<p>以后面对任何陌生业务，你都可以先写这样一张表。</p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>需要问什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Business Goal</td>
+<td>要解决什么业务问题？</td>
+</tr>
+<tr>
+<td>User</td>
+<td>谁使用？</td>
+</tr>
+<tr>
+<td>Current Process</td>
+<td>现在怎么做？</td>
+</tr>
+<tr>
+<td>Pain Point</td>
+<td>最痛苦的地方在哪里？</td>
+</tr>
+<tr>
+<td>Information</td>
+<td>需要知道什么？</td>
+</tr>
+<tr>
+<td>Decision</td>
+<td>哪里需要判断？</td>
+</tr>
+<tr>
+<td>Action</td>
+<td>需要执行什么？</td>
+</tr>
+<tr>
+<td>Uncertainty</td>
+<td>哪些部分无法提前写死？</td>
+</tr>
+<tr>
+<td>Risk</td>
+<td>错了会怎样？</td>
+</tr>
+<tr>
+<td>Side Effect</td>
+<td>会不会修改真实业务数据？</td>
+</tr>
+<tr>
+<td>Human</td>
+<td>哪里需要人工批准？</td>
+</tr>
+<tr>
+<td>Evaluation</td>
+<td>怎样证明它有效？</td>
+</tr>
+</tbody>
+</table>
+<p>这张表看起来不像“AI 技术”。</p>
+<p>实际上，它很可能是你以后做 Agent 项目最重要的工具之一。</p>
+<p>因为它迫使你：</p>
+<blockquote>
+<p><strong>先理解业务，再选择技术。</strong></p>
+</blockquote>
+<hr>
+<h3 id="sec-0-5-6">0.5.6 找三个不同的机会</h3>
+<p>回到新能源汽车维修的例子。</p>
+<p>你可以发现三个完全不同的机会。</p>
+<h3 id="sec-x49">机会一：知识查询</h3>
+<blockquote>
+<p>“这个故障码是什么意思？”</p>
+</blockquote>
+<p>最可能是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>RAG + LLM</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>没必要 Agent。</p>
+<hr>
+<h3 id="sec-x50">机会二：跨系统调查</h3>
+<blockquote>
+<p>“为什么这辆车突然充电变慢？”</p>
+</blockquote>
+<p>需要：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>车辆信息</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>电池诊断</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>历史记录</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>维修手册</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而且可能根据前一步结果决定下一步查询什么。</p>
+<p>这时：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Agent + Tools + RAG</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>就有可能合理。</p>
+<hr>
+<h3 id="sec-x51">机会三：查询零件库存</h3>
+<blockquote>
+<p>“这个维修方案需要什么零件，目前还有库存吗？”</p>
+</blockquote>
+<p>这其实可能非常确定：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Repair Plan</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Parts API</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Inventory</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>完全没有必要为了“AI 化”而变成 Agent。</p>
+<hr>
+<h3 id="sec-0-5-7">0.5.7 这才是真正的 AI Opportunity Discovery</h3>
+<p>你现在应该已经可以看出：</p>
+<p>一个真实业务通常不是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Use Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>或者：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Don't Use Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这么简单。</p>
+<p>更常见的情况是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>一个业务流程</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>拆成很多任务</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>有些用传统软件</span></span>
+<span class="line"><span>有些用 LLM</span></span>
+<span class="line"><span>有些用 RAG</span></span>
+<span class="line"><span>有些用 Tool</span></span>
+<span class="line"><span>有些用 Workflow</span></span>
+<span class="line"><span>有些才需要 Agent</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>甚至同一个 Agent 系统内部，也应该存在：</p>
+<blockquote>
+<p><strong>明确的确定性边界。</strong></p>
+</blockquote>
+<p>所以最终你设计的不是：</p>
+<blockquote>
+<p>“一个 Agent。”</p>
+</blockquote>
+<p>而是：</p>
+<blockquote>
+<p><strong>一个由确定性软件和概率性 AI 共同组成的系统。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-part-0">Part 0 实验：把工程判断变成一份机会评估记录</h2>
+<p>到这里，你已经不止一次听到“先理解业务”“不要为了 Agent 而 Agent”这样的建议。建议本身并不难记，真正困难的是：当一个具体需求摆到面前时，你能不能把这些原则转化成一项别人也能审查的工程决策。</p>
+<p>所以，本 Part 的实验不从代码开始。你要交付的是一份 <strong>Agent Opportunity Assessment（AI 机会评估记录）</strong>。这不是因为工程实现不重要，而是因为在还没有决定解决什么问题之前，先写代码只会让最初的假设更难被质疑。</p>
+<p>本实验会继续使用前文的新能源汽车维修场景。如果你更熟悉客服、运维、金融数据或软件研发，也可以换成自己的业务，但请始终选定一个具体流程，而不是写“提升效率”这样无法检验的大目标。</p>
+<h3 id="sec-x54">先明确：你正在为谁解决什么问题？</h3>
+<p>假设维修技师说：</p>
+<blockquote>
+<p>“这辆车充电速度突然变慢。我需要知道先查什么，哪些证据支持这个判断，以及下一步该找谁或查哪个系统。”</p>
+</blockquote>
+<p>不要马上把这句话翻译成“创建一个维修 Agent”。先把它翻译成业务结果：技师希望更快地定位问题，避免漏掉重要证据，并且不希望系统在证据不足时给出看似确定的结论。</p>
+<p>请在记录里写清楚：谁会使用这个结果、谁有权作出最终维修判断、现有流程哪里耗时或容易出错，以及什么事情不属于这次实验的范围。不要为了让项目显得重要而预先承诺节省比例；目前你还没有测量这些数据。</p>
+<h3 id="sec-agent">第一步：还原现有流程，而不是画一张 Agent 图</h3>
+<p>先把你已经了解的工作过程列出来。新能源汽车维修的示例可以写成：读取车辆信息、读取故障码、查看电池诊断、查历史维修记录、检索维修手册、综合分析、查询零件库存、形成维修建议。</p>
+<p>然后补上每一步真正影响工程设计的信息。下面这张表不是要求你画出完整企业架构，而是帮助你看清：哪些步骤已经有确定的系统负责，哪些步骤需要理解非结构化信息，哪里存在不确定判断，哪里可能影响真实业务。</p>
+<table>
+<thead>
+<tr>
+<th>流程步骤</th>
+<th>输入与数据来源</th>
+<th>当前如何完成</th>
+<th>不确定性来自哪里</th>
+<th>是否有副作用</th>
+<th>失败时谁处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>读取故障码</td>
+<td>车辆诊断接口</td>
+<td>调用现有 API</td>
+<td>通常较低</td>
+<td>只读</td>
+<td>维修系统/技师</td>
+</tr>
+<tr>
+<td>查找维修依据</td>
+<td>手册、历史案例</td>
+<td>关键词搜索或人工查阅</td>
+<td>术语差异、证据相关性</td>
+<td>只读</td>
+<td>技师复核</td>
+</tr>
+<tr>
+<td>综合判断可能原因</td>
+<td>诊断结果、维修记录、手册</td>
+<td>由技师综合分析</td>
+<td>多来源证据是否吻合</td>
+<td>可能影响后续操作</td>
+<td>由有资质人员确认</td>
+</tr>
+<tr>
+<td>查询零件库存</td>
+<td>零件库存 API</td>
+<td>精确查询</td>
+<td>通常较低</td>
+<td>只读</td>
+<td>仓储或维修系统</td>
+</tr>
+</tbody>
+</table>
+<p>这张表应当随着你对业务的了解而变化。如果你不知道某个环节的真实做法，就把它标为“待确认”，不要用想象出来的流程填满空白。机会评估的价值之一，正是把未知事项暴露出来。</p>
+<h3 id="sec-agent-2">第二步：寻找机会，也刻意寻找不该使用 Agent 的地方</h3>
+<p>现在回到前文的概念。你已经知道 LLM、RAG、Tool、Workflow、Agent 和 Multi-Agent 并不是一组从低级到高级的装备。它们解决的是不同类型的问题。</p>
+<p>对同一业务流程，至少找出三类性质不同的机会。维修场景可以提供一个起点：</p>
+<table>
+<thead>
+<tr>
+<th>候选机会</th>
+<th>主要困难</th>
+<th>可以先考虑的方案</th>
+<th>还需要验证什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>解释某个故障码</td>
+<td>技术语言理解与知识查找</td>
+<td>RAG + LLM</td>
+<td>检索证据是否正确，回答有没有超出证据</td>
+</tr>
+<tr>
+<td>调查充电变慢的原因</td>
+<td>多来源证据综合，下一步查询可能因结果而变</td>
+<td>受约束的 Agent + Tools + RAG</td>
+<td>动态调查是否比固定流程更有收益，是否能明确表达证据不足</td>
+</tr>
+<tr>
+<td>查询维修方案需要的零件及库存</td>
+<td>请求字段明确，系统已有精确接口</td>
+<td>传统 API / Workflow</td>
+<td>现有接口是否已满足需求，是否有必要加入模型</td>
+</tr>
+</tbody>
+</table>
+<p>第三类机会很重要：它提醒你，正确的工程结论可能是“不使用 Agent”。你还可以再找一个高风险动作，例如改变车辆配置、确认保修承诺或触发采购，明确哪些操作不应由模型单独决定。</p>
+<p>请把至少三个机会写入自己的记录，并说明每个机会的主要不确定性来自哪里。不要只写“这个适合 AI”，要写出为什么规则、普通 LLM 调用、RAG、固定 Workflow 或 Agent 中的某一类方案有可能更适合。</p>
+<h3 id="sec-x57">第三步：比较方案，而不是直接选中最复杂的方案</h3>
+<p>选出其中一个值得继续研究的机会，再比较下列候选方案：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>何时优先考虑</th>
+<th>主要代价或风险</th>
+<th>当前证据缺口</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>传统规则/API</td>
+<td>输入输出明确，规则可枚举</td>
+<td>对开放文本与未知情况适应性有限</td>
+<td>规则是否覆盖主要案例</td>
+</tr>
+<tr>
+<td>LLM Application</td>
+<td>需要语言理解、分类、抽取或解释，但流程固定</td>
+<td>输出存在概率性，需校验和评估</td>
+<td>结构化输出与边界案例表现</td>
+</tr>
+<tr>
+<td>RAG Workflow</td>
+<td>回答必须依据可检索的知识，流程可预先规定</td>
+<td>检索错误或证据不相关会传导到答案</td>
+<td>Recall、版本过滤与证据支持</td>
+</tr>
+<tr>
+<td>固定 Workflow</td>
+<td>步骤已知，部分步骤由 AI 帮助完成</td>
+<td>对流程外情况需要明确的异常路径</td>
+<td>流程是否覆盖真实分支</td>
+</tr>
+<tr>
+<td>Single Agent</td>
+<td>下一步行动需要依据运行中观察到的结果调整</td>
+<td>路径、成本和失败方式更难预测</td>
+<td>动态决策是否产生可测收益</td>
+</tr>
+<tr>
+<td>Multi-Agent</td>
+<td>存在可证明的专业能力、上下文、权限或并行边界</td>
+<td>协调、通信、成本和故障传播增加</td>
+<td>拆分带来的收益是否超过额外开销</td>
+</tr>
+</tbody>
+</table>
+<p>这里不要求你实现六种架构。你要做的是解释选择：为什么当前优先验证某一种方案？哪一种更简单的方案是有效的对照？为什么暂时不选择其余方案？</p>
+<p>如果你无法说明 Agent 相对于固定 Workflow 的具体收益，就不要把“Agent 更先进”作为选择理由。先选择最简单、足以验证假设的基线，并把更复杂的方案留作需要证据支持的候选项。</p>
+<h3 id="sec-x58">第四步：在实现前写下怎样判断成功</h3>
+<p>前文已经讨论过，AI 系统不能只凭一次 Demo 判断效果。现在把这个认识用回你的业务问题。</p>
+<p>例如，“帮助技师排查充电变慢”至少可能包含几种不同的成功标准：是否找到相关证据、是否遗漏关键风险、是否把证据与推断区分开、在信息不足时能否停下来，以及所需的模型调用和人工复核成本是否可以接受。</p>
+<p>把你准备如何验证写清楚。案例不必现在就构成大规模的正式基准集，但至少要有正常案例、信息不足或相互矛盾的案例，以及可能导致高风险误判的案例。每一类案例都要说明什么结果可接受、什么结果不可接受。</p>
+<table>
+<thead>
+<tr>
+<th>评价问题</th>
+<th>需要事先定义的内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务是否完成？</td>
+<td>可观察的成功条件，而不是“答案看起来不错”</td>
+</tr>
+<tr>
+<td>依据是否可靠？</td>
+<td>必须出现的证据，以及哪些结论不能由现有证据支持</td>
+</tr>
+<tr>
+<td>信息不足怎么办？</td>
+<td>允许澄清、拒答或转交人工的条件</td>
+</tr>
+<tr>
+<td>系统带来什么代价？</td>
+<td>模型/工具调用、延迟、成本和人工介入等需要记录的指标</td>
+</tr>
+<tr>
+<td>什么情况应该停止？</td>
+<td>触发人工复核、拒绝执行或暂缓上线的条件</td>
+</tr>
+</tbody>
+</table>
+<p>本 Part 只要求你定义初始评估计划，并不要求此刻证明方案已经达到上线标准。到了 Part 6，你会学习如何把任务和案例组织成可复现的 Evaluation Harness，并通过统一指标比较版本或架构。</p>
+<h3 id="sec-x59">第五步：划定行动和风险边界</h3>
+<p>现在问最后一组问题：系统只是读取车辆信息和维修手册，还是会创建工单、申请零件、改变业务记录？如果它判断错了，后果是什么？谁有权批准高风险动作？</p>
+<p>把动作分成至少两类：</p>
+<ul>
+<li><strong>只读调查：</strong> 获取信息、检索知识、整理证据。这些动作也需要访问控制，但通常不会直接改变业务状态。</li>
+<li><strong>有副作用的动作：</strong> 写入工单、修改记录、发起采购或改变配置。它们需要明确授权与目标边界，不能因为模型请求调用工具就自动执行。</li>
+</ul>
+<p>如果真实目标、权限或失败处理方式尚不明确，就把它们写成上线前置条件。不要为了让方案“完整”而在本次机会评估里连接真实业务系统。本实验不调用 Provider，也不执行任何外部业务操作。</p>
+<h3 id="sec-x60">最终交付：一份别人可以审查的机会评估记录</h3>
+<p>把前面几步汇总到一个文件中。你可以把下面的结构复制到自己的工作区，建议命名为 <code>deliverables/part00-opportunity-assessment.md</code>。这个路径是建议的学生交付位置，不代表作者仓库已经自动创建了这份文件。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#005CC5;font-weight:bold"># Agent Opportunity Assessment</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;font-weight:bold">## 1. 业务目标与用户</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 使用者：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 当前流程：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 主要痛点：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 预期改善：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 当前还不知道的事实：</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;font-weight:bold">## 2. 流程与任务边界</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 确定性步骤：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 需要理解或综合判断的步骤：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 需要动态决定下一步的步骤：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 有副作用的动作：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 必须由人工决定的事项：</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;font-weight:bold">## 3. 候选机会</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 机会 A：问题、潜在价值、可能方案、证据缺口</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 机会 B：问题、潜在价值、可能方案、证据缺口</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 机会 C：问题、潜在价值、可能方案、证据缺口</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 不应该使用 Agent 的机会及原因：</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;font-weight:bold">## 4. 架构比较</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 当前优先验证的方案：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 最简单的有效基线：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 选择理由：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 暂不采用其他方案的理由：</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;font-weight:bold">## 5. 初始评估计划</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 典型案例：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 信息不足/冲突案例：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 高风险或禁止动作案例：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 成功条件：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 不可接受结果：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 需要记录的指标：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 停止条件：</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;font-weight:bold">## 6. 风险与授权</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 允许自动完成的只读动作：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 需要额外授权的动作：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 人工审批边界：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 需要在真实业务验证前确认的事项：</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;font-weight:bold">## 7. 当前决定</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 选择：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 暂缓：</span></span>
+<span class="line"><span style="color:#E36209">-</span><span style="color:#24292E"> 下一步最值得获取的证据：</span></span>
+<span class="line"></span></code></pre>
+<h3 id="sec-x61">怎样判断这份实验是否完成？</h3>
+<p>完成的标准不是你是否选了 Agent，而是别人能否读完记录后看清你的推理依据：</p>
+<ul>
+<li>业务目标与当前流程具体到可讨论的程度；未知事实没有被当成已知事实；</li>
+<li>至少比较三类性质不同的机会，并明确一个不适合 Agent 的机会；</li>
+<li>架构选择包含一个合理的简单基线，并说明为什么增加自治或多 Agent 协作值得或不值得；</li>
+<li>评估计划写出了可观察的成功条件、失败条件与停止条件；</li>
+<li>写操作、人工决策和外部验证边界明确；</li>
+<li>结论与证据相匹配，没有把假设写成已验证收益。</li>
+</ul>
+<p>做到这里，你就完成了 Part 0 的实验。它没有模型调用，也没有新增服务，但会决定后续实验究竟是在验证一个真实问题，还是只是在为技术寻找用武之地。</p>
+<h3 id="sec-x62">把评估结论带回业务现场</h3>
+<p>假设老板对你说：</p>
+<blockquote>
+<p>“今年公司的重点就是 Agent。你们团队找个场景先做起来。”</p>
+</blockquote>
+<p>你不需要重新设计一份方案。把刚才的 <code>Agent Opportunity Assessment</code> 拿出来，用它回答五件事：我们究竟要改善哪个业务结果；问题中真正的不确定性在哪里；为什么当前优先选择这个最简单的基线；要用哪些案例判断它是否有效；哪些动作需要人工授权或应当被禁止。</p>
+<p>如果你的记录还不能回答这些问题，就回到记录中补上缺失的证据，而不是把“做 Agent”当作已经完成的问题定义。你可以尝试用下面这句话向业务方解释你的决定：</p>
+<blockquote>
+<p>“我建议先用 ______ 作为基线，验证 ______ 这项业务假设。只有当案例证明固定流程无法妥善处理 ______，并且动态决策带来可衡量的收益时，我们才升级为 Agent。涉及 ______ 的写操作在本次验证中仍保持关闭。”</p>
+</blockquote>
+<p>这不是一份额外的作业，而是把刚才的实验产物带回真实的工程沟通中。你应该能指出每个空格的依据，以及哪些地方仍然只是待验证的假设。</p>
+<h2 id="sec-part">本 Part 小结</h2>
+<p>如果你认真读完这一部分，你现在不应该只是知道几个名词：</p>
+<ul>
+<li>LLM</li>
+<li>RAG</li>
+<li>Tool</li>
+<li>Workflow</li>
+<li>Agent</li>
+<li>Multi-Agent</li>
+</ul>
+<p>真正应该发生的是一种思维变化。</p>
+<p>以前面对需求，你可能习惯这样想：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>需求</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>设计 API</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>设计数据库</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>写代码</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>测试</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>现在，你应该开始多问几件事情：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>这个问题是什么？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>问题的不确定性来自哪里？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>哪些地方需要 AI？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>哪些地方不需要 AI？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>需要知识还是需要行动？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>流程能不能提前定义？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>下一步是否真的需要动态决策？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Agent 的自治边界应该在哪里？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>如何证明这个系统有效？</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这几句话，看起来不像“Agent 技术”。</p>
+<p>但它们实际上构成了：</p>
+<blockquote>
+<p><strong>AI Application Engineering 的第一性原理。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-part-part-1">本 Part → Part 1：从判断问题到接入模型</h2>
+<p>Part 0 的交付物不是一个 Agent，而是一份可审查的机会评估：问题是什么、AI 适合承担哪一段、怎样判断结果有效，以及哪些行动仍需程序或人控制。</p>
+<p>下一部分只向前走一步：当机会评估认为确实需要 LLM 时，先把它当作一个有延迟、成本、输入限制和失败模式的远程软件依赖。我们先把这项依赖工程化，再讨论如何让它参与动态决策。</p>
+
+</article>
+<nav class="pager"><span class="pg empty"></span><a class="pg next" href="part-01.html"><span class="pg-dir">下一部分</span><span class="pg-name">Part 1｜把 LLM 当成一个真正的软件组件</span></a></nav>
+<footer class="book-foot"><span>Enterprise Agent Engineering</span><span>v0.4</span><span>文本校审候选，非出版定稿</span></footer>
+</main>
+</div>
+<div class="scrim" id="scrim"></div>
+<script src="assets/nav.js"></script>
+</body>
+</html>

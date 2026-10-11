@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 2｜Context Engineering：决定模型到底能看到什么 · Enterprise Agent Engineering</title>
+<meta name="description" content="Context Engineering —— 决定模型每次决策到底能看到什么。 —— Enterprise Agent Engineering v0.4">
+<meta property="og:title" content="Part 2｜Context Engineering：决定模型到底能看到什么">
+<meta property="og:type" content="article">
+<link rel="stylesheet" href="assets/book.css">
+</head>
+<body>
+<a class="skip-link" href="#content">跳到正文</a>
+<header class="topbar"><button class="toc-toggle" id="tocToggle" aria-label="打开目录" aria-controls="sidebar"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button><a class="brand" href="index.html"><span class="brand-title">Enterprise Agent Engineering</span><span class="brand-sub">企业级 Agent 工程</span></a><span class="ver">v0.4</span></header>
+<div class="layout">
+<aside class="sidebar" id="sidebar"><nav class="book-nav"><div class="book-nav-head"><a class="bn-title" href="index.html">Enterprise Agent Engineering</a><span class="bn-ver">v0.4</span></div><ol class="parts"><li class="part"><a class="part-link" href="part-00.html"><span class="part-no">0</span><span class="part-name">先别急着做 Agent</span></a></li>
+<li class="part"><a class="part-link" href="part-01.html"><span class="part-no">1</span><span class="part-name">把 LLM 当成一个真正的软件组件</span></a></li>
+<li class="part is-active"><a class="part-link" href="part-02.html"><span class="part-no">2</span><span class="part-name">Context Engineering：决定模型到底能看到什么</span></a><ul class="secs"><li class="lvl2"><a class="sec" href="#sec-2-1" data-id="sec-2-1">2.1 模型到底看到了什么？</a></li><li class="lvl2"><a class="sec" href="#sec-2-2" data-id="sec-2-2">2.2 “知道”与“看到”是两回事</a></li><li class="lvl2"><a class="sec" href="#sec-2-3" data-id="sec-2-3">2.3 为什么把信息全部塞进去也不是好办法？</a></li><li class="lvl3"><a class="sec" href="#sec-x5" data-id="sec-x5">第一，成本越来越高</a></li><li class="lvl3"><a class="sec" href="#sec-x6" data-id="sec-x6">第二，延迟越来越高</a></li><li class="lvl3"><a class="sec" href="#sec-x7" data-id="sec-x7">第三，信息可能开始互相干扰</a></li><li class="lvl3"><a class="sec" href="#sec-x8" data-id="sec-x8">相关信息不足和无关信息过多，都可能导致错误</a></li><li class="lvl2"><a class="sec" href="#sec-2-4" data-id="sec-2-4">2.4 Context Engineering 到底在工程上做什么？</a></li><li class="lvl2"><a class="sec" href="#sec-2-5" data-id="sec-2-5">2.5 一个后端工程师非常熟悉的类比</a></li><li class="lvl2"><a class="sec" href="#sec-2-6" data-id="sec-2-6">2.6 Conversation History：是不是把所有聊天记录都保存下来就行？</a></li><li class="lvl2"><a class="sec" href="#sec-2-7" data-id="sec-2-7">2.7 最简单的方法：Full History</a></li><li class="lvl2"><a class="sec" href="#sec-2-8" data-id="sec-2-8">2.8 Sliding Window：只保留最近几轮</a></li><li class="lvl2"><a class="sec" href="#sec-2-9" data-id="sec-2-9">2.9 Summary：把旧历史压缩成摘要</a></li><li class="lvl2"><a class="sec" href="#sec-2-10" data-id="sec-2-10">2.10 Structured State：比摘要更进一步</a></li><li class="lvl2"><a class="sec" href="#sec-2-11" data-id="sec-2-11">2.11 History 和 State 不是一回事</a></li><li class="lvl2"><a class="sec" href="#sec-2-12" data-id="sec-2-12">2.12 一个很关键的设计原则</a></li><li class="lvl2"><a class="sec" href="#sec-2-13" data-id="sec-2-13">2.13 Memory 又是什么？</a></li><li class="lvl2"><a class="sec" href="#sec-2-14" data-id="sec-2-14">2.14 Memory、History、State、RAG：把它们的关系区分开</a></li><li class="lvl3"><a class="sec" href="#sec-history" data-id="sec-history">History</a></li><li class="lvl3"><a class="sec" href="#sec-state" data-id="sec-state">State</a></li><li class="lvl3"><a class="sec" href="#sec-memory" data-id="sec-memory">Memory</a></li><li class="lvl3"><a class="sec" href="#sec-knowledge-retrieval-rag" data-id="sec-knowledge-retrieval-rag">Knowledge Retrieval（RAG）</a></li><li class="lvl2"><a class="sec" href="#sec-2-15" data-id="sec-2-15">2.15 Context Construction：真正开始工程化</a></li><li class="lvl3"><a class="sec" href="#sec-x25" data-id="sec-x25">第一步：当前问题</a></li><li class="lvl3"><a class="sec" href="#sec-task-state" data-id="sec-task-state">第二步：Task State</a></li><li class="lvl3"><a class="sec" href="#sec-memory-2" data-id="sec-memory-2">第三步：Memory</a></li><li class="lvl3"><a class="sec" href="#sec-relevant-history" data-id="sec-relevant-history">第四步：Relevant History</a></li><li class="lvl3"><a class="sec" href="#sec-rag" data-id="sec-rag">第五步：RAG</a></li><li class="lvl3"><a class="sec" href="#sec-tool-results" data-id="sec-tool-results">第六步：Tool Results</a></li><li class="lvl2"><a class="sec" href="#sec-2-16" data-id="sec-2-16">2.16 不要把 Context Builder 写成一个巨型字符串</a></li><li class="lvl2"><a class="sec" href="#sec-2-17" data-id="sec-2-17">2.17 一个非常重要的问题：相关性</a></li><li class="lvl2"><a class="sec" href="#sec-2-18" data-id="sec-2-18">2.18 Context Budget：每一块 Context 都应该有预算</a></li><li class="lvl2"><a class="sec" href="#sec-2-19" data-id="sec-2-19">2.19 信息应该如何被压缩？</a></li><li class="lvl2"><a class="sec" href="#sec-2-20" data-id="sec-2-20">2.20 一个 100 轮对话实验</a></li><li class="lvl3"><a class="sec" href="#sec-strategy-a-full-history" data-id="sec-strategy-a-full-history">Strategy A：Full History</a></li><li class="lvl3"><a class="sec" href="#sec-strategy-b-sliding-window" data-id="sec-strategy-b-sliding-window">Strategy B：Sliding Window</a></li><li class="lvl3"><a class="sec" href="#sec-strategy-c-summary" data-id="sec-strategy-c-summary">Strategy C：Summary</a></li><li class="lvl3"><a class="sec" href="#sec-strategy-d-structured-state" data-id="sec-strategy-d-structured-state">Strategy D：Structured State</a></li><li class="lvl2"><a class="sec" href="#sec-2-21" data-id="sec-2-21">2.21 不要只比较“回答好不好”</a></li><li class="lvl2"><a class="sec" href="#sec-2-22" data-id="sec-2-22">2.22 故障实验：让 Context 自己出问题</a></li><li class="lvl3"><a class="sec" href="#sec-failure-a" data-id="sec-failure-a">Failure A：关键信息被窗口删除</a></li><li class="lvl3"><a class="sec" href="#sec-failure-b-summary" data-id="sec-failure-b-summary">Failure B：Summary 丢失关键事实</a></li><li class="lvl3"><a class="sec" href="#sec-failure-c" data-id="sec-failure-c">Failure C：塞入大量无关信息</a></li><li class="lvl3"><a class="sec" href="#sec-failure-d" data-id="sec-failure-d">Failure D：状态过期</a></li><li class="lvl3"><a class="sec" href="#sec-failure-e-retrieval" data-id="sec-failure-e-retrieval">Failure E：Retrieval 找到了错误文档</a></li><li class="lvl2"><a class="sec" href="#sec-2-23" data-id="sec-2-23">2.23 从失败中你会发现一个非常重要的事实</a></li><li class="lvl3"><a class="sec" href="#sec-context" data-id="sec-context">可选真实模型实验：比较当前模型的 Context 策略</a></li><li class="lvl2"><a class="sec" href="#sec-2-24" data-id="sec-2-24">2.24 Context 和 Prompt：不要再混为一谈</a></li><li class="lvl2"><a class="sec" href="#sec-2-25" data-id="sec-2-25">2.25 Context Engineering 的一个核心原则</a></li><li class="lvl2"><a class="sec" href="#sec-2-26" data-id="sec-2-26">2.26 一个更进一步的问题：谁来决定 Context？</a></li><li class="lvl2"><a class="sec" href="#sec-2-27" data-id="sec-2-27">2.27 Context → Tool → Agent</a></li><li class="lvl2"><a class="sec" href="#sec-2-28" data-id="sec-2-28">2.28 一个工程师应该形成的新直觉</a></li><li class="lvl2"><a class="sec" href="#sec-2-29" data-id="sec-2-29">2.29 练习：设计一个 Context Schema</a></li><li class="lvl2"><a class="sec" href="#sec-2-30" data-id="sec-2-30">2.30 练习：把一个巨型 Prompt 拆开</a></li><li class="lvl2"><a class="sec" href="#sec-2-31" data-id="sec-2-31">2.31 一个小结论：Context 是动态的</a></li><li class="lvl2"><a class="sec" href="#sec-2-32" data-id="sec-2-32">2.32 Part 2 最重要的几个认识</a></li><li class="lvl3"><a class="sec" href="#sec-x58" data-id="sec-x58">第一</a></li><li class="lvl3"><a class="sec" href="#sec-x59" data-id="sec-x59">第二</a></li><li class="lvl3"><a class="sec" href="#sec-x60" data-id="sec-x60">第三</a></li><li class="lvl3"><a class="sec" href="#sec-x61" data-id="sec-x61">第四</a></li><li class="lvl3"><a class="sec" href="#sec-x62" data-id="sec-x62">第五</a></li><li class="lvl2"><a class="sec" href="#sec-part-part-3" data-id="sec-part-part-3">本 Part → Part 3：从决定“看什么”到决定“做什么”</a></li></ul></li>
+<li class="part"><a class="part-link" href="part-03.html"><span class="part-no">3</span><span class="part-name">Tools &amp; Agent Harness：让模型开始与真实世界交互</span></a></li>
+<li class="part"><a class="part-link" href="part-04.html"><span class="part-no">4</span><span class="part-name">RAG &amp; Memory：让 Agent 获得知识，并记住真正值得记住的东西</span></a></li>
+<li class="part"><a class="part-link" href="part-05.html"><span class="part-no">5</span><span class="part-name">Workflow → Agent：什么时候真的需要 Agent？</span></a></li>
+<li class="part"><a class="part-link" href="part-06.html"><span class="part-no">6</span><span class="part-name">Evaluation Engineering：从“看起来不错”到“有证据证明”</span></a></li>
+<li class="part"><a class="part-link" href="part-07.html"><span class="part-no">7</span><span class="part-name">Production Agent Engineering：让一个“能跑的 Agent”变成“敢上线的 Agent”</span></a></li>
+<li class="part"><a class="part-link" href="part-08.html"><span class="part-no">8</span><span class="part-name">Advanced Agent Patterns：当简单 Agent 已经不够用了</span></a></li>
+<li class="part"><a class="part-link" href="part-09.html"><span class="part-no">9</span><span class="part-name">Coding Agent：让 Agent 真正参与软件开发</span></a></li>
+<li class="part"><a class="part-link" href="part-10.html"><span class="part-no">10</span><span class="part-name">Multi-Agent Engineering：当一个 Agent 不再够用</span></a></li>
+<li class="part"><a class="part-link" href="part-11.html"><span class="part-no">11</span><span class="part-name">Agent Evolution：让 Agent 不只是上线，而是持续变好</span></a></li>
+<li class="part"><a class="part-link" href="part-12.html"><span class="part-no">12</span><span class="part-name">Agent Application Architecture：把工程能力迁移到陌生领域</span></a></li></ol><div class="bn-foot"><a href="index.html">全书目录</a></div></nav></aside>
+<main class="content" id="content">
+<article class="prose">
+<h1>Part 2｜Context Engineering：决定模型到底能看到什么</h1>
+<blockquote>
+<p>一个模型“知道什么”，和它“这一次到底看到了什么”，是两件完全不同的事情。</p>
+</blockquote>
+<p>Part 1 解决了调用边界：请求能够发出去，返回值也经过结构校验。但接口正常不代表模型在每次决策时都获得了真正需要的信息。</p>
+<p>现在假设服务本身没有报错，用户却仍然遇到一个问题。</p>
+<p>用户说：</p>
+<blockquote>
+<p>“我前面已经告诉你了，我的车是 2024 款双电机版本，为什么你又问我车型？”</p>
+</blockquote>
+<p>你查看日志。</p>
+<p>发现用户明明说过。</p>
+<p>模型也明明收到了对话历史。</p>
+<p>甚至那句话就在上下文里。</p>
+<p>可是模型还是没有使用。</p>
+<p>于是你开始修改 Prompt：</p>
+<blockquote>
+<p>“请注意，一定要记住用户已经提供的信息。”</p>
+</blockquote>
+<p>还是不稳定。</p>
+<p>你继续修改：</p>
+<blockquote>
+<p>“不要重复询问用户已经提供的信息。”</p>
+</blockquote>
+<p>似乎好了一点。</p>
+<p>但过了一段时间，对话变长以后，问题又出现了。</p>
+<p>这时候，你开始怀疑：</p>
+<blockquote>
+<p>“是不是模型的记忆能力不行？”</p>
+</blockquote>
+<p>但很多时候，真正的问题并不是“模型不会记”。</p>
+<p>而是：</p>
+<blockquote>
+<p><strong>你给模型的 Context 本身就没有被设计好。</strong></p>
+</blockquote>
+<p>这就是这一 Part 要解决的问题。</p>
+<hr>
+<h2 id="sec-2-1">2.1 模型到底看到了什么？</h2>
+<p>这是整个 Part 2 最值得你反复思考的问题。</p>
+<p>当用户说：</p>
+<blockquote>
+<p>“帮我看看订单为什么还没发货。”</p>
+</blockquote>
+<p>你可能认为模型看到的只是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>帮我看看订单为什么还没发货。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>但实际上，一个真实的 AI Application 在调用模型时，可能已经构造了这样的输入：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>System Instructions</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>User Message</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Conversation History</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Current User Profile</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Relevant Business Data</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Retrieved Documents</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Previous Tool Results</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Current Task State</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>也就是说：</p>
+<blockquote>
+<p><strong>模型的输入不是“用户说的话”，而是整个 Context。</strong></p>
+</blockquote>
+<p>你可以把它理解成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Context</span></span>
+<span class="line"><span>├── Instructions</span></span>
+<span class="line"><span>├── User Input</span></span>
+<span class="line"><span>├── History</span></span>
+<span class="line"><span>├── Retrieved Knowledge</span></span>
+<span class="line"><span>├── Tool Results</span></span>
+<span class="line"><span>├── State</span></span>
+<span class="line"><span>└── Memory</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>最后这些信息一起进入模型。</p>
+<p>因此，如果模型做错了，你真正应该问的问题不是：</p>
+<blockquote>
+<p>“模型为什么不知道？”</p>
+</blockquote>
+<p>而是：</p>
+<blockquote>
+<p><strong>“在它做出这个决定的那一刻，它到底看到了什么？”</strong></p>
+</blockquote>
+<p>这个问题一旦建立起来，很多看起来神秘的 Agent 问题都会开始变得非常普通。</p>
+<hr>
+<h2 id="sec-2-2">2.2 “知道”与“看到”是两回事</h2>
+<p>这是理解 Context 最重要的一步。</p>
+<p>假设模型本身具有丰富的通用知识。</p>
+<p>这并不意味着：</p>
+<blockquote>
+<p>它知道你公司的内部规则。</p>
+</blockquote>
+<p>例如，你问：</p>
+<blockquote>
+<p>“按照我们公司的报销制度，这种费用能不能报？”</p>
+</blockquote>
+<p>如果公司的报销制度从来没有进入 Context，那么模型即使再强，也不能凭空知道你们公司的内部规定。</p>
+<p>因此：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model Knowledge</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>和：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Contextual Information</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>必须分开。</p>
+<p>可以简单理解成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model</span></span>
+<span class="line"><span>= 它原本具备的能力</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span>= 你这一次告诉它的东西</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>而一次具体任务的结果，通常取决于两者共同作用：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Model Capability</span></span>
+<span class="line"><span>        +</span></span>
+<span class="line"><span>Task Context</span></span>
+<span class="line"><span>        ↓</span></span>
+<span class="line"><span>Current Behavior</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>所以很多时候，一个 Agent 表现不好，并不意味着：</p>
+<blockquote>
+<p>“换一个更强的模型。”</p>
+</blockquote>
+<p>可能只意味着：</p>
+<blockquote>
+<p><strong>你没有给当前任务构造出合适的 Context。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-2-3">2.3 为什么把信息全部塞进去也不是好办法？</h2>
+<p>这是很多初学者非常自然的想法：</p>
+<blockquote>
+<p>“既然模型可能缺信息，那我就把所有东西全部给它。”</p>
+</blockquote>
+<p>于是一个用户的问题进入系统以后，Context 变成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户基本信息</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>全部历史对话</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>全部订单</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>全部维修记录</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>全部客服记录</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>全部政策</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>全部产品资料</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>所有 Tool 描述</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>所有之前的 Tool Result</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>从直觉上看，这似乎非常稳妥。</p>
+<p>因为：</p>
+<blockquote>
+<p>“反正信息都在里面。”</p>
+</blockquote>
+<p>但很快你会发现，这种做法存在至少三个问题。</p>
+<hr>
+<h3 id="sec-x5">第一，成本越来越高</h3>
+<p>Context 变长以后，输入 token 增加。</p>
+<p>输入 token 增加以后：</p>
+<blockquote>
+<p>调用成本可能增加。</p>
+</blockquote>
+<hr>
+<h3 id="sec-x6">第二，延迟越来越高</h3>
+<p>更长的输入意味着更多数据需要经过模型处理。</p>
+<p>对于一个实时交互系统来说：</p>
+<blockquote>
+<p>更大的 Context 往往意味着更大的响应压力。</p>
+</blockquote>
+<hr>
+<h3 id="sec-x7">第三，信息可能开始互相干扰</h3>
+<p>这是最容易被忽略的问题。</p>
+<p>假设用户当前的问题是：</p>
+<blockquote>
+<p>“为什么我的车今天无法充电？”</p>
+</blockquote>
+<p>你真正需要的可能只是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>当前车辆型号</span></span>
+<span class="line"><span>当前故障码</span></span>
+<span class="line"><span>最近充电记录</span></span>
+<span class="line"><span>最近一次维修记录</span></span>
+<span class="line"><span>相关维修手册</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>但是你把过去三个月所有聊天记录都塞进去了。</p>
+<p>其中有大量：</p>
+<ul>
+<li>无关闲聊</li>
+<li>旧车辆信息</li>
+<li>已经解决的问题</li>
+<li>过期维修记录</li>
+<li>很久以前的用户偏好</li>
+</ul>
+<p>这些信息虽然“正确”，但并不一定：</p>
+<blockquote>
+<p><strong>与当前任务相关。</strong></p>
+</blockquote>
+<p>于是 Context 出现了一个非常重要的问题：</p>
+<h3 id="sec-x8">相关信息不足和无关信息过多，都可能导致错误</h3>
+<p>这就是 Context Engineering 与简单“堆 Prompt”之间的区别。</p>
+<hr>
+<h2 id="sec-2-4">2.4 Context Engineering 到底在工程上做什么？</h2>
+<p>如果把 Context 理解成：</p>
+<blockquote>
+<p>模型这次做决策时可以看到的信息集合。</p>
+</blockquote>
+<p>那么 Context Engineering 做的事情其实很像数据库查询优化。</p>
+<p>你不是把数据库里的所有表都返回给前端。</p>
+<p>你会：</p>
+<ul>
+<li>查询</li>
+<li>过滤</li>
+<li>排序</li>
+<li>聚合</li>
+<li>投影</li>
+<li>分页</li>
+</ul>
+<p>Context 也一样。</p>
+<p>可以建立一个非常实用的流程：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Raw Data</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Select</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Filter</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Transform</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Prioritize</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Compress</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Inject</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Model</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>因此：</p>
+<blockquote>
+<p><strong>Context Engineering 的核心，不是“往 Prompt 里加什么”，而是“在当前任务里，应该让模型看到什么”。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-2-5">2.5 一个后端工程师非常熟悉的类比</h2>
+<p>想象你有一张订单表：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>orders</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>有一千万行数据。</p>
+<p>现在用户查询：</p>
+<blockquote>
+<p>“帮我查订单 10001。”</p>
+</blockquote>
+<p>你显然不会这样做：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">SELECT</span><span style="color:#D73A49"> *</span></span>
+<span class="line"><span style="color:#D73A49">FROM</span><span style="color:#24292E"> orders;</span></span>
+<span class="line"></span></code></pre>
+<p>然后把一千万条订单全部返回。</p>
+<p>你会：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">SELECT</span><span style="color:#24292E"> ...</span></span>
+<span class="line"><span style="color:#D73A49">FROM</span><span style="color:#24292E"> orders</span></span>
+<span class="line"><span style="color:#D73A49">WHERE</span><span style="color:#24292E"> order_id </span><span style="color:#D73A49">=</span><span style="color:#005CC5"> 10001</span><span style="color:#24292E">;</span></span>
+<span class="line"></span></code></pre>
+<p>因为你知道：</p>
+<blockquote>
+<p><strong>信息越多，不代表查询结果越好。</strong></p>
+</blockquote>
+<p>Context 其实也存在类似的问题。</p>
+<p>错误的方法：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>所有对话</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>所有知识</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>所有 Tool</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>所有数据</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>更合理的方法：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>当前任务</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>确定需要什么</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>只取相关信息</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是一个非常好的工程类比：</p>
+<blockquote>
+<p><strong>Context Engineering，本质上是在做“面向模型的查询优化”。</strong></p>
+</blockquote>
+<p>当然，Context 比数据库查询更复杂，因为“什么信息相关”本身可能就需要模型参与判断。</p>
+<p>但这个类比足够帮助你建立第一层直觉。</p>
+<hr>
+<h2 id="sec-2-6">2.6 Conversation History：是不是把所有聊天记录都保存下来就行？</h2>
+<p>现在来看最常见的一类 Context：</p>
+<blockquote>
+<p>Conversation History。</p>
+</blockquote>
+<p>假设用户和 Agent 的对话：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户：我的车充电很慢。</span></span>
+<span class="line"><span>助手：请提供车型。</span></span>
+<span class="line"><span>用户：2024 款双电机。</span></span>
+<span class="line"><span>助手：最近有没有更换充电桩？</span></span>
+<span class="line"><span>用户：换过两个，都一样。</span></span>
+<span class="line"><span>助手：有没有故障码？</span></span>
+<span class="line"><span>用户：有，P0XXX。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果对话只有六轮，那么：</p>
+<blockquote>
+<p>全部保存下来很容易。</p>
+</blockquote>
+<p>于是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>History</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Append Current Message</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>Send to Model</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>似乎就解决了。</p>
+<p>但假设对话变成了：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>10 turns</span></span>
+<span class="line"><span>50 turns</span></span>
+<span class="line"><span>100 turns</span></span>
+<span class="line"><span>500 turns</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你会马上遇到问题。</p>
+<hr>
+<h2 id="sec-2-7">2.7 最简单的方法：Full History</h2>
+<p>策略非常直接：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>每次请求</span></span>
+<span class="line"><span>=</span></span>
+<span class="line"><span>全部历史消息</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>当前消息</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Turn 1</span></span>
+<span class="line"><span>Turn 2</span></span>
+<span class="line"><span>Turn 3</span></span>
+<span class="line"><span>...</span></span>
+<span class="line"><span>Turn 100</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>全部发送。</p>
+<p>这个方法有一个非常大的优点：</p>
+<blockquote>
+<p><strong>简单。</strong></p>
+</blockquote>
+<p>对于短对话，往往也是最容易实现的起点。</p>
+<p>但是随着对话变长，它会变得越来越昂贵。</p>
+<p>更关键的是：</p>
+<blockquote>
+<p>有些历史信息实际上已经失去价值。</p>
+</blockquote>
+<p>例如用户在第 3 轮说：</p>
+<blockquote>
+<p>“我现在在公司楼下。”</p>
+</blockquote>
+<p>到第 80 轮讨论电池故障的时候，这句话大概率已经不重要了。</p>
+<p>而用户在第 7 轮说：</p>
+<blockquote>
+<p>“车型是 2024 款双电机。”</p>
+</blockquote>
+<p>这可能几十轮以后仍然非常重要。</p>
+<p>所以：</p>
+<blockquote>
+<p><strong>历史消息的重要性不是均匀的。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-2-8">2.8 Sliding Window：只保留最近几轮</h2>
+<p>最简单的优化就是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>只保留最近 N 轮</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>最近 10 turns</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Turn 1 ~ 90</span></span>
+<span class="line"><span>     ↓</span></span>
+<span class="line"><span>丢弃</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Turn 91 ~ 100</span></span>
+<span class="line"><span>     ↓</span></span>
+<span class="line"><span>保留</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这样做的优点非常明显：</p>
+<ul>
+<li>Context 可控</li>
+<li>Token 可控</li>
+<li>实现简单</li>
+</ul>
+<p>但是马上会出现一个问题：</p>
+<blockquote>
+<p>如果第 10 轮有一条非常重要的信息，而现在已经到了第 100 轮怎么办？</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>第 7 轮：</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>车型：2024 款双电机</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>100 轮以后，被窗口策略丢掉了。</p>
+<p>于是模型又开始问：</p>
+<blockquote>
+<p>“请提供车型。”</p>
+</blockquote>
+<p>用户非常生气：</p>
+<blockquote>
+<p>“我不是早告诉你了吗？”</p>
+</blockquote>
+<p>这时候你会发现：</p>
+<blockquote>
+<p><strong>“最近的信息”不等于“最重要的信息”。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-2-9">2.9 Summary：把旧历史压缩成摘要</h2>
+<p>那么我们可以换一种思路。</p>
+<p>不要保存所有历史原文。</p>
+<p>而是把旧历史总结成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户：</span></span>
+<span class="line"><span>2024 款双电动车主</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>当前问题：</span></span>
+<span class="line"><span>充电速度明显下降</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>已尝试：</span></span>
+<span class="line"><span>更换两个充电桩</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>已发现：</span></span>
+<span class="line"><span>存在 P0XXX 故障码</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>当前状态：</span></span>
+<span class="line"><span>等待电池诊断结果</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这样原来 80 轮的信息，就变成了一小段结构化状态。</p>
+<p>这就是 Summary。</p>
+<p>它解决了：</p>
+<blockquote>
+<p><strong>如何减少 Context 大小。</strong></p>
+</blockquote>
+<p>但 Summary 也带来一个风险：</p>
+<blockquote>
+<p>摘要本身可能丢失信息。</p>
+</blockquote>
+<p>比如原对话里有：</p>
+<blockquote>
+<p>“第一次故障发生在 10 月 3 日晚 9 点 15 分。”</p>
+</blockquote>
+<p>摘要可能写成：</p>
+<blockquote>
+<p>“近期发生故障。”</p>
+</blockquote>
+<p>如果这个时间后来非常重要，就会丢失。</p>
+<p>因此：</p>
+<blockquote>
+<p><strong>压缩并不等于简单地总结得越短越好。</strong></p>
+</blockquote>
+<p>真正的问题是：</p>
+<blockquote>
+<p>哪些信息必须保留？</p>
+</blockquote>
+<hr>
+<h2 id="sec-2-10">2.10 Structured State：比摘要更进一步</h2>
+<p>在很多复杂 Agent 中，你其实不一定需要把所有历史信息变成自然语言摘要。</p>
+<p>可以把重要状态直接结构化。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> VehicleTaskState</span><span style="color:#24292E">(</span><span style="color:#6F42C1">BaseModel</span><span style="color:#24292E">):</span></span>
+<span class="line"><span style="color:#24292E">    vehicle_id: </span><span style="color:#005CC5">str</span></span>
+<span class="line"><span style="color:#24292E">    model: </span><span style="color:#005CC5">str</span><span style="color:#D73A49"> |</span><span style="color:#005CC5"> None</span></span>
+<span class="line"><span style="color:#24292E">    fault_codes: list[</span><span style="color:#005CC5">str</span><span style="color:#24292E">]</span></span>
+<span class="line"><span style="color:#24292E">    charging_issue: </span><span style="color:#005CC5">str</span><span style="color:#D73A49"> |</span><span style="color:#005CC5"> None</span></span>
+<span class="line"><span style="color:#24292E">    attempted_actions: list[</span><span style="color:#005CC5">str</span><span style="color:#24292E">]</span></span>
+<span class="line"><span style="color:#24292E">    pending_actions: list[</span><span style="color:#005CC5">str</span><span style="color:#24292E">]</span></span>
+<span class="line"><span style="color:#24292E">    diagnosis_status: </span><span style="color:#005CC5">str</span></span>
+<span class="line"></span></code></pre>
+<p>这样系统运行以后：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Conversation</span></span>
+<span class="line"><span>        ↓</span></span>
+<span class="line"><span>Extract Important Facts</span></span>
+<span class="line"><span>        ↓</span></span>
+<span class="line"><span>Structured State</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>以后模型需要 Context 的时候：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Structured State</span></span>
+<span class="line"><span>        ↓</span></span>
+<span class="line"><span>Context Builder</span></span>
+<span class="line"><span>        ↓</span></span>
+<span class="line"><span>Model</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这时你已经开始做一件非常重要的事情：</p>
+<blockquote>
+<p><strong>把“聊天记录”与“任务状态”分开。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-2-11">2.11 History 和 State 不是一回事</h2>
+<p>这个区别值得单独记住。</p>
+<p>假设用户说：</p>
+<blockquote>
+<p>“我昨天已经重启过设备了，还是不行。”</p>
+</blockquote>
+<p>这是：</p>
+<blockquote>
+<p>Conversation History。</p>
+</blockquote>
+<p>但是系统真正关心的可能是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>restart_attempted = true</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是：</p>
+<blockquote>
+<p>Task State。</p>
+</blockquote>
+<p>两者可以同时存在。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Conversation History</span></span>
+<span class="line"><span>=</span></span>
+<span class="line"><span>发生过什么</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>State</span></span>
+<span class="line"><span>=</span></span>
+<span class="line"><span>当前系统认为什么是重要事实</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>更进一步：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>History</span></span>
+<span class="line"><span>=</span></span>
+<span class="line"><span>原始事件</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>State</span></span>
+<span class="line"><span>=</span></span>
+<span class="line"><span>当前任务的结构化表示</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>如果你做过分布式系统或者状态机，这个概念应该很熟悉。</p>
+<p>你不会让所有历史日志直接承担“当前状态”的职责。</p>
+<p>同样：</p>
+<blockquote>
+<p>你也不应该让聊天记录承担所有 Agent State 的职责。</p>
+</blockquote>
+<hr>
+<h2 id="sec-2-12">2.12 一个很关键的设计原则</h2>
+<p>可以把 Context 看成一个“视图”。</p>
+<p>数据库里的原始数据可能很多。</p>
+<p>但：</p>
+<blockquote>
+<p>当前请求需要的，只是其中一部分。</p>
+</blockquote>
+<p>所以：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Source of Truth</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Application State</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Context Builder</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Model Context</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这意味着：</p>
+<blockquote>
+<p><strong>Context 不应该天然等于数据库，不应该天然等于完整历史，也不应该天然等于 Memory。</strong></p>
+</blockquote>
+<p>Context 是：</p>
+<blockquote>
+<p><strong>为了当前决策而构造出来的输入视图。</strong></p>
+</blockquote>
+<p>这是整个 Part 2 最核心的概念之一。</p>
+<hr>
+<h2 id="sec-2-13">2.13 Memory 又是什么？</h2>
+<p>现在问题进一步复杂了。</p>
+<p>假设一个用户连续使用你的 Agent 一个月。</p>
+<p>第一天他说：</p>
+<blockquote>
+<p>“以后回复我时尽量简洁一点。”</p>
+</blockquote>
+<p>第七天他说：</p>
+<blockquote>
+<p>“我是做电池测试的工程师。”</p>
+</blockquote>
+<p>第二十天他说：</p>
+<blockquote>
+<p>“我通常需要先看诊断数据，再看维修建议。”</p>
+</blockquote>
+<p>这些信息如果每次都从头开始重新解释，非常低效。</p>
+<p>于是我们可能希望系统“记住”。</p>
+<p>这就是 Memory。</p>
+<p>但 Memory 不应该简单理解成：</p>
+<blockquote>
+<p>“把全部历史对话永久保存下来。”</p>
+</blockquote>
+<p>因为那样得到的只是一个越来越大的聊天记录。</p>
+<p>真正的 Memory 需要回答：</p>
+<blockquote>
+<p><strong>什么值得长期保存？</strong></p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>User Preference</span></span>
+<span class="line"><span>    → concise responses</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>User Profile</span></span>
+<span class="line"><span>    → battery test engineer</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Long-term Task Preference</span></span>
+<span class="line"><span>    → diagnostics before repair recommendation</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这些东西可能比某一天的闲聊更值得保留。</p>
+<p>所以：</p>
+<blockquote>
+<p><strong>Memory 是经过筛选、整理和长期管理的信息，而不是简单的 History。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-2-14">2.14 Memory、History、State、RAG：把它们的关系区分开</h2>
+<p>这几个词经常被混在一起，但它们并不处于同一个概念层级。</p>
+<h3 id="sec-history">History</h3>
+<blockquote>
+<p>已经发生过的对话或事件记录。</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户昨天报告过同一个故障。</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="sec-state">State</h3>
+<blockquote>
+<p>应用维护的权威当前任务或业务状态。</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>repair_status = "waiting_for_battery_data"</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="sec-memory">Memory</h3>
+<blockquote>
+<p>经过筛选和治理、可能在后续任务中复用的信息。</p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>用户偏好先看原始诊断数据。</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="sec-knowledge-retrieval-rag">Knowledge Retrieval（RAG）</h3>
+<p>RAG 不是一份与 History 或 State 同类的信息。它是一条从外部知识源检索候选证据、再把相关证据提供给当前任务的处理路径。</p>
+<p>例如，检索操作手册后得到“维修手册第 43 页”的相关段落。文档是知识来源；检索与排序是 RAG 路径；返回的段落才可能进入当前 Context。</p>
+<p>一次模型调用的 Context，可能由以下材料组装而成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Current User Input</span></span>
+<span class="line"><span>+ Relevant History</span></span>
+<span class="line"><span>+ Authoritative State Snapshot</span></span>
+<span class="line"><span>+ Eligible Memory</span></span>
+<span class="line"><span>+ Retrieved Evidence (via RAG)</span></span>
+<span class="line"><span>+ Tool Results</span></span>
+<span class="line"><span>+ Instructions</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这些材料并不一定全部出现，也不应该不加筛选地全部塞入模型。应用需要为当前任务选择合适的信息、验证来源，并在必要时保留出处。</p>
+<p>因此请记住：<strong>Context 描述当前决策给模型看的输入视图；State 是权威当前状态；Memory 是经治理的信息；RAG 是获取外部证据的路径。它们有关联，但并非同一维度的“信息来源”。</strong></p>
+<h2 id="sec-2-15">2.15 Context Construction：真正开始工程化</h2>
+<p>现在我们可以正式把 Context 构建过程工程化。</p>
+<p>假设用户问：</p>
+<blockquote>
+<p>“这个故障为什么还没解决？”</p>
+</blockquote>
+<p>Context Builder 可以做：</p>
+<h3 id="sec-x25">第一步：当前问题</h3>
+<p>保留：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>这个故障为什么还没解决？</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="sec-task-state">第二步：Task State</h3>
+<p>加入：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>fault_code = P0XXX</span></span>
+<span class="line"><span>diagnosis_status = waiting</span></span>
+<span class="line"><span>vehicle_model = 2024_dual_motor</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="sec-memory-2">第三步：Memory</h3>
+<p>加入：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>user_role = battery_test_engineer</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="sec-relevant-history">第四步：Relevant History</h3>
+<p>只保留：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>最近与当前故障相关的几轮</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="sec-rag">第五步：RAG</h3>
+<p>检索：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>P0XXX 对应维修手册</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="sec-tool-results">第六步：Tool Results</h3>
+<p>加入最新诊断结果。</p>
+<p>最后构造成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>System Instructions</span></span>
+<span class="line"><span>       +</span></span>
+<span class="line"><span>Current User Input</span></span>
+<span class="line"><span>       +</span></span>
+<span class="line"><span>Task State</span></span>
+<span class="line"><span>       +</span></span>
+<span class="line"><span>Relevant History</span></span>
+<span class="line"><span>       +</span></span>
+<span class="line"><span>Memory</span></span>
+<span class="line"><span>       +</span></span>
+<span class="line"><span>Retrieved Knowledge</span></span>
+<span class="line"><span>       +</span></span>
+<span class="line"><span>Tool Results</span></span>
+<span class="line"><span>       ↓</span></span>
+<span class="line"><span>      LLM</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就开始真正像一个：</p>
+<blockquote>
+<p><strong>Context Pipeline。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-2-16">2.16 不要把 Context Builder 写成一个巨型字符串</h2>
+<p>最初你可能会这样写：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">prompt </span><span style="color:#D73A49">=</span><span style="color:#D73A49"> f</span><span style="color:#032F62">"""</span></span>
+<span class="line"><span style="color:#032F62">你是一个售后助手。</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#032F62">用户信息：</span></span>
+<span class="line"><span style="color:#005CC5">{</span><span style="color:#24292E">user_info</span><span style="color:#005CC5">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#032F62">历史：</span></span>
+<span class="line"><span style="color:#005CC5">{</span><span style="color:#24292E">history</span><span style="color:#005CC5">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#032F62">维修记录：</span></span>
+<span class="line"><span style="color:#005CC5">{</span><span style="color:#24292E">repair_records</span><span style="color:#005CC5">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#032F62">知识库：</span></span>
+<span class="line"><span style="color:#005CC5">{</span><span style="color:#24292E">documents</span><span style="color:#005CC5">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#032F62">当前问题：</span></span>
+<span class="line"><span style="color:#005CC5">{</span><span style="color:#24292E">user_question</span><span style="color:#005CC5">}</span></span>
+<span class="line"><span style="color:#032F62">"""</span></span>
+<span class="line"></span></code></pre>
+<p>短期看没有问题。</p>
+<p>但系统一复杂，这个函数会迅速变成一个灾难。</p>
+<p>因为你根本不知道：</p>
+<ul>
+<li>哪些数据是必须的？</li>
+<li>哪些数据是可选的？</li>
+<li>为什么放进去？</li>
+<li>哪些数据已经过期？</li>
+<li>哪些数据和当前任务无关？</li>
+</ul>
+<p>所以更成熟的思路是拆开：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">context </span><span style="color:#D73A49">=</span><span style="color:#24292E"> ContextBuilder(</span></span>
+<span class="line"><span style="color:#E36209">    instructions</span><span style="color:#D73A49">=</span><span style="color:#005CC5">...</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#E36209">    state</span><span style="color:#D73A49">=</span><span style="color:#005CC5">...</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#E36209">    history</span><span style="color:#D73A49">=</span><span style="color:#005CC5">...</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#E36209">    memory</span><span style="color:#D73A49">=</span><span style="color:#005CC5">...</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#E36209">    retrieval</span><span style="color:#D73A49">=</span><span style="color:#005CC5">...</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#E36209">    tool_results</span><span style="color:#D73A49">=</span><span style="color:#005CC5">...</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#24292E">).build()</span></span>
+<span class="line"></span></code></pre>
+<p>然后每一个来源都有自己的策略。</p>
+<hr>
+<h2 id="sec-2-17">2.17 一个非常重要的问题：相关性</h2>
+<p>假设你的系统拥有 10000 条历史维修记录。</p>
+<p>用户当前只问：</p>
+<blockquote>
+<p>“P0XXX 这个故障码通常意味着什么？”</p>
+</blockquote>
+<p>你显然不应该把 10000 条全部塞进去。</p>
+<p>需要先做：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Query</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Retrieve Candidate Records</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Rank</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Select Relevant Records</span></span>
+<span class="line"><span> ↓</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这其实已经非常接近数据库查询和搜索系统的思想。</p>
+<p>所以后面你会发现：</p>
+<blockquote>
+<p>RAG 并不是一个孤立的“向量数据库技术”。</p>
+</blockquote>
+<p>它实际上是：</p>
+<blockquote>
+<p><strong>Context Construction 的一个重要组成部分。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-2-18">2.18 Context Budget：每一块 Context 都应该有预算</h2>
+<p>假设模型允许非常大的上下文。</p>
+<p>我们仍然不应该认为：</p>
+<blockquote>
+<p>“那就全部放进去。”</p>
+</blockquote>
+<p>可以给不同来源设置预算。</p>
+<p>例如只是示意：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Instructions      10%</span></span>
+<span class="line"><span>Current Task       10%</span></span>
+<span class="line"><span>State              10%</span></span>
+<span class="line"><span>History            20%</span></span>
+<span class="line"><span>Retrieval          30%</span></span>
+<span class="line"><span>Tool Results       20%</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这不是固定标准。</p>
+<p>真正的含义是：</p>
+<blockquote>
+<p><strong>Context 是有限资源。</strong></p>
+</blockquote>
+<p>每一类信息都应该争取：</p>
+<blockquote>
+<p>“我为什么值得占用上下文空间？”</p>
+</blockquote>
+<p>这和后端中的：</p>
+<ul>
+<li>CPU budget</li>
+<li>Memory budget</li>
+<li>DB connection pool</li>
+<li>Request budget</li>
+</ul>
+<p>非常类似。</p>
+<hr>
+<h2 id="sec-2-19">2.19 信息应该如何被压缩？</h2>
+<p>假设你已经发现 Context 太长。</p>
+<p>第一种思路：</p>
+<blockquote>
+<p>直接截掉后面的内容。</p>
+</blockquote>
+<p>第二种：</p>
+<blockquote>
+<p>删除最早的内容。</p>
+</blockquote>
+<p>第三种：</p>
+<blockquote>
+<p>全部总结成一段话。</p>
+</blockquote>
+<p>都不一定好。</p>
+<p>更好的问题是：</p>
+<blockquote>
+<p><strong>这个任务真正需要哪些信息？</strong></p>
+</blockquote>
+<p>于是压缩可以分成几种思路：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>不要的信息</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>删除</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>重复的信息</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>合并</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>详细但非关键的信息</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>摘要</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>关键事实</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>结构化保存</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>当前不知道但可能需要的信息</span></span>
+<span class="line"><span>    ↓</span></span>
+<span class="line"><span>需要时重新检索</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>注意：</p>
+<blockquote>
+<p><strong>Compaction 的目标不是让 Context 尽可能短。</strong></p>
+</blockquote>
+<p>而是：</p>
+<blockquote>
+<p><strong>在有限空间里保留对当前任务最有价值的信息。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-2-20">2.20 一个 100 轮对话实验</h2>
+<p>现在设计一个实验。</p>
+<p>创建一个非常简单的 Agent。</p>
+<p>让它完成一个长期任务，比如：</p>
+<blockquote>
+<p>“帮助用户分析一台存在间歇性故障的设备。”</p>
+</blockquote>
+<p>用户逐步提供：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Turn 1</span></span>
+<span class="line"><span>设备型号</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Turn 2</span></span>
+<span class="line"><span>第一次故障时间</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Turn 3</span></span>
+<span class="line"><span>错误码</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Turn 4</span></span>
+<span class="line"><span>已经尝试的操作</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>...</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Turn 100</span></span>
+<span class="line"><span>最新测试结果</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后分别实现四种策略。</p>
+<hr>
+<h3 id="sec-strategy-a-full-history">Strategy A：Full History</h3>
+<p>每次发送全部历史。</p>
+<hr>
+<h3 id="sec-strategy-b-sliding-window">Strategy B：Sliding Window</h3>
+<p>只保留最近 N 轮。</p>
+<hr>
+<h3 id="sec-strategy-c-summary">Strategy C：Summary</h3>
+<p>旧历史压缩成摘要。</p>
+<hr>
+<h3 id="sec-strategy-d-structured-state">Strategy D：Structured State</h3>
+<p>重要事实逐步进入结构化状态。</p>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "device_model"</span><span style="color:#24292E">: </span><span style="color:#032F62">"..."</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "fault_code"</span><span style="color:#24292E">: </span><span style="color:#032F62">"..."</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "first_occurrence"</span><span style="color:#24292E">: </span><span style="color:#032F62">"..."</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "attempted_actions"</span><span style="color:#24292E">: [],</span></span>
+<span class="line"><span style="color:#005CC5">  "current_status"</span><span style="color:#24292E">: </span><span style="color:#032F62">"..."</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "pending_actions"</span><span style="color:#24292E">: []</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<hr>
+<p>这四种策略不是只在纸面上比较。配套仓库的入口是 <code>labs/lab02_context/</code>。先读 <code>TASK.md</code>，然后运行本地基线和测试：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab02_context.src.run</span></span>
+<span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> pytest</span><span style="color:#032F62"> labs/lab02_context/tests</span></span>
+<span class="line"></span></code></pre>
+<p>阅读报告时先确认实验条件。<code>provided_context</code> 把摘要/结构化状态作为已提供的输入，测的是不同包装策略对后续回答的影响；<code>end_to_end_state</code> 才要求模型从历史中生成摘要或状态。两者回答的是不同问题，不能把它们合并成一个“上下文策略排行榜”。</p>
+<h2 id="sec-2-21">2.21 不要只比较“回答好不好”</h2>
+<p>这是这个实验非常关键的一点。</p>
+<p>你应该同时记录：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Token Usage</span></span>
+<span class="line"><span>Latency</span></span>
+<span class="line"><span>Cost</span></span>
+<span class="line"><span>Task Success</span></span>
+<span class="line"><span>Information Retention</span></span>
+<span class="line"><span>Failure Count</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>最终得到类似：</p>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th style="text-align:right">Token</th>
+<th style="text-align:right">Cost</th>
+<th style="text-align:right">Latency</th>
+<th style="text-align:right">Success</th>
+<th style="text-align:right">Information Loss</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Full History</td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+</tr>
+<tr>
+<td>Sliding Window</td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+</tr>
+<tr>
+<td>Summary</td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+</tr>
+<tr>
+<td>Structured State</td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+</tr>
+</tbody>
+</table>
+<p>你可能会发现：</p>
+<blockquote>
+<p>没有哪一种策略在所有情况下都最好。</p>
+</blockquote>
+<p>这恰恰是我们想学习的东西。</p>
+<hr>
+<h2 id="sec-2-22">2.22 故障实验：让 Context 自己出问题</h2>
+<p>接下来不要只让 Agent 正常工作。</p>
+<p>主动制造 Context Failure。</p>
+<hr>
+<h3 id="sec-failure-a">Failure A：关键信息被窗口删除</h3>
+<p>把关键事实放在很早的历史位置。</p>
+<p>观察：</p>
+<blockquote>
+<p>模型什么时候开始重复提问？</p>
+</blockquote>
+<hr>
+<h3 id="sec-failure-b-summary">Failure B：Summary 丢失关键事实</h3>
+<p>故意让摘要模型压缩掉一个关键字段。</p>
+<p>然后观察：</p>
+<blockquote>
+<p>后续任务是否失败？</p>
+</blockquote>
+<hr>
+<h3 id="sec-failure-c">Failure C：塞入大量无关信息</h3>
+<p>加入大量与当前任务无关的历史记录。</p>
+<p>观察：</p>
+<blockquote>
+<p>任务成功率和响应行为是否变化？</p>
+</blockquote>
+<hr>
+<h3 id="sec-failure-d">Failure D：状态过期</h3>
+<p>用户在第 20 轮修改车型。</p>
+<p>但 <code>State</code> 仍然保存旧车型。</p>
+<p>观察：</p>
+<blockquote>
+<p>Agent 会使用哪个？</p>
+</blockquote>
+<p>这实际上是非常典型的：</p>
+<blockquote>
+<p><strong>State Consistency 问题。</strong></p>
+</blockquote>
+<hr>
+<h3 id="sec-failure-e-retrieval">Failure E：Retrieval 找到了错误文档</h3>
+<p>让知识库里存在多个高度相似的文档。</p>
+<p>观察：</p>
+<blockquote>
+<p>模型是否能够识别检索结果可能不可靠？</p>
+</blockquote>
+<hr>
+<h2 id="sec-2-23">2.23 从失败中你会发现一个非常重要的事实</h2>
+<p>Context 本身已经开始像一种工程系统。</p>
+<p>它有：</p>
+<ul>
+<li>数据来源</li>
+<li>生命周期</li>
+<li>一致性</li>
+<li>优先级</li>
+<li>容量限制</li>
+<li>更新策略</li>
+<li>失效策略</li>
+</ul>
+<p>于是：</p>
+<blockquote>
+<p><strong>Context Engineering 并不是 Prompt Engineering 的高级版本。</strong></p>
+</blockquote>
+<p>它更接近：</p>
+<blockquote>
+<p><strong>围绕模型输入构建的一整套数据与状态工程。</strong></p>
+</blockquote>
+<p>这也是为什么后面的 Agent 系统越来越像一个真正的后端系统。</p>
+<hr>
+<h3 id="sec-context">可选真实模型实验：比较当前模型的 Context 策略</h3>
+<p>仅在本地 Fake 主线完成后，且已确认 Provider、费用、输入数据处理与结果留存安排时运行。单次真实模型对照只代表这批案例与这组配置的观察，不足以证明某种策略普遍更优。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">python</span><span style="color:#005CC5"> -m</span><span style="color:#032F62"> labs.lab02_context.src.real_experiment</span><span style="color:#005CC5"> --condition</span><span style="color:#032F62"> all</span><span style="color:#005CC5"> --strategy</span><span style="color:#032F62"> all</span><span style="color:#005CC5"> --runs</span><span style="color:#005CC5"> 1</span><span style="color:#005CC5"> --output</span><span style="color:#032F62"> artifacts/context-comparison.json</span></span>
+<span class="line"></span></code></pre>
+<p>这条命令是一次对照观察，不足以独立证明某策略普遍更优。报告应同时保留每案例的事实遗漏、旧值冲突、上下文规模、真实 usage（如果 Provider 提供）和成本未知状态。<code>AI_PERSIST_RAW_MODEL_OUTPUT</code> 与 <code>AI_PERSIST_SENSITIVE_INPUTS</code> 是不同的持久化开关，默认都关闭；保存原始回答或敏感输入前，应先确认本地数据处理与留存安排。建议将结果写入 <code>part02-context-benchmark.md</code>，并明确区分启发式 token 估算和 Provider 实际 usage。</p>
+<h2 id="sec-2-24">2.24 Context 和 Prompt：不要再混为一谈</h2>
+<p>很多文章会把：</p>
+<blockquote>
+<p>Prompt</p>
+</blockquote>
+<p>和：</p>
+<blockquote>
+<p>Context</p>
+</blockquote>
+<p>混在一起说。</p>
+<p>在实际工程中，可以做一个简单区分。</p>
+<p>Prompt 更强调：</p>
+<blockquote>
+<p><strong>你希望模型遵循什么指令。</strong></p>
+</blockquote>
+<p>Context 更强调：</p>
+<blockquote>
+<p><strong>模型在当前任务中拥有的全部输入信息。</strong></p>
+</blockquote>
+<p>例如：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Instruction:</span></span>
+<span class="line"><span>你是售后诊断助手。</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Context:</span></span>
+<span class="line"><span>车型 = 2024 双电机</span></span>
+<span class="line"><span>故障码 = P0XXX</span></span>
+<span class="line"><span>历史维修 = ...</span></span>
+<span class="line"><span>手册内容 = ...</span></span>
+<span class="line"><span>最新诊断结果 = ...</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>于是：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Instruction</span></span>
+<span class="line"><span>+</span></span>
+<span class="line"><span>Context</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>共同构成一次模型调用的重要输入。</p>
+<p>这个区分很重要，因为后面当 Agent 出问题时：</p>
+<blockquote>
+<p>“改 Prompt”只是解决问题的一种可能。</p>
+</blockquote>
+<p>有时候真正应该修改的是：</p>
+<ul>
+<li>Retrieval</li>
+<li>State</li>
+<li>Memory</li>
+<li>History</li>
+<li>Tool Result</li>
+<li>Context Builder</li>
+</ul>
+<hr>
+<h2 id="sec-2-25">2.25 Context Engineering 的一个核心原则</h2>
+<p>到这里，可以得到一条非常重要的工程原则：</p>
+<blockquote>
+<p><strong>不要问“我还能给模型更多什么信息”，而要问“模型为了完成当前任务，真正需要什么信息”。</strong></p>
+</blockquote>
+<p>两种思路看起来只差几个字。</p>
+<p>但它们对应两种完全不同的系统设计方法。</p>
+<p>第一种：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Need more information</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Add Context</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>第二种：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Understand Task</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Identify Necessary Information</span></span>
+<span class="line"><span>      ↓</span></span>
+<span class="line"><span>Construct Context</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>第二种才是我们需要培养的工程能力。</p>
+<hr>
+<h2 id="sec-2-26">2.26 一个更进一步的问题：谁来决定 Context？</h2>
+<p>现在问题开始变得有意思了。</p>
+<p>如果每一次 Context 都需要应用程序严格手工决定：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>这个时候查订单</span></span>
+<span class="line"><span>这个时候查历史</span></span>
+<span class="line"><span>这个时候查手册</span></span>
+<span class="line"><span>这个时候查维修记录</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>那么系统依然可能是一个固定 Workflow。</p>
+<p>如果系统可以根据当前任务动态决定：</p>
+<blockquote>
+<p>我现在缺什么信息？</p>
+</blockquote>
+<blockquote>
+<p>我应该查哪个知识源？</p>
+</blockquote>
+<blockquote>
+<p>我是否需要重新检索？</p>
+</blockquote>
+<p>那么 Agent 就开始出现了。</p>
+<p>所以你会发现：</p>
+<blockquote>
+<p><strong>Context Engineering 是 Agent Engineering 的前置基础。</strong></p>
+</blockquote>
+<p>Agent 并不是凭空出现。</p>
+<p>它首先必须知道：</p>
+<blockquote>
+<p>自己现在拥有什么信息。</p>
+</blockquote>
+<p>以及：</p>
+<blockquote>
+<p>自己还缺什么信息。</p>
+</blockquote>
+<p>然后才可能决定：</p>
+<blockquote>
+<p>下一步应该做什么。</p>
+</blockquote>
+<hr>
+<h2 id="sec-2-27">2.27 Context → Tool → Agent</h2>
+<p>可以把这三者的关系理解成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Context</span></span>
+<span class="line"><span>  ↓</span></span>
+<span class="line"><span>告诉 Agent：</span></span>
+<span class="line"><span>“我现在知道什么”</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Tool</span></span>
+<span class="line"><span>  ↓</span></span>
+<span class="line"><span>允许 Agent：</span></span>
+<span class="line"><span>“去获取什么 / 做什么”</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Agent</span></span>
+<span class="line"><span>  ↓</span></span>
+<span class="line"><span>决定：</span></span>
+<span class="line"><span>“下一步应该获取什么 / 做什么”</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>因此：</p>
+<blockquote>
+<p>Context 不是 Agent 的附属品。</p>
+</blockquote>
+<p>恰恰相反：</p>
+<blockquote>
+<p><strong>Agent 的每一次决策，都建立在当前 Context 之上。</strong></p>
+</blockquote>
+<p>这也是为什么我们先学 Context，再进入 Tool 和 Agent Harness。</p>
+<hr>
+<h2 id="sec-2-28">2.28 一个工程师应该形成的新直觉</h2>
+<p>以后如果你发现 Agent 出现：</p>
+<blockquote>
+<p>“明明查过了，却又查一次。”</p>
+</blockquote>
+<p>不要立刻认为：</p>
+<blockquote>
+<p>“模型太笨。”</p>
+</blockquote>
+<p>先检查：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Tool Result</span></span>
+<span class="line"><span>   ↓</span></span>
+<span class="line"><span>有没有进入 Context？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>有没有正确保存？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>有没有在下一次调用时被保留？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>有没有被新的信息覆盖？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>有没有被压缩掉？</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>有没有因为 Context 构造错误而丢失？</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>同样，如果：</p>
+<blockquote>
+<p>“模型突然忘了用户的车型。”</p>
+</blockquote>
+<p>不要首先改 Prompt。</p>
+<p>先检查：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>History</span></span>
+<span class="line"><span>State</span></span>
+<span class="line"><span>Memory</span></span>
+<span class="line"><span>Context Builder</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>这就是 Context Engineering 带来的诊断思维。</p>
+<hr>
+<h2 id="sec-2-29">2.29 练习：设计一个 Context Schema</h2>
+<p>现在自己选择一个业务。</p>
+<p>例如：</p>
+<blockquote>
+<p>工单 Agent。</p>
+</blockquote>
+<p>尝试定义：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> AgentContext</span><span style="color:#24292E">(</span><span style="color:#6F42C1">BaseModel</span><span style="color:#24292E">):</span></span>
+<span class="line"><span style="color:#24292E">    current_request: </span><span style="color:#005CC5">str</span></span>
+<span class="line"><span style="color:#24292E">    user_profile: </span><span style="color:#005CC5">...</span></span>
+<span class="line"><span style="color:#24292E">    task_state: </span><span style="color:#005CC5">...</span></span>
+<span class="line"><span style="color:#24292E">    relevant_history: </span><span style="color:#005CC5">...</span></span>
+<span class="line"><span style="color:#24292E">    memory: </span><span style="color:#005CC5">...</span></span>
+<span class="line"><span style="color:#24292E">    retrieved_knowledge: </span><span style="color:#005CC5">...</span></span>
+<span class="line"><span style="color:#24292E">    tool_results: </span><span style="color:#005CC5">...</span></span>
+<span class="line"></span></code></pre>
+<p>不要求设计得完美。</p>
+<p>你的目标只是回答：</p>
+<blockquote>
+<p><strong>在这个任务里，模型需要看到什么？</strong></p>
+</blockquote>
+<p>然后进一步回答：</p>
+<blockquote>
+<p>为什么？</p>
+</blockquote>
+<hr>
+<h2 id="sec-2-30">2.30 练习：把一个巨型 Prompt 拆开</h2>
+<p>假设你手上有这样一个字符串：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>SYSTEM:</span></span>
+<span class="line"><span>你是一名专业客服助手。</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>用户信息：</span></span>
+<span class="line"><span>......</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>全部历史：</span></span>
+<span class="line"><span>......</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>全部订单：</span></span>
+<span class="line"><span>......</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>所有维修记录：</span></span>
+<span class="line"><span>......</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>所有知识库内容：</span></span>
+<span class="line"><span>......</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>当前问题：</span></span>
+<span class="line"><span>......</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>请把它拆成：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Instructions</span></span>
+<span class="line"><span>Current Input</span></span>
+<span class="line"><span>State</span></span>
+<span class="line"><span>Relevant History</span></span>
+<span class="line"><span>Memory</span></span>
+<span class="line"><span>Retrieval</span></span>
+<span class="line"><span>Tool Results</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>然后为每一个部分回答：</p>
+<blockquote>
+<p>来源是什么？</p>
+</blockquote>
+<blockquote>
+<p>生命周期是什么？</p>
+</blockquote>
+<blockquote>
+<p>谁负责更新？</p>
+</blockquote>
+<blockquote>
+<p>什么时候应该删除？</p>
+</blockquote>
+<p>这个练习会让你真正开始用“系统”的方式理解 Context。</p>
+<hr>
+<h2 id="sec-2-31">2.31 一个小结论：Context 是动态的</h2>
+<p>这是另一个特别重要的认识。</p>
+<p>Context 不是数据库中的永久对象。</p>
+<p>Context 更像是：</p>
+<blockquote>
+<p><strong>一次决策时动态生成的视图。</strong></p>
+</blockquote>
+<p>同一个用户：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>早上 9 点</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>和：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>下午 3 点</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>面对两个不同任务，</p>
+<p>Context 完全可能不同。</p>
+<p>甚至同一个任务，在不同执行阶段：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Task Start</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>和：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Task After Tool Call</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Context 也可能完全不同。</p>
+<p>因此：</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Context</span></span>
+<span class="line"><span>=</span></span>
+<span class="line"><span>f(</span></span>
+<span class="line"><span>    task,</span></span>
+<span class="line"><span>    user,</span></span>
+<span class="line"><span>    state,</span></span>
+<span class="line"><span>    history,</span></span>
+<span class="line"><span>    memory,</span></span>
+<span class="line"><span>    retrieval,</span></span>
+<span class="line"><span>    tools</span></span>
+<span class="line"><span>)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>你可以把它简单理解成：</p>
+<blockquote>
+<p>Context 是一个函数的结果。</p>
+</blockquote>
+<p>这个理解会非常有用。</p>
+<hr>
+<h2 id="sec-2-32">2.32 Part 2 最重要的几个认识</h2>
+<p>现在回头看整个 Part 2。</p>
+<p>我们实际上没有学多少“花哨技术”。</p>
+<p>我们只是不断回答几个问题。</p>
+<hr>
+<h3 id="sec-x58">第一</h3>
+<blockquote>
+<p>模型到底看到了什么？</p>
+</blockquote>
+<p>答案：</p>
+<blockquote>
+<p>Context。</p>
+</blockquote>
+<hr>
+<h3 id="sec-x59">第二</h3>
+<blockquote>
+<p>Context 从哪里来？</p>
+</blockquote>
+<p>答案：</p>
+<blockquote>
+<p>Instructions、User Input、History、State、Memory、Retrieval、Tool Results 等。</p>
+</blockquote>
+<hr>
+<h3 id="sec-x60">第三</h3>
+<blockquote>
+<p>为什么不能把所有信息全部塞进去？</p>
+</blockquote>
+<p>因为：</p>
+<ul>
+<li>成本</li>
+<li>延迟</li>
+<li>容量</li>
+<li>噪声</li>
+<li>信息相关性</li>
+</ul>
+<p>都会成为问题。</p>
+<hr>
+<h3 id="sec-x61">第四</h3>
+<blockquote>
+<p>History、State、Memory、RAG 是不是一回事？</p>
+</blockquote>
+<p>不是。</p>
+<pre class="shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>History</span></span>
+<span class="line"><span>= 过去发生过什么</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>State</span></span>
+<span class="line"><span>= 当前任务是什么状态</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Memory</span></span>
+<span class="line"><span>= 哪些长期信息值得保留</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>RAG</span></span>
+<span class="line"><span>= 当前需要时，从外部知识中找什么</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h3 id="sec-x62">第五</h3>
+<blockquote>
+<p>Context Engineering 到底是什么？</p>
+</blockquote>
+<p>可以把它概括成一句话：</p>
+<blockquote>
+<p><strong>为了让模型在当前任务中做出更好的决策，有意识地选择、组织、压缩和注入它应该看到的信息。</strong></p>
+</blockquote>
+<hr>
+<h2 id="sec-part-part-3">本 Part → Part 3：从决定“看什么”到决定“做什么”</h2>
+<p>Context 决定模型在当前决策中可用的信息，但它本身并不授予模型执行权限。即使模型正确识别出下一步应当查询订单或创建工单，系统仍需要验证工具、参数、权限和停止条件。</p>
+<p>下一部分把这个边界落到可运行的 Agent Loop 与 Harness：模型提出行动，运行时检查并执行，工具返回观察，再由系统决定是否继续。</p>
+
+</article>
+<nav class="pager"><a class="pg prev" href="part-01.html"><span class="pg-dir">上一部分</span><span class="pg-name">Part 1｜把 LLM 当成一个真正的软件组件</span></a><a class="pg next" href="part-03.html"><span class="pg-dir">下一部分</span><span class="pg-name">Part 3｜Tools &amp; Agent Harness：让模型开始与真实世界交互</span></a></nav>
+<footer class="book-foot"><span>Enterprise Agent Engineering</span><span>v0.4</span><span>文本校审候选，非出版定稿</span></footer>
+</main>
+</div>
+<div class="scrim" id="scrim"></div>
+<script src="assets/nav.js"></script>
+</body>
+</html>
