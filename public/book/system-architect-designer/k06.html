@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K6 质量属性与架构评估</title>
+<style>
+:root{--bg:#fbfaf7;--card:#fff;--ink:#1f2328;--sub:#6b7280;--line:#e6e3dd;--accent:#1f4e79;--ok:#0f7b4f;--bad:#b42318;--chip:#eef3f8;--warm:#fdf6ec}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:17px/1.9 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",serif}
+#bar{position:fixed;top:0;left:0;height:3px;background:var(--accent);width:0;z-index:99}
+.wrap{max-width:760px;margin:0 auto;padding:56px 20px 100px}
+h1{font-size:27px;line-height:1.4;letter-spacing:.5px;margin:0 0 10px}
+h2{font-size:21px;margin:52px 0 14px;padding-top:14px;border-top:2px solid var(--line);letter-spacing:.5px}
+h2:first-of-type{border-top:none}
+h3{font-size:17.5px;margin:30px 0 10px;color:#2b3a4a}
+h5{font-size:15px;margin:26px 0 8px;color:var(--sub);font-weight:600}
+p{margin:10px 0}
+blockquote{margin:16px 0;padding:12px 16px;background:var(--warm);border-left:3px solid #e0b984;border-radius:0 8px 8px 0;font-size:16px}
+blockquote p{margin:4px 0}
+strong{color:#12324f}
+hr{border:none;border-top:1px dashed var(--line);margin:26px 0}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px;background:#fff}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f3f1ec;font-weight:600}
+code{background:#f3f1ec;padding:1px 5px;border-radius:4px;font-size:14px}
+pre{background:#f7f5f1;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto}
+ul,ol{margin:10px 0;padding-left:22px}
+li{margin:4px 0}
+.math{font-family:"Cambria Math",Cambria,Georgia,"Times New Roman",serif;font-size:1.03em}
+.mathblock{display:block;text-align:center;margin:16px 0;overflow-x:auto;padding:2px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:-0.55em;text-align:center;margin:0 .3em}
+.frac .n{border-bottom:1px solid currentColor;padding:0 .3em;line-height:1.3}
+.frac .d{padding:0 .3em;line-height:1.4}
+sub,sup{font-size:.72em;line-height:0}
+.toast{position:fixed;right:18px;bottom:18px;background:#1f2937;color:#fff;padding:9px 14px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+
+/* 题卡 */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:18px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.qhead{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.chip{background:var(--chip);color:#33475b;border-radius:999px;padding:1px 9px;font-size:12px}
+.chip.t{background:#eaf4ec;color:#0f7b4f}
+.chip.k{background:#f4f0fa;color:#5b3f8f;font-size:11.5px}
+a.back{margin-left:auto;font-size:12px;color:var(--sub);text-decoration:none;border-bottom:1px dashed #c9c4ba}
+a.back:hover{color:var(--accent);border-color:var(--accent)}
+.qstem{font-weight:600;margin:4px 0 12px;font-size:16px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:15.5px;line-height:1.7;
+ background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 13px;cursor:pointer;transition:.15s}
+.opt:hover{border-color:#b9c6d6;background:#f8fafc}
+.opt b{color:var(--accent);margin-right:2px}
+.opt.sel{border-color:var(--accent);background:#eef4fa}
+.opt.right{border-color:#7cc49b;background:#effaf3}
+.opt.wrong{border-color:#e79a94;background:#fdf1f0}
+.opt:disabled{cursor:default}
+.fillrow{display:flex;gap:10px;margin-top:12px;align-items:center}
+.fillinput{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:15.5px;background:#fff}
+.btn{font:inherit;font-size:14px;padding:7px 16px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer}
+.btn.check{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fb{display:none;margin-top:14px;font-size:15px;line-height:1.8}
+.fb.show{display:block}
+.fb .res{font-weight:700;margin-bottom:6px;font-size:15.5px}
+.fb.ok .res{color:var(--ok)}
+.fb.bad .res{color:var(--bad)}
+.fb details{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:#fcfbf9;padding:0 12px}
+.fb summary{cursor:pointer;padding:9px 0;font-weight:600;color:var(--accent);outline:none}
+.fb .inner{padding:2px 0 12px;border-top:1px dashed var(--line)}
+.fb .row{color:var(--sub);font-size:13px;margin-top:8px}
+.fb .tags b{color:#a2540f}
+.legend{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:20px 0;font-size:14.5px}
+.legend b{color:var(--accent)}
+@media print{
+ #bar,.toast{display:none}
+ .quiz{break-inside:avoid}
+ body{background:#fff;font-size:12pt}
+}
+@media (max-width:600px){
+ body{font-size:16px;line-height:1.85}
+ .wrap{padding:40px 14px 80px}
+ h1{font-size:23px}
+ table{font-size:13px}
+}
+</style>
+<style id="book-nav-css">
+#book-nav{position:sticky;top:0;z-index:100;background:rgba(251,250,247,.96);backdrop-filter:blur(8px);border-bottom:1px solid #e6e3dd;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+#bar{z-index:101!important}
+#book-nav .bn-in{max-width:1060px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+#book-nav a{color:#1f4e79;text-decoration:none;white-space:nowrap}
+#book-nav a:hover{text-decoration:underline}
+#book-nav .bn-home{font-weight:700}
+#book-nav .bn-cur{color:#1f2328;font-weight:600;flex:1;min-width:180px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#book-nav .bn-step{background:#fff;border:1px solid #e6e3dd;border-radius:999px;padding:3px 11px;font-size:13px}
+#book-nav .bn-step.disabled{opacity:.38;pointer-events:none}
+#book-nav .bn-prog{color:#6b7280;font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.book-foot-nav{max-width:760px;margin:0 auto;padding:0 20px 80px;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.book-foot-nav .bf-box{border-top:2px solid #e6e3dd;padding-top:22px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}
+.book-foot-nav a{color:#1f4e79;text-decoration:none}
+.book-foot-nav a:hover{text-decoration:underline}
+.book-foot-nav .bf-next{background:#1f4e79;color:#fff!important;border-radius:10px;padding:9px 18px;font-weight:600}
+.book-foot-nav .bf-next:hover{text-decoration:none;background:#163c5e}
+.book-foot-nav .bf-note{color:#6b7280;font-size:13px;margin-top:14px}
+@media(max-width:600px){#book-nav .bn-cur{order:3;flex-basis:100%;text-align:left}#book-nav .bn-prog{display:none}}
+@media print{#book-nav,.book-foot-nav{display:none}#bar{z-index:0!important}}
+</style>
+</head><body><nav id="book-nav"><div class="bn-in"><a class="bn-home" href="index.html">&larr; 全书目录</a><a class="bn-step" href="k05.html" title="架构基础与架构风格">&larr; K5</a><span class="bn-cur">K6 · 质量属性与架构评估</span><a class="bn-step" href="k07.html" title="演化与维护">K7 &rarr;</a><span class="bn-prog" id="book-nav-progress">0 / 96 题</span></div></nav>
+<div id="bar"></div>
+<div class="wrap">
+<h1>K6 质量属性与架构评估</h1>
+<blockquote>
+<p><strong>本章内容</strong>：质量属性总览 · 质量属性场景 · 性能与可用性 · 安全性与可修改性 · 敏感点与权衡点 · SAAM · ATAM · CBAM · 高并发的六类工程手段 · 性能测试<br>
+<strong>考纲位置</strong>：上午题必考（属性定义、评估方法特征），案例题常让"指出敏感点/权衡点"，论文常写"如何做架构评估"</p>
+</blockquote>
+<p>本章围绕"<strong>架构好不好，凭什么说</strong>"这一主题展开，共 13 节：</p>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+<th>回答的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>质量属性总览</td>
+<td>架构要满足哪些"非功能"要求</td>
+</tr>
+<tr>
+<td>2</td>
+<td>质量属性场景</td>
+<td>怎么把"要快"写成可验证的需求</td>
+</tr>
+<tr>
+<td>3</td>
+<td>性能与可用性</td>
+<td>这两项怎么度量、怎么用战术实现</td>
+</tr>
+<tr>
+<td>4</td>
+<td>安全性与可修改性</td>
+<td>安全四特性、可修改性四方面</td>
+</tr>
+<tr>
+<td>5</td>
+<td>评估中的关键概念</td>
+<td>敏感点、权衡点、风险点是什么</td>
+</tr>
+<tr>
+<td>6</td>
+<td>SAAM</td>
+<td>最早的场景化评估方法怎么走</td>
+</tr>
+<tr>
+<td>7</td>
+<td>ATAM</td>
+<td>多属性权衡评估的框架</td>
+</tr>
+<tr>
+<td>8</td>
+<td>ATAM 实践与 CBAM</td>
+<td>四个阶段怎么落地、成本效益怎么算</td>
+</tr>
+<tr>
+<td>9</td>
+<td>高并发的六类工程手段</td>
+<td>限流、熔断、降级怎么配合</td>
+</tr>
+<tr>
+<td>10</td>
+<td>性能测试</td>
+<td>负载、压力、并发测试差在哪</td>
+</tr>
+<tr>
+<td>11</td>
+<td>负载均衡设计</td>
+<td>请求怎么分、算法怎么选</td>
+</tr>
+<tr>
+<td>12</td>
+<td>秒杀场景</td>
+<td>瞬时峰值怎么扛、怎么不超卖</td>
+</tr>
+<tr>
+<td>13</td>
+<td>高并发设计的六个方面</td>
+<td>缓存、异步、DB、拆分、扩容怎么组合</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="sec1">第 1 节 质量属性总览</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：架构设计真正要满足的是哪些要求？为什么它们比功能更难对付？</p>
+</blockquote>
+<h3>一、功能是"及格线"，质量属性是"分水岭"</h3>
+<p>两个系统都能下单（功能相同），但一个扛得住 5000 并发、一个在 500 就崩；一个改个支付渠道要两周、一个要两个月。</p>
+<p><strong>功能决定"能不能做"，质量属性决定"做得好不好"</strong>。而质量属性几乎完全由架构决定，后期难以补救。</p>
+<h3>二、运行期与开发期</h3>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>属性</th>
+<th>关注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>运行期</strong></td>
+<td>性能、可用性、安全性、可靠性、易用性、可伸缩性、互操作性</td>
+<td>系统跑起来之后的表现</td>
+</tr>
+<tr>
+<td><strong>开发期</strong></td>
+<td>可维护性、可扩展性、可重用性、可理解性、可测试性、可移植性</td>
+<td>系统"改起来"的成本</td>
+</tr>
+</tbody>
+</table>
+<p>这个划分很有用：<strong>运行期属性影响用户体验与业务连续性，开发期属性影响长期成本</strong>。两者常常冲突（为了性能牺牲可维护性，为了安全牺牲易用性）。</p>
+<h3>三、架构评估普遍关注的八项</h3>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>定义要点</th>
+<th>常见度量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>性能</strong></td>
+<td>响应能力：多久响应、单位时间处理多少</td>
+<td>响应时间、吞吐量、TPS</td>
+</tr>
+<tr>
+<td><strong>可靠性</strong></td>
+<td>在错误与意外使用下维持功能的能力</td>
+<td>MTTF、MTBF；含容错与健壮性</td>
+</tr>
+<tr>
+<td><strong>可用性</strong></td>
+<td>正常运行的时间比例</td>
+<td>可用时间、故障恢复时间</td>
+</tr>
+<tr>
+<td><strong>安全性</strong></td>
+<td>提供服务的同时阻止非授权使用</td>
+<td>机密性、完整性、不可否认性、可控性</td>
+</tr>
+<tr>
+<td><strong>可修改性</strong></td>
+<td>快速、高性价比地变更系统</td>
+<td>变更成本、影响元素数量</td>
+</tr>
+<tr>
+<td><strong>功能性</strong></td>
+<td>完成期望工作的能力</td>
+<td>功能覆盖率</td>
+</tr>
+<tr>
+<td><strong>可变性</strong></td>
+<td>架构扩充/变更为新架构的能力</td>
+<td>产品线复用度</td>
+</tr>
+<tr>
+<td><strong>互操作性</strong></td>
+<td>与其他系统交互的能力</td>
+<td>接口兼容性</td>
+</tr>
+</tbody>
+</table>
+<p>注意两个易混点：</p>
+<ul>
+<li><strong>可靠性 vs 可用性</strong>：可靠性讲"不出错的能力"，可用性讲"能用多久的比例"。一个系统可以很可靠但恢复很慢（可用性低），也可以经常小故障但秒级恢复（可用性高）。</li>
+<li><strong>可修改性 vs 可变性</strong>：可修改性针对"改这个系统"，可变性针对"由这个架构派生出一族系统"（产品线场景）。</li>
+</ul>
+<blockquote>
+<p><strong>想一想 ①</strong>：某系统要求"7×24 不间断，故障 30 秒内自动切换"。这属于可靠性、可用性，还是两者都涉及？</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：属性识别）</strong> 某系统的需求写明：① 单笔交易 95% 在 200ms 内完成；② 任一节点宕机不影响交易，切换时间 &lt;30s；③ 新增一种支付方式不超过 5 人日；④ 通过等保三级测评。请分别归到哪类质量属性。</p>
+<p><em>解答</em>：<br>
+- ① <strong>性能</strong>（带分位数的响应时间）；<br>
+- ② <strong>可用性</strong>（故障切换与影响范围）；若强调"不出故障"则偏向可靠性；<br>
+- ③ <strong>可修改性</strong>（以变更为基准、以代价衡量）；<br>
+- ④ <strong>安全性</strong>（合规性要求，涉及机密性、完整性、可控性）。</p>
+<p><em>点评</em>：识别属性只是第一步，真正的价值是<strong>把它写成场景</strong>（下一节）——带刺激、环境、度量，才能验收。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为质量属性是"越高越好"。</strong><br>
+每个属性都有成本，且互相冲突（安全 vs 性能、性能 vs 可维护）。架构的本质是<strong>权衡</strong>。</p>
+<p><strong>误区二：把可用性与可靠性混用。</strong><br>
+一个讲"时间比例"，一个讲"维持功能的能力"。</p>
+<p><strong>误区三：认为质量属性可以后期优化。</strong><br>
+架构决定上限，后期只能逼近上限。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="6-1-1" data-type="single" data-explain="开发期属性：可维护、可扩展、可重用、可理解、可测试、可移植。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">6-1-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">下列属于"开发期"质量属性的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 性能</button><button class="opt" data-k="B"><b>B.</b> 可用性</button><button class="opt" data-k="C"><b>C.</b> 可测试性</button><button class="opt" data-k="D"><b>D.</b> 安全性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-1-2" data-type="single" data-explain="可用性=正常运行时间比例。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-1-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">系统能够正常运行的时间比例称为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 可靠性</button><button class="opt" data-k="B"><b>B.</b> 可用性</button><button class="opt" data-k="C"><b>C.</b> 可维护性</button><button class="opt" data-k="D"><b>D.</b> 功能性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-1-3" data-type="single" data-explain="容错=错误发生时保持正确行为；健壮性=按预定方式终止。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-1-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">"在错误发生时确保系统正确行为并进行内部修复"指的是可靠性的哪个方面？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 健壮性</button><button class="opt" data-k="B"><b>B.</b> 容错</button><button class="opt" data-k="C"><b>C.</b> 可移植性</button><button class="opt" data-k="D"><b>D.</b> 互操作性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-1-4" data-type="single" data-explain="可变性面向产品线派生，可修改性面向单系统变更。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-1-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">"架构经扩充或变更而成为新架构的能力"指的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 可修改性</button><button class="opt" data-k="B"><b>B.</b> 可变性</button><button class="opt" data-k="C"><b>C.</b> 可扩展性</button><button class="opt" data-k="D"><b>D.</b> 可移植性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-1-5" data-type="multi" data-explain="E 错：安全vs性能、可用性vs一致性都冲突。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">6-1-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">关于质量属性，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 性能常用响应时间与吞吐量度量</button><button class="opt" data-k="B"><b>B.</b> 可用性关注正常运行的时间比例</button><button class="opt" data-k="C"><b>C.</b> 安全性包含机密性、完整性、不可否认性与可控性</button><button class="opt" data-k="D"><b>D.</b> 可修改性包含可维护性、可扩展性、结构重组与可移植性</button><button class="opt" data-k="E"><b>E.</b> 质量属性之间不存在冲突</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-1-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="开发" data-answer-text="开发"><div class="qhead"><span class="chip">6-1-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">质量属性可分为运行期质量属性与________期质量属性，后者包括可维护性、可测试性、可移植性等。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="6-1-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="平均失效等待/mttf/失效前" data-answer-text="平均失效等待时间"><div class="qhead"><span class="chip">6-1-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">可靠性通常用________（MTTF）与平均失效间隔时间（MTBF）衡量。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：质量属性分运行期与开发期，架构评估普遍关注八项，它们共同决定系统的"好用程度"且彼此冲突。</p>
+<p><strong>留一个问题</strong>："要快"这三个字没法验收——怎么把它变成可验证的表述？</p>
+<p>下一节讲质量属性场景。</p>
+<hr>
+<h2 id="sec2">第 2 节 质量属性场景</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：怎么把一句形容词，写成能设计、能验收的需求？</p>
+</blockquote>
+<h3>一、形容词的问题</h3>
+<p>"系统要高性能""要安全"——这类表述无法验收，也无法指导设计。质量属性场景（Quality Attribute Scenario）就是解决方案：它是<strong>利益相关者与系统交互的简短陈述</strong>，是可度量的质量属性需求。</p>
+<h3>二、场景的六个要素</h3>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>含义</th>
+<th>例子（性能）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>刺激源</strong></td>
+<td>谁产生刺激</td>
+<td>外部用户</td>
+</tr>
+<tr>
+<td><strong>刺激</strong></td>
+<td>发生了什么</td>
+<td>发起一笔支付请求</td>
+</tr>
+<tr>
+<td><strong>环境</strong></td>
+<td>系统处于什么状态</td>
+<td>高峰期、系统正常</td>
+</tr>
+<tr>
+<td><strong>制品</strong></td>
+<td>刺激作用于什么</td>
+<td>支付服务</td>
+</tr>
+<tr>
+<td><strong>响应</strong></td>
+<td>系统做了什么</td>
+<td>返回支付结果</td>
+</tr>
+<tr>
+<td><strong>响应度量</strong></td>
+<td>怎么判断达标</td>
+<td>95% 请求 &lt; 200ms</td>
+</tr>
+</tbody>
+</table>
+<p><strong>六要素中最容易被忽略的是"环境"和"度量"</strong>：没有环境，就不知道是高峰期还是空闲；没有度量，就无法判定是否达标。</p>
+<h3>三、六类常见属性的场景要点</h3>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>关注</th>
+<th>典型度量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>可用性</strong></td>
+<td>故障多频繁、故障时发生什么、允许多长不可用、何时可安全失效</td>
+<td>可用时间、故障修复时间、降级运行时长</td>
+</tr>
+<tr>
+<td><strong>可修改性</strong></td>
+<td>改变功能/质量属性所需的成本与难度</td>
+<td>受影响元素数量、成本、努力、对其他功能的影响</td>
+</tr>
+<tr>
+<td><strong>性能</strong></td>
+<td>响应时间与吞吐</td>
+<td>响应时间、吞吐量、抖动</td>
+</tr>
+<tr>
+<td><strong>可测试性</strong></td>
+<td>发现缺陷与验证的难易</td>
+<td>达到覆盖率所需成本、验证时间</td>
+</tr>
+<tr>
+<td><strong>易用性</strong></td>
+<td>用户完成任务的效率与满意度</td>
+<td>任务完成时间、错误率、学习时间</td>
+</tr>
+<tr>
+<td><strong>安全性</strong></td>
+<td>抵抗攻击的能力</td>
+<td>阻止攻击的比例、检测时间、恢复时间</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>想一想 ①</strong>：把"系统应支持高并发"改写成场景，至少需要补充哪两个要素？</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：把需求改写成场景）</strong> 某系统需求写着"系统要保证高可用"。请把它改写成一条可验收的质量属性场景，并说明原表述缺什么。</p>
+<p><em>解答</em>：<br>
+- 场景：<strong>刺激源</strong>为服务器硬件故障；<strong>刺激</strong>为某节点宕机；<strong>环境</strong>为业务高峰期、系统正常负载；<strong>制品</strong>为交易服务集群；<strong>响应</strong>为自动故障转移到备用节点，已连接会话不中断；<strong>响度度量</strong>为 30 秒内完成切换，期间失败请求不超过 0.1%，全年不可用时间不超过 52 分钟。<br>
+- 原表述缺的正是<strong>环境</strong>（高峰还是空闲）与<strong>度量</strong>（多久算达标），导致无法设计也无法验收。</p>
+<p><em>点评</em>：案例题里"请评价需求描述是否合理"这类问题，答题模板就是<strong>对照六要素找缺口</strong>。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为场景只是"用例"。</strong><br>
+用例描述功能交互，场景描述质量需求（带度量）。</p>
+<p><strong>误区二：写场景时只写响应不写度量。</strong><br>
+没有度量的场景只是意愿，不是需求。</p>
+<p><strong>误区三：认为一个场景能覆盖所有情况。</strong><br>
+质量需求需要多条场景（正常、峰值、故障、降级）。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="6-2-1" data-type="single" data-explain="六要素：刺激源、刺激、环境、制品、响应、响应度量。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">6-2-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">质量属性场景的六个要素不包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 刺激源</button><button class="opt" data-k="B"><b>B.</b> 刺激</button><button class="opt" data-k="C"><b>C.</b> 用例图</button><button class="opt" data-k="D"><b>D.</b> 响应度量</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-2-2" data-type="single" data-explain="环境描述刺激发生时的系统状态。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-2-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">"系统处于高峰期还是空闲"属于场景的哪个要素？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 刺激</button><button class="opt" data-k="B"><b>B.</b> 环境</button><button class="opt" data-k="C"><b>C.</b> 制品</button><button class="opt" data-k="D"><b>D.</b> 响应</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-2-3" data-type="single" data-explain="响应度量是判定是否达标的依据。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">6-2-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">"95% 的请求在 200ms 内完成"属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 刺激</button><button class="opt" data-k="B"><b>B.</b> 响应</button><button class="opt" data-k="C"><b>C.</b> 响应度量</button><button class="opt" data-k="D"><b>D.</b> 制品</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-2-4" data-type="single" data-explain="场景让质量需求可设计、可验收。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-2-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">质量属性场景的作用是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 描述系统的功能流程</button><button class="opt" data-k="B"><b>B.</b> 把质量属性需求表述为可度量的形式</button><button class="opt" data-k="C"><b>C.</b> 替代用例图</button><button class="opt" data-k="D"><b>D.</b> 记录项目进度</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-2-5" data-type="multi" data-explain="E 错：正常、峰值、故障、降级要分别写场景。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">6-2-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">关于质量属性场景，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 它是利益相关者与系统交互的简短陈述</button><button class="opt" data-k="B"><b>B.</b> 由六部分组成：刺激源、刺激、环境、制品、响应、响应度量</button><button class="opt" data-k="C"><b>C.</b> 没有响应度量就无法判定是否达标</button><button class="opt" data-k="D"><b>D.</b> 可用性场景关注故障频率、不可用时长与恢复速度</button><button class="opt" data-k="E"><b>E.</b> 一条场景可以覆盖正常、峰值、故障等所有情况</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-2-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="制品" data-answer-text="制品"><div class="qhead"><span class="chip">6-2-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">质量属性场景六要素中，"某个制品被激励"指的是________要素。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：质量属性场景用六要素把"形容词"变成"可验收的指标"，其中环境与响应度量最容易被漏掉。</p>
+<p><strong>留一个问题</strong>：性能与可用性是最常被要求的两个属性，它们在架构上具体靠什么实现？</p>
+<p>下一节展开。</p>
+<hr>
+<h2 id="sec3">第 3 节 性能与可用性</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：性能与可用性在架构上分别靠哪些"战术"实现？两者的取舍点在哪？</p>
+</blockquote>
+<h3>一、性能：先分清延迟与吞吐</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>含义</th>
+<th>优化方向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>响应时间（延迟）</strong></td>
+<td>完成一次请求耗时</td>
+<td>减少路径长度、缓存、并行化</td>
+</tr>
+<tr>
+<td><strong>吞吐量</strong></td>
+<td>单位时间处理请求数</td>
+<td>增加并行度、批处理、异步化</td>
+</tr>
+</tbody>
+</table>
+<p>两者常互相制约：批处理提高吞吐但拉长单次延迟；同步调用降低延迟但吞吐受限。</p>
+<p><strong>性能的通用战术</strong>（按引入阶段分）：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>战术</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>资源需求</td>
+<td>提高计算效率、减少计算量</td>
+<td>算法优化、缓存结果</td>
+</tr>
+<tr>
+<td>资源管理</td>
+<td>并发、引入并行</td>
+<td>线程池、异步 IO</td>
+</tr>
+<tr>
+<td>资源仲裁</td>
+<td>调度策略、优先级</td>
+<td>队列分级、限流</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"加机器"有时能提升吞吐却不改善延迟，有时连吞吐也提不上去？</p>
+</blockquote>
+<h3>二、可用性：两条路径</h3>
+<p>可用性 = 正常运行时间比例。提升它只有两条路：</p>
+<ol>
+<li><strong>减少故障发生</strong>（拉长 MTBF）：冗余、容错设计、健康检查、灰度发布；</li>
+<li><strong>加快故障恢复</strong>（缩短 MTTR）：故障检测、自动切换、快速回滚、降级运行。</li>
+</ol>
+<p>工程上常说的"<strong>可用性 = 检测 + 恢复</strong>"，重点往往在后者。</p>
+<p><strong>可用性的典型战术</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>战术</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>故障检测</td>
+<td>心跳、监控、超时、异常上报</td>
+</tr>
+<tr>
+<td>故障恢复</td>
+<td>冗余（主备/集群/多活）、回滚、降级、重试</td>
+</tr>
+<tr>
+<td>故障预防</td>
+<td>事务、预占、移除潜在故障（如定期演练）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>降级</strong>值得单独说：当容量不足时，主动关闭非核心功能（如推荐、评论），保证核心链路可用——这是<strong>用功能换可用性</strong>的典型取舍。</p>
+<h3>三、两者的取舍</h3>
+<table>
+<thead>
+<tr>
+<th>手段</th>
+<th>对性能</th>
+<th>对可用性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>同步强一致</td>
+<td>延迟高</td>
+<td>一致性有保障</td>
+</tr>
+<tr>
+<td>异步 + 最终一致</td>
+<td>延迟低、吞吐高</td>
+<td>需额外保障（消息可靠）</td>
+</tr>
+<tr>
+<td>多副本</td>
+<td>写放大、延迟增加</td>
+<td>可用性提升</td>
+</tr>
+<tr>
+<td>缓存</td>
+<td>大幅提升</td>
+<td>可能读到旧数据</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>想一想 ②</strong>：为什么"多活"架构能提升可用性，却常常让性能与成本同时变差？</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：指标冲突下的取舍）</strong> 某支付系统要求"99.99% 可用"与"单笔 &lt; 200ms"。团队提出两个方案：方案 A 采用同城双活 + 同步复制；方案 B 采用主备 + 异步复制。请分析取舍。</p>
+<p><em>解答</em>：<br>
+- <strong>方案 A</strong>：同步复制保证数据不丢，可用性高（可秒级切换），但每次写要等两地确认，<strong>延迟增加</strong>（跨机房 RTT），可能突破 200ms；<br>
+- <strong>方案 B</strong>：异步复制写入快、延迟低，但主库故障时可能<strong>丢失少量数据</strong>，且切换时间较长（分钟级），可用性指标可能不达标；<br>
+- 折中：核心交易走<strong>同城同步、异地异步</strong>；对延迟敏感的非核心操作走异步；用"降级 + 限流"兜住极端情况。</p>
+<p><em>点评</em>：这道题没有唯一答案，得分点在"<strong>说清每个方案伤哪个指标、代价多大、怎么折中</strong>"。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为提升性能就是加硬件。</strong><br>
+不消除瓶颈，加机器只会放大瓶颈。</p>
+<p><strong>误区二：把可用性等同于"不出故障"。</strong><br>
+短期无法消除故障时，缩短恢复时间更现实。</p>
+<p><strong>误区三：认为降级是"功能缺失"。</strong><br>
+降级是<strong>主动的容量管理</strong>，是被设计出来的能力，不是事故。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="6-3-1" data-type="single" data-explain="吞吐=单位时间处理量。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-3-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">下列属于吞吐量指标的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 单次请求耗时 200ms</button><button class="opt" data-k="B"><b>B.</b> 每秒处理 3000 笔交易</button><button class="opt" data-k="C"><b>C.</b> 首屏加载 1s</button><button class="opt" data-k="D"><b>D.</b> 平均排队 50ms</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-3-2" data-type="single" data-explain="拉长 MTBF 或缩短 MTTR。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-3-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">提高可用性的两条路径是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 增加功能与优化界面</button><button class="opt" data-k="B"><b>B.</b> 减少故障发生与加快故障恢复</button><button class="opt" data-k="C"><b>C.</b> 增加缓存与减少索引</button><button class="opt" data-k="D"><b>D.</b> 提高并发与降低延迟</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-3-3" data-type="single" data-explain="降级=用功能换可用性。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-3-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">系统过载时主动关闭非核心功能、保证核心链路可用的做法称为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 限流</button><button class="opt" data-k="B"><b>B.</b> 降级</button><button class="opt" data-k="C"><b>C.</b> 熔断</button><button class="opt" data-k="D"><b>D.</b> 重试</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-3-4" data-type="single" data-explain="同步复制要等对端确认，延迟上升。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-3-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">同步双活复制对系统的主要影响是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 降低数据一致性</button><button class="opt" data-k="B"><b>B.</b> 增加写入延迟</button><button class="opt" data-k="C"><b>C.</b> 减少硬件成本</button><button class="opt" data-k="D"><b>D.</b> 降低可用性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-3-5" data-type="multi" data-explain="D 错：多副本有写放大，可能拖慢写入。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">6-3-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">关于性能与可用性，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 延迟与吞吐常互相制约</button><button class="opt" data-k="B"><b>B.</b> 心跳、超时属于故障检测战术</button><button class="opt" data-k="C"><b>C.</b> 冗余、回滚、降级属于故障恢复战术</button><button class="opt" data-k="D"><b>D.</b> 多副本总能同时提升性能与可用性</button><button class="opt" data-k="E"><b>E.</b> 缓存提升性能，但可能读到旧数据</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-3-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="mttr" data-answer-text="MTTR"><div class="qhead"><span class="chip">6-3-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">可用性可用公式 A = MTBF / (MTBF + ______) 估算。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="6-3-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="吞吐" data-answer-text="吞吐量"><div class="qhead"><span class="chip">6-3-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">性能指标可分为响应时间（延迟）与________两类。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：性能看延迟与吞吐并靠战术组合优化，可用性靠"减少故障 + 加快恢复"，两者常与成本、一致性冲突。</p>
+<p><strong>留一个问题</strong>：安全性与可修改性同样由架构决定，它们的细分维度是什么？</p>
+<p>下一节展开。</p>
+<hr>
+<h2 id="sec4">第 4 节 安全性与可修改性</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：安全性由哪四个特性构成？可修改性为什么被拆成四个方面？</p>
+</blockquote>
+<h3>一、安全性：四个特性</h3>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>机密性</strong></td>
+<td>信息不泄露给未授权用户、实体或过程</td>
+</tr>
+<tr>
+<td><strong>完整性</strong></td>
+<td>信息完整准确，防止被非法修改</td>
+</tr>
+<tr>
+<td><strong>不可否认性</strong></td>
+<td>交换双方不能否认发送或接收行为</td>
+</tr>
+<tr>
+<td><strong>可控性</strong></td>
+<td>对信息传播及内容具有控制能力，防止为非法者所用</td>
+</tr>
+</tbody>
+</table>
+<p>安全性的威胁类型决定了它的分类；架构层面通过<strong>认证、授权、加密、审计、隔离</strong>等手段实现。</p>
+<p><strong>安全的架构战术</strong>（与 K2 第 5—10 节呼应）：</p>
+<ul>
+<li>抵抗攻击：认证、授权、加密、入侵检测；</li>
+<li>检测攻击：审计日志、异常监控；</li>
+<li>从攻击中恢复：备份、恢复流程、降级隔离。</li>
+</ul>
+<h3>二、可修改性：四个方面</h3>
+<table>
+<thead>
+<tr>
+<th>方面</th>
+<th>关注</th>
+<th>架构要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>可维护性</strong></td>
+<td>错误发生后的修复</td>
+<td>局部修改影响最小</td>
+</tr>
+<tr>
+<td><strong>可扩展性</strong></td>
+<td>用新特性扩展、替换构件</td>
+<td>松散耦合的构件、可替换</td>
+</tr>
+<tr>
+<td><strong>结构重组</strong></td>
+<td>重新组织构件及其关系</td>
+<td>精心设计构件关系、可配置</td>
+</tr>
+<tr>
+<td><strong>可移植性</strong></td>
+<td>适用于多种硬件/OS/语言</td>
+<td>与平台无关的组织方式</td>
+</tr>
+</tbody>
+</table>
+<p>注意可扩展性里的关键一句：<strong>目标是"在不影响构件客户的情况下替换构件"</strong>——这正是接口抽象与依赖倒置的由来。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"结构重组"被视为可修改性的一部分？一个系统把构件位置写死在代码里，重组会付出什么代价？</p>
+</blockquote>
+<h3>三、属性之间的冲突</h3>
+<table>
+<thead>
+<tr>
+<th>冲突对</th>
+<th>表现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>安全 vs 性能</td>
+<td>加密、校验、审计都增加开销</td>
+</tr>
+<tr>
+<td>可修改性 vs 性能</td>
+<td>抽象层次多、间接调用多</td>
+</tr>
+<tr>
+<td>可用性 vs 一致性</td>
+<td>多副本提升可用，但强一致受网络分区影响</td>
+</tr>
+<tr>
+<td>易用性 vs 安全</td>
+<td>多因子认证提升安全、降低体验</td>
+</tr>
+</tbody>
+</table>
+<p>架构评估的核心工作，就是<strong>识别这些冲突点并做出有理由的权衡</strong>——下一节讲的"权衡点"正是描述这种现象的概念。</p>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：安全与性能的折中）</strong> 某系统要给接口加签名校验以防篡改，但加了之后 P99 延迟从 80ms 升到 150ms。请分析这是不是"权衡点"，并给出可能的处理方式。</p>
+<p><em>解答</em>：<br>
+- <strong>是权衡点</strong>：签名校验同时影响<strong>安全性</strong>（提升）与<strong>性能</strong>（下降），属于"影响多个质量属性的特性"；<br>
+- 处理方式：① 只对写操作与敏感读接口签名，非敏感接口用轻量校验；② 用更高效的算法（如 HMAC 替代非对称签名）；③ 会话内复用校验结果，减少重复计算；④ 若必须全量，则接受延迟并调整 SLA。</p>
+<p><em>点评</em>：识别"权衡点"的判据是"<strong>是否同时显著影响两个及以上质量属性</strong>"；只影响一个的叫"敏感点"。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：把安全性等同于"加密"。</strong><br>
+加密只是机密性手段，完整性与不可否认需要签名，可控性需要审计与权限。</p>
+<p><strong>误区二：认为可修改性就是"代码好改"。</strong><br>
+它包括替换构件、重组结构、跨平台移植，都是架构层面的能力。</p>
+<p><strong>误区三：忽视属性冲突。</strong><br>
+只优化单一属性往往以牺牲其他属性为代价，评估时必须写清代价。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="6-4-1" data-type="single" data-explain="不可否认性靠签名与审计实现。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">6-4-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">保证"信息交换双方不能否认其发送或接收行为"的特性是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 机密性</button><button class="opt" data-k="B"><b>B.</b> 完整性</button><button class="opt" data-k="C"><b>C.</b> 不可否认性</button><button class="opt" data-k="D"><b>D.</b> 可控性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-4-2" data-type="single" data-explain="可测试性属开发期属性，但不在可修改性四方面里。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">6-4-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">可修改性不包括下列哪一项？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 可维护性</button><button class="opt" data-k="B"><b>B.</b> 可扩展性</button><button class="opt" data-k="C"><b>C.</b> 结构重组</button><button class="opt" data-k="D"><b>D.</b> 可测试性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-4-3" data-type="single" data-explain="可扩展性依赖松散耦合与接口抽象。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-4-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">"在不影响构件客户的情况下替换构件"体现的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 可维护性</button><button class="opt" data-k="B"><b>B.</b> 可扩展性</button><button class="opt" data-k="C"><b>C.</b> 可移植性</button><button class="opt" data-k="D"><b>D.</b> 结构重组</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-4-4" data-type="single" data-explain="安全与性能是经典冲突对。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-4-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">加密、签名、审计带来的额外开销，主要与哪项属性冲突？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 功能性</button><button class="opt" data-k="B"><b>B.</b> 性能</button><button class="opt" data-k="C"><b>C.</b> 可移植性</button><button class="opt" data-k="D"><b>D.</b> 互操作性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-4-5" data-type="multi" data-explain="E 错：抽象层多会带来性能损耗。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">6-4-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">关于安全性与可修改性，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 安全性包含机密性、完整性、不可否认性与可控性</button><button class="opt" data-k="B"><b>B.</b> 可扩展性要求松散耦合的构件</button><button class="opt" data-k="C"><b>C.</b> 可移植性要求按与平台无关的方式组织系统</button><button class="opt" data-k="D"><b>D.</b> 结构重组指把构件移动到不同子系统等操作</button><button class="opt" data-k="E"><b>E.</b> 可修改性与性能之间不存在冲突</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-4-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="可移植/移植" data-answer-text="可移植性"><div class="qhead"><span class="chip">6-4-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">可修改性包含可维护性、可扩展性、结构重组和________四个方面。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="6-4-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="权衡|敏感" data-answer-text="权衡、敏感"><div class="qhead"><span class="chip">6-4-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">同时影响多个质量属性的架构特性称为________点，只影响单一质量属性的称为________点。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：安全四特性、可修改性四方面，属性之间存在结构性冲突，架构评估就是处理冲突。</p>
+<p><strong>留一个问题</strong>：评估时说的"敏感点""权衡点""风险点"，具体怎么定义、怎么用？</p>
+<p>下一节讲评估中的关键概念。</p>
+<hr>
+<h2 id="sec5">第 5 节 架构评估中的关键概念</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：敏感点、权衡点、风险点、非风险点各指什么？为什么它们才是评估的抓手？</p>
+</blockquote>
+<h3>一、敏感点（Sensitivity Point）</h3>
+<p><strong>定义</strong>：一个或多个构件（及构件关系）的<strong>特性</strong>，它对某个质量属性有显著影响。</p>
+<p>研究敏感点的作用是：让设计者清楚"要实现这个质量目标，应该关注什么"。</p>
+<p>例：把数据库连接池大小调大，会显著影响吞吐——连接池大小就是<strong>性能的敏感点</strong>。</p>
+<h3>二、权衡点（Tradeoff Point）</h3>
+<p><strong>定义</strong>：<strong>影响多个质量属性</strong>的特性，即多个质量属性的敏感点。</p>
+<p>一个经典例子：<strong>提高加密级别</strong>可以提高安全性，但会增加处理时间、影响性能。如果某机密消息有严格延迟要求，加密级别就是一个权衡点。</p>
+<p>一句话区分：<strong>敏感点影响一个属性，权衡点影响多个属性</strong>。</p>
+<h3>三、风险点与非风险点</h3>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>风险点（Risk）</strong></td>
+<td>架构中可能导致质量属性不达标的决策或隐患</td>
+</tr>
+<tr>
+<td><strong>非风险点（Non-Risk）</strong></td>
+<td>经分析确认无问题、可以接受的决策</td>
+</tr>
+<tr>
+<td><strong>风险承担者（Stakeholder）</strong></td>
+<td>对架构有利益诉求、能施加影响的人</td>
+</tr>
+</tbody>
+</table>
+<p><strong>风险承担者的范围很广</strong>：架构师、开发、维护、集成、测试、标准专家、性能工程师、安全专家、项目经理、产品线经理、客户、最终用户、系统管理员、网络管理员、技术支持、领域代表……</p>
+<p>这张表的意义在于：<strong>不同角色关心的质量属性不同</strong>（项目经理关心进度预算，安全专家关心安全性，维护人员关心可维护性）。评估时必须让他们都说话，否则会漏掉属性。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"风险承担者"要包括客户与最终用户？他们通常不懂技术。</p>
+</blockquote>
+<h3>四、场景在评估中的作用</h3>
+<p>评估时先要"精确得出具体的质量目标"，机制就是<strong>场景</strong>。评估中用的场景通常用三要素描述：<strong>刺激、环境、响应</strong>（比质量属性场景的六要素更简）。</p>
+<p>场景来源有两个：<strong>风险承担者提出</strong>与<strong>从需求推导</strong>。</p>
+<h3>五、例题精解</h3>
+<p><strong>例（工程判断：敏感点还是权衡点）</strong> 某系统有四个决策：① 把线程池从 50 调到 200；② 把认证方式从会话 Cookie 改为 JWT；③ 把数据同步从强一致改为最终一致；④ 引入缓存层。请判断哪些是敏感点、哪些是权衡点。</p>
+<p><em>解答</em>：<br>
+- ① <strong>敏感点（性能）</strong>：只显著影响吞吐/延迟；<br>
+- ② <strong>权衡点</strong>：JWT 提升横向扩展能力（可伸缩性），但增大令牌失效与注销难度（安全性/可控性）；<br>
+- ③ <strong>权衡点</strong>：影响可用性与一致性（典型 CAP 取舍）；<br>
+- ④ <strong>权衡点</strong>：提升性能，但引入一致性延迟（数据新鲜度），部分场景下也是敏感点。</p>
+<p><em>点评</em>：判断口诀是"<strong>问它伤不伤第二个属性</strong>"。伤一个→敏感点，伤多个→权衡点。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：把敏感点当成"缺点"。</strong><br>
+敏感点是中性的"影响点"，不是问题。</p>
+<p><strong>误区二：认为权衡点一定是"两难"。</strong><br>
+权衡点只是"同时影响多个属性"，可以通过设计缓解。</p>
+<p><strong>误区三：评估只找风险点，不记录非风险点。</strong><br>
+非风险点同样重要——它说明"这些地方已验证过，不用再担心"。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="6-5-1" data-type="single" data-explain="敏感点=单属性影响点。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-5-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">对某一个质量属性有显著影响的架构特性称为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 权衡点</button><button class="opt" data-k="B"><b>B.</b> 敏感点</button><button class="opt" data-k="C"><b>C.</b> 风险点</button><button class="opt" data-k="D"><b>D.</b> 非风险点</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-5-2" data-type="single" data-explain="权衡点=多个敏感点。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-5-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">同时影响多个质量属性的架构特性称为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 敏感点</button><button class="opt" data-k="B"><b>B.</b> 权衡点</button><button class="opt" data-k="C"><b>C.</b> 非风险点</button><button class="opt" data-k="D"><b>D.</b> 约束</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-5-3" data-type="single" data-explain="教材经典例子。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-5-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">"提高加密级别会提升安全性但增加处理时间"，加密级别属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 敏感点</button><button class="opt" data-k="B"><b>B.</b> 权衡点</button><button class="opt" data-k="C"><b>C.</b> 风险点</button><button class="opt" data-k="D"><b>D.</b> 非风险点</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-5-4" data-type="single" data-explain="不同角色关心不同属性，评估需都参与。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-5-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">下列关于风险承担者的说法，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 只包括技术人员</button><button class="opt" data-k="B"><b>B.</b> 包括客户、最终用户等各类利益相关者</button><button class="opt" data-k="C"><b>C.</b> 只有架构师</button><button class="opt" data-k="D"><b>D.</b> 与评估无关</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-5-5" data-type="multi" data-explain="E 错：各角色关注点不同，这正是要都参与的原因。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">6-5-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">关于架构评估概念，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 敏感点影响单一质量属性</button><button class="opt" data-k="B"><b>B.</b> 权衡点是多个质量属性的敏感点</button><button class="opt" data-k="C"><b>C.</b> 风险点指可能导致质量属性不达标的决策</button><button class="opt" data-k="D"><b>D.</b> 非风险点是经分析确认可接受的决策</button><button class="opt" data-k="E"><b>E.</b> 不同风险承担者关心的质量属性完全相同</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-5-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="权衡|敏感" data-answer-text="权衡点、敏感点"><div class="qhead"><span class="chip">6-5-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">架构评估中，影响多个质量属性的特性称为________，只影响单一属性的称为________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="6-5-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="环境" data-answer-text="环境"><div class="qhead"><span class="chip">6-5-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">评估中场景通常用刺激、________和响应三方面描述。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：敏感点看单一属性、权衡点看多属性冲突、风险点看隐患、非风险点看已验证项，风险承担者决定场景来源。</p>
+<p><strong>留一个问题</strong>：概念清楚了，具体怎么组织一次评估？最早的 SAAM 给了流程。</p>
+<p>下一节讲 SAAM。</p>
+<hr>
+<h2 id="sec6">第 6 节 SAAM 方法</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：SAAM 的五个步骤是什么？它擅长评什么、不擅长评什么？</p>
+</blockquote>
+<h3>一、定位</h3>
+<p>SAAM（Scenarios-based Architecture Analysis Method）由 SEI 的 Kazman 等人于 <strong>1983 年</strong>提出，是<strong>最早形成文档并广泛使用</strong>的架构分析方法。</p>
+<p>最初用于比较不同架构、分析<strong>可修改性</strong>，后来扩展到可移植性、可扩充性等，最终成为通用的架构评估方法。</p>
+<h3>二、五个步骤</h3>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1 场景开发</strong></td>
+<td>由各类风险承担者协商讨论，开发体现系统支持活动的任务场景</td>
+</tr>
+<tr>
+<td><strong>2 架构描述</strong></td>
+<td>用易于理解、合乎语法的形式描述架构（计算构件、数据构件、构件关系）</td>
+</tr>
+<tr>
+<td><strong>3 单个场景评估</strong></td>
+<td>对每个场景，判断架构是否支持，找出需要修改的地方</td>
+</tr>
+<tr>
+<td><strong>4 场景交互评估</strong></td>
+<td>分析场景之间对构件的相互影响，得到"场景—构件影响"列表</td>
+</tr>
+<tr>
+<td><strong>5 总体评估</strong></td>
+<td>对场景及其交互做总体权衡与评价</td>
+</tr>
+</tbody>
+</table>
+<p>输入是<strong>问题描述、需求声明、架构描述</strong>；输出是对架构支持度的判断与风险清单。</p>
+<h3>三、SAAM 的特点（考试常考）</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>SAAM 的答案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>特定目标</td>
+<td>验证基本架构假设与原则，评估架构固有风险</td>
+</tr>
+<tr>
+<td>评估技术</td>
+<td><strong>场景技术</strong></td>
+</tr>
+<tr>
+<td>主要质量属性</td>
+<td><strong>可修改性</strong>（其他属性也可具体化为场景）</td>
+</tr>
+<tr>
+<td>风险承担者</td>
+<td>协调不同参与者，达成共识</td>
+</tr>
+<tr>
+<td>架构描述</td>
+<td>用于<strong>架构的最后版本</strong>，但<strong>早于详细设计</strong></td>
+</tr>
+<tr>
+<td>已有知识库复用</td>
+<td><strong>不考虑</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么 SAAM 主要用于"架构的最后版本、早于详细设计"？如果架构还没定稿就用它评估，会怎样？</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：用 SAAM 评可修改性）</strong> 某系统要评估"新增一种报表格式"和"替换数据库"两类变更的代价。请按 SAAM 五步说明怎么组织。</p>
+<p><em>解答</em>：<br>
+- <strong>场景开发</strong>：把两类变更写成场景（刺激：需求方要求新增报表/替换数据库；环境：系统运行中；响应：完成变更且不影响其他功能）；<br>
+- <strong>架构描述</strong>：画出构件与关系（报表模块、数据访问层、数据库），标明依赖；<br>
+- <strong>单个场景评估</strong>：逐个场景标出需要修改的构件数量与位置；<br>
+- <strong>场景交互评估</strong>：分析两类场景是否触及同一批构件（如都改数据访问层），识别相互影响；<br>
+- <strong>总体评估</strong>：按"受影响构件数量 × 修改难度"排序，得出可修改性结论与风险点。</p>
+<p><em>点评</em>：SAAM 的输出不是"好/坏"，而是"<strong>改某类需求要动几个地方</strong>"——这正是可修改性的度量方式。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为 SAAM 只能评可修改性。</strong><br>
+它把任何质量属性都具体化为场景，只是可修改性是主要分析对象。</p>
+<p><strong>误区二：认为 SAAM 需要等系统实现完再做。</strong><br>
+它用于架构最后版本、早于详细设计，属于"前端评估"。</p>
+<p><strong>误区三：把 SAAM 与 ATAM 当成同一方法。</strong><br>
+ATAM 在 SAAM 基础上发展，增加了多属性权衡与更完整的阶段划分。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="6-6-1" data-type="single" data-explain="场景是 SAAM 的基础。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-6-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">SAAM 使用的评估技术是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 度量分析</button><button class="opt" data-k="B"><b>B.</b> 场景技术</button><button class="opt" data-k="C"><b>C.</b> 仿真建模</button><button class="opt" data-k="D"><b>D.</b> 代码审查</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-6-2" data-type="single" data-explain="最初用于比较架构的可修改性。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-6-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">SAAM 主要分析的质量属性是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 性能</button><button class="opt" data-k="B"><b>B.</b> 可修改性</button><button class="opt" data-k="C"><b>C.</b> 安全性</button><button class="opt" data-k="D"><b>D.</b> 易用性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-6-3" data-type="single" data-explain="顺序：场景开发→架构描述→单个场景→场景交互→总体。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">6-6-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">SAAM 的五个步骤中，紧接"单个场景评估"之后的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 场景开发</button><button class="opt" data-k="B"><b>B.</b> 架构描述</button><button class="opt" data-k="C"><b>C.</b> 场景交互评估</button><button class="opt" data-k="D"><b>D.</b> 总体评估</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-6-4" data-type="single" data-explain="SAAM 明确不考虑已有知识库复用。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-6-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">关于 SAAM，下列说法正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 它考虑已有知识库的复用</button><button class="opt" data-k="B"><b>B.</b> 它用于架构最后版本，但早于详细设计</button><button class="opt" data-k="C"><b>C.</b> 它只适用于新系统，不能比较多个架构</button><button class="opt" data-k="D"><b>D.</b> 它必须在编码完成后进行</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-6-5" data-type="multi" data-explain="E 错：它用于设计早期，不是实现后。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">6-6-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">关于 SAAM，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 是最早形成文档并广泛使用的架构分析方法</button><button class="opt" data-k="B"><b>B.</b> 输入包括问题描述、需求声明与架构描述</button><button class="opt" data-k="C"><b>C.</b> 五个步骤为场景开发、架构描述、单个场景评估、场景交互评估、总体评估</button><button class="opt" data-k="D"><b>D.</b> 它把质量属性具体化为场景</button><button class="opt" data-k="E"><b>E.</b> 它主要用于评估系统实现质量</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-6-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="场景开发" data-answer-text="场景开发"><div class="qhead"><span class="chip">6-6-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">SAAM 的五个步骤依次是：________、架构描述、单个场景评估、场景交互评估和总体评估。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：SAAM 用场景技术评架构，五步走、主打可修改性、用于设计早期。</p>
+<p><strong>留一个问题</strong>：如果一个系统要同时权衡性能、安全、可用性多个属性，只靠 SAAM 够吗？</p>
+<p>下一节讲 ATAM。</p>
+<hr>
+<h2 id="sec7">第 7 节 ATAM 方法</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：ATAM 与 SAAM 的本质区别是什么？它怎么处理"多属性冲突"？</p>
+</blockquote>
+<h3>一、定位</h3>
+<p>ATAM（Architecture Tradeoff Analysis Method）在 SAAM 基础上发展而来，<strong>主要针对性能、可用性、安全性和可修改性</strong>，在<strong>系统开发之前</strong>对这些质量属性进行评价与折中。</p>
+<p>一句话区别：<strong>SAAM 评"架构支持不支持需求"，ATAM 评"多个属性之间怎么折中"</strong>。</p>
+<h3>二、ATAM 的四个活动领域（阶段）</h3>
+<table>
+<thead>
+<tr>
+<th>领域</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1 场景和需求收集</strong></td>
+<td>收集业务驱动因素、质量属性场景</td>
+</tr>
+<tr>
+<td><strong>2 架构视图和场景实现</strong></td>
+<td>用架构视图说明如何实现场景</td>
+</tr>
+<tr>
+<td><strong>3 属性模型构造和分析</strong></td>
+<td>为每个属性建立分析模型（如性能排队模型）</td>
+</tr>
+<tr>
+<td><strong>4 折中</strong></td>
+<td>识别敏感点与权衡点，形成决策</td>
+</tr>
+</tbody>
+</table>
+<p>这四个领域不是纯线性的——评估过程中会有<strong>迭代</strong>：折中阶段发现的问题会回到前面重新分析。</p>
+<h3>三、ATAM 的三类场景</h3>
+<table>
+<thead>
+<tr>
+<th>场景类型</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>用例（use case）</strong></td>
+<td>对系统的典型使用，引出信息</td>
+</tr>
+<tr>
+<td><strong>增长场景（growth）</strong></td>
+<td>涵盖对系统的修改（扩展性）</td>
+</tr>
+<tr>
+<td><strong>探测场景（exploratory）</strong></td>
+<td>涵盖可能造成过载的极端修改（压力测试式）</td>
+</tr>
+</tbody>
+</table>
+<p>这个分类很有用：<strong>评估不能只问"正常怎么用"，还要问"以后怎么改""极端情况怎么办"</strong>。</p>
+<h3>四、ATAM 的评估技术与架构描述</h3>
+<p><strong>评估技术</strong>：ATAM 是一个<strong>框架</strong>，依赖质量属性，可使用不同的分析技术；它集成了多种单一理论模型，并使用<strong>定性的启发式分析方法</strong>（精确分析模型的粗粒度版本）。</p>
+<p><strong>架构描述</strong>：基于<strong>5 种基本结构</strong>（从 4+1 视图派生，逻辑视图分为功能结构与代码结构），用一组<strong>消息顺序图</strong>表示运行时交互与场景。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么 ATAM 强调"多属性"而不是"最优解"？如果有两个方案，一个性能好、一个安全性好，ATAM 会给出什么结论？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：ATAM 评估组织）</strong> 某系统要在"高性能"与"高安全"之间做选择，两个候选架构 A 与 B。请用 ATAM 的思路说明评估怎么组织、会产出什么。</p>
+<p><em>解答</em>：<br>
+- <strong>场景与需求收集</strong>：分别为性能与安全各写出 3—5 条质量属性场景（含度量）；<br>
+- <strong>视图与场景实现</strong>：分别说明 A、B 如何实现这些场景；<br>
+- <strong>属性模型分析</strong>：性能用排队/负载模型估算延迟与吞吐，安全用威胁建模与攻击面分析；<br>
+- <strong>折中</strong>：识别敏感点（哪些设计点影响性能/安全）与<strong>权衡点</strong>（哪些点同时影响两者，如加密强度、审计粒度）；<br>
+- <strong>产出</strong>：不是"选 A 或 B"的简单结论，而是"<strong>在什么业务优先级下选哪个，各自的风险点是什么</strong>"，并给出缓解措施。</p>
+<p><em>点评</em>：ATAM 的输出是<strong>决策依据</strong>，不是评分。这也是案例题问"ATAM 能带来什么价值"的标准答案。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为 ATAM 能给出"最优架构"。</strong><br>
+它给出的是权衡关系与风险清单，决策仍由人做。</p>
+<p><strong>误区二：认为 ATAM 只在项目末期做。</strong><br>
+它在系统开发之前进行，属于早期评估。</p>
+<p><strong>误区三：把三类场景混为一类。</strong><br>
+用例、增长、探测分别对应"正常使用""可扩展性""极端情况"。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="6-7-1" data-type="single" data-explain="ATAM 面向多属性权衡。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-7-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">ATAM 主要针对的质量属性是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 可测试性与易用性</button><button class="opt" data-k="B"><b>B.</b> 性能、可用性、安全性和可修改性</button><button class="opt" data-k="C"><b>C.</b> 仅可修改性</button><button class="opt" data-k="D"><b>D.</b> 仅性能</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-7-2" data-type="single" data-explain="折中阶段处理权衡。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">6-7-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">ATAM 的四个活动领域中，识别敏感点与权衡点发生在：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 场景和需求收集</button><button class="opt" data-k="B"><b>B.</b> 架构视图和场景实现</button><button class="opt" data-k="C"><b>C.</b> 属性模型构造和分析</button><button class="opt" data-k="D"><b>D.</b> 折中</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-7-3" data-type="single" data-explain="探测场景用于极端情况。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">6-7-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">涵盖"可能造成过载的极端修改"的场景属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 用例</button><button class="opt" data-k="B"><b>B.</b> 增长场景</button><button class="opt" data-k="C"><b>C.</b> 探测场景</button><button class="opt" data-k="D"><b>D.</b> 回归场景</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-7-4" data-type="single" data-explain="从 4+1 视图派生，逻辑视图拆成功能与代码结构。" data-source="拓展" data-diag="B 补充" data-kp="" data-answer="C"><div class="qhead"><span class="chip">6-7-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">ATAM 的架构描述基于多少种基本结构？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 3 种</button><button class="opt" data-k="B"><b>B.</b> 4 种</button><button class="opt" data-k="C"><b>C.</b> 5 种</button><button class="opt" data-k="D"><b>D.</b> 7 种</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-7-5" data-type="multi" data-explain="E 错：ATAM 面向多属性。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">6-7-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">关于 ATAM，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 在 SAAM 基础上发展而来</button><button class="opt" data-k="B"><b>B.</b> 在系统开发之前进行评价与折中</button><button class="opt" data-k="C"><b>C.</b> 场景分为用例、增长场景、探测场景三类</button><button class="opt" data-k="D"><b>D.</b> 它使用定性的启发式分析方法</button><button class="opt" data-k="E"><b>E.</b> 它只评估单一质量属性</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-7-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="折中" data-answer-text="折中"><div class="qhead"><span class="chip">6-7-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">ATAM 的四个活动领域是场景和需求收集、架构视图和场景实现、属性模型构造和分析以及________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="6-7-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="增长|探测" data-answer-text="增长、探测"><div class="qhead"><span class="chip">6-7-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">ATAM 的三类场景分别是用例、________场景和________场景。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：ATAM 用四领域、三类场景、属性模型与折中分析，处理多质量属性的冲突，输出决策依据与风险清单。</p>
+<p><strong>留一个问题</strong>：ATAM 落到具体项目上，一场评估会怎么开？四个阶段各自产出什么？</p>
+<p>下一节讲 ATAM 实践与 CBAM。</p>
+<hr>
+<h2 id="sec8">第 8 节 ATAM 实践与 CBAM</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：ATAM 的四个阶段具体做什么？成本效益分析（CBAM）补了什么？</p>
+</blockquote>
+<h3>一、ATAM 实践的四个阶段</h3>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>名称</th>
+<th>主要活动</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>阶段 1</strong></td>
+<td>演示（Presentation）</td>
+<td>介绍 ATAM 方法、业务驱动因素、架构</td>
+</tr>
+<tr>
+<td><strong>阶段 2</strong></td>
+<td>调查和分析（Investigation and Analysis）</td>
+<td>收集场景、分析架构、识别敏感点/权衡点/风险</td>
+</tr>
+<tr>
+<td><strong>阶段 3</strong></td>
+<td>测试（Testing）</td>
+<td>用更多场景（尤其是探测场景）验证，与干系人确认</td>
+</tr>
+<tr>
+<td><strong>阶段 4</strong></td>
+<td>报告（Reporting）</td>
+<td>汇总评估结果、风险与非风险点、建议</td>
+</tr>
+</tbody>
+</table>
+<p>注意阶段 2 与阶段 3 的关系：<strong>阶段 2 偏"分析"，阶段 3 偏"验证"</strong>，二者常迭代进行。</p>
+<h3>二、评估的产出物</h3>
+<p>一次完成的 ATAM 评估通常会产出：</p>
+<ul>
+<li><strong>质量属性场景清单</strong>（按优先级排序）；</li>
+<li><strong>架构视图</strong>与场景的实现说明；</li>
+<li><strong>敏感点、权衡点、风险点、非风险点</strong>清单；</li>
+<li><strong>风险主题（risk themes）</strong>与改进建议。</li>
+</ul>
+<p>这些产出直接可用于架构决策记录——这也是论文里写"架构评估"最实在的素材。</p>
+<h3>三、CBAM：从"技术权衡"到"经济权衡"</h3>
+<p><strong>CBAM（Cost Benefit Analysis Method，成本效益分析法）</strong> 在 ATAM 基础上引入经济视角：建立<strong>成本、收益、风险和进度</strong>的模型，用于在多个架构策略之间做投资决策。</p>
+<p>它的核心问题是：<strong>"这个改进值多少钱？"</strong></p>
+<p>流程要点：</p>
+<ol>
+<li>为每个架构策略估算<strong>成本</strong>与<strong>收益</strong>（收益通常用质量属性场景的响应度量改善来表达）；</li>
+<li>把收益折算成业务价值（如"减少 30 秒故障 = 每年少损失 X 元"）；</li>
+<li>计算<strong>收益/成本比</strong>，结合风险与进度约束排序；</li>
+<li>输出<strong>投资优先级</strong>。</li>
+</ol>
+<blockquote>
+<p><strong>想一想 ①</strong>：两个改进方案：A 花 100 万把可用性从 99.9% 提到 99.99%；B 花 10 万把页面加载从 3s 降到 2s。CBAM 会怎么帮决策？</p>
+</blockquote>
+<h3>四、三种评估方法的对比</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>SAAM</th>
+<th>ATAM</th>
+<th>CBAM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>提出时间</td>
+<td>最早（1983）</td>
+<td>SAAM 之后</td>
+<td>ATAM 之后</td>
+</tr>
+<tr>
+<td>核心</td>
+<td>场景化评估架构支持度</td>
+<td>多属性权衡分析</td>
+<td>成本效益与投资决策</td>
+</tr>
+<tr>
+<td>主要属性</td>
+<td>可修改性为主</td>
+<td>性能、可用性、安全、可修改性</td>
+<td>与 ATAM 相同，但加经济维度</td>
+</tr>
+<tr>
+<td>输出</td>
+<td>支持度与风险</td>
+<td>敏感点/权衡点/风险清单</td>
+<td>策略优先级与投资建议</td>
+</tr>
+</tbody>
+</table>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：评估结论怎么写）</strong> 某系统完成了一次 ATAM 评估，请说明应该向管理层汇报什么，才能让决策落地。</p>
+<p><em>解答</em>：<br>
+- <strong>场景与优先级</strong>：列出关键质量属性场景及其业务优先级（说明"为什么要评"）；<br>
+- <strong>结论</strong>：敏感点（影响性能的关键设计点）、权衡点（如"同步复制同时影响可用性与延迟"）、风险点（可能导致不达标的决策）、非风险点（已验证无问题的部分）；<br>
+- <strong>风险主题</strong>：把零散风险归并为 3—5 个主题（如"数据一致性风险""扩展性瓶颈"）；<br>
+- <strong>建议与代价</strong>：每条建议对应改动范围、成本估算与预期收益（这一步相当于向 CBAM 过渡）；<br>
+- <strong>决策请求</strong>：明确需要管理层拍板的事项（如"是否接受 200ms 延迟换数据不丢"）。</p>
+<p><em>点评</em>：评估报告的价值在于<strong>把技术结论翻译成管理决策</strong>，只列技术风险清单很难推动落地。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为 ATAM 评估报告只是"风险列表"。</strong><br>
+没有优先级、代价与决策请求的清单，无法支撑决策。</p>
+<p><strong>误区二：认为 CBAM 只看钱。</strong><br>
+它同时考虑成本、收益、风险与进度四要素。</p>
+<p><strong>误区三：把四种方法当成互斥选项。</strong><br>
+实践中常先用 SAAM/ATAM 找问题，再用 CBAM 排优先级。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="6-8-1" data-type="single" data-explain="阶段 2 偏分析。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-8-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">ATAM 实践四个阶段中，收集场景、分析架构、识别敏感点与权衡点主要在：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 演示阶段</button><button class="opt" data-k="B"><b>B.</b> 调查和分析阶段</button><button class="opt" data-k="C"><b>C.</b> 测试阶段</button><button class="opt" data-k="D"><b>D.</b> 报告阶段</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-8-2" data-type="single" data-explain="阶段 3 偏验证。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">6-8-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">ATAM 评估中，"用更多场景验证并与干系人确认"发生在：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 演示阶段</button><button class="opt" data-k="B"><b>B.</b> 调查和分析阶段</button><button class="opt" data-k="C"><b>C.</b> 测试阶段</button><button class="opt" data-k="D"><b>D.</b> 报告阶段</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-8-3" data-type="single" data-explain="CBAM 引入经济视角。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-8-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">CBAM 相比 ATAM 增加的维度是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 安全性分析</button><button class="opt" data-k="B"><b>B.</b> 成本效益与投资决策</button><button class="opt" data-k="C"><b>C.</b> 代码审查</button><button class="opt" data-k="D"><b>D.</b> 性能测试</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-8-4" data-type="single" data-explain="四要素缺一不可。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-8-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">CBAM 建立的经济模型包含：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 仅成本</button><button class="opt" data-k="B"><b>B.</b> 成本、收益、风险和进度</button><button class="opt" data-k="C"><b>C.</b> 仅收益</button><button class="opt" data-k="D"><b>D.</b> 仅进度</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-8-5" data-type="multi" data-explain="E 错：报告要含优先级、代价与决策请求。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">6-8-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">关于评估方法与产出，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> ATAM 四阶段为演示、调查和分析、测试、报告</button><button class="opt" data-k="B"><b>B.</b> ATAM 产出包括敏感点、权衡点、风险与非风险点清单</button><button class="opt" data-k="C"><b>C.</b> CBAM 用于在多个架构策略间做投资决策</button><button class="opt" data-k="D"><b>D.</b> SAAM 是最早形成文档并广泛使用的架构分析方法</button><button class="opt" data-k="E"><b>E.</b> 评估报告只需列出风险，无需给出建议</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-8-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="调查|报告" data-answer-text="调查和分析、报告"><div class="qhead"><span class="chip">6-8-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">ATAM 实践的四个阶段为演示、、测试和。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="6-8-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="成本效益" data-answer-text="成本效益"><div class="qhead"><span class="chip">6-8-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">CBAM 的全称是________分析法，它在 ATAM 基础上引入经济视角。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：ATAM 分四阶段落地，产出场景、敏感点/权衡点/风险清单与风险主题；CBAM 在此之上做成本效益排序。</p>
+<hr>
+<h2 id="sec9">第 9 节 高并发的六类工程手段</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：限流、降级、熔断、隔仓、灰度、反压——它们各自防什么？为什么说它们是"同一类策略"？</p>
+</blockquote>
+<h3>一、它们本质上是同一件事</h3>
+<p>把六个手段放在一起看，会发现共同点：<strong>它们都是基于"服务流量"的控制策略</strong>，而不是基于网络流量。</p>
+<p>传统网络设备管的是"包怎么走"，而这六件事管的是"<strong>请求要不要被处理、以什么方式处理、处理不过来怎么办</strong>"。</p>
+<p>这是云原生架构的一个关键认识：<strong>把业务模块之间的关系抽象成标准化的服务流量，才谈得上统一的控制与治理</strong>。</p>
+<h3>二、六类手段逐个看</h3>
+<table>
+<thead>
+<tr>
+<th>手段</th>
+<th>防什么</th>
+<th>做法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>限流</strong></td>
+<td>被流量打垮</td>
+<td>令牌桶/漏桶/滑动窗口，按 QPS 或并发数限制</td>
+</tr>
+<tr>
+<td><strong>降级</strong></td>
+<td>资源不足时保不住核心</td>
+<td>主动关闭非核心功能，保主链路</td>
+</tr>
+<tr>
+<td><strong>熔断</strong></td>
+<td>被下游拖死</td>
+<td>下游错误率超阈值时快速失败，定期试探恢复</td>
+</tr>
+<tr>
+<td><strong>隔仓（隔离）</strong></td>
+<td>故障扩散</td>
+<td>线程池/信号量隔离、按租户或业务分组</td>
+</tr>
+<tr>
+<td><strong>灰度</strong></td>
+<td>变更引发大范围故障</td>
+<td>按流量比例/用户标签渐进放量</td>
+</tr>
+<tr>
+<td><strong>反压（背压）</strong></td>
+<td>生产快于消费、队列堆积</td>
+<td>消费者向生产者反馈压力，限速或拒绝</td>
+</tr>
+</tbody>
+</table>
+<p><strong>熔断与限流最容易混</strong>：限流是"我这边的入口限死"，熔断是"下游出问题时我别再等它"。</p>
+<p><strong>熔断的三种状态</strong>：</p>
+<ul>
+<li><strong>关闭（Closed）</strong>：正常放行，统计失败率；</li>
+<li><strong>打开（Open）</strong>：失败率超阈值，直接快速失败，不再调用下游；</li>
+<li><strong>半开（Half-Open）</strong>：隔一段时间放少量请求试探，成功则关闭，失败则继续打开。</li>
+</ul>
+<h3>三、降级不是"故障"</h3>
+<p>降级是<strong>被设计出来的能力</strong>：容量不足时，系统主动放弃非核心功能（评论、推荐、积分展示），保证下单、支付可用。</p>
+<p>它需要三个前提：</p>
+<ol>
+<li>业务上<strong>分级</strong>：哪些是核心链路；</li>
+<li>技术上<strong>开关化</strong>：能快速关闭某功能；</li>
+<li>有<strong>预案</strong>：谁在什么条件下决定降级。</li>
+</ol>
+<h3>四、六个手段怎么配合</h3>
+<p>以一次大促为例：</p>
+<blockquote>
+<p>灰度发布新版本 → 入口限流挡住超量流量 → 热点隔离（独立线程池）→ 下游异常时熔断 → 容量不足时降级非核心 → 队列积压时反压限速</p>
+</blockquote>
+<p>它们的顺序不是随意的：<strong>先挡住（限流）、再隔离（隔仓）、再止损（熔断/降级）、最后反馈（反压）</strong>。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：如果只做限流、不做降级，大促时会保护到谁？会不会出现"限流生效了但核心业务还是挂了"？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：大促稳定性设计）</strong> 某电商大促，预计流量是日常的 20 倍。请用六类手段给出一套稳定性方案。</p>
+<p>*解答**：<br>
+- <strong>限流</strong>：网关按用户/接口维度限流，超限快速返回排队页；对写接口用令牌桶控制速率；<br>
+- <strong>削峰</strong>：下单请求先进消息队列（异步化），这是限流之外的缓冲；<br>
+- <strong>隔离</strong>：订单、支付、商品查询使用独立线程池与独立数据库连接池，互不抢占；<br>
+- <strong>熔断</strong>：对下游推荐、风控、积分等非核心依赖设置熔断，异常时快速失败；<br>
+- <strong>降级</strong>：关闭商品详情页的推荐位、关闭评论、积分延迟入账；<br>
+- <strong>反压</strong>：消费端处理不过来时，向生产端反馈降速，避免队列无限堆积；<br>
+- <strong>灰度</strong>：新版本先 1% 流量验证，异常一键回滚。</p>
+<p><em>点评</em>：这类题的答题骨架是"<strong>入口挡、内部隔、下游熔、非核心降、链路压、发布灰</strong>"。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：把熔断当限流。</strong><br>
+限流保护自己，熔断避免被下游拖死。</p>
+<p><strong>误区二：认为降级等于"功能缺失"。</strong><br>
+降级是<strong>主动的容量管理</strong>，有开关、有预案、可恢复。</p>
+<p><strong>误区三：只做技术手段不管业务分级。</strong><br>
+不知道哪些是核心链路，降级时就会误伤。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="6-9-1" data-type="single" data-explain="熔断避免被下游拖死。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-9-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">在下游错误率超过阈值时快速失败、隔一段时间试探恢复的机制是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 限流</button><button class="opt" data-k="B"><b>B.</b> 熔断</button><button class="opt" data-k="C"><b>C.</b> 降级</button><button class="opt" data-k="D"><b>D.</b> 反压</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-9-2" data-type="single" data-explain="半开状态放少量请求试探。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">6-9-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">熔断器的三种状态是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 关闭、打开、半开</button><button class="opt" data-k="B"><b>B.</b> 正常、异常、恢复</button><button class="opt" data-k="C"><b>C.</b> 冷、温、热</button><button class="opt" data-k="D"><b>D.</b> 启动、运行、停止</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-9-3" data-type="single" data-explain="降级是用功能换可用性。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-9-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">容量不足时主动关闭非核心功能、保证主链路的做法是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 限流</button><button class="opt" data-k="B"><b>B.</b> 降级</button><button class="opt" data-k="C"><b>C.</b> 隔仓</button><button class="opt" data-k="D"><b>D.</b> 灰度</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-9-4" data-type="single" data-explain="反压是背压（backpressure）。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">6-9-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">消费者向生产者反馈压力、避免队列无限堆积的机制是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 反压</button><button class="opt" data-k="B"><b>B.</b> 熔断</button><button class="opt" data-k="C"><b>C.</b> 灰度</button><button class="opt" data-k="D"><b>D.</b> 隔离</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-9-5" data-type="multi" data-explain="E 错：反压是降速反馈，不是加速。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">6-9-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">关于高并发的六类手段，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 它们本质上是基于服务流量的控制策略</button><button class="opt" data-k="B"><b>B.</b> 限流保护自己，熔断避免被下游拖死</button><button class="opt" data-k="C"><b>C.</b> 隔仓可防止故障跨业务扩散</button><button class="opt" data-k="D"><b>D.</b> 降级需要业务分级与开关化作为前提</button><button class="opt" data-k="E"><b>E.</b> 反压是生产者的主动加速机制</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-9-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="打开/断开" data-answer-text="打开"><div class="qhead"><span class="chip">6-9-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">熔断器的三种状态是关闭、________和半开。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：限流挡、隔仓分、熔断断、降级舍、反压退、灰度试，六者按"先挡后舍"的顺序协同。</p>
+<p><strong>留一个问题</strong>：这些手段好不好使，怎么验证？上线前靠什么证明"扛得住"？</p>
+<p>下一节讲性能测试。</p>
+<hr>
+<h2 id="sec10">第 10 节 性能测试</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：性能测试在测试体系中的位置是什么？负载、压力、并发测试有什么区别？</p>
+</blockquote>
+<h3>一、它在测试体系中的位置</h3>
+<p>软件测试按阶段分：<strong>单元测试 → 集成测试 → 系统测试</strong>；系统测试中又包含多种测试种类：</p>
+<blockquote>
+<p>功能测试、<strong>性能测试</strong>、验收测试、<strong>压力测试</strong>、健壮性测试、安装测试、界面测试、可靠性及安全性测试等。</p>
+</blockquote>
+<p>也就是说：<strong>性能测试是系统测试的一种</strong>，由<strong>独立的测试小组</strong>在系统测试阶段进行，通常采用黑盒方式。</p>
+<p>这个定位很重要——它解释了为什么性能测试"不能靠开发自测"：需要独立视角、真实环境、模拟负载。</p>
+<h3>二、几种容易混的测试类型</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>目的</th>
+<th>特征</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>负载测试</strong></td>
+<td>验证在<strong>预期负载</strong>下的表现</td>
+<td>逐步加压到设计容量</td>
+</tr>
+<tr>
+<td><strong>压力测试</strong></td>
+<td>找出<strong>极限</strong>与失效点</td>
+<td>持续加压直到系统崩溃或性能骤降</td>
+</tr>
+<tr>
+<td><strong>并发测试</strong></td>
+<td>验证<strong>同时访问</strong>同一资源时的正确性与性能</td>
+<td>模拟同一时刻的并发操作，关注锁与竞争</td>
+</tr>
+<tr>
+<td><strong>稳定性（疲劳）测试</strong></td>
+<td>验证长时间运行的可靠性</td>
+<td>中等压力持续数小时至数天，看内存泄漏、连接泄漏</td>
+</tr>
+<tr>
+<td><strong>容量测试</strong></td>
+<td>评估系统最大处理能力与扩容依据</td>
+<td>结合硬件与数据量推算</td>
+</tr>
+<tr>
+<td><strong>尖峰测试</strong></td>
+<td>验证突发流量下的表现</td>
+<td>瞬时陡增，检验弹性与限流</td>
+</tr>
+</tbody>
+</table>
+<p>一句话区分：<strong>负载看"够不够用"，压力看"什么时候崩"，并发看"同时来会不会乱"，稳定性看"跑久了会不会垮"</strong>。</p>
+<h3>三、关键指标</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>响应时间</strong></td>
+<td>平均、P95、P99；关注长尾</td>
+</tr>
+<tr>
+<td><strong>吞吐量</strong></td>
+<td>TPS/QPS、请求数/秒</td>
+</tr>
+<tr>
+<td><strong>并发数</strong></td>
+<td>同时处理的请求数（与用户数不是一回事）</td>
+</tr>
+<tr>
+<td><strong>错误率</strong></td>
+<td>超时、5xx 比例</td>
+</tr>
+<tr>
+<td><strong>资源利用率</strong></td>
+<td>CPU、内存、IO、连接池、GC 频率</td>
+</tr>
+</tbody>
+</table>
+<p><strong>并发数与用户数要分清</strong>：并发数是"同时正在处理"的请求数；用户数还包括思考时间与间隔。</p>
+<h3>四、核心流程</h3>
+<ol>
+<li><strong>明确目标</strong>：把"要快"变成可度量指标（如"5000 并发下 P95 &lt; 500ms"）；</li>
+<li><strong>场景建模</strong>：确定业务比例（下单:查询:支付 ≈ 1:8:1）、数据量与思考时间；</li>
+<li><strong>准备环境</strong>：尽量接近生产（数据量、网络、配置）；</li>
+<li><strong>编写脚本</strong>：参数化、关联、断言、集合点；</li>
+<li><strong>执行</strong>：基线 → 逐步加压 → 峰值 → 稳定性；</li>
+<li><strong>分析</strong>：先看资源与链路瓶颈，再看代码与 SQL；</li>
+<li><strong>调优与回归</strong>：改完必须复测同类场景；</li>
+<li><strong>出具报告</strong>：结论、瓶颈、容量建议、风险。</li>
+</ol>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么性能测试强调"数据量要接近生产"？用几百条测试数据跑出来的结论有什么问题？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：性能测试方案）</strong> 某系统上线前要做性能测试，要求支撑大促。请说明测试类型组合与关注点。</p>
+<p>*解答<strong>：<br>
+- <strong>基线测试</strong>：单机/小流量，确认功能与初步指标；<br>
+- <strong>负载测试</strong>：加压到设计容量（如 5000 并发），验证 P95 达标；<br>
+- <strong>压力测试</strong>：继续加压直到出现拐点，找出</strong>瓶颈与崩溃点<strong>，为限流阈值提供依据；<br>
+- <strong>并发测试</strong>：对库存扣减、账户余额等</strong>热点资源<strong>做并发正确</strong>证（防超卖）；<br>
+- <strong>稳定性测</strong>*：7×24 中等压力，观察内存、连接池、GC 与错误率漂移；<br>
+- <strong>尖峰测试</strong>：验证弹性扩容与限流是否按预期生效。</p>
+<p><em>点评</em>：性能测试的答题要点是"<strong>类型分工 + 指标口径 + 从测试结论反推容量与限流阈值</strong>"。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为性能测试就是"压到崩"。</strong><br>
+那是压力测试，负载测试是验证设计容量内是否达标。</p>
+<p><strong>误区二：只看平均值。</strong><br>
+P95/P99 才能反映长尾体验。</p>
+<p><strong>误区三：用测试数据量代替生产数据量。</strong><br>
+索引与执行计划会完全不同，结论失真。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="6-10-1" data-type="single" data-explain="系统测试含功能、性能、压力、可靠性等。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">6-10-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">性能测试在测试阶段中属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 单元测试</button><button class="opt" data-k="B"><b>B.</b> 集成测试</button><button class="opt" data-k="C"><b>C.</b> 系统测试的一种</button><button class="opt" data-k="D"><b>D.</b> 验收测试</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-10-2" data-type="single" data-explain="压力测试找失效点，为限流阈值提供依据。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-10-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">持续加压直到系统崩溃或性能骤降、以找出极限的测试是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 负载测试</button><button class="opt" data-k="B"><b>B.</b> 压力测试</button><button class="opt" data-k="C"><b>C.</b> 稳定性测试</button><button class="opt" data-k="D"><b>D.</b> 冒烟测试</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-10-3" data-type="single" data-explain="稳定性测试要跑数小时至数天。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-10-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">验证长时间运行下是否存在内存泄漏、连接泄漏的测试是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 负载测试</button><button class="opt" data-k="B"><b>B.</b> 稳定性（疲劳）测试</button><button class="opt" data-k="C"><b>C.</b> 并发测试</button><button class="opt" data-k="D"><b>D.</b> 容量测试</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-10-4" data-type="single" data-explain="混淆两者会高估或低估容量。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-10-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">并发数与用户数的区别在于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 二者相同</button><button class="opt" data-k="B"><b>B.</b> 并发数是同时正在处理的请求数，用户数含思考时间</button><button class="opt" data-k="C"><b>C.</b> 用户数一定大于并发数</button><button class="opt" data-k="D"><b>D.</b> 并发数只用于压测工具</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-10-5" data-type="multi" data-explain="D 错：平均值会掩盖长尾。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">6-10-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">关于性能测试，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 系统测试中可包含性能测试、压力测试、可靠性测试等</button><button class="opt" data-k="B"><b>B.</b> 压力测试用于找极限与失效点</button><button class="opt" data-k="C"><b>C.</b> 并发测试关注同时访问热点资源的正确性</button><button class="opt" data-k="D"><b>D.</b> 只看平均响应时间即可</button><button class="opt" data-k="E"><b>E.</b> 测试数据量应尽量接近生产</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-10-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="p99/99" data-answer-text="P99"><div class="qhead"><span class="chip">6-10-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">性能指标中，反映长尾体验的常用分位指标是 P95 和________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：性能测试是系统测试的一种，负载看够不够、压力看何时崩、并发看对不对、稳定性看久不久，指标要看分位数。</p>
+<hr>
+<h2 id="sec11">第 11 节 负载均衡设计</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：请求为什么要"分"？静态、动态、基于场景三类负载均衡分别怎么选算法？</p>
+</blockquote>
+<h3>一、先明确目标</h3>
+<p>负载均衡的核心目标：<strong>把流量或计算任务分发到多个后端资源</strong>，避免单点过载，最大化利用率，提升可用性与容错。</p>
+<p>它同时解决三件事：<strong>性能</strong>（分摊压力）、<strong>可用性</strong>（故障摘除）、<strong>扩展性</strong>（水平加机器即可承接）。</p>
+<h3>二、三个层次</h3>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>例子</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DNS/GSLB</strong></td>
+<td>按地域解析到不同机房</td>
+<td>粒度粗、生效慢，适合多活入口</td>
+</tr>
+<tr>
+<td><strong>四层（L4）</strong></td>
+<td>LVS、F5</td>
+<td>只看 IP/端口，性能高、不解析内容</td>
+</tr>
+<tr>
+<td><strong>七层（L7）</strong></td>
+<td>Nginx、API 网关</td>
+<td>能按 URL/Header/Cookie 路由，灵活但开销大</td>
+</tr>
+<tr>
+<td><strong>客户端负载均衡</strong></td>
+<td>服务发现 + 本地选择</td>
+<td>少一跳，需 SDK 支持</td>
+</tr>
+</tbody>
+</table>
+<h3>三、三类负载均衡</h3>
+<p><strong>1. 静态负载均衡</strong></p>
+<p>按<strong>预设规则</strong>分发，不看后端实时状态：</p>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>做法</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>轮询（RR）</td>
+<td>依次分发</td>
+<td>后端同构、请求均匀</td>
+</tr>
+<tr>
+<td>加权轮询</td>
+<td>按权重分配</td>
+<td>机器配置不同</td>
+</tr>
+<tr>
+<td>随机</td>
+<td>随机选</td>
+<td>简单、大规模下近似均匀</td>
+</tr>
+<tr>
+<td>IP Hash</td>
+<td>按来源 IP 取模</td>
+<td>会话保持、缓存亲和</td>
+</tr>
+</tbody>
+</table>
+<p>优点：实现简单、开销小；缺点：<strong>感知不到后端负载变化</strong>。</p>
+<p><strong>2. 动态负载均衡</strong></p>
+<p>按<strong>实时状态</strong>决定分发：</p>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>依据</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>最少连接</td>
+<td>当前活跃连接数</td>
+<td>适合长连接、请求耗时差异大</td>
+</tr>
+<tr>
+<td>最短响应时间</td>
+<td>后端响应耗时</td>
+<td>自适应好，但对慢节点抖动敏感</td>
+</tr>
+<tr>
+<td>加权最少连接</td>
+<td>连接数 / 权重</td>
+<td>兼顾异构机器</td>
+</tr>
+</tbody>
+</table>
+<p>优点：能适应负载变化；缺点：需要采集状态，有<strong>滞后与抖动</strong>风险。</p>
+<p><strong>3. 基于场景的负载均衡</strong></p>
+<p>按<strong>业务语义</strong>分发：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>做法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>会话保持</td>
+<td>一致性哈希 / 粘性会话</td>
+</tr>
+<tr>
+<td>缓存亲和</td>
+<td>一致性哈希让同一 key 落到同一节点</td>
+</tr>
+<tr>
+<td>就近接入</td>
+<td>按地域/运营商路由</td>
+</tr>
+<tr>
+<td>灰度发布</td>
+<td>按用户标签/流量比例路由到新版本</td>
+</tr>
+<tr>
+<td>读写分离</td>
+<td>写走主库、读按权重走从库</td>
+</tr>
+</tbody>
+</table>
+<h3>四、必须配套的机制</h3>
+<ul>
+<li><strong>健康检查</strong>：主动探活（HTTP/TCP）+ 被动摘除（连续失败计数）；</li>
+<li><strong>会话处理</strong>：粘性会话或会话外置（Redis），后者更利于弹性；</li>
+<li><strong>限流与熔断</strong>：负载均衡不解决过载，需配合（见第 9 节）；</li>
+<li><strong>一致性哈希的虚拟节点</strong>：避免数据倾斜。</li>
+</ul>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"最少连接"在请求耗时差异很大时，比"轮询"更合理？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例（工程选型：三层负载均衡）</strong> 某系统有网关、无状态业务服务、Redis 缓存集群。请分别选择负载均衡策略。</p>
+<p>*解答<strong>：<br>
+- <strong>网关层</strong>：L7 负载均衡 + 加权轮询（机器配置不同），配合健康检查与灰度路由；<br>
+- <strong>业务服务</strong>：无状态，可用</strong>最少连接<strong>或加权最少连接，配合自动扩缩容；<br>
+- <strong>Redis 集群</strong>：按 key 做</strong>一致性哈希<strong>（带虚</strong>点）分片，保证同一 key 命中同一节点；<br>
+- <strong>跨机</strong>*：DNS/GSLB 做就近接入，机房内再用 L4/L7 分发；<br>
+- <strong>会话</strong>：会话外置到 Redis，避免粘性会话阻碍扩容。</p>
+<p><em>点评</em>：负载均衡题的得分点是"<strong>分层选型 + 算法与业务匹配 + 会话外置</strong>"，而不是只写"用 Nginx"。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为负载均衡只解决性能。</strong><br>
+它同时是可用性手段（故障摘除）。</p>
+<p><strong>误区二：滥用粘性会话。</strong><br>
+会话绑定到实例，会让扩容与故障转移失效。</p>
+<p><strong>误区三：一致性哈希不设虚拟节点。</strong><br>
+节点少时数据倾斜严重。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="6-11-1" data-type="single" data-explain="轮询、加权、随机、IP Hash 都是静态。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="A"><div class="qhead"><span class="chip">6-11-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">不看后端实时状态、按预设规则分发的负载均衡是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 静态负载均衡</button><button class="opt" data-k="B"><b>B.</b> 动态负载均衡</button><button class="opt" data-k="C"><b>C.</b> 基于场景的负载均衡</button><button class="opt" data-k="D"><b>D.</b> 客户端负载均衡</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-11-2" data-type="single" data-explain="适合长连接与耗时差异大的场景。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-11-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">按当前活跃连接数分发的算法是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 轮询</button><button class="opt" data-k="B"><b>B.</b> 最少连接</button><button class="opt" data-k="C"><b>C.</b> IP Hash</button><button class="opt" data-k="D"><b>D.</b> 随机</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-11-3" data-type="single" data-explain="缓存亲和的基础。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-11-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">为保证同一 key 命中同一缓存节点，应采用：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 轮询</button><button class="opt" data-k="B"><b>B.</b> 一致性哈希</button><button class="opt" data-k="C"><b>C.</b> 随机</button><button class="opt" data-k="D"><b>D.</b> 最短响应时间</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-11-4" data-type="single" data-explain="四层看 IP/端口，七层看内容。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-11-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">四层负载均衡与七层的主要区别是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 四层性能更低</button><button class="opt" data-k="B"><b>B.</b> 七层可解析 URL、Header 等内容做路由</button><button class="opt" data-k="C"><b>C.</b> 四层不支持 TCP</button><button class="opt" data-k="D"><b>D.</b> 七层不能做健康检查</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-11-5" data-type="multi" data-explain="D 错：粘性会话阻碍扩容与故障转移。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">6-11-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">关于负载均衡设计，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 静态算法实现简单但感知不到后端负载</button><button class="opt" data-k="B"><b>B.</b> 动态算法需采集状态，存在滞后与抖动</button><button class="opt" data-k="C"><b>C.</b> 灰度发布属于基于场景的负载均衡</button><button class="opt" data-k="D"><b>D.</b> 粘性会话有利于弹性扩容</button><button class="opt" data-k="E"><b>E.</b> 负载均衡需配合健康检查与限流</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-11-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="虚拟" data-answer-text="虚拟"><div class="qhead"><span class="chip">6-11-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">一致性哈希中为避免数据倾斜，通常引入________节点。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：负载均衡分静态、动态、基于场景三类，算法要与业务特征匹配，并配套健康检查、会话外置与限流。</p>
+<p><strong>留一个问题</strong>：如果流量不是"平摊"，而是在 1 秒内涌入 100 倍，会怎样？</p>
+<p>下一节讲秒杀。</p>
+<hr>
+<h2 id="sec12">第 12 节 秒杀场景</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：秒杀的四个技术挑战是什么？"不超卖"到底靠什么保证？</p>
+</blockquote>
+<h3>一、四个核心挑战</h3>
+<table>
+<thead>
+<tr>
+<th>挑战</th>
+<th>表现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>瞬时高并发</strong></td>
+<td>1 秒内数十万请求，远超日常</td>
+</tr>
+<tr>
+<td><strong>库存超卖</strong></td>
+<td>并发扣减导致卖出量大于库存</td>
+</tr>
+<tr>
+<td><strong>服务雪崩</strong></td>
+<td>某一环节被打垮，级联拖垮全站</td>
+</tr>
+<tr>
+<td><strong>黄牛与刷单</strong></td>
+<td>脚本抢购，破坏公平性</td>
+</tr>
+</tbody>
+</table>
+<p>秒杀的本质是：<strong>用有限的资源，扛住远超承载能力的瞬时流量，并保证不超卖。</strong></p>
+<h3>二、分层削峰：从入口到数据库</h3>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>手段</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>前端</strong></td>
+<td>按钮置灰、答题/验证码、静态资源 CDN、开抢前定时刷新</td>
+</tr>
+<tr>
+<td><strong>网关</strong></td>
+<td>限流（按用户/接口/IP）、黑名单、防重放</td>
+</tr>
+<tr>
+<td><strong>应用</strong></td>
+<td>缓存预热、请求排队、异步化</td>
+</tr>
+<tr>
+<td><strong>库存</strong></td>
+<td>Redis 预扣 + Lua 原子扣减</td>
+</tr>
+<tr>
+<td><strong>数据库</strong></td>
+<td>异步下单、最终扣减、唯一约束兜底</td>
+</tr>
+</tbody>
+</table>
+<p><strong>核心思路是"层层过滤"</strong>：让绝大多数请求在前端与网关就被挡住，只有极少数真正到达库存与数据库。</p>
+<h3>三、防超卖的三要素</h3>
+<ol>
+<li><strong>原子性</strong>：把"判断库存 + 扣减"合成一个原子操作（Redis Lua 脚本或数据库 <code>update ... where stock &gt;= 1</code>）；</li>
+<li><strong>预扣 + 异步落库</strong>：Redis 先扣，成功后发消息异步创建订单与扣数据库；</li>
+<li><strong>兜底</strong>：数据库唯一约束（用户+商品唯一）、库存字段非负约束、对账回补。</li>
+</ol>
+<p>只做缓存不做原子判断，或只在数据库扣减但没扛住并发，都防不住超卖。</p>
+<h3>四、防雪崩的三个动作</h3>
+<ul>
+<li><strong>限流</strong>：入口限死，宁可拒绝也不拖垮；</li>
+<li><strong>隔离</strong>：秒杀服务独立部署、独立数据库连接池，不与其他业务共享资源；</li>
+<li><strong>降级</strong>：关闭非核心（推荐、评论、积分实时计算），保证下单链路。</li>
+</ul>
+<p><strong>补齐两个常被漏掉的手段</strong></p>
+<p>题面常列的"扩容"与"动静分离"，容易被前面的限流缓存盖住，但它们恰恰是秒杀的基础：</p>
+<p><strong>扩容</strong>：秒杀前按预估峰值<strong>提前扩容</strong>（预扩实例、预热连接池、提升数据库规格），配合自动伸缩兜住长尾。注意三个前提：服务<strong>无状态</strong>（会话外置）、<strong>镜像预热</strong>（避免扩容时拉镜像过慢）、<strong>依赖同步扩容</strong>（数据库连接数、缓存带宽往往是真瓶颈）。</p>
+<p><strong>动静分离</strong>：把商品图、详情页、JS/CSS 全部静态化并推到 <strong>CDN</strong>，让绝大部分请求在网络边缘就被满足，根本不进机房。</p>
+<blockquote>
+<p>CDN 与反向代理的原理都是<strong>缓存</strong>：CDN 部署在运营商机房，用户从最近节点取数据；反向代理部署在中心机房，命中缓存就直接返回。两者的共同目的是<strong>尽早返回、减轻后端压力</strong>。</p>
+</blockquote>
+<p>一句话：<strong>扩容解决"接得住"，动静分离解决"不用接"</strong>。</p>
+<h3>五、一次完整的秒杀链路</h3>
+<blockquote>
+<p>活动预热（库存入 Redis、页面静态化）→ 开抢前限流与验证 → 请求到网关排队 → Redis Lua 原子预扣 → 扣减成功发 MQ → 异步创建订单、扣数据库 → 支付超时回补库存 → 全链路监控与对账</p>
+</blockquote>
+<p><strong>关键点：库存扣减与订单创建解耦</strong>，让数据库不直接承受秒杀峰值。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"Redis 扣减成功但订单创建失败"必须设计补偿？不补偿会怎样？</p>
+</blockquote>
+<h3>六、例题精解</h3>
+<p><strong>例（工程项目：秒杀方案）</strong> 某电商 1 万件商品秒杀，预计 50 万请求。请给出完整方案与关键参数。</p>
+<p>*解答**：<br>
+- <strong>前端</strong>：按钮置灰 + 验证码，静态页 CDN 化，减少无效请求；<br>
+- <strong>网关</strong>：按用户限流（如 1 次/人），总量限流（如 5 万 QPS），超出快速返回"已抢完"；<br>
+- <strong>库存</strong>：活动前把 1 万库存写入 Redis，用 Lua 脚本原子判断与扣减；<br>
+- <strong>异步</strong>：扣减成功写入 MQ，消费者异步落库创建订单（削峰）；<br>
+- <strong>兜底</strong>：数据库唯一约束防重复下单，库存非负约束防超卖，支付超时回补；<br>
+- <strong>隔离与降级</strong>：秒杀服务独立部署，关闭非核心功能；<br>
+- <strong>对账</strong>：活动后核对 Redis 扣减量与订单量、库存变化一致性。</p>
+<p><em>点评</em>：答题骨架是"<strong>分层削峰 + 原子扣减 + 异步落库 + 兜底对账</strong>"，四段缺一不可。</p>
+<h3>七、常见误区</h3>
+<p><strong>误区一：认为加缓存就能防超卖。</strong><br>
+缓存只提升读性能，扣减仍需原子操作。</p>
+<p><strong>误区二：只在数据库扣减。</strong><br>
+扛不住瞬时并发，且容易锁冲突。</p>
+<p><strong>误区三：Redis 扣减后不管落库失败。</strong><br>
+必须补偿与对账，否则会出现"扣了库存没订单"。</p>
+<h3>八、本节自测</h3>
+<blockquote>
+<p>共 9 题（6 单选 + 2 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="6-12-1" data-type="single" data-explain="范式不是秒杀关注点。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="D"><div class="qhead"><span class="chip">6-12-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">秒杀场景最核心的技术挑战不包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 瞬时高并发</button><button class="opt" data-k="B"><b>B.</b> 库存超卖</button><button class="opt" data-k="C"><b>C.</b> 服务雪崩</button><button class="opt" data-k="D"><b>D.</b> 数据库范式设计</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-12-2" data-type="single" data-explain="Lua 脚本或带条件的 update。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-12-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">防超卖的关键是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 增加缓存容量</button><button class="opt" data-k="B"><b>B.</b> 把"判断库存+扣减"做成原子操作</button><button class="opt" data-k="C"><b>C.</b> 增加页面静态化</button><button class="opt" data-k="D"><b>D.</b> 增加数据库索引</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-12-3" data-type="single" data-explain="削峰的关键动作。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-12-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">秒杀中把订单创建异步化的主要目的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 提升可读性</button><button class="opt" data-k="B"><b>B.</b> 让数据库不直接承受瞬时峰值</button><button class="opt" data-k="C"><b>C.</b> 减少代码量</button><button class="opt" data-k="D"><b>D.</b> 降低库存</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-12-4" data-type="single" data-explain="这是降级，属于按场景取舍。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-12-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">下列属于"基于场景"的削峰手段的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 增加 CPU</button><button class="opt" data-k="B"><b>B.</b> 关闭推荐、评论等非核心功能</button><button class="opt" data-k="C"><b>C.</b> 提高数据库版本</button><button class="opt" data-k="D"><b>D.</b> 增加索引</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-12-5" data-type="multi" data-explain="D 错：缓存不解决原子扣减。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">6-12-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">关于秒杀方案，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 前端按钮置灰与验证码可减少无效请求</button><button class="opt" data-k="B"><b>B.</b> Redis + Lua 可实现原子预扣</button><button class="opt" data-k="C"><b>C.</b> 异步落库后需要补偿与对账</button><button class="opt" data-k="D"><b>D.</b> 只要加了缓存就不会超卖</button><button class="opt" data-k="E"><b>E.</b> 秒杀服务应独立部署避免影响其他业务</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-12-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="异步" data-answer-text="异步"><div class="qhead"><span class="chip">6-12-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">秒杀防超卖通常采用"预扣 + ________落库"的组合。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="6-12-7" data-type="single" data-explain="本地会话会让新实例接不住请求。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">6-12-7</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">秒杀前提前扩容要生效的前提不包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 服务无状态</button><button class="opt" data-k="B"><b>B.</b> 镜像预热</button><button class="opt" data-k="C"><b>C.</b> 依赖同步扩容</button><button class="opt" data-k="D"><b>D.</b> 会话保存在本地</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-12-8" data-type="single" data-explain="让请求在网络边缘被满足。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-12-8</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">动静分离的核心手段是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数据库分库分表</button><button class="opt" data-k="B"><b>B.</b> 静态资源静态化并推送到 CDN</button><button class="opt" data-k="C"><b>C.</b> 增加线程池</button><button class="opt" data-k="D"><b>D.</b> 限流</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-12-9" data-type="multi" data-explain="E 错：依赖不同步扩容会先崩。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">6-12-9</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">关于秒杀中的扩容与动静分离，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> CDN 与反向代理的原理都是缓存</button><button class="opt" data-k="B"><b>B.</b> CDN 部署在运营商机房，反向代理在中心机房</button><button class="opt" data-k="C"><b>C.</b> 扩容需考虑数据库连接数与缓存带宽等依赖瓶颈</button><button class="opt" data-k="D"><b>D.</b> 动静分离能减少进入机房的请求</button><button class="opt" data-k="E"><b>E.</b> 扩容只需加应用实例，不必管依赖</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<h3>九、小结与衔接</h3>
+<p>本节回答：秒杀靠分层削峰、原子扣减、异步落库与兜底对账四件套，核心是"让数据库不直接面对峰值"。</p>
+<h2 id="sec13">第 13 节 高并发设计的六个方面</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：面对"高并发怎么设计"这类题，怎么按六个方面组织出一份完整答案？</p>
+</blockquote>
+<h3>一、六个方面的分工</h3>
+<p>高并发设计常被拆成六块，它们回答的是不同问题：</p>
+<table>
+<thead>
+<tr>
+<th>方面</th>
+<th>回答什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>缓存设计</strong></td>
+<td>怎么让读请求不落到数据库</td>
+</tr>
+<tr>
+<td><strong>异步处理</strong></td>
+<td>怎么让写请求不等结果</td>
+</tr>
+<tr>
+<td><strong>限流降级</strong></td>
+<td>扛不住时怎么保命</td>
+</tr>
+<tr>
+<td><strong>数据库优化</strong></td>
+<td>数据层怎么撑住</td>
+</tr>
+<tr>
+<td><strong>服务划分</strong></td>
+<td>怎么让系统可以拆开扩</td>
+</tr>
+<tr>
+<td><strong>水平扩容</strong></td>
+<td>怎么加机器就加能力</td>
+</tr>
+</tbody>
+</table>
+<p>前三条是<strong>流量治理</strong>，后三条是<strong>结构治理</strong>。只做前者，是"扛"；只做后者，是"撑"；两者合起来才是高并发架构。</p>
+<h3>二、缓存设计</h3>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>做法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>客户端/浏览器</strong></td>
+<td>强缓存、协商缓存、本地存储</td>
+</tr>
+<tr>
+<td><strong>CDN</strong></td>
+<td>静态资源就近分发</td>
+</tr>
+<tr>
+<td><strong>反向代理</strong></td>
+<td>页面级缓存</td>
+</tr>
+<tr>
+<td><strong>应用本地缓存</strong></td>
+<td>热点数据、字典表</td>
+</tr>
+<tr>
+<td><strong>分布式缓存</strong></td>
+<td>Redis 集群</td>
+</tr>
+</tbody>
+</table>
+<p><strong>三个必须防的坑</strong>：</p>
+<ul>
+<li><strong>穿透</strong>：查不存在的数据，每次都打到库 → 布隆过滤器、空值缓存；</li>
+<li><strong>击穿</strong>：热点 key 过期瞬间大量请求 → 互斥重建、逻辑过期；</li>
+<li><strong>雪崩</strong>：大批 key 同时失效或缓存宕机 → 过期时间加随机、多级缓存、限流兜底。</li>
+</ul>
+<h3>三、异步处理</h3>
+<p>把"必须同步完成"的部分压到最小，其余走消息队列：</p>
+<blockquote>
+<p>请求 → 校验 → 写库/发消息 → 立即返回 → 消费者异步处理后续（通知、积分、报表、对账）</p>
+</blockquote>
+<p><strong>收益</strong>：削峰（把瞬时流量摊平）、解耦（下游故障不影响主链路）、提速（用户不等）。<br>
+<strong>代价</strong>：最终一致、消息可靠性与幂等、链路变长后难排查。</p>
+<p>异步不是"不要结果"，而是"结果晚点到"——所以<strong>必须配补偿与对账</strong>。</p>
+<h3>四、限流与降级</h3>
+<p>见第 9 节的六类手段（限流、降级、熔断、隔仓、灰度、反压），此处只强调顺序：</p>
+<blockquote>
+<p>先限流挡住超量 → 再隔离防止扩散 → 熔断止损 → 降级舍非核心 → 反压反馈上游</p>
+</blockquote>
+<h3>五、数据库优化</h3>
+<table>
+<thead>
+<tr>
+<th>手段</th>
+<th>适用</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>索引与慢 SQL 治理</strong></td>
+<td>永远先做</td>
+<td>几乎无代价</td>
+</tr>
+<tr>
+<td><strong>读写分离</strong></td>
+<td>读多写少</td>
+<td>主从延迟、读一致性</td>
+</tr>
+<tr>
+<td><strong>分库分表</strong></td>
+<td>单表过亿或写入过高</td>
+<td>跨分片查询、分布式事务</td>
+</tr>
+<tr>
+<td><strong>连接池与批量</strong></td>
+<td>高频小事务</td>
+<td>需调参防雪崩</td>
+</tr>
+<tr>
+<td><strong>冷热分离</strong></td>
+<td>历史数据多</td>
+<td>查询要跨冷热</td>
+</tr>
+</tbody>
+</table>
+<p>顺序很重要：<strong>先索引、再读写分离、最后才分库分表</strong>。跳过前两步直接分库分表，是把简单问题复杂化。</p>
+<h3>六、服务划分</h3>
+<p>高并发的前提是<strong>能拆</strong>：</p>
+<ul>
+<li><strong>按业务域拆</strong>：让热点服务独立部署、独立扩容，不与冷服务抢资源；</li>
+<li><strong>无状态化</strong>：会话外置到 Redis，任何实例都能处理任何请求；</li>
+<li><strong>读写分离的应用侧</strong>：查询与写入走不同服务路径；</li>
+<li><strong>依赖隔离</strong>：核心链路不调用非核心服务（或异步调用）。</li>
+</ul>
+<p>划分不当的典型症状：一个非核心接口变慢，拖垮整个下单链路。</p>
+<h3>七、水平扩容</h3>
+<p>水平扩容的三个前提：</p>
+<ol>
+<li><strong>无状态</strong>：有状态实例无法随意增删；</li>
+<li><strong>可发现</strong>：新实例上线能被路由（注册中心/负载均衡）；</li>
+<li><strong>数据可分片</strong>：数据层要么无状态、要么按 key 分片。</li>
+</ol>
+<p>配套：弹性伸缩策略（按 CPU/QPS/队列深度）、镜像预热、依赖同步扩容（数据库连接数、缓存带宽）。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"服务无状态"既是微服务的原则，也是水平扩容的前提？如果会话存在本地，扩容会发生什么？</p>
+</blockquote>
+<h3>八、例题精解</h3>
+<p><strong>例（工程项目：大促高并发方案）</strong> 某电商日常 QPS 2000，大促预计 10 万。请按六个方面给出方案。</p>
+<p>*解答**：<br>
+- <strong>缓存</strong>：商品详情、库存、用户信息多级缓存（本地 + Redis），热点 key 逻辑过期，防穿透用布隆过滤器；<br>
+- <strong>异步</strong>：下单后置动作（积分、通知、报表）走 MQ，主链路只做校验 + 扣减 + 落单；<br>
+- <strong>限流降级</strong>：网关按用户与接口限流，非核心（推荐、评论）降级，下游设置熔断；<br>
+- <strong>数据库</strong>：先做慢 SQL 治理与索引，再读写分离（读写比约 8:1），订单按用户 ID 分库分表；<br>
+- <strong>服务划分</strong>：订单、库存、支付独立部署，库存服务单独扩容，核心链路不同步调用非核心；<br>
+- <strong>水平扩容</strong>：全部服务无状态、会话外置，大促前预扩到 3 倍并预热镜像，按 QPS 自动伸缩兜底。</p>
+<p><em>点评</em>：这类题的得分点是"<strong>六个方面各给一招，并说清顺序与前提</strong>"，不是把所有技术列一遍。尤其要说明"先索引再分库分表""无状态是扩容前提"这两条因果。</p>
+<h3>九、常见误区</h3>
+<p><strong>误区一：认为高并发就是加缓存。</strong><br>
+缓存解决读，写要靠异步与分片。</p>
+<p><strong>误区二：一上来就分库分表。</strong><br>
+跳过索引与读写分离，复杂度陡增而收益有限。</p>
+<p><strong>误区三：有状态服务直接扩容。</strong><br>
+会话在本地，扩出来的实例接不住请求。</p>
+<p><strong>误区四：异步化后不做补偿。</strong><br>
+消息丢了就永久不一致。</p>
+<h3>十、本节自测</h3>
+<blockquote>
+<p>共 7 题（5 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="6-13-1" data-type="single" data-explain="穿透查的是不存在的数据。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-13-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">缓存"穿透"指的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 缓存宕机导致请求全打到数据库</button><button class="opt" data-k="B"><b>B.</b> 查询不存在的数据，每次都落到数据库</button><button class="opt" data-k="C"><b>C.</b> 热点 key 过期瞬间大量请求</button><button class="opt" data-k="D"><b>D.</b> 缓存与数据库数据不一致</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-13-2" data-type="single" data-explain="雪崩是大批 key 同时失效。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-13-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">防止缓存"雪崩"的常用做法是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 加大缓存容量</button><button class="opt" data-k="B"><b>B.</b> 过期时间加随机、多级缓存与限流兜底</button><button class="opt" data-k="C"><b>C.</b> 关闭缓存</button><button class="opt" data-k="D"><b>D.</b> 增加数据库索引</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-13-3" data-type="single" data-explain="异步必然引入最终一致。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">6-13-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">异步处理（消息削峰）必须配套的两个机制是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 幂等与补偿对账</button><button class="opt" data-k="B"><b>B.</b> 索引与分区</button><button class="opt" data-k="C"><b>C.</b> 加密与鉴权</button><button class="opt" data-k="D"><b>D.</b> 灰度与回滚</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-13-4" data-type="single" data-explain="三个前提缺一不可。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">6-13-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">水平扩容的前提是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 服务无状态、可被发现、数据可分片</button><button class="opt" data-k="B"><b>B.</b> 使用关系数据库</button><button class="opt" data-k="C"><b>C.</b> 有本地会话</button><button class="opt" data-k="D"><b>D.</b> 单机性能足够</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-13-5" data-type="single" data-explain="跳过前两步直接分库分表是典型误区。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6-13-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">数据库优化的正确顺序是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 先分库分表，再读写分离，最后索引</button><button class="opt" data-k="B"><b>B.</b> 先索引与慢 SQL 治理，再读写分离，最后分库分表</button><button class="opt" data-k="C"><b>C.</b> 只做读写分离</button><button class="opt" data-k="D"><b>D.</b> 只加硬件</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-13-6" data-type="multi" data-explain="E 错：无状态才易扩容。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">6-13-6</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">关于高并发设计的六个方面，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 缓存、异步、限流降级属于流量治理</button><button class="opt" data-k="B"><b>B.</b> 数据库优化、服务划分、水平扩容属于结构治理</button><button class="opt" data-k="C"><b>C.</b> 击穿指热点 key 过期瞬间大量请求打到数据库</button><button class="opt" data-k="D"><b>D.</b> 服务划分应让热点服务独立部署与扩容</button><button class="opt" data-k="E"><b>E.</b> 有状态服务比无状态服务更容易水平扩容</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-13-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="无状态" data-answer-text="无状态"><div class="qhead"><span class="chip">6-13-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">水平扩容要求服务______化，会话通常外置到 Redis。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>十一、小结与衔接</h3>
+<p>本节回答：高并发按"缓存、异步、限流降级、数据库优化、服务划分、水平扩容"六个方面组织，前三条治流量、后三条治结构。</p>
+<h2 id="sec14">本章总复习</h2>
+<h3>一、这一章的主线</h3>
+<p>这一章回答的是"架构好不好，凭什么说"。前八节建立评估的语言：八类质量属性、质量属性场景六要素、性能与可用性战术、安全与可修改性、敏感点/权衡点/风险点、SAAM 与 ATAM、CBAM；后五节落到工程手段：高并发六类控制手段、性能测试、负载均衡、秒杀，以及把六方面串起来的高并发设计。</p>
+<h3>二、必须能说出的判断</h3>
+<ul>
+<li><strong>敏感点影响一个属性，权衡点影响多个属性</strong>——判断口诀是"它伤不伤第二个属性"；</li>
+<li><strong>没有响应度量的场景只是意愿</strong>，不是需求；</li>
+<li><strong>SAAM 评"架构支不支持需求"，ATAM 评"多属性怎么折中"</strong>；</li>
+<li><strong>限流保护自己，熔断避免被下游拖死</strong>，两者常被混淆；</li>
+<li><strong>性能测试看分位数不看平均值</strong>，P99 才能反映长尾。</li>
+</ul>
+<h3>三、跨节综合自测（8 题）</h3>
+<div class="quiz" data-id="6综-1" data-type="single" data-explain="同时显著影响两个及以上属性即权衡点。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6综-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">把接口加密强度从 AES-128 提到 AES-256，同时影响安全性与延迟。该决策属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 敏感点</button><button class="opt" data-k="B"><b>B.</b> 权衡点</button><button class="opt" data-k="C"><b>C.</b> 风险点</button><button class="opt" data-k="D"><b>D.</b> 非风险点</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6综-2" data-type="single" data-explain="没有度量就无法验收，这是一条意愿而非需求。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6综-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">某质量需求只写「系统应支持高并发」，最关键的缺失要素是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 刺激源</button><button class="opt" data-k="B"><b>B.</b> 响应度量</button><button class="opt" data-k="C"><b>C.</b> 制品</button><button class="opt" data-k="D"><b>D.</b> 响应</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6综-3" data-type="multi" data-explain="D、E 属流量治理。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABC"><div class="qhead"><span class="chip">6综-3</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">高并发设计的六个方面中，属于「结构治理」的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数据库优化</button><button class="opt" data-k="B"><b>B.</b> 服务划分</button><button class="opt" data-k="C"><b>C.</b> 水平扩容</button><button class="opt" data-k="D"><b>D.</b> 缓存设计</button><button class="opt" data-k="E"><b>E.</b> 限流降级</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6综-4" data-type="single" data-explain="限流保护自己，熔断避免被下游拖死。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6综-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">下游服务错误率飙升时，快速失败并隔一段时间试探恢复的机制是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 限流</button><button class="opt" data-k="B"><b>B.</b> 熔断</button><button class="opt" data-k="C"><b>C.</b> 降级</button><button class="opt" data-k="D"><b>D.</b> 反压</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6综-5" data-type="single" data-explain="平均值会掩盖长尾。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6综-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">大促前做性能测试，判断「用户是否明显变慢」应优先看：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 平均响应时间</button><button class="opt" data-k="B"><b>B.</b> P99 响应时间</button><button class="opt" data-k="C"><b>C.</b> 总请求数</button><button class="opt" data-k="D"><b>D.</b> CPU 均值</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6综-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="调查|报告" data-answer-text="调查和分析、报告"><div class="qhead"><span class="chip">6综-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">ATAM 实践的四个阶段是演示、、测试和。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="6综-7" data-type="single" data-explain="恢复速度压缩空间大。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">6综-7</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">在不可用时间已严重影响业务时，提升可用性最经济的做法通常是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 无限延长 MTBF</button><button class="opt" data-k="B"><b>B.</b> 缩短 MTTR</button><button class="opt" data-k="C"><b>C.</b> 增加文档</button><button class="opt" data-k="D"><b>D.</b> 提高采购标准</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6综-8" data-type="multi" data-explain="D 错：数据库单点扣减扛不住瞬时并发。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">6综-8</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">秒杀方案中，防止超卖必须做到的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 库存判断与扣减具备原子性</button><button class="opt" data-k="B"><b>B.</b> 预扣库存并异步落库</button><button class="opt" data-k="C"><b>C.</b> 用唯一约束等机制兜底</button><button class="opt" data-k="D"><b>D.</b> 只在数据库层扣减即可</button><button class="opt" data-k="E"><b>E.</b> 配套补偿与对账</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<h3>四、与论文、案例的接口</h3>
+<p>案例题常让"指出敏感点与权衡点"；论文里"如何做架构评估""如何保障高并发"的素材都出自这里。</p>
+<h3>五、下一步</h3>
+<p><strong>本章结束</strong>。下一步进入 K7（演化与维护）。</p>
+<div class="legend" style="margin-top:44px">标注说明：<b>软考口径</b>＝按官方用书表述给分；<b>拓展</b>＝考纲未展开的补充知识。详见 <a href="k00.html">K0 前言</a>。作答记录保存在本机浏览器。</div>
+<div class="toast" id="toast"></div>
+</div>
+<script>
+const KEY="book_K6质量属性与架构评估";
+let state=JSON.parse(localStorage.getItem(KEY)||"{}");
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function norm(s){return (s||"").toLowerCase().replace(/[\s，,、;；。.()（）]/g,"");}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1400);}
+function stats(){const qs=$$(".quiz");let done=0,ok=0;
+ qs.forEach(q=>{const st=state[q.dataset.id];if(st&&st.done){done++;if(st.ok)ok++;}});
+ return {done,total:qs.length,ok};}
+function paint(){const s=stats();const p=s.total?s.done/s.total*100:0;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";}
+function fillKeywords(q){return q.dataset.answer.split("|").map(g=>g.split("/"));}
+function fbHTML(q,ok,userText){
+ const diag=q.dataset.diag||"";const warm=diag.includes("补充")?"#a2540f":"#b42318";
+ const ans=q.dataset.answerText||q.dataset.answer;
+ return '<div class="res">'+(ok?"✔ 回答正确":"✘ 回答错误")+'</div>'
+  +'<div><b>正确答案：</b>'+ans+(userText?'　<span style="color:#6b7280">你的作答：'+userText+'</span>':'')+'</div>'
+  +'<details open><summary>展开解析</summary><div class="inner">'
+  +'<div>'+q.dataset.explain+'</div>'
+  +'<div class="row tags">来源：'+q.dataset.source+'　｜　诊断标签：<b style="color:'+warm+'">'+diag+'</b></div>'
+  +'</div></details>';
+}
+function judge(q,ok,userText){
+ const fb=$(".fb",q);fb.className="fb show "+(ok?"ok":"bad");
+ fb.innerHTML=fbHTML(q,ok,userText);
+ state[q.dataset.id]={done:true,ok:ok};save();paint();
+}
+$$(".quiz").forEach(q=>{
+ const type=q.dataset.type;const ans=q.dataset.answer;
+ const opts=$$(".opt",q);const fb=$(".fb",q);
+ const saved=state[q.dataset.id];
+ if(type==="single"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     opts.forEach(x=>x.disabled=true);
+     const ok=(o.dataset.k===ans);
+     o.classList.add(ok?"right":"wrong");
+     if(!ok){const c=opts.find(x=>x.dataset.k===ans);if(c)c.classList.add("right");}
+     judge(q,ok,o.dataset.k);
+   }));
+ }else if(type==="multi"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     if(o.disabled)return;
+     o.classList.toggle("sel");
+   }));
+   const btn=$(".check",q);
+   if(btn)btn.addEventListener("click",()=>{
+     const picked=opts.filter(o=>o.classList.contains("sel")).map(o=>o.dataset.k).sort().join("");
+     if(!picked){toast("先选择至少一个选项");return;}
+     opts.forEach(o=>{
+       o.disabled=true;o.classList.remove("sel");
+       const k=o.dataset.k;
+       if(ans.includes(k))o.classList.add("right");
+       else if(picked.includes(k))o.classList.add("wrong");
+     });
+     judge(q,picked===ans,picked);
+   });
+ }else{
+   const inp=$(".fillinput",q);const btn=$(".check",q);
+   const go=()=>{
+     const raw=inp.value;const v=norm(raw);
+     if(!v){toast("先填写答案");return;}
+     let ok=false;
+     if(q.dataset.numeric){
+       const m=raw.match(/-?\d+(?:\.\d+)?/);
+       const cands=q.dataset.numeric.split("|");
+       ok=!!m&&cands.some(x=>Math.abs(parseFloat(m[0])-parseFloat(x))<0.011);
+     }else{
+       ok=fillKeywords(q).every(g=>g.some(k=>v.includes(norm(k))));
+     }
+     inp.disabled=true;inp.style.borderColor=ok?"#7cc49b":"#e79a94";
+     if(btn)btn.disabled=true;
+     judge(q,ok,raw.trim());
+   };
+   if(btn)btn.addEventListener("click",go);
+   if(inp)inp.addEventListener("keydown",e=>{if(e.key==="Enter")go();});
+ }
+ if(saved&&saved.done){/* 恢复历史状态：仅标记，不覆盖作答 */}
+});
+window.addEventListener("scroll",()=>{
+ const h=document.documentElement;
+ const p=h.scrollTop/(h.scrollHeight-h.clientHeight||1)*100;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";
+});
+paint();
+</script>
+<div class="book-foot-nav"><div class="bf-box"><a href="k05.html">&larr; 上一章 K5 架构基础与架构风格</a><a class="bf-next" href="k07.html">下一章 K7 演化与维护 &rarr;</a></div><p class="bf-note">作答记录保存在本机浏览器，换设备或清除缓存不会保留。本章支持浏览器直接打印为 PDF。</p></div><script>
+(function(){
+  var el=document.getElementById("book-nav-progress");
+  function refresh(){
+    try{
+      var st=JSON.parse(localStorage.getItem("book_K6质量属性与架构评估")||"{}"),done=0;
+      Object.keys(st).forEach(function(k){if(st[k]&&st[k].done)done++;});
+      if(el)el.textContent=done+" / 96 题";
+    }catch(e){}
+  }
+  refresh();setInterval(refresh,1000);
+})();
+</script></body></html>

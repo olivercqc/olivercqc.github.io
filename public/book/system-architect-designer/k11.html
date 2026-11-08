@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K11 大数据与未来技术</title>
+<style>
+:root{--bg:#fbfaf7;--card:#fff;--ink:#1f2328;--sub:#6b7280;--line:#e6e3dd;--accent:#1f4e79;--ok:#0f7b4f;--bad:#b42318;--chip:#eef3f8;--warm:#fdf6ec}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:17px/1.9 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",serif}
+#bar{position:fixed;top:0;left:0;height:3px;background:var(--accent);width:0;z-index:99}
+.wrap{max-width:760px;margin:0 auto;padding:56px 20px 100px}
+h1{font-size:27px;line-height:1.4;letter-spacing:.5px;margin:0 0 10px}
+h2{font-size:21px;margin:52px 0 14px;padding-top:14px;border-top:2px solid var(--line);letter-spacing:.5px}
+h2:first-of-type{border-top:none}
+h3{font-size:17.5px;margin:30px 0 10px;color:#2b3a4a}
+h5{font-size:15px;margin:26px 0 8px;color:var(--sub);font-weight:600}
+p{margin:10px 0}
+blockquote{margin:16px 0;padding:12px 16px;background:var(--warm);border-left:3px solid #e0b984;border-radius:0 8px 8px 0;font-size:16px}
+blockquote p{margin:4px 0}
+strong{color:#12324f}
+hr{border:none;border-top:1px dashed var(--line);margin:26px 0}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px;background:#fff}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f3f1ec;font-weight:600}
+code{background:#f3f1ec;padding:1px 5px;border-radius:4px;font-size:14px}
+pre{background:#f7f5f1;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto}
+ul,ol{margin:10px 0;padding-left:22px}
+li{margin:4px 0}
+.math{font-family:"Cambria Math",Cambria,Georgia,"Times New Roman",serif;font-size:1.03em}
+.mathblock{display:block;text-align:center;margin:16px 0;overflow-x:auto;padding:2px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:-0.55em;text-align:center;margin:0 .3em}
+.frac .n{border-bottom:1px solid currentColor;padding:0 .3em;line-height:1.3}
+.frac .d{padding:0 .3em;line-height:1.4}
+sub,sup{font-size:.72em;line-height:0}
+.toast{position:fixed;right:18px;bottom:18px;background:#1f2937;color:#fff;padding:9px 14px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+
+/* 题卡 */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:18px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.qhead{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.chip{background:var(--chip);color:#33475b;border-radius:999px;padding:1px 9px;font-size:12px}
+.chip.t{background:#eaf4ec;color:#0f7b4f}
+.chip.k{background:#f4f0fa;color:#5b3f8f;font-size:11.5px}
+a.back{margin-left:auto;font-size:12px;color:var(--sub);text-decoration:none;border-bottom:1px dashed #c9c4ba}
+a.back:hover{color:var(--accent);border-color:var(--accent)}
+.qstem{font-weight:600;margin:4px 0 12px;font-size:16px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:15.5px;line-height:1.7;
+ background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 13px;cursor:pointer;transition:.15s}
+.opt:hover{border-color:#b9c6d6;background:#f8fafc}
+.opt b{color:var(--accent);margin-right:2px}
+.opt.sel{border-color:var(--accent);background:#eef4fa}
+.opt.right{border-color:#7cc49b;background:#effaf3}
+.opt.wrong{border-color:#e79a94;background:#fdf1f0}
+.opt:disabled{cursor:default}
+.fillrow{display:flex;gap:10px;margin-top:12px;align-items:center}
+.fillinput{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:15.5px;background:#fff}
+.btn{font:inherit;font-size:14px;padding:7px 16px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer}
+.btn.check{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fb{display:none;margin-top:14px;font-size:15px;line-height:1.8}
+.fb.show{display:block}
+.fb .res{font-weight:700;margin-bottom:6px;font-size:15.5px}
+.fb.ok .res{color:var(--ok)}
+.fb.bad .res{color:var(--bad)}
+.fb details{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:#fcfbf9;padding:0 12px}
+.fb summary{cursor:pointer;padding:9px 0;font-weight:600;color:var(--accent);outline:none}
+.fb .inner{padding:2px 0 12px;border-top:1px dashed var(--line)}
+.fb .row{color:var(--sub);font-size:13px;margin-top:8px}
+.fb .tags b{color:#a2540f}
+.legend{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:20px 0;font-size:14.5px}
+.legend b{color:var(--accent)}
+@media print{
+ #bar,.toast{display:none}
+ .quiz{break-inside:avoid}
+ body{background:#fff;font-size:12pt}
+}
+@media (max-width:600px){
+ body{font-size:16px;line-height:1.85}
+ .wrap{padding:40px 14px 80px}
+ h1{font-size:23px}
+ table{font-size:13px}
+}
+</style>
+<style id="book-nav-css">
+#book-nav{position:sticky;top:0;z-index:100;background:rgba(251,250,247,.96);backdrop-filter:blur(8px);border-bottom:1px solid #e6e3dd;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+#bar{z-index:101!important}
+#book-nav .bn-in{max-width:1060px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+#book-nav a{color:#1f4e79;text-decoration:none;white-space:nowrap}
+#book-nav a:hover{text-decoration:underline}
+#book-nav .bn-home{font-weight:700}
+#book-nav .bn-cur{color:#1f2328;font-weight:600;flex:1;min-width:180px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#book-nav .bn-step{background:#fff;border:1px solid #e6e3dd;border-radius:999px;padding:3px 11px;font-size:13px}
+#book-nav .bn-step.disabled{opacity:.38;pointer-events:none}
+#book-nav .bn-prog{color:#6b7280;font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.book-foot-nav{max-width:760px;margin:0 auto;padding:0 20px 80px;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.book-foot-nav .bf-box{border-top:2px solid #e6e3dd;padding-top:22px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}
+.book-foot-nav a{color:#1f4e79;text-decoration:none}
+.book-foot-nav a:hover{text-decoration:underline}
+.book-foot-nav .bf-next{background:#1f4e79;color:#fff!important;border-radius:10px;padding:9px 18px;font-weight:600}
+.book-foot-nav .bf-next:hover{text-decoration:none;background:#163c5e}
+.book-foot-nav .bf-note{color:#6b7280;font-size:13px;margin-top:14px}
+@media(max-width:600px){#book-nav .bn-cur{order:3;flex-basis:100%;text-align:left}#book-nav .bn-prog{display:none}}
+@media print{#book-nav,.book-foot-nav{display:none}#bar{z-index:0!important}}
+</style>
+</head><body><nav id="book-nav"><div class="bn-in"><a class="bn-home" href="index.html">&larr; 全书目录</a><a class="bn-step" href="k10.html" title="嵌入式、通信与安全架构">&larr; K10</a><span class="bn-cur">K11 · 大数据与未来技术</span><span class="bn-step disabled">K11 &rarr;</span><span class="bn-prog" id="book-nav-progress">0 / 58 题</span></div></nav>
+<div id="bar"></div>
+<div class="wrap">
+<h1>K11 大数据与未来技术</h1>
+<blockquote>
+<p><strong>本章内容</strong>：信息物理系统（CPS） · 人工智能 · 机器人技术 · 边缘计算 · 数字孪生 · 云计算与大数据 · Lambda 与 Kappa 架构<br>
+<strong>考纲位置</strong>：上午题以"概念特征+关键技术"为主，案例题常考"大数据架构选型"，论文的热点素材区</p>
+</blockquote>
+<p>本章围绕"<strong>数据量爆炸与算力下沉带来的新架构形态</strong>"这一主题展开，共 9 节：</p>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+<th>回答的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>信息物理系统</td>
+<td>物理世界与信息系统怎么闭环</td>
+</tr>
+<tr>
+<td>2</td>
+<td>人工智能</td>
+<td>三大要素与关键技术在哪一层</td>
+</tr>
+<tr>
+<td>3</td>
+<td>机器人技术</td>
+<td>机器人 4.0 的核心技术是什么</td>
+</tr>
+<tr>
+<td>4</td>
+<td>边缘计算</td>
+<td>算力为什么要下沉到边缘</td>
+</tr>
+<tr>
+<td>5</td>
+<td>数字孪生与云计算大数据</td>
+<td>虚拟映射与现实系统怎么对应</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Lambda 与 Kappa</td>
+<td>批与流怎么统一</td>
+</tr>
+<tr>
+<td>7</td>
+<td>检索增强生成（RAG）</td>
+<td>怎么让模型开卷答题</td>
+</tr>
+<tr>
+<td>8</td>
+<td>大模型幻觉与治理</td>
+<td>编造怎么防、怎么兜底</td>
+</tr>
+<tr>
+<td>9</td>
+<td>数据湖与湖仓一体</td>
+<td>海量原始数据怎么组织</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="sec1">第 1 节 信息物理系统（CPS）</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：CPS 与"嵌入式系统""物联网"的区别在哪？它的架构分哪几层？</p>
+</blockquote>
+<h3>一、CPS 是什么</h3>
+<p><strong>信息物理系统（CPS，Cyber-Physical Systems）</strong> 是<strong>计算过程与物理过程</strong>深度融合的系统：通过传感、通信、计算与控制，实现物理世界与信息世界的<strong>闭环交互</strong>。</p>
+<p>一句话区别：</p>
+<ul>
+<li><strong>嵌入式系统</strong>：设备内部的"计算 + 控制"；</li>
+<li><strong>物联网</strong>：设备联网、数据采集；</li>
+<li><strong>CPS</strong>：不仅要连、要采，还要<strong>形成闭环反馈并影响物理过程</strong>。</li>
+</ul>
+<h3>二、CPS 的典型分层</h3>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>感知层</strong></td>
+<td>传感器、执行器，采集与作用物理世界</td>
+</tr>
+<tr>
+<td><strong>传输层</strong></td>
+<td>网络（现场总线、工业以太网、5G）</td>
+</tr>
+<tr>
+<td><strong>计算/平台层</strong></td>
+<td>数据汇聚、建模、分析与优化</td>
+</tr>
+<tr>
+<td><strong>应用层</strong></td>
+<td>行业应用与决策（控制策略下发）</td>
+</tr>
+</tbody>
+</table>
+<p>关键在于<strong>闭环</strong>：应用层的决策要能回到执行器作用于物理世界，而不是只做展示。</p>
+<h3>三、CPS 的关键特征</h3>
+<ul>
+<li><strong>实时性</strong>：控制回路有严格时延要求；</li>
+<li><strong>可靠性/安全性</strong>：直接影响物理设备与人身安全；</li>
+<li><strong>异构集成</strong>：多种总线、协议、设备共存；</li>
+<li><strong>数据与模型融合</strong>：物理模型 + 数据驱动模型共同决策。</li>
+</ul>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：CPS 方案设计）</strong> 某工厂要把产线升级为"自适应调节"：传感器采集温度与振动，平台分析后自动调整设备参数。请对照 CPS 分层说明关键设计点。</p>
+<p><em>解答</em>：<br>
+- <strong>感知层</strong>：高采样率传感器 + 执行器（伺服/变频器），需考虑时钟同步与采样精度；<br>
+- <strong>传输层</strong>：现场总线或工业以太网保证确定性时延，必要时用 5G 专网；<br>
+- <strong>计算层</strong>：边缘侧做实时特征计算与异常判断（不能全依赖云端，否则时延不可控），云端做模型训练与优化；<br>
+- <strong>应用层</strong>：把优化后的参数下发到执行器，形成闭环；<br>
+- <strong>安全</strong>：控制指令需鉴权与白名单，防止误下发。</p>
+<p><em>点评</em>：CPS 题的得分点是"<strong>闭环</strong>"与"**实时性在边缘、模型训练在云"的分工。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为 CPS 就是物联网。</strong><br>
+物联网偏"采集与监控"，CPS 强调"闭环控制"。</p>
+<p><strong>误区二：认为分析都放云上。</strong><br>
+控制回路必须边缘侧完成。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 5 题（3 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="11-1-1" data-type="single" data-explain="CPS 的核心是闭环。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-1-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">强调计算过程与物理过程深度融合、形成闭环交互的系统是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 管理信息系统</button><button class="opt" data-k="B"><b>B.</b> 信息物理系统</button><button class="opt" data-k="C"><b>C.</b> 办公自动化系统</button><button class="opt" data-k="D"><b>D.</b> 决策支持系统</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-1-2" data-type="single" data-explain="传感器与执行器在感知层。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-1-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">CPS 中负责采集与作用于物理世界的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 应用层</button><button class="opt" data-k="B"><b>B.</b> 感知层</button><button class="opt" data-k="C"><b>C.</b> 传输层</button><button class="opt" data-k="D"><b>D.</b> 计算层</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-1-3" data-type="single" data-explain="物联网偏采集监控，CPS 强调控制闭环。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-1-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">CPS 与物联网的关键区别是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 是否使用传感器</button><button class="opt" data-k="B"><b>B.</b> 是否形成闭环控制并影响物理过程</button><button class="opt" data-k="C"><b>C.</b> 是否联网</button><button class="opt" data-k="D"><b>D.</b> 是否使用云</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-1-4" data-type="multi" data-explain="D 错：没有执行器无法闭环。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">11-1-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">关于 CPS，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 具有实时性、可靠性与异构集成特征</button><button class="opt" data-k="B"><b>B.</b> 强调数据与物理模型融合</button><button class="opt" data-k="C"><b>C.</b> 控制回路的实时计算通常放在边缘侧</button><button class="opt" data-k="D"><b>D.</b> CPS 不需要执行器</button><button class="opt" data-k="E"><b>E.</b> 应用层决策可回到执行器作用物理世界</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-1-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="传输/网络" data-answer-text="传输"><div class="qhead"><span class="chip">11-1-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">CPS 的典型分层包括感知层、________层、计算层和应用层。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：CPS 是物理与信息的闭环融合，分层实现"采集—传输—计算—控制"。</p>
+<p><strong>留一个问题</strong>：平台层要做"分析与决策"，背后靠什么技术？</p>
+<p>下一节讲人工智能。</p>
+<hr>
+<h2 id="sec2">第 2 节 人工智能技术</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：AI 的三大要素与关键技术分别是什么？在架构中哪一层落地？</p>
+</blockquote>
+<h3>一、AI 的三大要素</h3>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>数据</strong></td>
+<td>训练与推理的原料，质量决定上限</td>
+</tr>
+<tr>
+<td><strong>算法/模型</strong></td>
+<td>从数据中学习规律的方法</td>
+</tr>
+<tr>
+<td><strong>算力</strong></td>
+<td>训练与推理所需的计算资源（GPU/NPU/TPU）</td>
+</tr>
+</tbody>
+</table>
+<p>三者缺一不可：<strong>有数据没算力训练不出来，有算力没数据学不出东西，有数据算力但算法不对效果也上不去</strong>。</p>
+<h3>二、关键技术层次</h3>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>技术</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>基础层</strong></td>
+<td>芯片与算力、框架（训练/推理）、数据平台</td>
+</tr>
+<tr>
+<td><strong>算法层</strong></td>
+<td>机器学习（分类、回归、聚类）、深度学习（CNN/RNN/Transformer）、强化学习</td>
+</tr>
+<tr>
+<td><strong>应用层</strong></td>
+<td>计算机视觉、自然语言处理、语音、推荐、决策优化</td>
+</tr>
+</tbody>
+</table>
+<p>关键技术还包括：知识图谱、专家系统、智能搜索、自动规划等。</p>
+<h3>三、AI 在系统中的架构落点</h3>
+<ul>
+<li><strong>训练侧</strong>：数据平台 + 分布式训练 + 模型仓库；</li>
+<li><strong>推理侧</strong>：在线服务（低延迟）或离线批量（高吞吐）；</li>
+<li><strong>闭环</strong>：线上数据回流 → 再训练 → 灰度发布新模型。</li>
+</ul>
+<p>这个闭环正是 MLOps 的核心，也是"AI 原生应用"的架构特征。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么推荐/风控类系统常用"在线推理 + 离线训练"的组合？能不能都做成在线？</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：AI 能力落地）</strong> 某银行要做"交易反欺诈"，要求毫秒级判定、模型每周更新。请给出架构要点。</p>
+<p><em>解答</em>：<br>
+- <strong>在线推理</strong>：特征实时计算（近实时特征 + 用户画像），模型服务部署为高可用推理集群，保证毫秒级响应；<br>
+- <strong>离线训练</strong>：历史交易与标注样本在数据平台训练，产出新模型；<br>
+- <strong>模型管理</strong>：模型仓库 + 版本管理，支持灰度（先小流量验证再全量）；<br>
+- <strong>闭环</strong>：线上判定结果与人工复核结果回流，形成标注与再训练；<br>
+- <strong>可解释与合规</strong>：保留特征与决策依据，满足审计要求。</p>
+<p><em>点评</em>：AI 题的答题骨架是"<strong>训练侧—推理侧—闭环—治理</strong>"，而不是罗列算法名。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为 AI 项目主要靠算法。</strong><br>
+数据质量与工程闭环往往更决定成败。</p>
+<p><strong>误区二：认为模型上线即完成。</strong><br>
+没有回流与再训练，模型会随时间衰减。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 5 题（3 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="11-2-1" data-type="single" data-explain="三要素缺一不可。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">11-2-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">人工智能的三大要素是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数据、算法、算力</button><button class="opt" data-k="B"><b>B.</b> 硬件、软件、网络</button><button class="opt" data-k="C"><b>C.</b> 采集、存储、展示</button><button class="opt" data-k="D"><b>D.</b> 训练、推理、评估</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-2-2" data-type="single" data-explain="CV/NLP 是典型应用层。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">11-2-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">下列属于应用层 AI 技术的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 芯片与算力</button><button class="opt" data-k="B"><b>B.</b> 训练框架</button><button class="opt" data-k="C"><b>C.</b> 计算机视觉与自然语言处理</button><button class="opt" data-k="D"><b>D.</b> 分布式存储</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-2-3" data-type="single" data-explain="MLOps 是 AI 工程的闭环。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-2-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">把线上数据回流、再训练、灰度发布串起来的闭环通常称为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> DevOps</button><button class="opt" data-k="B"><b>B.</b> MLOps</button><button class="opt" data-k="C"><b>C.</b> ITIL</button><button class="opt" data-k="D"><b>D.</b> CMMI</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-2-4" data-type="multi" data-explain="D 错：模型会随时间衰减，需持续再训练。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">11-2-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">关于人工智能技术，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数据质量决定模型效果上限</button><button class="opt" data-k="B"><b>B.</b> 深度学习、强化学习属于算法层</button><button class="opt" data-k="C"><b>C.</b> 推理可在线（低延迟）或离线（高吞吐）</button><button class="opt" data-k="D"><b>D.</b> 模型上线后无需再训练</button><button class="opt" data-k="E"><b>E.</b> 模型更新可采用灰度发布降低风险</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-2-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="算法|算力" data-answer-text="算法、算力"><div class="qhead"><span class="chip">11-2-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">人工智能的三大要素是数据、和。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：AI 靠数据、算法、算力三要素，架构上分训练侧与推理侧，并需要回流闭环。</p>
+<p><strong>留一个问题</strong>：AI 与物理世界结合，就出现了"机器人"。机器人 4.0 的核心技术是什么？</p>
+<p>下一节讲机器人技术。</p>
+<hr>
+<h2 id="sec3">第 3 节 机器人技术</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：机器人 4.0 与传统机器人差别在哪？机器人怎么分类？</p>
+</blockquote>
+<h3>一、机器人的定义与演进</h3>
+<p>机器人是<strong>能半自主或全自主工作的机器</strong>，通过感知、决策、执行完成特定任务。</p>
+<p>演进可概括为：</p>
+<ul>
+<li><strong>1.0</strong>：示教再现（人教一遍，机器重复）；</li>
+<li><strong>2.0</strong>：传感反馈（能感知环境并调整）；</li>
+<li><strong>3.0</strong>：智能感知与自主决策（视觉、导航）；</li>
+<li><strong>4.0</strong>：<strong>云端协同 + 群体智能 + 人机协作</strong>，机器人成为"云—边—端"体系中的一环。</li>
+</ul>
+<h3>二、机器人 4.0 的核心技术</h3>
+<table>
+<thead>
+<tr>
+<th>技术</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>云-边-端协同</strong></td>
+<td>云端训练与调度，边缘实时控制</td>
+</tr>
+<tr>
+<td><strong>语义理解与知识图谱</strong></td>
+<td>理解任务与环境语义</td>
+</tr>
+<tr>
+<td><strong>多机协同/群体智能</strong></td>
+<td>多机器人协同作业</td>
+</tr>
+<tr>
+<td><strong>人机协作与安全</strong></td>
+<td>人机共处的安全感知与力控</td>
+</tr>
+<tr>
+<td><strong>数字孪生</strong></td>
+<td>虚拟仿真与预测性维护</td>
+</tr>
+<tr>
+<td><strong>自主学习</strong></td>
+<td>从示教与数据中持续学习</td>
+</tr>
+</tbody>
+</table>
+<h3>三、机器人的分类</h3>
+<p>按应用场景：<strong>工业机器人、服务机器人、特种机器人</strong>（军事、救援、核工业）。<br>
+按运动方式：轮式、履带式、足式、飞行、水下。<br>
+按智能程度：示教再现型、感知型、智能型。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"人机协作"对安全性要求远高于"人机隔离"？这会带来哪些架构约束？</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：协作机器人架构）</strong> 某工厂要部署协作机械臂，与人同工位作业，要求碰撞即停、任务可远程更新。请给出架构要点。</p>
+<p><em>解答</em>：<br>
+- <strong>端侧</strong>：力/力矩传感器 + 视觉，实现碰撞检测与柔顺控制，保证"碰撞即停"；<br>
+- <strong>边侧</strong>：实时运动规划与安全监控，时延敏感部分不下云；<br>
+- <strong>云侧</strong>：任务编排、技能库、模型训练与远程更新下发；<br>
+- <strong>安全机制</strong>：安全等级认证、急停回路、速度与力限制、人机共处区域划分；<br>
+- <strong>更新机制</strong>：远程更新需灰度与回滚。</p>
+<p><em>点评</em>：人机协作题的关键是"<strong>安全在端与边、智能在云</strong>"的分工。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为机器人 4.0 只是"加了 AI"。</strong><br>
+核心是云边端协同与群体智能。</p>
+<p><strong>误区二：认为远程更新可以随时全量推送。</strong><br>
+协作场景下更新失败即安全事故，必须灰度与回滚。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 5 题（3 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="11-3-1" data-type="single" data-explain="4.0 强调联网协同。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">11-3-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">机器人 4.0 的核心特征不包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 云-边-端协同</button><button class="opt" data-k="B"><b>B.</b> 群体智能</button><button class="opt" data-k="C"><b>C.</b> 人机协作</button><button class="opt" data-k="D"><b>D.</b> 完全脱离网络独立运行</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-3-2" data-type="single" data-explain="按场景分三类。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">11-3-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">按应用场景，机器人可分为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 工业、服务、特种机器人</button><button class="opt" data-k="B"><b>B.</b> 轮式、履带式、足式</button><button class="opt" data-k="C"><b>C.</b> 示教型、感知型、智能型</button><button class="opt" data-k="D"><b>D.</b> 大型、中型、小型</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-3-3" data-type="single" data-explain="力控是协作安全的基础。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-3-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">协作机器人实现"碰撞即停"主要依靠：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 云端分析</button><button class="opt" data-k="B"><b>B.</b> 力/力矩传感与柔顺控制</button><button class="opt" data-k="C"><b>C.</b> 数据库事务</button><button class="opt" data-k="D"><b>D.</b> 服务网格</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-3-4" data-type="multi" data-explain="D 错：实时控制必须在端/边。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">11-3-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">关于机器人技术，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 机器人 1.0 是示教再现</button><button class="opt" data-k="B"><b>B.</b> 数字孪生可用于机器人仿真与预测性维护</button><button class="opt" data-k="C"><b>C.</b> 人机协作场景对安全等级要求高</button><button class="opt" data-k="D"><b>D.</b> 实时控制通常放在云端</button><button class="opt" data-k="E"><b>E.</b> 远程更新需要灰度与回滚机制</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-3-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="智能" data-answer-text="智能"><div class="qhead"><span class="chip">11-3-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">机器人按智能程度可分为示教再现型、感知型和________型。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：机器人 4.0 是云边端协同 + 群体智能 + 人机协作，安全与实时性决定算力分工。</p>
+<p><strong>留一个问题</strong>：算力为什么要"下沉"到边缘？这与云原生"集中"的思路是否矛盾？</p>
+<p>下一节讲边缘计算。</p>
+<hr>
+<h2 id="sec4">第 4 节 边缘计算</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：边缘计算解决什么问题？"边云协同"怎么分工？</p>
+</blockquote>
+<h3>一、为什么需要边缘</h3>
+<p>云计算把算力集中，但带来了三个问题：</p>
+<ul>
+<li><strong>时延</strong>：数据往返云端，毫秒级控制做不到；</li>
+<li><strong>带宽</strong>：海量设备数据全量上传，成本高；</li>
+<li><strong>连续性</strong>：断网时业务中断。</li>
+</ul>
+<p><strong>边缘计算</strong>把计算能力下沉到靠近数据产生的地方（网关、基站、边缘机房），就近处理。</p>
+<h3>二、边缘计算的特点</h3>
+<table>
+<thead>
+<tr>
+<th>特点</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>低时延</strong></td>
+<td>就近处理，减少往返</td>
+</tr>
+<tr>
+<td><strong>带宽节省</strong></td>
+<td>本地过滤聚合，只上传关键数据</td>
+</tr>
+<tr>
+<td><strong>本地自治</strong></td>
+<td>断网可继续运行</td>
+</tr>
+<tr>
+<td><strong>位置感知</strong></td>
+<td>可利用本地上下文信息</td>
+</tr>
+<tr>
+<td><strong>分布式</strong></td>
+<td>节点多、运维复杂</td>
+</tr>
+</tbody>
+</table>
+<h3>三、边云协同的分工</h3>
+<table>
+<thead>
+<tr>
+<th>位置</th>
+<th>适合做什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>端</strong></td>
+<td>采集、执行、极简判断</td>
+</tr>
+<tr>
+<td><strong>边</strong></td>
+<td>实时计算、协议转换、本地缓存、安全网关</td>
+</tr>
+<tr>
+<td><strong>云</strong></td>
+<td>大数据分析、模型训练、全局调度、长期存储</td>
+</tr>
+</tbody>
+</table>
+<p>原则一句话：<strong>时延敏感与数据量大在边，全局优化与历史分析在云</strong>。</p>
+<h3>四、边缘安全</h3>
+<p>边缘节点分散、物理暴露，安全风险更高：设备被物理接触、固件被替换、边缘节点成为进入内网的跳板。</p>
+<p>对策：安全启动与固件签名、设备身份认证、传输加密、最小权限、边缘节点加固与远程审计。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：边缘节点数量可能是云的成百上千倍，这对运维与安全带来什么变化？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：边云分工）</strong> 某智慧园区有 5000 路摄像头，要做实时入侵检测、周报统计与模型持续优化。请分配计算位置。</p>
+<p><em>解答</em>：<br>
+- <strong>边</strong>：视频解码与实时推理（入侵检测），只上传告警片段与元数据，避免 5000 路上传带宽；<br>
+- <strong>云</strong>：汇总告警做周报统计、存储长期数据、训练与优化检测模型；<br>
+- <strong>回传</strong>：云端训练的新模型定期下发到边缘（灰度更新）；<br>
+- <strong>安全</strong>：边缘设备身份认证、固件签名、视频流加密。</p>
+<p><em>点评</em>：这题的判分点在"<strong>实时在边、统计与训练在云、模型下发闭环</strong>"。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为边缘计算取代云。</strong><br>
+二者是协同关系，云做全局、边做实时。</p>
+<p><strong>误区二：认为边缘只是"小型云"。</strong><br>
+边缘更强调自治、低功耗与物理安全。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 6 题（3 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="11-4-1" data-type="single" data-explain="边缘解决时延与带宽。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-4-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">把计算能力下沉到靠近数据产生处的模式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 云计算</button><button class="opt" data-k="B"><b>B.</b> 边缘计算</button><button class="opt" data-k="C"><b>C.</b> 分布式数据库</button><button class="opt" data-k="D"><b>D.</b> 服务网格</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-4-2" data-type="single" data-explain="全局分析仍是云的强项。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="D"><div class="qhead"><span class="chip">11-4-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">边缘计算的典型优势不包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 低时延</button><button class="opt" data-k="B"><b>B.</b> 节省带宽</button><button class="opt" data-k="C"><b>C.</b> 本地自治</button><button class="opt" data-k="D"><b>D.</b> 全局历史分析能力最强</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-4-3" data-type="single" data-explain="训练需算力与全量数据。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">11-4-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">边云协同中，模型训练通常放在：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 端侧</button><button class="opt" data-k="B"><b>B.</b> 边缘侧</button><button class="opt" data-k="C"><b>C.</b> 云端</button><button class="opt" data-k="D"><b>D.</b> 网关</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-4-4" data-type="multi" data-explain="D 错：边云协同而非取代。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">11-4-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">关于边缘计算，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 可降低时延与带宽成本</button><button class="opt" data-k="B"><b>B.</b> 断网时边缘可本地自治</button><button class="opt" data-k="C"><b>C.</b> 边缘节点分散，物理安全风险更高</button><button class="opt" data-k="D"><b>D.</b> 边缘完全取代云</button><button class="opt" data-k="E"><b>E.</b> 安全启动与固件签名是边缘安全手段</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-4-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="边缘/边|云" data-answer-text="边缘、云"><div class="qhead"><span class="chip">11-4-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">边云协同的基本原则是：时延敏感与数据量大的处理放在________，全局优化与历史分析放在________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="11-4-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="签名" data-answer-text="签名"><div class="qhead"><span class="chip">11-4-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">边缘节点安全常用手段包括安全启动、固件________与设备身份认证。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：边缘解决时延、带宽与连续性问题，与云形成"实时在边、全局在云"的分工。</p>
+<p><strong>留一个问题</strong>：物理世界与数字世界能不能做到"一模一样"地对应？</p>
+<p>下一节讲数字孪生与云计算大数据。</p>
+<hr>
+<h2 id="sec5">第 5 节 数字孪生与云计算大数据</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：数字孪生由哪几部分构成？云计算与大数据在架构上提供什么能力？</p>
+</blockquote>
+<h3>一、数字孪生体</h3>
+<p><strong>数字孪生（Digital Twin）</strong> 是物理实体的<strong>虚拟映射</strong>，通过实时数据同步，实现对物理实体的监控、仿真与预测。</p>
+<p>三个组成部分：</p>
+<table>
+<thead>
+<tr>
+<th>组成</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>物理实体</strong></td>
+<td>被映射的对象（设备、产线、建筑）</td>
+</tr>
+<tr>
+<td><strong>虚拟模型</strong></td>
+<td>几何、物理、行为、规则模型</td>
+</tr>
+<tr>
+<td><strong>数据与连接</strong></td>
+<td>实时数据采集与双向交互</td>
+</tr>
+</tbody>
+</table>
+<p><strong>关键技术</strong>：多物理场建模与仿真、数据采集与融合、模型标定与校准、可视化与交互。</p>
+<p>它与 CPS 的关系：<strong>CPS 强调闭环控制，数字孪生强调映射与仿真</strong>，实践中常结合使用（孪生体用于仿真优化，结果回到 CPS 执行）。</p>
+<h3>二、云计算的服务模式</h3>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>提供什么</th>
+<th>用户管什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>IaaS</strong></td>
+<td>计算、存储、网络</td>
+<td>操作系统及以上</td>
+</tr>
+<tr>
+<td><strong>PaaS</strong></td>
+<td>运行环境、中间件、数据库</td>
+<td>应用与数据</td>
+</tr>
+<tr>
+<td><strong>SaaS</strong></td>
+<td>完整应用</td>
+<td>只管使用</td>
+</tr>
+</tbody>
+</table>
+<p>另有 <strong>BaaS/FaaS</strong> 等细分形态（K9 的云原生）。</p>
+<h3>三、大数据技术栈的分层</h3>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>典型能力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>采集</strong></td>
+<td>日志采集、CDC、消息队列</td>
+</tr>
+<tr>
+<td><strong>存储</strong></td>
+<td>分布式文件系统、对象存储、列式存储、NoSQL</td>
+</tr>
+<tr>
+<td><strong>计算</strong></td>
+<td>批处理（MapReduce/Spark）、流处理（Flink/Storm）、交互式（OLAP）</td>
+</tr>
+<tr>
+<td><strong>调度与治理</strong></td>
+<td>工作流调度、元数据、数据质量、权限</td>
+</tr>
+</tbody>
+</table>
+<p>一个常考的判断题：<strong>Hadoop 生态以批处理为核心，Spark 用内存计算加速批处理，Flink 以流为核心</strong>。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么大数据系统普遍采用"分布式文件系统 + 计算向数据移动"的设计？</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：数据平台分层）</strong> 某企业要建数据平台，需求：实时看板、离线报表、历史明细查询、数据质量监控。请给出分层方案。</p>
+<p><em>解答</em>：<br>
+- <strong>采集层</strong>：业务库 CDC + 日志采集 → 消息队列（削峰、解耦）；<br>
+- <strong>存储层</strong>：明细入数据湖/对象存储（低成本、全量），热数据入列式存储/OLAP 引擎；<br>
+- <strong>计算层</strong>：实时看板走流处理（Flink），离线报表走批处理（Spark），明细查询走 OLAP；<br>
+- <strong>服务层</strong>：统一查询网关 + 指标口径管理；<br>
+- <strong>治理层</strong>：元数据、数据质量、权限与血缘。</p>
+<p><em>点评</em>：答题骨架是"<strong>采集—存储—计算—服务—治理</strong>"五层，并说明每层选型依据。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为数字孪生只是"3D 展示"。</strong><br>
+核心是模型 + 实时数据 + 仿真预测。</p>
+<p><strong>误区二：认为上云就是 IaaS。</strong><br>
+PaaS/SaaS 才是多数企业真正用得上的形态。</p>
+<p><strong>误区三：认为 Spark 完全取代 Hadoop。</strong><br>
+Hadoop 的存储（HDFS）与调度仍在广泛使用。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="11-5-1" data-type="single" data-explain="三者缺一不可。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">11-5-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">数字孪生体的三个组成部分是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 物理实体、虚拟模型、数据与连接</button><button class="opt" data-k="B"><b>B.</b> 采集、存储、计算</button><button class="opt" data-k="C"><b>C.</b> 端、边、云</button><button class="opt" data-k="D"><b>D.</b> 需求、设计、实现</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-5-2" data-type="single" data-explain="PaaS 托管运行环境。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-5-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">提供运行环境、中间件与数据库，用户只需管理应用与数据的云服务模式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> IaaS</button><button class="opt" data-k="B"><b>B.</b> PaaS</button><button class="opt" data-k="C"><b>C.</b> SaaS</button><button class="opt" data-k="D"><b>D.</b> FaaS</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-5-3" data-type="single" data-explain="Flink 以流为核心。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">11-5-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">以流处理为核心的大数据计算框架是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> HDFS</button><button class="opt" data-k="B"><b>B.</b> MapReduce</button><button class="opt" data-k="C"><b>C.</b> Flink</button><button class="opt" data-k="D"><b>D.</b> Hive</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-5-4" data-type="single" data-explain="实践中常结合使用。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-5-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">数字孪生与 CPS 的关系是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 完全等同</button><button class="opt" data-k="B"><b>B.</b> CPS 强调闭环控制，数字孪生强调映射与仿真</button><button class="opt" data-k="C"><b>C.</b> 数字孪生取代 CPS</button><button class="opt" data-k="D"><b>D.</b> 二者无关</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-5-5" data-type="multi" data-explain="E 错：核心是模型 + 数据 + 仿真。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">11-5-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">关于数字孪生与云计算大数据，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数字孪生需要实时数据同步</button><button class="opt" data-k="B"><b>B.</b> 关键技术含多物理场建模、模型标定与可视化</button><button class="opt" data-k="C"><b>C.</b> IaaS 用户需管理操作系统及以上</button><button class="opt" data-k="D"><b>D.</b> 大数据技术栈含采集、存储、计算、调度与治理</button><button class="opt" data-k="E"><b>E.</b> 数字孪生就是三维可视化展示</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-5-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="paas" data-answer-text="PaaS"><div class="qhead"><span class="chip">11-5-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">云计算三种基本服务模式是 IaaS、________和 SaaS。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：数字孪生是"物理实体的虚拟映射 + 实时数据 + 仿真"，云与大数据提供承载与计算能力。</p>
+<p><strong>留一个问题</strong>：批处理与流处理能不能统一到一套架构里？</p>
+<p>下一节讲 Lambda 与 Kappa。</p>
+<hr>
+<h2 id="sec6">第 6 节 Lambda 与 Kappa 架构</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：Lambda 的三层是什么？Kappa 为什么只需要一层？两者怎么选？</p>
+</blockquote>
+<h3>一、大数据处理系统面临的挑战</h3>
+<ul>
+<li><strong>数据量大且增长快</strong>：单机存不下、算不完；</li>
+<li><strong>类型多样</strong>：结构化、半结构化、非结构化；</li>
+<li><strong>实时性要求分化</strong>：有的要秒级，有的可 T+1；</li>
+<li><strong>一致性要求</strong>：批与流的结果要对得上。</li>
+</ul>
+<p>架构特征相应是：<strong>分布式存储、计算向数据移动、批流并存、水平扩展</strong>。</p>
+<h3>二、Lambda 架构：三层并存</h3>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>作用</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>批处理层（Batch Layer）</strong></td>
+<td>全量数据处理，生成批视图</td>
+<td>准确、延迟高</td>
+</tr>
+<tr>
+<td><strong>速度层（Speed Layer）</strong></td>
+<td>实时处理增量数据，生成实时视图</td>
+<td>低延迟、可能不精确</td>
+</tr>
+<tr>
+<td><strong>服务层（Serving Layer）</strong></td>
+<td>合并批视图与实时视图对外提供查询</td>
+<td>统一查询入口</td>
+</tr>
+</tbody>
+</table>
+<p>核心思想：<strong>用批处理保证准确性，用流处理保证实时性，查询时把两者合并</strong>。</p>
+<p>优点：兼顾准确与实时，实现相对成熟。<br>
+缺点：</p>
+<ul>
+<li><strong>两套代码</strong>（批与流各写一遍），维护成本高；</li>
+<li><strong>结果需对账</strong>，两套逻辑容易不一致；</li>
+<li>资源占用高（两套系统并行）。</li>
+</ul>
+<h3>三、Kappa 架构：只保留流</h3>
+<p>Kappa 的核心主张是：<strong>所有数据都当作流处理</strong>，批处理只是"流的重放"。</p>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>做法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据通道</td>
+<td>只有一条：消息队列（可持久化、可重放）</td>
+</tr>
+<tr>
+<td>计算</td>
+<td>只用流处理引擎</td>
+</tr>
+<tr>
+<td>重算历史</td>
+<td>从队列重放数据，用同一套代码重新计算</td>
+</tr>
+<tr>
+<td>输出</td>
+<td>结果写入服务层存储</td>
+</tr>
+</tbody>
+</table>
+<p>优点：<strong>一套代码、逻辑一致</strong>，无批流对账问题。<br>
+缺点：</p>
+<ul>
+<li>依赖<strong>消息队列的长期存储能力</strong>（要能重放历史）；</li>
+<li>全量重放成本高（数据量大时耗时）；</li>
+<li>流处理引擎要能承受批量的历史回放。</li>
+</ul>
+<blockquote>
+<p><strong>想一想 ①</strong>：如果消息队列只保留 7 天数据，Kappa 架构还能用吗？会退化成什么？</p>
+</blockquote>
+<h3>四、两者对比与选型</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Lambda</th>
+<th>Kappa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>处理路径</td>
+<td>批 + 流两条</td>
+<td>只有流一条</td>
+</tr>
+<tr>
+<td>代码</td>
+<td>两套，需对账</td>
+<td>一套，一致性好</td>
+</tr>
+<tr>
+<td>实时性</td>
+<td>好</td>
+<td>好</td>
+</tr>
+<tr>
+<td>历史重算</td>
+<td>批处理天然支持</td>
+<td>依赖消息重放</td>
+</tr>
+<tr>
+<td>运维复杂度</td>
+<td>高（两套系统）</td>
+<td>较低（一套），但依赖消息存储</td>
+</tr>
+<tr>
+<td>适用</td>
+<td>历史数据大、批处理成熟</td>
+<td>实时为主、逻辑需统一</td>
+</tr>
+</tbody>
+</table>
+<p>选型判据：</p>
+<ul>
+<li>已有成熟批处理体系、历史数据量巨大 → <strong>Lambda</strong>；</li>
+<li>新建、以实时为主、追求逻辑统一 → <strong>Kappa</strong>；</li>
+<li>实际工程中还有 <strong>Delta 架构</strong>等折中（数据湖 + 流批一体），核心思路仍是"减少两套逻辑"。</li>
+</ul>
+<h3>五、例题精解</h3>
+<p><strong>例（工程选型：批还是流）</strong> 某平台要做"实时风控 + 每日全量对账"，数据保留 30 天，团队已有成熟的 Spark 批处理体系。请选型并说明理由。</p>
+<p><em>解答</em>：<br>
+- <strong>选 Lambda</strong>：实时风控走速度层（流处理），每日对账走批处理层，服务层合并；<br>
+- 理由：已有成熟批处理体系（复用成本低）、对账要求批的准确性、历史数据量大不适合频繁重放；<br>
+- 代价：两套逻辑需对账，需建立"批流结果比对"机制防止口径漂移；<br>
+- 若后续希望统一逻辑，可逐步把实时链路做成主链路，向 Kappa/流批一体演进。</p>
+<p><em>点评</em>：选型不是比架构优劣，而是比"<strong>现有资产 + 数据规模 + 一致性要求</strong>"。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为 Kappa 全面优于 Lambda。</strong><br>
+Kappa 依赖消息长期存储，全量重放成本可能很高。</p>
+<p><strong>误区二：认为 Lambda 的批与流可以不同逻辑。</strong><br>
+两套逻辑必须口径一致，否则结果对不上。</p>
+<p><strong>误区三：认为流处理不能保证准确。</strong><br>
+配合幂等、去重与状态管理，流处理也能做到精确一次。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="11-6-1" data-type="single" data-explain="批 + 速度 + 服务。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-6-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">Lambda 架构的三层是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 采集层、存储层、服务层</button><button class="opt" data-k="B"><b>B.</b> 批处理层、速度层、服务层</button><button class="opt" data-k="C"><b>C.</b> 端、边、云</button><button class="opt" data-k="D"><b>D.</b> 感知层、传输层、应用层</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-6-2" data-type="single" data-explain="速度层保实时。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-6-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">Lambda 架构中负责实时处理增量数据的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 批处理层</button><button class="opt" data-k="B"><b>B.</b> 速度层</button><button class="opt" data-k="C"><b>C.</b> 服务层</button><button class="opt" data-k="D"><b>D.</b> 存储层</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-6-3" data-type="single" data-explain="单流统一逻辑。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-6-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">Kappa 架构的核心主张是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 只做批处理</button><button class="opt" data-k="B"><b>B.</b> 所有数据都当作流处理，批是流的重放</button><button class="opt" data-k="C"><b>C.</b> 不需要消息队列</button><button class="opt" data-k="D"><b>D.</b> 取消服务层</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-6-4" data-type="single" data-explain="队列存不下历史就退化了。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-6-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">Kappa 架构的主要限制是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 不能实时</button><button class="opt" data-k="B"><b>B.</b> 依赖消息队列长期存储与重放能力</button><button class="opt" data-k="C"><b>C.</b> 必须两套代码</button><button class="opt" data-k="D"><b>D.</b> 无法水平扩展</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-6-5" data-type="single" data-explain="两套逻辑易漂移。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-6-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">Lambda 架构最典型的缺点是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 不能处理历史数据</button><button class="opt" data-k="B"><b>B.</b> 批流两套代码，维护成本高且需对账</button><button class="opt" data-k="C"><b>C.</b> 无法实时</button><button class="opt" data-k="D"><b>D.</b> 不能扩展</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-6-6" data-type="multi" data-explain="E 错：Kappa 强依赖消息存储与重放。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">11-6-6</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">关于 Lambda 与 Kappa，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> Lambda 用批处理保证准确性、流处理保证实时性</button><button class="opt" data-k="B"><b>B.</b> Kappa 只有一条流处理路径，代码统一</button><button class="opt" data-k="C"><b>C.</b> Lambda 需要批流结果对账</button><button class="opt" data-k="D"><b>D.</b> Kappa 全量重放历史的成本可能很高</button><button class="opt" data-k="E"><b>E.</b> Kappa 完全不需要考虑消息存储</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-6-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="速度|服务" data-answer-text="速度、服务"><div class="qhead"><span class="chip">11-6-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">Lambda 架构的三层是批处理层、________层和________层。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="11-6-8" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="重放/回放" data-answer-text="重放"><div class="qhead"><span class="chip">11-6-8</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">Kappa 架构中，重算历史数据的方式是从消息队列________数据。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：Lambda 批流并存保准确与实时，Kappa 单流统一逻辑但依赖重放；选型看现有资产、数据规模与一致性要求。</p>
+<hr>
+<h2 id="sec7">第 7 节 检索增强生成（RAG）</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：大模型不知道企业私有知识，怎么让它"查着资料回答"？</p>
+</blockquote>
+<h3>一、大模型的三个先天不足</h3>
+<table>
+<thead>
+<tr>
+<th>不足</th>
+<th>表现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>知识截止</strong></td>
+<td>训练数据有时间边界，新政策、新制度不知道</td>
+</tr>
+<tr>
+<td><strong>私有知识缺失</strong></td>
+<td>企业内部文档从未进入训练集</td>
+</tr>
+<tr>
+<td><strong>幻觉</strong></td>
+<td>不知道时会"编"一个看起来合理的答案</td>
+</tr>
+</tbody>
+</table>
+<p><strong>RAG（Retrieval-Augmented Generation，检索增强生成）</strong> 的思路很直接：<strong>回答前先检索，把检索到的资料放进 prompt，让模型基于资料回答</strong>。</p>
+<p>一句话：<strong>把"凭记忆答"改成"开卷答"</strong>。</p>
+<h3>二、完整链路</h3>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>步骤</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>离线建库</strong></td>
+<td>文档解析 → 切片（chunk）→ 向量化 → 建索引 → 存元数据</td>
+</tr>
+<tr>
+<td><strong>在线查询</strong></td>
+<td>查询改写 → 召回（向量 + 关键词）→ 重排 → 拼装上下文 → 生成 → 附引用</td>
+</tr>
+</tbody>
+</table>
+<p>关键环节的技术选择：</p>
+<ul>
+<li><strong>切片</strong>：按语义/标题切，控制长度（太长稀释、太短丢上下文），保留重叠；</li>
+<li><strong>召回</strong>：<strong>混合检索</strong>（向量 + BM25）兼顾语义与专有名词；</li>
+<li><strong>重排</strong>：用 Cross-Encoder 对 Top-K 重排，显著提升精度；</li>
+<li><strong>上下文</strong>：控制 token 预算，按相关度排序，标注来源。</li>
+</ul>
+<h3>三、RAG 与微调怎么选</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>RAG</th>
+<th>微调</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>知识更新</td>
+<td>改文档即可，实时</td>
+<td>需重新训练</td>
+</tr>
+<tr>
+<td>可溯源</td>
+<td>能给出引用来源</td>
+<td>难以溯源</td>
+</tr>
+<tr>
+<td>适合</td>
+<td>事实型、知识密集型问答</td>
+<td>风格、格式、特定任务能力</td>
+</tr>
+<tr>
+<td>成本</td>
+<td>检索与向量化成本</td>
+<td>训练与标注成本</td>
+</tr>
+</tbody>
+</table>
+<p>实践中多<strong>组合使用</strong>：微调教"怎么说"，RAG 保证"说得对"。</p>
+<h3>四、效果怎么评</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>衡量什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>召回率（Recall@K）</strong></td>
+<td>正确片段有没有被检索到</td>
+</tr>
+<tr>
+<td><strong>精确率 / 上下文相关性</strong></td>
+<td>检索到的片段是否相关</td>
+</tr>
+<tr>
+<td><strong>忠实度（Faithfulness）</strong></td>
+<td>回答是否忠于检索内容（而不是编）</td>
+</tr>
+<tr>
+<td><strong>答案相关性</strong></td>
+<td>回答是否切题</td>
+</tr>
+<tr>
+<td><strong>拒答率</strong></td>
+<td>无资料时是否正确说"不知道"</td>
+</tr>
+</tbody>
+</table>
+<p><strong>最容易忽略的是召回率</strong>：检索不到，后面再好的模型也只能编。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：如果召回率很高但忠实度很低，问题出在链路哪一段？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：企业知识问答）</strong> 某企业要把 5 万份制度文档做成问答系统，要求答案可溯源、不能编造。请给出 RAG 方案与治理点。</p>
+<p>*解答**：<br>
+- <strong>切片</strong>：按章节标题切分，每片 500—800 字并保留重叠，附带条款号与文档 ID 元数据；<br>
+- <strong>索引</strong>：向量索引 + 关键词索引双路，支持按部门/有效期过滤；<br>
+- <strong>召回与重排</strong>：混合召回 Top-50 → Cross-Encoder 重排取 Top-5；<br>
+- <strong>生成约束</strong>：prompt 明确"仅依据给定资料回答，无依据则回答不知道"，并要求给出条款编号；<br>
+- <strong>溯源</strong>：回答附文档名 + 条款号，前端可跳转原文；<br>
+- <strong>评估与运维</strong>：建评测集定期测召回率与忠实度；文档更新触发重新切片入库。</p>
+<p><em>点评</em>：RAG 题的得分点在"<strong>切片策略 + 混合召回 + 重排 + 约束生成 + 评估闭环</strong>"，只说"用向量库检索"是不够的。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为 RAG 能消除幻觉。</strong><br>
+它降低幻觉，但模型仍可能误读或过度概括，需要约束与校验。</p>
+<p><strong>误区二：只做向量召回。</strong><br>
+专有名词、编号类查询用关键词召回更准。</p>
+<p><strong>误区三：忽视切片质量。</strong><br>
+切片不当会让召回与生成双输。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 5 题（3 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="11-7-1" data-type="single" data-explain="把“凭记忆答”改成“开卷答”。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-7-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">RAG 的核心思路是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 重新训练模型</button><button class="opt" data-k="B"><b>B.</b> 回答前先检索资料，让模型基于资料生成</button><button class="opt" data-k="C"><b>C.</b> 增大模型参数</button><button class="opt" data-k="D"><b>D.</b> 提高解码温度</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-7-2" data-type="single" data-explain="检索不到，后面再好也只能编。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-7-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">RAG 中最容易被忽略、但决定上限的环节是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 生成</button><button class="opt" data-k="B"><b>B.</b> 召回</button><button class="opt" data-k="C"><b>C.</b> 排版</button><button class="opt" data-k="D"><b>D.</b> 前端</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-7-3" data-type="single" data-explain="Faithfulness。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-7-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">衡量"回答是否忠于检索内容"的指标是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 召回率</button><button class="opt" data-k="B"><b>B.</b> 忠实度</button><button class="opt" data-k="C"><b>C.</b> 吞吐量</button><button class="opt" data-k="D"><b>D.</b> 时延</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-7-4" data-type="multi" data-explain="C 错：RAG 降低而非消除幻觉。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABDE"><div class="qhead"><span class="chip">11-7-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">关于 RAG，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 混合检索可兼顾语义与专有名词</button><button class="opt" data-k="B"><b>B.</b> 重排可显著提升检索精度</button><button class="opt" data-k="C"><b>C.</b> RAG 完全消除幻觉</button><button class="opt" data-k="D"><b>D.</b> 文档更新后需重新切片与建库</button><button class="opt" data-k="E"><b>E.</b> 应保留元数据以支持过滤与溯源</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-7-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="重排" data-answer-text="重排"><div class="qhead"><span class="chip">11-7-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">RAG 的完整链路是：切片、向量化、建索引、召回、________、生成。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：RAG 用"检索 + 约束生成"把大模型从"凭记忆"改成"开卷"，效果取决于切片、召回与重排，并需评测集持续验证。</p>
+<p><strong>留一个问题</strong>：即便有检索，模型还是会"编"——幻觉到底怎么治理？</p>
+<p>下一节展开。</p>
+<hr>
+<h2 id="sec8">第 8 节 大模型幻觉与治理</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：幻觉有哪些类型、成因是什么？知识问答系统里怎么系统治理？</p>
+</blockquote>
+<h3>一、两类幻觉</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>表现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>事实性幻觉</strong></td>
+<td>编造不存在的事实（人名、条款、数字、引用）</td>
+</tr>
+<tr>
+<td><strong>忠实性幻觉</strong></td>
+<td>与给定上下文矛盾（资料里有 A，它答成 B）</td>
+</tr>
+</tbody>
+</table>
+<p>对知识问答系统，<strong>忠实性幻觉更危险</strong>——它看起来有依据，实际上把资料读错了。</p>
+<h3>二、成因</h3>
+<ul>
+<li><strong>训练阶段</strong>：语料有噪声、知识有截止；</li>
+<li><strong>解码阶段</strong>：按概率生成下一个 token，<strong>倾向于"流畅"而非"正确"</strong>；</li>
+<li><strong>上下文阶段</strong>：检索资料缺失、过长被截断、位置不佳被忽略；</li>
+<li><strong>提示阶段</strong>：问题含糊、约束不明确、没有要求引用。</li>
+</ul>
+<p>理解成因很重要：<strong>幻觉不是"模型坏了"，而是生成机制的固有倾向</strong>，所以治理要分环节下手。</p>
+<h3>三、治理手段（分层）</h3>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>手段</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>检索层</strong></td>
+<td>提高召回与切片质量、混合检索、重排、时效性校验</td>
+</tr>
+<tr>
+<td><strong>提示层</strong></td>
+<td>限定"仅依据资料回答"、要求引用来源、结构化输出、Few-shot 示范</td>
+</tr>
+<tr>
+<td><strong>生成层</strong></td>
+<td>降低温度、Self-Consistency（多次采样投票）、分步推理</td>
+</tr>
+<tr>
+<td><strong>校验层</strong></td>
+<td>输出与检索内容一致性校验、规则/事实库核对、模型判别（LLM-as-judge）</td>
+</tr>
+<tr>
+<td><strong>兜底层</strong></td>
+<td>置信度阈值与<strong>拒答</strong>、高风险场景<strong>人工审核</strong>、留痕与反馈</td>
+</tr>
+<tr>
+<td><strong>运维层</strong></td>
+<td>知识库维护与更新、评测集回归、badcase 闭环</td>
+</tr>
+</tbody>
+</table>
+<p><strong>拒答能力是常被忽略的一环</strong>：宁可说"资料中未找到"，也不要编一个。评测时要专门测"无答案场景"下的表现。</p>
+<h3>四、知识问答系统的落地组合</h3>
+<blockquote>
+<p>高质量切片 → 混合召回 → 重排 → 强约束 prompt（含引用要求）→ 低温度生成 → 一致性校验 → 置信度不足转人工 → badcase 回流知识库</p>
+</blockquote>
+<p>只上 RAG 不做校验与拒答，是常见的不及格答案。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"要求模型给出引用"能降低幻觉？如果它给了引用但引用不支持结论，说明什么？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：制度问答幻觉治理）</strong> 系统上线后出现三类问题：① 编造条款号；② 资料里有但答反了；③ 无相关资料时强行作答。请分别给出治理措施。</p>
+<p>*解答<strong>：<br>
+- ① <strong>编造条款号</strong> → 提示层要求"引用必须来自检索片段"，生成后做</strong>引用校验<strong>（条款号是否存在于本次检索上下文），不存在则重生成或拒答；<br>
+- ② <strong>答反/误读</strong> → 提高切片质量（保证条款完整）、重排提高相关性、降温度、加 Self-Consistency 交叉验证；<br>
+- ③ <strong>强行作答</strong> → 设置</strong>置信度阈值<strong>与</strong>拒答模板**，评测集加入"无答案"样本，把拒答率纳入指标；<br>
+- 共性措施：badcase 回流、知识库定期维护、关键场景人工审核。</p>
+<p><em>点评</em>：这题的骨架是"<strong>按症状定位到治理层</strong>"，而不是把所有手段列一遍。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为上了 RAG 就不会幻觉。</strong><br>
+检索到错误片段，幻觉会更"有依据"。</p>
+<p><strong>误区二：只调提示词。</strong><br>
+提示词能改善，但校验与拒答缺一不可。</p>
+<p><strong>误区三：不敢让模型拒答。</strong><br>
+拒答是能力，不是缺陷。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 5 题（3 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="11-8-1" data-type="single" data-explain="看起来有依据，其实读反了。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-8-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">与给定上下文矛盾、把资料读错的幻觉属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 事实性幻觉</button><button class="opt" data-k="B"><b>B.</b> 忠实性幻觉</button><button class="opt" data-k="C"><b>C.</b> 语法错误</button><button class="opt" data-k="D"><b>D.</b> 性能问题</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-8-2" data-type="single" data-explain="生成机制决定它偏爱流畅表达。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-8-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">大模型产生幻觉的机制性原因是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 参数太少</button><button class="opt" data-k="B"><b>B.</b> 按概率生成，倾向流畅而非正确</button><button class="opt" data-k="C"><b>C.</b> 没有 GPU</button><button class="opt" data-k="D"><b>D.</b> 没有数据库</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-8-3" data-type="single" data-explain="拒答是能力不是缺陷。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-8-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">在知识问答中最应被纳入指标、却常被忽略的能力是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 打字速度</button><button class="opt" data-k="B"><b>B.</b> 拒答（无依据时说不知道）</button><button class="opt" data-k="C"><b>C.</b> 界面美观</button><button class="opt" data-k="D"><b>D.</b> 并发数</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-8-4" data-type="multi" data-explain="D 错：高温增加随机性，幻觉更多。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">11-8-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">治理大模型幻觉的常用手段包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 提高检索召回与切片质量</button><button class="opt" data-k="B"><b>B.</b> 提示中限定仅依据资料回答并要求引用</button><button class="opt" data-k="C"><b>C.</b> 输出与检索内容的一致性校验</button><button class="opt" data-k="D"><b>D.</b> 提高生成温度以增加多样性</button><button class="opt" data-k="E"><b>E.</b> 高风险场景人工审核</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-8-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="引用" data-answer-text="引用"><div class="qhead"><span class="chip">11-8-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">要求模型给出引用后，还需做________校验，确认引用确实存在于本次检索上下文。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：幻觉分事实性与忠实性两类，成因贯穿训练、解码、上下文与提示；治理要分层，并重视拒答与校验。</p>
+<p><strong>留一个问题</strong>：海量原始数据要既能存原始格式、又能高效分析，怎么组织？</p>
+<p>下一节讲数据湖。</p>
+<hr>
+<h2 id="sec9">第 9 节 数据湖与湖仓一体</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：数据湖与数据仓库差在哪？为什么很多数据湖最后变成了"数据沼泽"？</p>
+</blockquote>
+<h3>一、两种存储理念</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>数据仓库</th>
+<th>数据湖</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据形态</td>
+<td>结构化、清洗后</td>
+<td>原始格式（日志、JSON、图片、音视频）</td>
+</tr>
+<tr>
+<td>写入模式</td>
+<td><strong>写时模式</strong>（schema-on-write）</td>
+<td><strong>读时模式</strong>（schema-on-read）</td>
+</tr>
+<tr>
+<td>成本</td>
+<td>较高（专用存储与计算）</td>
+<td>低（对象存储）</td>
+</tr>
+<tr>
+<td>使用者</td>
+<td>分析师、BI</td>
+<td>数据科学家、算法团队</td>
+</tr>
+<tr>
+<td>风险</td>
+<td>建模周期长、应对新数据慢</td>
+<td><strong>容易变成数据沼泽</strong></td>
+</tr>
+</tbody>
+</table>
+<p>一句话：<strong>数仓是"先建模再存"，数据湖是"先存着，用的时候再解释"。</strong></p>
+<h3>二、数据湖的典型分层</h3>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>存什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ODS（原始层）</strong></td>
+<td>原样接入的原始数据，可追溯</td>
+</tr>
+<tr>
+<td><strong>DWD（明细层）</strong></td>
+<td>清洗、去重、标准化后的明细</td>
+</tr>
+<tr>
+<td><strong>DWS（汇总层）</strong></td>
+<td>按主题/维度聚合的宽表</td>
+</tr>
+<tr>
+<td><strong>ADS（应用层）</strong></td>
+<td>面向报表、接口的结果数据</td>
+</tr>
+</tbody>
+</table>
+<p>分层的意义：<strong>原始层保真、明细层规范、汇总层提效、应用层对齐业务</strong>。</p>
+<h3>三、"数据沼泽"的成因</h3>
+<p>把数据扔进对象存储不等于建好了湖。常见失败原因：</p>
+<ul>
+<li><strong>无元数据与目录</strong>：不知道有什么数据、谁负责、什么含义；</li>
+<li><strong>无质量与血缘</strong>：数据错了没人知道，出了问题查不到来源；</li>
+<li><strong>小文件过多</strong>：查询性能极差；</li>
+<li><strong>无权限治理</strong>：敏感数据裸奔；</li>
+<li><strong>只写不读</strong>：存了一堆没人用。</li>
+</ul>
+<h3>四、湖仓一体</h3>
+<p><strong>湖仓一体（Lakehouse）</strong> 试图兼得两者：</p>
+<blockquote>
+<p><strong>用数据湖的低成本存储 + 数据仓库的管理能力（ACID、元数据、索引、权限）</strong></p>
+</blockquote>
+<p>核心技术支撑是<strong>开放表格式</strong>（如 Iceberg、Hudi、Delta Lake），在对象存储之上提供事务、时间旅行、schema 演进与高效查询。</p>
+<p>收益：一份数据同时支撑 BI 分析与机器学习，减少"湖里一份、仓里一份"的重复搬运。</p>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：数据湖建设）</strong> 某企业有日志、业务库、埋点、图片四类数据，要同时支撑报表与算法训练。请给出数据湖架构与治理要点。</p>
+<p>*解答**：<br>
+- <strong>存储</strong>：对象存储作为统一底座，原始数据按"来源/日期"分区，避免小文件；<br>
+- <strong>分层</strong>：ODS 原样接入（保留原始格式）→ DWD 清洗标准化 → DWS 主题汇总 → ADS 报表结果；<br>
+- <strong>表格式</strong>：采用湖仓一体表格式，提供 ACID 与 schema 演进，支持时间旅行回溯；<br>
+- <strong>元数据与血缘</strong>：统一数据目录，登记责任人、口径、更新频率与血缘；<br>
+- <strong>计算</strong>：批处理做明细加工，交互式引擎服务报表，算法团队直接读 DWD/DWS；<br>
+- <strong>治理</strong>：数据质量规则、敏感字段分级与脱敏、生命周期与冷热分层。</p>
+<p><em>点评</em>：数据湖题的得分点是"<strong>分层 + 元数据/血缘 + 表格式 + 治理</strong>"，缺了后三项就是沼泽。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为数据湖就是把数据扔进对象存储。</strong><br>
+没有元数据与治理的湖必然沼泽化。</p>
+<p><strong>误区二：认为湖仓一体等于"湖 + 仓两套系统"。</strong><br>
+它的目标恰恰是<strong>一份存储、多种 workload</strong>。</p>
+<p><strong>误区三：忽视小文件问题。</strong><br>
+小文件会让查询慢一个数量级。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 5 题（3 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="11-9-1" data-type="single" data-explain="schema-on-read。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-9-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">"先存原始数据、使用时再解释结构"的模式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 写时模式</button><button class="opt" data-k="B"><b>B.</b> 读时模式</button><button class="opt" data-k="C"><b>C.</b> 星型模型</button><button class="opt" data-k="D"><b>D.</b> 雪花模型</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-9-2" data-type="single" data-explain="原始层保真。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="A"><div class="qhead"><span class="chip">11-9-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">数据湖分层中，保留原样接入数据、便于追溯的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> ODS 原始层</button><button class="opt" data-k="B"><b>B.</b> DWD 明细层</button><button class="opt" data-k="C"><b>C.</b> DWS 汇总层</button><button class="opt" data-k="D"><b>D.</b> ADS 应用层</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-9-3" data-type="single" data-explain="没治理的湖必然沼泽化。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11-9-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">数据湖"沼泽化"的最主要原因是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 存储太便宜</button><button class="opt" data-k="B"><b>B.</b> 缺少元数据、血缘与治理</button><button class="opt" data-k="C"><b>C.</b> 计算能力不足</button><button class="opt" data-k="D"><b>D.</b> 数据量太大</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-9-4" data-type="multi" data-explain="D 错：目标是一份存储多种负载。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">11-9-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">关于数据湖与湖仓一体，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数据湖多采用读时模式</button><button class="opt" data-k="B"><b>B.</b> 数据仓库多采用写时模式</button><button class="opt" data-k="C"><b>C.</b> 湖仓一体用低成本存储承载仓库级管理能力</button><button class="opt" data-k="D"><b>D.</b> 湖仓一体要求湖与仓各存一份数据</button><button class="opt" data-k="E"><b>E.</b> 开放表格式可提供 ACID 与 schema 演进</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-9-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ads/应用" data-answer-text="ADS"><div class="qhead"><span class="chip">11-9-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">数据湖分层通常为 ODS、DWD、DWS 和________四层。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>十、小结与衔接</h3>
+<p>本节回答：数据湖先存后解、成本低但易沼泽化；湖仓一体用开放表格式在湖上补齐事务与治理。</p>
+<h2 id="sec10">本章总复习</h2>
+<h3>一、这一章的主线</h3>
+<p>最后一章回答的是"数据量爆炸与算力下沉带来的新架构形态"。九节分两条线：前六节是技术底座——CPS、人工智能、机器人、边缘计算、数字孪生与云、Lambda/Kappa 大数据架构；后三节是 AI 时代的新问题——RAG、大模型幻觉治理、数据湖与湖仓一体。</p>
+<h3>二、必须能说出的判断</h3>
+<ul>
+<li><strong>CPS 与物联网的差别在"闭环"</strong>——决策要能回到执行器作用于物理世界；</li>
+<li><strong>边云分工</strong>：时延敏感与数据量大在边，全局优化与历史分析在云；</li>
+<li><strong>Lambda 用批保准确、流保实时，代价是两套代码要对账</strong>；Kappa 单流统一，但依赖消息可重放；</li>
+<li><strong>RAG 的上限在召回</strong>，检索不到，再好的模型也只能编；</li>
+<li><strong>幻觉要靠分层治理</strong>，拒答是能力不是缺陷；</li>
+<li><strong>数据湖没有元数据与治理就必然沼泽化</strong>，湖仓一体补的正是这层管理能力。</li>
+</ul>
+<h3>三、跨节综合自测（8 题）</h3>
+<div class="quiz" data-id="11综-1" data-type="single" data-explain="CPS 强调决策回到执行器。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11综-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">CPS 与物联网的关键区别是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 是否使用传感器</button><button class="opt" data-k="B"><b>B.</b> 是否形成闭环控制并影响物理过程</button><button class="opt" data-k="C"><b>C.</b> 是否联网</button><button class="opt" data-k="D"><b>D.</b> 是否使用云</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11综-2" data-type="single" data-explain="时延敏感在边，全局优化在云。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11综-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">关于边云分工，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 训练与全局分析在边，实时控制在云</button><button class="opt" data-k="B"><b>B.</b> 实时控制在边，训练与全局分析在云</button><button class="opt" data-k="C"><b>C.</b> 全部放云</button><button class="opt" data-k="D"><b>D.</b> 全部放边</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11综-3" data-type="multi" data-explain="E 错：两套代码正是 Lambda 的代价。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">11综-3</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">关于 Lambda 架构，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 批处理层保证准确性</button><button class="opt" data-k="B"><b>B.</b> 速度层保证实时性</button><button class="opt" data-k="C"><b>C.</b> 服务层合并两类视图对外提供查询</button><button class="opt" data-k="D"><b>D.</b> 批流两套代码需要对账</button><button class="opt" data-k="E"><b>E.</b> 只需一套代码即可实现</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11综-4" data-type="single" data-explain="存不下历史就无法重算。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11综-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">Kappa 架构的主要限制是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 不能实时</button><button class="opt" data-k="B"><b>B.</b> 依赖消息队列长期存储与重放能力</button><button class="opt" data-k="C"><b>C.</b> 必须两套代码</button><button class="opt" data-k="D"><b>D.</b> 无法水平扩展</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11综-5" data-type="single" data-explain="检索不到，模型只能编。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">11综-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">RAG 系统中，决定「能不能答对」的上限环节是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 生成</button><button class="opt" data-k="B"><b>B.</b> 召回</button><button class="opt" data-k="C"><b>C.</b> 排版</button><button class="opt" data-k="D"><b>D.</b> 前端</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11综-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="事实|忠实" data-answer-text="事实、忠实"><div class="qhead"><span class="chip">11综-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">大模型幻觉分为________性幻觉与________性幻觉两类。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="11综-7" data-type="single" data-explain="原始层保真。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="A"><div class="qhead"><span class="chip">11综-7</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">数据湖中保留原样接入数据、便于追溯的是哪一层：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> ODS</button><button class="opt" data-k="B"><b>B.</b> DWD</button><button class="opt" data-k="C"><b>C.</b> DWS</button><button class="opt" data-k="D"><b>D.</b> ADS</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11综-8" data-type="multi" data-explain="D 错：湖仓一体恰恰避免重复存储。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">11综-8</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">关于湖仓一体，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 用低成本对象存储承载</button><button class="opt" data-k="B"><b>B.</b> 通过开放表格式提供 ACID 与 schema 演进</button><button class="opt" data-k="C"><b>C.</b> 目标是让一份数据支撑多种负载</button><button class="opt" data-k="D"><b>D.</b> 要求湖与仓各存一份数据</button><button class="opt" data-k="E"><b>E.</b> 可支持时间旅行与高效查询</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<h3>四、与论文、案例的接口</h3>
+<p>这是论文的热点区：2025–2026 六期 24 题里，AI 与新型数据架构占了 8 题。案例题则常考"大数据平台选型""边缘与云的分工"。</p>
+<h3>五、下一步</h3>
+<p><strong>本章结束，全书正文完结</strong>。接下来是综合复习与真题演练。</p>
+<div class="legend" style="margin-top:44px">标注说明：<b>软考口径</b>＝按官方用书表述给分；<b>拓展</b>＝考纲未展开的补充知识。详见 <a href="k00.html">K0 前言</a>。作答记录保存在本机浏览器。</div>
+<div class="toast" id="toast"></div>
+</div>
+<script>
+const KEY="book_K11大数据与未来技术";
+let state=JSON.parse(localStorage.getItem(KEY)||"{}");
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function norm(s){return (s||"").toLowerCase().replace(/[\s，,、;；。.()（）]/g,"");}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1400);}
+function stats(){const qs=$$(".quiz");let done=0,ok=0;
+ qs.forEach(q=>{const st=state[q.dataset.id];if(st&&st.done){done++;if(st.ok)ok++;}});
+ return {done,total:qs.length,ok};}
+function paint(){const s=stats();const p=s.total?s.done/s.total*100:0;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";}
+function fillKeywords(q){return q.dataset.answer.split("|").map(g=>g.split("/"));}
+function fbHTML(q,ok,userText){
+ const diag=q.dataset.diag||"";const warm=diag.includes("补充")?"#a2540f":"#b42318";
+ const ans=q.dataset.answerText||q.dataset.answer;
+ return '<div class="res">'+(ok?"✔ 回答正确":"✘ 回答错误")+'</div>'
+  +'<div><b>正确答案：</b>'+ans+(userText?'　<span style="color:#6b7280">你的作答：'+userText+'</span>':'')+'</div>'
+  +'<details open><summary>展开解析</summary><div class="inner">'
+  +'<div>'+q.dataset.explain+'</div>'
+  +'<div class="row tags">来源：'+q.dataset.source+'　｜　诊断标签：<b style="color:'+warm+'">'+diag+'</b></div>'
+  +'</div></details>';
+}
+function judge(q,ok,userText){
+ const fb=$(".fb",q);fb.className="fb show "+(ok?"ok":"bad");
+ fb.innerHTML=fbHTML(q,ok,userText);
+ state[q.dataset.id]={done:true,ok:ok};save();paint();
+}
+$$(".quiz").forEach(q=>{
+ const type=q.dataset.type;const ans=q.dataset.answer;
+ const opts=$$(".opt",q);const fb=$(".fb",q);
+ const saved=state[q.dataset.id];
+ if(type==="single"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     opts.forEach(x=>x.disabled=true);
+     const ok=(o.dataset.k===ans);
+     o.classList.add(ok?"right":"wrong");
+     if(!ok){const c=opts.find(x=>x.dataset.k===ans);if(c)c.classList.add("right");}
+     judge(q,ok,o.dataset.k);
+   }));
+ }else if(type==="multi"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     if(o.disabled)return;
+     o.classList.toggle("sel");
+   }));
+   const btn=$(".check",q);
+   if(btn)btn.addEventListener("click",()=>{
+     const picked=opts.filter(o=>o.classList.contains("sel")).map(o=>o.dataset.k).sort().join("");
+     if(!picked){toast("先选择至少一个选项");return;}
+     opts.forEach(o=>{
+       o.disabled=true;o.classList.remove("sel");
+       const k=o.dataset.k;
+       if(ans.includes(k))o.classList.add("right");
+       else if(picked.includes(k))o.classList.add("wrong");
+     });
+     judge(q,picked===ans,picked);
+   });
+ }else{
+   const inp=$(".fillinput",q);const btn=$(".check",q);
+   const go=()=>{
+     const raw=inp.value;const v=norm(raw);
+     if(!v){toast("先填写答案");return;}
+     let ok=false;
+     if(q.dataset.numeric){
+       const m=raw.match(/-?\d+(?:\.\d+)?/);
+       const cands=q.dataset.numeric.split("|");
+       ok=!!m&&cands.some(x=>Math.abs(parseFloat(m[0])-parseFloat(x))<0.011);
+     }else{
+       ok=fillKeywords(q).every(g=>g.some(k=>v.includes(norm(k))));
+     }
+     inp.disabled=true;inp.style.borderColor=ok?"#7cc49b":"#e79a94";
+     if(btn)btn.disabled=true;
+     judge(q,ok,raw.trim());
+   };
+   if(btn)btn.addEventListener("click",go);
+   if(inp)inp.addEventListener("keydown",e=>{if(e.key==="Enter")go();});
+ }
+ if(saved&&saved.done){/* 恢复历史状态：仅标记，不覆盖作答 */}
+});
+window.addEventListener("scroll",()=>{
+ const h=document.documentElement;
+ const p=h.scrollTop/(h.scrollHeight-h.clientHeight||1)*100;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";
+});
+paint();
+</script>
+<div class="book-foot-nav"><div class="bf-box"><a href="k10.html">&larr; 上一章 K10 嵌入式、通信与安全架构</a><a class="bf-next" href="index.html">读完了，回目录 &rarr;</a></div><p class="bf-note">作答记录保存在本机浏览器，换设备或清除缓存不会保留。本章支持浏览器直接打印为 PDF。</p></div><script>
+(function(){
+  var el=document.getElementById("book-nav-progress");
+  function refresh(){
+    try{
+      var st=JSON.parse(localStorage.getItem("book_K11大数据与未来技术")||"{}"),done=0;
+      Object.keys(st).forEach(function(k){if(st[k]&&st[k].done)done++;});
+      if(el)el.textContent=done+" / 58 题";
+    }catch(e){}
+  }
+  refresh();setInterval(refresh,1000);
+})();
+</script></body></html>

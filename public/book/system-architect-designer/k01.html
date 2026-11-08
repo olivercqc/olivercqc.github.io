@@ -1,0 +1,1913 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K1 计算机系统基础</title>
+<style>
+:root{--bg:#fbfaf7;--card:#fff;--ink:#1f2328;--sub:#6b7280;--line:#e6e3dd;--accent:#1f4e79;--ok:#0f7b4f;--bad:#b42318;--chip:#eef3f8;--warm:#fdf6ec}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:17px/1.9 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",serif}
+#bar{position:fixed;top:0;left:0;height:3px;background:var(--accent);width:0;z-index:99}
+.wrap{max-width:760px;margin:0 auto;padding:56px 20px 100px}
+h1{font-size:27px;line-height:1.4;letter-spacing:.5px;margin:0 0 10px}
+h2{font-size:21px;margin:52px 0 14px;padding-top:14px;border-top:2px solid var(--line);letter-spacing:.5px}
+h2:first-of-type{border-top:none}
+h3{font-size:17.5px;margin:30px 0 10px;color:#2b3a4a}
+h5{font-size:15px;margin:26px 0 8px;color:var(--sub);font-weight:600}
+p{margin:10px 0}
+blockquote{margin:16px 0;padding:12px 16px;background:var(--warm);border-left:3px solid #e0b984;border-radius:0 8px 8px 0;font-size:16px}
+blockquote p{margin:4px 0}
+strong{color:#12324f}
+hr{border:none;border-top:1px dashed var(--line);margin:26px 0}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px;background:#fff}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f3f1ec;font-weight:600}
+code{background:#f3f1ec;padding:1px 5px;border-radius:4px;font-size:14px}
+pre{background:#f7f5f1;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto}
+ul,ol{margin:10px 0;padding-left:22px}
+li{margin:4px 0}
+.math{font-family:"Cambria Math",Cambria,Georgia,"Times New Roman",serif;font-size:1.03em}
+.mathblock{display:block;text-align:center;margin:16px 0;overflow-x:auto;padding:2px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:-0.55em;text-align:center;margin:0 .3em}
+.frac .n{border-bottom:1px solid currentColor;padding:0 .3em;line-height:1.3}
+.frac .d{padding:0 .3em;line-height:1.4}
+sub,sup{font-size:.72em;line-height:0}
+.toast{position:fixed;right:18px;bottom:18px;background:#1f2937;color:#fff;padding:9px 14px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+
+/* 题卡 */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:18px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.qhead{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.chip{background:var(--chip);color:#33475b;border-radius:999px;padding:1px 9px;font-size:12px}
+.chip.t{background:#eaf4ec;color:#0f7b4f}
+.chip.k{background:#f4f0fa;color:#5b3f8f;font-size:11.5px}
+a.back{margin-left:auto;font-size:12px;color:var(--sub);text-decoration:none;border-bottom:1px dashed #c9c4ba}
+a.back:hover{color:var(--accent);border-color:var(--accent)}
+.qstem{font-weight:600;margin:4px 0 12px;font-size:16px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:15.5px;line-height:1.7;
+ background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 13px;cursor:pointer;transition:.15s}
+.opt:hover{border-color:#b9c6d6;background:#f8fafc}
+.opt b{color:var(--accent);margin-right:2px}
+.opt.sel{border-color:var(--accent);background:#eef4fa}
+.opt.right{border-color:#7cc49b;background:#effaf3}
+.opt.wrong{border-color:#e79a94;background:#fdf1f0}
+.opt:disabled{cursor:default}
+.fillrow{display:flex;gap:10px;margin-top:12px;align-items:center}
+.fillinput{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:15.5px;background:#fff}
+.btn{font:inherit;font-size:14px;padding:7px 16px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer}
+.btn.check{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fb{display:none;margin-top:14px;font-size:15px;line-height:1.8}
+.fb.show{display:block}
+.fb .res{font-weight:700;margin-bottom:6px;font-size:15.5px}
+.fb.ok .res{color:var(--ok)}
+.fb.bad .res{color:var(--bad)}
+.fb details{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:#fcfbf9;padding:0 12px}
+.fb summary{cursor:pointer;padding:9px 0;font-weight:600;color:var(--accent);outline:none}
+.fb .inner{padding:2px 0 12px;border-top:1px dashed var(--line)}
+.fb .row{color:var(--sub);font-size:13px;margin-top:8px}
+.fb .tags b{color:#a2540f}
+.legend{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:20px 0;font-size:14.5px}
+.legend b{color:var(--accent)}
+@media print{
+ #bar,.toast{display:none}
+ .quiz{break-inside:avoid}
+ body{background:#fff;font-size:12pt}
+}
+@media (max-width:600px){
+ body{font-size:16px;line-height:1.85}
+ .wrap{padding:40px 14px 80px}
+ h1{font-size:23px}
+ table{font-size:13px}
+}
+</style>
+<style id="book-nav-css">
+#book-nav{position:sticky;top:0;z-index:100;background:rgba(251,250,247,.96);backdrop-filter:blur(8px);border-bottom:1px solid #e6e3dd;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+#bar{z-index:101!important}
+#book-nav .bn-in{max-width:1060px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+#book-nav a{color:#1f4e79;text-decoration:none;white-space:nowrap}
+#book-nav a:hover{text-decoration:underline}
+#book-nav .bn-home{font-weight:700}
+#book-nav .bn-cur{color:#1f2328;font-weight:600;flex:1;min-width:180px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#book-nav .bn-step{background:#fff;border:1px solid #e6e3dd;border-radius:999px;padding:3px 11px;font-size:13px}
+#book-nav .bn-step.disabled{opacity:.38;pointer-events:none}
+#book-nav .bn-prog{color:#6b7280;font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.book-foot-nav{max-width:760px;margin:0 auto;padding:0 20px 80px;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.book-foot-nav .bf-box{border-top:2px solid #e6e3dd;padding-top:22px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}
+.book-foot-nav a{color:#1f4e79;text-decoration:none}
+.book-foot-nav a:hover{text-decoration:underline}
+.book-foot-nav .bf-next{background:#1f4e79;color:#fff!important;border-radius:10px;padding:9px 18px;font-weight:600}
+.book-foot-nav .bf-next:hover{text-decoration:none;background:#163c5e}
+.book-foot-nav .bf-note{color:#6b7280;font-size:13px;margin-top:14px}
+@media(max-width:600px){#book-nav .bn-cur{order:3;flex-basis:100%;text-align:left}#book-nav .bn-prog{display:none}}
+@media print{#book-nav,.book-foot-nav{display:none}#bar{z-index:0!important}}
+</style>
+</head><body><nav id="book-nav"><div class="bn-in"><a class="bn-home" href="index.html">&larr; 全书目录</a><a class="bn-step" href="k00.html" title="前言">&larr; K0</a><span class="bn-cur">K1 · 计算机系统基础</span><a class="bn-step" href="k02.html" title="信息系统与信息安全">K2 &rarr;</a><span class="bn-prog" id="book-nav-progress">0 / 113 题</span></div></nav>
+<div id="bar"></div>
+<div class="wrap">
+<h1>K1 计算机系统基础</h1>
+<blockquote>
+<p><strong>本章内容</strong>：硬件组成 · 处理器 · 存储层次 · 总线接口 · 操作系统 · 数据库与文件系统 · 中间件与构件 · 嵌入式 · 网络 · 语言 · 多媒体 · 系统工程 · 系统性能<br>
+<strong>考纲位置</strong>：上午题主阵地，案例偶尔涉及</p>
+</blockquote>
+<p>本章围绕"一个速度差引发的连锁反应"这一主题展开，共 13 节：</p>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+<th>回答的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>计算机系统是什么</td>
+<td>硬件与软件的边界在哪</td>
+</tr>
+<tr>
+<td>2</td>
+<td>处理器：从冯·诺依曼到 RISC</td>
+<td>最快的部件快在哪</td>
+</tr>
+<tr>
+<td>3</td>
+<td>存储器：四层阶梯与命中率</td>
+<td>慢的部件如何被"藏起来"</td>
+</tr>
+<tr>
+<td>4</td>
+<td>总线、接口与外部设备</td>
+<td>部件之间怎么连</td>
+</tr>
+<tr>
+<td>5</td>
+<td>操作系统：谁在分配资源</td>
+<td>多个程序抢资源时按什么规则分</td>
+</tr>
+<tr>
+<td>6</td>
+<td>数据库与文件系统</td>
+<td>数据放在哪、怎么找</td>
+</tr>
+<tr>
+<td>7</td>
+<td>中间件与软件构件</td>
+<td>异构系统怎么连</td>
+</tr>
+<tr>
+<td>8</td>
+<td>嵌入式系统</td>
+<td>资源受限时怎么取舍</td>
+</tr>
+<tr>
+<td>9</td>
+<td>计算机网络</td>
+<td>多台机器怎么协同</td>
+</tr>
+<tr>
+<td>10</td>
+<td>计算机语言</td>
+<td>人怎么指挥机器</td>
+</tr>
+<tr>
+<td>11</td>
+<td>多媒体</td>
+<td>非结构化数据怎么处理</td>
+</tr>
+<tr>
+<td>12</td>
+<td>系统工程</td>
+<td>复杂系统怎么组织</td>
+</tr>
+<tr>
+<td>13</td>
+<td>系统性能</td>
+<td>快慢怎么度量与优化</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="sec1">第 1 节 计算机系统是什么</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：一台计算机由哪些部分构成，硬件与软件的边界到底在哪里？</p>
+</blockquote>
+<h3>一、从一个"装系统"的老问题说起</h3>
+<p>同一台笔记本，出厂预装 Windows，你格掉换成 Linux，跑同一段代码，速度可能差一截；再换一块更好的显卡，某些程序又会快很多。</p>
+<p>如果计算机只是"一堆硬件的组合"，那么换不换操作系统不该影响速度；如果只是"一堆软件"，那么换显卡也不该有用。</p>
+<p>事实是两者都影响。这说明：<strong>计算机不是硬件的集合，也不只是软件的集合，而是一个软硬协同的系统</strong>。</p>
+<p>计算机系统的定义很克制：</p>
+<blockquote>
+<p>计算机系统是指用于数据管理的计算机硬件、软件及网络组成的系统。它按人的要求接收和存储信息，自动进行数据处理和计算，并输出结果信息。</p>
+</blockquote>
+<p>这句话有三个关键词，值得拆开看：<strong>硬件、软件、网络</strong>。注意第三个——很多人会下意识把"网络"排除在"一台计算机"之外，但我们把它算进系统组成，因为现代计算机的能力边界早已不是机箱内部。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：一台没联网的电脑和一台联网的电脑，硬件相同，它们算不算"同一个计算机系统"？为什么把网络列入系统组成？</p>
+</blockquote>
+<h3>二、硬件：五个部件，三种现实形态</h3>
+<p>从这里开始冯·诺依曼结构，这是现代计算机的起点。</p>
+<p><strong>冯·诺依曼结构把硬件划分为 5 部分</strong>：运算器、控制器、存储器、输入设备、输出设备。</p>
+<p>但你真的拆开机箱，看到的并不是五块东西。现实中的工程集成做了两次合并：</p>
+<ul>
+<li><strong>运算器 + 控制器 → 处理器</strong>。今天没有独立的"运算器芯片"，它们被集成封装成 CPU。要注意：处理器并不只有这两部分，它还集成了多级缓存、多种通信总线和接口。</li>
+<li><strong>输入 + 输出 → 按传输过程重新划分</strong>。键盘、显示器这些设备不是直接接到 CPU 上的，中间要经过<strong>总线、接口、外部设备</strong>这条链路。所以讲完处理器和存储器之后，讲的是总线、接口、外设，而不是"输入设备、输出设备"。</li>
+</ul>
+<p>这就是"5 个部件"和"现实 4 类硬件"的对应关系。考试里两种问法都出现过：问"冯·诺依曼结构包含哪五部分"答五部分，问"计算机硬件由哪些部分组成"答处理器、存储器、总线、接口、外部设备。</p>
+<p>硬件本身是什么？这里的定义是：由机械、电子元器件、磁介质和光介质等物理实体构成。这句话的用处在于——<strong>判断某个东西是不是硬件，看它是不是物理实体</strong>。</p>
+<h3>三、软件：系统软件与应用软件</h3>
+<p>软件的定义比"程序"宽：</p>
+<blockquote>
+<p>软件是一系列按特定顺序组织的数据和指令，并控制硬件完成指定的功能。</p>
+</blockquote>
+<p>软件划了两层：</p>
+<p><strong>系统软件</strong>——为整个系统配置、不依赖特定应用领域的通用软件，负责控制和管理硬件与软件资源，并为上层提供运行环境。这里列出四类：</p>
+<ol>
+<li>操作系统</li>
+<li>程序设计语言翻译系统（编译器、解释器）</li>
+<li>数据库管理系统</li>
+<li>网络软件</li>
+</ol>
+<p><strong>应用软件</strong>——为某类应用需要或解决某个特定问题而设计，如图形图像处理、财务软件、游戏。再分为<strong>专用</strong>（为一个单位定制）和<strong>通用</strong>（面向大众，如 Office）两类。</p>
+<p>判断一个软件属于哪类，标准不是"我用不用它"，而是<strong>它是否为特定的应用目的而存在</strong>。数据库管理系统属于系统软件，但基于它开发的"学生成绩管理系统"是应用软件——这两者经常被混淆。</p>
+<blockquote>
+<p><strong>想一想 ②</strong>：微信是系统软件还是应用软件？微信内置的"小程序运行环境"呢？</p>
+</blockquote>
+<h3>四、一条越来越模糊的边界</h3>
+<p>有个很好的例子软硬件的界限：</p>
+<blockquote>
+<p>可编程逻辑，它在设计阶段可作为软件对待，但运行中则以逻辑门的物理形态存在。</p>
+</blockquote>
+<p>换句话说，同一件东西，<strong>在设计时是"配置/代码"，在运行时是"电路"</strong>。FPGA 就是这样：你写一段硬件描述语言，烧进去之后它真的变成了电路，不再是"执行指令的软件"。</p>
+<p>这个现象带出一个重要结论：<strong>软硬件是功能实现方式的两种选择，而非两类东西</strong>。同一功能可以用软件实现（灵活、慢、便宜），也可以用硬件实现（快、贵、难改）。嵌入式领域里这个权衡尤其常见——要不要给视频解码加一个专用硬件模块？</p>
+<h3>五、计算机怎么分类</h3>
+<p>分类维度很多，可以从<strong>硬件</strong>（结构、性能、规模）、<strong>软件</strong>（构成、特征）、<strong>整体用途与服务对象</strong>三个角度分。</p>
+<p>但要注意的是：<strong>分类没有严格界限</strong>。电话手表、能通信的平板、带路由功能的电视盒，同一设备可以归入多个父类。所以考试里如果问分类，通常考的是"按什么维度分"，而不是让你给某台设备贴唯一标签。</p>
+<p>常见的一张大类：个人计算机（台式、平板）、通用计算机（服务器、超级计算机）、嵌入式计算机（医疗、交通、金融、国防设备）、家用电子设备、电信设备、云计算/云存储。</p>
+<h3>六、例题精解</h3>
+<p><strong>例 1（工程项目）</strong> 某银行要把 200 个网点的 VTM（远程视频柜员机）统一改造。设备需支持身份证读卡、人脸识别、视频通话、凭条打印，要求 7×24 运行、故障可远程诊断、单台硬件成本不高于 8000 元。</p>
+<p>请回答：① 它属于哪一类计算机；② 按软考口径的硬件分类列出其组成；③ 人脸识别应放在本地还是云端，为什么。</p>
+<p><em>思路</em>：先定位类别，再按"处理器—存储器—总线/接口—外部设备"四类拆，最后把软硬件划分当成一次取舍来做。</p>
+<p><em>解答</em>：<br>
+- <strong>分类</strong>：嵌入式计算机（专用性强、嵌入具体设备、资源受限）。<br>
+- <strong>硬件</strong>：<br>
+  - 处理器：低功耗 SoC（CPU + 轻量 NPU，用于本地活体检测）；<br>
+  - 存储器：Flash 存系统镜像与本地模型、RAM 作为运行区、外存可选 SSD 缓存录像；<br>
+  - 总线与接口：内部总线连接读卡器与摄像头；网口/4G 模块用于远程通信；USB/串口连接打印机；<br>
+  - 外部设备：摄像头与补光灯、身份证读卡器、触摸屏、凭条打印机、密码键盘。<br>
+- <strong>人脸识别放哪</strong>：<strong>本地做活体检测与特征提取，云端做比对检索</strong>。理由：本地保证断网可用（7×24 场景）与低延迟，且原始人脸不出网点，符合个人信息合规；云端承担大库检索与模型迭代，避免每台设备都堆算力，从而压住 8000 元成本。</p>
+<p><em>点评</em>：这类题的失分点有两个——拆硬件时漏掉"接口"这一层（我们把总线、接口、外设分开算），以及把"软硬件划分"当成纯技术问题，忘了它同时受成本、可用性、合规三重约束。</p>
+<p><strong>工程启示</strong>：选型从来不是"选最强的"，而是"在成本、可用性、合规、可维护性之间找平衡点"——这正是第 8 章质量属性与架构评估要展开的东西。</p>
+<h3>七、常见误区</h3>
+<p><strong>误区一：把"处理器"等同于"CPU 的运算部分"。</strong><br>
+处理器除了运算和控制，还集成了缓存、总线接口、MMU 等。问"处理器由哪些部分组成"时，只答运算器和控制器会漏分。</p>
+<p><strong>误区二：把数据库管理系统当成应用软件。</strong><br>
+它管理的是数据资源、为上层应用提供平台，属于系统软件；基于它做的业务系统才是应用软件。</p>
+<p><strong>误区三：认为硬件与软件的界限是固定的。</strong><br>
+可编程逻辑、固件、微码都在边界上。判断标准是"运行时的存在形态"，不是"开发时用什么写"。</p>
+<p><strong>误区四：把网络排除在计算机系统之外。</strong><br>
+这里的定义明确包含网络。答题时如果问"计算机系统组成"，只答硬件和软件两分法，可能不完整。</p>
+<h3>八、本节自测</h3>
+<blockquote>
+<p>共 7 题（5 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="1-1" data-type="single" data-explain="原文是“计算机系统的硬件、软件及网络组成的系统”。很多人只答硬件+软件，漏掉网络这一项。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-1 计算机系统定义" data-answer="B"><div class="qhead"><span class="chip">1-1</span><span class="chip t">单选</span><span class="chip k">KP-1 计算机系统定义</span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">按软考口径定义，计算机系统由下列哪几部分构成？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 硬件与软件</button><button class="opt" data-k="B"><b>B.</b> 硬件、软件与网络</button><button class="opt" data-k="C"><b>C.</b> 处理器、存储器与外部设备</button><button class="opt" data-k="D"><b>D.</b> 主机与外设</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="1-2" data-type="single" data-explain="这里列出的系统软件为四类：操作系统、程序设计语言翻译系统、数据库管理系统、网络软件。B 的办公软件、C 的财务软件、D 的图形图像处理软件都属应用软件。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-4 系统软件与应用软件" data-answer="A"><div class="qhead"><span class="chip">1-2</span><span class="chip t">单选</span><span class="chip k">KP-4 系统软件与应用软件</span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">下列软件中，全部属于系统软件的一组是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 操作系统、编译器、数据库管理系统、网络软件</button><button class="opt" data-k="B"><b>B.</b> 操作系统、办公软件、数据库管理系统、杀毒软件</button><button class="opt" data-k="C"><b>C.</b> 编译器、财务软件、网络软件、设备驱动程序</button><button class="opt" data-k="D"><b>D.</b> 操作系统、图形图像处理软件、编译器、中间件</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="1-3" data-type="single" data-explain="“可编程逻辑，它在设计阶段可作为软件对待，但运行中则以逻辑门的物理形态存在。”这正是软硬件边界模糊的例证。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-5 可编程逻辑与软硬件边界" data-answer="C"><div class="qhead"><span class="chip">1-3</span><span class="chip t">单选</span><span class="chip k">KP-5 可编程逻辑与软硬件边界</span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">关于可编程逻辑（如 FPGA），下列说法正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 它属于纯软件，因为需要编写代码配置</button><button class="opt" data-k="B"><b>B.</b> 它属于纯硬件，与软件无关</button><button class="opt" data-k="C"><b>C.</b> 设计阶段可按软件对待，运行时以逻辑门的物理形态存在</button><button class="opt" data-k="D"><b>D.</b> 它只能实现固定功能，不能重新配置</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="1-4" data-type="single" data-explain="应用软件按使用面分专用与通用：为一个单位定制的是专用。容易错在把它和“数据库管理系统”混为一谈——后者是系统软件。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="KP-4 专用与通用应用软件" data-answer="B"><div class="qhead"><span class="chip">1-4</span><span class="chip t">单选</span><span class="chip k">KP-4 专用与通用应用软件</span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">某单位委托开发一套"学生成绩管理系统"，该软件属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 系统软件</button><button class="opt" data-k="B"><b>B.</b> 应用软件（专用）</button><button class="opt" data-k="C"><b>C.</b> 应用软件（通用）</button><button class="opt" data-k="D"><b>D.</b> 支撑软件</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="1-5" data-type="single" data-explain="需要指出的是可从硬件、软件、整体用途三个角度分类，且“并没有严格的界限”，电话手表、可通信平板、带路由功能的电视盒都能归入多个父类。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-6 计算机分类维度" data-answer="C"><div class="qhead"><span class="chip">1-5</span><span class="chip t">单选</span><span class="chip k">KP-6 计算机分类维度</span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">下列关于计算机分类的说法，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 每台计算机只能归属于唯一类别</button><button class="opt" data-k="B"><b>B.</b> 分类只能按硬件规模进行</button><button class="opt" data-k="C"><b>C.</b> 可从硬件结构性能、软件构成特征、整体用途与服务对象等维度分类，且无严格界限</button><button class="opt" data-k="D"><b>D.</b> 嵌入式计算机不属于计算机系统</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="1-6" data-type="multi" data-explain="D 错：软件运行高度依赖指令集与硬件特性（同一个程序换个架构就要重编译）；E 错：可编程逻辑处边界就模糊了。C 属考纲未明说但可由“可编程逻辑”推出的结论。" data-source="拓展" data-diag="B 补充 / C 晦涩" data-kp="KP-2/KP-3 硬件定义与软硬件关系" data-answer="ABC"><div class="qhead"><span class="chip">1-6</span><span class="chip t">不定项</span><span class="chip k">KP-2/KP-3 硬件定义与软硬件关系</span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">关于计算机硬件与软件的关系，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 硬件由机械、电子元器件、磁介质和光介质等物理实体构成</button><button class="opt" data-k="B"><b>B.</b> 软件是数据与指令的集合，用于控制硬件完成指定功能</button><button class="opt" data-k="C"><b>C.</b> 同一功能既可用软件实现，也可用硬件实现，二者在性能与灵活性上存在权衡</button><button class="opt" data-k="D"><b>D.</b> 软件一旦开发完成，其运行不依赖硬件特性</button><button class="opt" data-k="E"><b>E.</b> 硬件与软件的界限在任何情况下都清晰可辨</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="1-7" data-type="fill" data-explain="五个部件必须齐全。若只写“CPU、内存、外设”属于用现实形态代替逻辑划分，会漏分。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-2 冯·诺依曼五部件" data-answer="运算器|控制器|存储器|输入|输出" data-answer-text="运算器、控制器、存储器、输入设备、输出设备"><div class="qhead"><span class="chip">1-7</span><span class="chip t">填空</span><span class="chip k">KP-2 冯·诺依曼五部件</span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">冯·诺依曼结构将计算机硬件划分为五个部分，分别是________、、、、。</div><div class="fillrow"><input class="fillinput" placeholder="用顿号或空格分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>九、小结与衔接</h3>
+<p>本节回答了两个问题：计算机系统由什么构成（硬件 + 软件 + 网络），以及硬软件边界在哪（功能实现方式的两种选择，边界在可编程逻辑处开始模糊）。</p>
+<p><strong>留下一个问题</strong>：这五个部件里，哪个最快、哪个最慢？为什么"最快的那个"反而决定了整个系统的设计？</p>
+<p>下一节先看最快的那个——处理器。</p>
+<hr>
+<h2 id="sec2">第 2 节 处理器：为什么手机和电脑的芯片不能互换</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：处理器凭什么成为"运算与控制的核心"？CISC 与 RISC 的差别到底是什么，为什么最后 RISC 成了主流？</p>
+</blockquote>
+<h3>一、一个换不了芯片的现实</h3>
+<p>你手机里是 ARM 芯片，电脑里是 x86 芯片。把电脑的 CPU 拆下来焊到手机上，手机不会变快，只会不亮。</p>
+<p>这不是性能问题，而是<strong>指令集不兼容</strong>——手机 App 是为 ARM 指令集编译的，x86 根本看不懂那些机器码。</p>
+<p>所以，处理器的"身份"不是主频、不是核心数，而是<strong>它认识哪一套指令</strong>。这一点是理解 CISC 与 RISC 之争的钥匙。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：如果指令集只是"软件和硬件的约定"，那为什么不让所有处理器都支持所有指令集，省掉兼容问题？</p>
+</blockquote>
+<h3>二、处理器里到底有什么</h3>
+<p>的典型处理器结构包含六个部分：</p>
+<table>
+<thead>
+<tr>
+<th>部件</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>指令部件</td>
+<td>取指令、译码、控制</td>
+</tr>
+<tr>
+<td>运算部件</td>
+<td>整型、浮点、向量运算</td>
+</tr>
+<tr>
+<td>寄存器组</td>
+<td>暂存操作数与结果（最快的一层存储）</td>
+</tr>
+<tr>
+<td>存取部件</td>
+<td>从存储设备取数据</td>
+</tr>
+<tr>
+<td>Cache 部件</td>
+<td>缓存热点数据（第 3 节详讲）</td>
+</tr>
+<tr>
+<td>MMU 部件</td>
+<td>地址转换（虚拟地址 → 物理地址）</td>
+</tr>
+</tbody>
+</table>
+<p>一条指令在里面的流转过程是：<strong>指令部件经 MMU-Cache 取到指令并译码 → 控制存取部件取数据 → 控制寄存器组为运算器准备操作数 → 运算部件计算 → 完成部件排队并向指令部件反馈 → 决定下一条指令的顺序或跳转</strong>。</p>
+<p>这段流程听起来抽象，但它解释了一个常见现象：<strong>为什么主频提升带来的性能提升越来越小</strong>。因为主频只加快"运算"这一步，而取指、取数、访存这些环节的延迟并没有同比下降——第 3 节会看到，主存延迟是几百个周期，光靠主频根本补不回来。</p>
+<h3>三、指令集的两条路：CISC 与 RISC</h3>
+<p><strong>CISC（复杂指令集）</strong>：指令多、长度可变、寻址方式复杂，一条指令可以完成较复杂的操作（比如"从内存取数、加、写回"一步到位）。代表是 <strong>Intel、AMD 的 x86</strong>。</p>
+<p><strong>RISC（精简指令集）</strong>：指令少、长度固定、寻址方式简单、寄存器多，一条指令只做一件简单的事，复杂操作由多条指令组合完成。代表是 <strong>ARM 和 Power</strong>。</p>
+<p>一句判断很关键：</p>
+<blockquote>
+<p>除了由于历史原因而仍然存在的 CISC 结构外，<strong>RISC 已经成为计算机指令集发展的趋势</strong>，几乎所有后期出现的指令集均为 RISC 架构。</p>
+</blockquote>
+<p>为什么？三个原因：</p>
+<ol>
+<li><strong>流水线友好</strong>。指令定长、格式统一，CPU 可以像流水线一样每个周期发射一条，不必等"这条指令到底多长"。</li>
+<li><strong>功耗与面积</strong>。CISC 的复杂译码电路耗电、占面积；移动设备对功耗极敏感，这也是 ARM 统治手机的根本原因。</li>
+<li><strong>编译器分担复杂度</strong>。把"复杂操作"交给编译器拆成多条简单指令，硬件就能保持简单——<strong>复杂度从硬件转移到了软件</strong>。</li>
+</ol>
+<blockquote>
+<p><strong>想一想 ②</strong>：既然 RISC 更好，为什么 x86 至今还在？提示：想想你电脑上那些二十年前的老软件。</p>
+</blockquote>
+<h3>四、专用处理器：不追求通用，只追求极致</h3>
+<p>除了 CPU，这里还列出三类专用处理器，它们的取舍逻辑完全不同：</p>
+<p><strong>GPU（图形处理器）</strong>：数百到数千个内核，为并行计算优化。单个核心弱、但数量极多，适合"同一操作作用于海量数据"的场景——这正是深度学习的计算特征，所以 GPU 成了 AI 训练的标配。</p>
+<p><strong>DSP（数字信号处理器）</strong>：专用于实时数字信号处理。点出了三个技术特征：用<strong>饱和算法</strong>处理溢出（溢出时钳位到最大/最小值，而不是回绕）、用<strong>乘累加</strong>运算提高矩阵运算效率、为<strong>傅里叶变换</strong>设计专用指令。它出现在高速信号采集设备里（雷达、通信基带、音频处理）。</p>
+<p><strong>FPGA（现场可编程逻辑门阵列）</strong>：硬件可编程。它的价值不在"快"，而在"<strong>可以变成任何电路</strong>"——小批量、需要快速迭代、或需要极低延迟的场景（如高频交易、协议加速）会选它。</p>
+<p>三者的对比可以这样记：<strong>GPU 是"很多个简单工人"，DSP 是"一个熟练的专职工匠"，FPGA 是"可以自己捏形状的工具"</strong>。</p>
+<p>另外，国产处理器已有较完整的布局：龙芯、飞腾、申威、兆芯、国微、国芯、华睿、翔腾微、景嘉微。其中多数走 RISC 路线（龙芯为 LoongArch、飞腾为 ARM 架构、申威为 Alpha 衍生），这条信息在做"自主可控"类案例题时会用到。</p>
+<h3>五、例题精解</h3>
+<p><strong>例 1（工程选型）</strong> 某安防公司要做一个"边缘智能分析盒"：接入 8 路 4K 摄像头，实时做人形与车辆检测；单盒硬件成本不超过 3000 元；算法每季度迭代一次；部署在客户机房，无人值守。</p>
+<p>请给出处理器方案并说明理由，同时说明为什么排除另外两种选择。</p>
+<p><em>思路</em>：先把约束翻译成技术要求——多路视频解码（并发）、推理算力（固定成本下的性能）、季度迭代（可更新性）、无人值守（功耗与稳定性）。</p>
+<p><em>解答</em>：<br>
+- <strong>方案</strong>：主控选 ARM 多核 SoC（跑 Linux、负责解码与业务逻辑），推理交给集成 NPU 或板载 GPU 加速器。<br>
+- <strong>理由</strong>：ARM 功耗低、单价低，能在 3000 元成本内做到 8 路解码；NPU/GPU 提供并行算力，满足实时推理；算法以模型文件下发，季度迭代只需更新软件，不必换硬件。<br>
+- <strong>排除项</strong>：<br>
+  - 纯 x86 方案：算力够但功耗与整机成本偏高，且多路解码需要额外加速卡，超预算；<br>
+  - 定制 ASIC：流片成本高、周期长，算法每季度变一次，硬件跟不上，且 8 路规模撑不起流片量。</p>
+<p><em>点评</em>：工程选型的标准写法是"<strong>约束 → 技术要求 → 方案 → 排除理由</strong>"，缺最后一步最容易被扣分，因为阅卷人看不出你是权衡过还是碰巧选对。</p>
+<p><strong>例 2（工程权衡）</strong> 某物流公司的 5 万台手持终端（PDA）项目：要求单次充电续航 12 小时，支持扫码、热敏打印、4G 回传，采购单价控制在 2500 元以内，且要能批量供货。</p>
+<p>请问：处理器架构应选 x86 还是 ARM？如果改用 x86，会付出什么代价？</p>
+<p><em>解答</em>：<br>
+- <strong>选 ARM（RISC）</strong>。理由：定长指令、译码电路简单，同等算力下功耗与芯片面积更小，直接决定续航与整机成本；ARM 生态在移动/手持终端成熟，供货稳定。<br>
+- <strong>改 x86 的代价</strong>：功耗高 → 电池容量需加大 → 重量与成本上升；散热设计复杂 → 结构件成本增加；单颗芯片价格更高 → 5000 台量级的采购预算撑不住；此外待机功耗大，12 小时续航难以达标。</p>
+<p><em>点评</em>：这道题的关键不是"ARM 比 x86 好"，而是<strong>把架构特性和约束（功耗、成本、续航、批量供货）一一对应</strong>。工程语境下，没有绝对优劣，只有是否匹配约束。</p>
+<p><strong>工程启示</strong>：处理器选型是架构决策的缩影——<strong>先定约束，再谈技术</strong>。这条思路在 K5（架构风格选型）、K9（云原生技术选型）里会反复出现。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：RISC 指令少 = 功能弱 = 性能低。</strong><br>
+恰恰相反，定长指令利于流水线，现代 RISC 在通用性能上已不输 CISC。指令少不等于能力弱，复杂操作由编译器拆解。</p>
+<p><strong>误区二：主频高 = 性能强。</strong><br>
+主频只反映时钟频率，实际性能还取决于 IPC（每周期指令数）、缓存命中、访存延迟。第 3 节会量化这个差距。</p>
+<p><strong>误区三：GPU 主频低，所以不如 CPU。</strong><br>
+GPU 核心多、单核弱，胜在并行吞吐。判断依据是"任务是否可并行"，而不是单看频率。</p>
+<p><strong>误区四：把"处理器"和"CPU"当同义词，忽略专用处理器。</strong><br>
+GPU、DSP、FPGA 与 CPU 同属处理器，只是定位不同。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 2 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="2-1" data-type="single" data-explain="CISC 以 Intel、AMD 的 x86 为代表；RISC 以 ARM 和 Power 为代表。RISC-V 也是 RISC 阵营。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-7 指令集分类" data-answer="C"><div class="qhead"><span class="chip">2-1</span><span class="chip t">单选</span><span class="chip k">KP-7 指令集分类</span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">下列处理器中，属于 CISC 架构代表的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> ARM</button><button class="opt" data-k="B"><b>B.</b> Power</button><button class="opt" data-k="C"><b>C.</b> Intel x86</button><button class="opt" data-k="D"><b>D.</b> RISC-V</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-2" data-type="single" data-explain="“一条指令完成复杂操作”是 CISC 的思路；RISC 一条指令只做一件简单的事，复杂操作交给编译器拆成多条。这里补充完整对照表，需自行归纳。" data-source="拓展" data-diag="C 晦涩" data-kp="KP-8 CISC 与 RISC 特征" data-answer="C"><div class="qhead"><span class="chip">2-2</span><span class="chip t">单选</span><span class="chip k">KP-8 CISC 与 RISC 特征</span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">下列不属于 RISC 典型特征的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 指令长度固定</button><button class="opt" data-k="B"><b>B.</b> 寻址方式简单、种类少</button><button class="opt" data-k="C"><b>C.</b> 单条指令可完成复杂的内存到内存运算</button><button class="opt" data-k="D"><b>D.</b> 寄存器数量较多，便于流水线</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-3" data-type="single" data-explain="注意 DSP 的三个特征：饱和算法处理溢出、乘累加提高矩阵运算效率、为傅里叶变换设计专用指令——三个特征与题干一一对应。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-9 专用处理器选型" data-answer="C"><div class="qhead"><span class="chip">2-3</span><span class="chip t">单选</span><span class="chip k">KP-9 专用处理器选型</span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">某项目需要实时处理雷达回波信号，且要求对溢出做稳定处理、高效完成矩阵与傅里叶变换运算，最合适的处理器是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 通用 CPU</button><button class="opt" data-k="B"><b>B.</b> GPU</button><button class="opt" data-k="C"><b>C.</b> DSP</button><button class="opt" data-k="D"><b>D.</b> FPGA</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-4" data-type="single" data-explain="GPU 单个核心弱、数量极多，胜在并行吞吐，这与深度学习的计算特征吻合。判断依据是“任务能否并行”，不是主频。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-9 专用处理器选型" data-answer="B"><div class="qhead"><span class="chip">2-4</span><span class="chip t">单选</span><span class="chip k">KP-9 专用处理器选型</span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">训练大规模图像识别模型时，通常优先选择 GPU，主要原因是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> GPU 主频远高于 CPU</button><button class="opt" data-k="B"><b>B.</b> GPU 具有数百至数千个内核，适合大规模数据并行计算</button><button class="opt" data-k="C"><b>C.</b> GPU 的指令集是 CISC，兼容性更好</button><button class="opt" data-k="D"><b>D.</b> GPU 可以直接替代 CPU 运行操作系统</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-5" data-type="single" data-explain="FPGA 可反复配置，适合小批量、快速迭代；ASIC 流片周期以季度计、成本高，与“反复修改”冲突。这里补充这类选型对比，属外部补充。" data-source="拓展" data-diag="B 补充" data-kp="KP-10 可重构与迭代节奏" data-answer="B"><div class="qhead"><span class="chip">2-5</span><span class="chip t">单选</span><span class="chip k">KP-10 可重构与迭代节奏</span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">某新协议硬件加速原型要求三个月出样机，且后续需反复修改逻辑，最合适的选择是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 专用 ASIC</button><button class="opt" data-k="B"><b>B.</b> FPGA</button><button class="opt" data-k="C"><b>C.</b> DSP</button><button class="opt" data-k="D"><b>D.</b> 通用 CPU</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-6" data-type="multi" data-explain="原文只写了“RISC 已成为发展趋势”，并未展开原因。D 反了（RISC 指令更少）；E 错（RISC 同样有浮点指令集）。" data-source="拓展" data-diag="B 补充" data-kp="KP-8 RISC 成为趋势的原因" data-answer="ABC"><div class="qhead"><span class="chip">2-6</span><span class="chip t">不定项</span><span class="chip k">KP-8 RISC 成为趋势的原因</span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">关于 RISC 成为指令集发展趋势的原因，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 指令定长、格式统一，便于流水线实现</button><button class="opt" data-k="B"><b>B.</b> 译码电路简单，有利于降低功耗与芯片面积</button><button class="opt" data-k="C"><b>C.</b> 把复杂操作交给编译器拆解，硬件复杂度下降</button><button class="opt" data-k="D"><b>D.</b> RISC 的指令数量比 CISC 多，功能更全</button><button class="opt" data-k="E"><b>E.</b> RISC 完全不支持浮点运算</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-7" data-type="multi" data-explain="B 错：还有 IPC、缓存命中率、访存延迟等；D 错：主存延迟是几百个时钟周期，主频提升补不回来。考纲未直接涉及“唯主频论”，需自行推理。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="KP-11 处理器结构与性能" data-answer="ACE"><div class="qhead"><span class="chip">2-7</span><span class="chip t">不定项</span><span class="chip k">KP-11 处理器结构与性能</span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">关于处理器结构与性能，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 处理器除运算器和控制器外，还集成了缓存、总线接口、MMU 等部件</button><button class="opt" data-k="B"><b>B.</b> 主频是衡量处理器性能的唯一指标</button><button class="opt" data-k="C"><b>C.</b> 指令执行需经历取指、译码、取数、运算、写回等环节</button><button class="opt" data-k="D"><b>D.</b> 提高主频可以完全抵消主存访问延迟带来的影响</button><button class="opt" data-k="E"><b>E.</b> MMU 负责虚拟地址到物理地址的转换</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-8" data-type="fill" data-explain="六个部件：指令部件、运算部件、寄存器组、存取部件、Cache 部件、MMU 部件。若写成“控制器、运算器、寄存器”是把冯·诺依曼五部件混进来了。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-11 典型处理器结构" data-answer="存取|Cache|MMU" data-answer-text="存取部件、Cache 部件、MMU 部件"><div class="qhead"><span class="chip">2-8</span><span class="chip t">填空</span><span class="chip k">KP-11 典型处理器结构</span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">这里给出的典型处理器体系结构中，除指令部件、运算部件、寄存器组外，还包括________、________、________三个部件。</div><div class="fillrow"><input class="fillinput" placeholder="写出三个部件" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答了两个问题：处理器凭什么成为核心（它承担取指、译码、运算、访存控制的全部调度），以及 CISC/RISC 的差别本质（<strong>复杂度放在硬件还是软件</strong>）。</p>
+<p><strong>留下一个问题</strong>：处理器每秒能执行几十亿条指令，可它要的数据在主存里，而主存的延迟是几百个时钟周期。这几百个周期的空转，靠什么填上？</p>
+<p>下一节就是答案——存储层次。</p>
+<hr>
+<h2 id="sec3">第 3 节 存储器：为什么 8GB 的电脑能跑 12GB 的程序</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：处理器很快、存储器很慢，计算机靠什么把这个速度差"藏"起来，又怎么把这个"快"算出来？</p>
+</blockquote>
+<h3>一、两个说不通的现象</h3>
+<p>打开任务管理器，你可能见过这样的画面：物理内存 8GB，但正在运行的程序加起来占了 12GB，系统既没崩，也没报错。</p>
+<p>再看另一个：CPU 主频 3.5GHz，意味着每秒 35 亿个时钟周期，理论上跑一个百万次的循环只要几毫秒，可你实际等它跑完，喝了半杯水。</p>
+<p>这两件事看着无关，其实是同一个原因：<strong>计算机的各个部件，速度差了整整几个数量级</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>数据在哪</th>
+<th>大致延迟</th>
+<th>打个比方（从书桌到仓库）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>寄存器</td>
+<td>不到 1 纳秒</td>
+<td>手里拿着的笔</td>
+</tr>
+<tr>
+<td>L1 Cache</td>
+<td>约 1 纳秒</td>
+<td>桌面上摊开的书</td>
+</tr>
+<tr>
+<td>L2/L3 Cache</td>
+<td>4～20 纳秒</td>
+<td>身后的书架</td>
+</tr>
+<tr>
+<td>主存</td>
+<td>约 100 纳秒</td>
+<td>隔壁房间的书柜</td>
+</tr>
+<tr>
+<td>SSD</td>
+<td>数十微秒</td>
+<td>楼下快递柜</td>
+</tr>
+<tr>
+<td>机械硬盘</td>
+<td>数毫秒</td>
+<td>城郊的仓库</td>
+</tr>
+</tbody>
+</table>
+<p>看最后一行：访问一次硬盘，够 CPU 空转<strong>上百万个周期</strong>。如果只有这四五层里最慢的那几层，CPU 绝大部分时间都在等数据，主频再高也没用。</p>
+<p>那为什么不干脆全用最快的存储器？</p>
+<p>因为物理与成本不允许。片上缓存用 SRAM（六个晶体管存一位），快、不用刷新，但面积大、贵、费电；主存用 DRAM（一个电容加一个晶体管存一位），便宜、密度高，但要不断充电刷新，慢一个数量级。容量每翻一级，单位成本降一个数量级，速度也降一个数量级。</p>
+<p>于是只能做一件朴素的事：<strong>用很小的快速存储，去缓存那些"正在被反复使用"的数据</strong>。而"反复使用"不是猜测，是程序本身的性质。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：如果程序是随机地在整个内存里取数，缓存还有用吗？为什么？</p>
+</blockquote>
+<h3>二、局部性原理：程序其实很"懒"</h3>
+<p><strong>时间局部性</strong>：刚用过的数据，很可能马上还要用。</p>
+<pre><code class="language-c">for (int i = 0; i &lt; n; i++)
+    sum += a[i];      // i 和 sum 每一轮都被访问——时间局部性
+</code></pre>
+<p><strong>空间局部性</strong>：用了一个地址，很可能接着用相邻地址。<code>a[i]</code>、<code>a[i+1]</code> 在内存里连着，CPU 取 <code>a[i]</code> 时顺手把后面几十字节一起搬进缓存，后续访问就都命中了。</p>
+<p>这里有一条很实用的推论：<strong>同样遍历一万个元素，数组比链表快得多</strong>。不是复杂度不同（都是 O(n)），而是数组能吃到空间局部性，链表节点散落各处，每跳一次都可能是一次缓存缺失。高性能代码里，"数据结构的内存布局"往往比"算法"更影响实际速度。</p>
+<p>理解了这一点，存储层次才有了存在的基础：<strong>快的那几层，缓存的正是这种"最近用过、位置相邻"的数据</strong>。</p>
+<blockquote>
+<p><strong>想一想 ②</strong>：遍历一个 <code>std::list&lt;int&gt;</code> 和一个 <code>int[10000]</code>，时间复杂度相同，但运行时间可能差 5～10 倍。请用本节概念解释这个差距。</p>
+</blockquote>
+<h3>三、四层结构：一条从快到慢、从小到大、从贵到便宜的阶梯</h3>
+<p><strong>第一层：片上缓存</strong>。做在处理器核心里，SRAM，16KB～512KB，通常分 L1（指令/数据），有的再分 L2。零距离——不经总线，一个时钟周期上下就能取到。</p>
+<p><strong>第二层：片外缓存</strong>。在核心之外，需经交换互联开关访问，仍是 SRAM，256KB～4MB，一般称 L2/L3 Cache 或平台缓存（Platform Cache），承接片上装不下的热点数据。</p>
+<p><strong>第三层：主存（内存）</strong>。DRAM，独立芯片，经总线与处理器相连，数百 MB 到数十 GB。靠电容存电荷，电荷会漏，必须周期刷新；<strong>掉电即失</strong>。</p>
+<p><strong>第四层：外存</strong>。磁带、磁盘、光盘、各类 Flash。最慢、最大，而且<strong>掉电保持数据</strong>。这里有个容易忽略的细节：不同介质的保持年限不同——Flash 约 10 年，光盘数年至数十年，磁盘 10 年以上，<strong>磁带 30 年以上</strong>。问"哪种介质保存最久"，答案是磁带而不是硬盘。</p>
+<p>四层连起来看：<strong>越靠近 CPU，越贵越快越小；越远离 CPU，越便宜越慢越大</strong>。所有性能优化，本质都是"让更多访问落在靠近 CPU 的那几层"。</p>
+<blockquote>
+<p><strong>想一想 ③</strong>：为什么"片外缓存"容量只有几 MB，却比几百 GB 的硬盘更重要？</p>
+</blockquote>
+<h3>四、命中率：把"快慢混用"变成一个数</h3>
+<p>引入<strong>命中率</strong> <span class="math">h</span>：要的数据正好在缓存里的比例；<span class="math">1-h</span> 是<strong>缺失率</strong>。</p>
+<p>命中耗时 <span class="math">T<sub>c</sub></span>，不命中则去主存取，耗时 <span class="math">T<sub>m</sub></span>。平均访问时间：</p>
+<p><span class="math mathblock">EAT = h × T<sub>c</sub> + (1-h) × T<sub>m</sub></span></p>
+<p>直觉是：<strong>95% 的访问只花 2 纳秒，5% 花 100 纳秒，平均被拉到 6.9 纳秒</strong>——比每次都访问主存快一个数量级。这就是缓存的全部意义。</p>
+<p>这里给出的是概念描述，公式需要自己补全。而考试真正考的不是背公式，是<strong>单位是否统一、什么情况下公式会变形</strong>。</p>
+<h3>五、例题精解</h3>
+<p><strong>例 1（工程项目：缓存收益的两条路）</strong> 某证券行情系统的报价服务，热点合约数据放在进程内缓存：命中率 92%，缓存访问 3μs，未命中时回源数据库 8ms。当前平均响应时间是多少？如果把命中率提到 96%，或者把数据库优化到 4ms，哪个更划算？</p>
+<p><em>思路</em>：先把指标统一成 μs，再套 <span class="math">EAT</span>；然后分别算两条优化路径的收益，用数字比。</p>
+<p><em>解答</em>：<br>
+- 现状：<span class="math">EAT = 0.92 × 3 + 0.08 × 8000 = 2.76 + 640 = 642.8μs</span>（约 0.64ms）<br>
+- 路径 A（命中率 96%）：<span class="math">0.96 × 3 + 0.04 × 8000 = 2.88 + 320 = 322.9μs</span><br>
+- 路径 B（数据库 8ms→4ms）：<span class="math">0.92 × 3 + 0.08 × 4000 = 2.76 + 320 = 322.8μs</span><br>
+- 若命中率能到 99%：<span class="math">0.99 × 3 + 0.01 × 8000 = 2.97 + 80 = 82.97μs</span></p>
+<p><em>点评</em>：A 与 B 的结果几乎一样（322.9 对 322.8），说明<strong>两条路的收益等价，该选成本低的那条</strong>——这就是工程决策。而命中率一旦推到 99%，收益又跳了一个台阶（83μs），说明<strong>命中率在高位区间的边际收益更大</strong>。这三个数字摆在一起，"该往哪儿投人力"就不再是拍脑袋。</p>
+<p><strong>例 2（工程选型：监控存储的分层设计）</strong> 某视频监控平台要求：4K 录像每天写入 20TB，最近 7 天可秒级回放，30 天内可查，保留期内不可丢失。请设计存储层次，并说明为什么不能全用 SSD。</p>
+<p><em>解答</em>：<br>
+- <strong>热层（最近 7 天）</strong>：NVMe SSD 或高性能分布式存储，保证秒级回放；容量按 7×20TB=140TB 估算；<br>
+- <strong>温层（8～30 天）</strong>：大容量 HDD 或对象存储，顺序写、批量读，容量约 460TB；<br>
+- <strong>归档层</strong>：磁带库或冷存储，用于合规长留。<br>
+- <strong>为什么不能全 SSD</strong>：600TB 全 SSD 的成本是 HDD 的数倍到十倍，而 8～30 天的访问频率极低；按"单位容量成本 × 访问频率"排布，才是最优解——这正是存储层次思想在系统级的翻版。</p>
+<p><em>点评</em>：CPU 里的四层缓存与这里的"热-温-冷"三层，本质是同一个模型：<strong>用小的快存储兜住高频访问，用大的慢存储承接低频数据</strong>。把这个概念迁移到架构设计上，就是 K3 要讲的"多级缓存架构"。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：把平均访问时间算成 <span class="math">h × T<sub>m</sub> + (1-h) × T<sub>c</sub></span>。</strong> 命中和缺失记反了。自检办法：代入 <span class="math">h=1</span>，结果必须等于 <span class="math">T<sub>c</sub></span>。</p>
+<p><strong>误区二：单位不统一。</strong> 题干可能混用 ns 与 μs，不换算差 1000 倍。例 1 里我把 8ms 换成 8000μs，就是为了避免这个坑。</p>
+<p><strong>误区三：多级缓存直接套单级公式。</strong> 会漏掉中间那层的贡献，正确做法是分层叠加。</p>
+<p>还有一个容易被忽略的细节：严格来说未命中要<strong>先查缓存失败、再访问主存</strong>，耗时是 <span class="math">T<sub>c</sub> + T<sub>m</sub></span>，对应 <span class="math">EAT = hT<sub>c</sub> + (1-h)(T<sub>c</sub>+T<sub>m</sub>)</span>。多数考题采用简化模型（只算 <span class="math">T<sub>m</sub></span>），<strong>以题干给定模型为准</strong>；题干明确"缺失时先查缓存再访问主存"才用严格式。知道差别、按题选式，本身就是得分点。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 11 题（5 单选 + 2 不定项 + 4 填空）。考点清单与覆盖矩阵见本节末。</p>
+</blockquote>
+<div class="quiz" data-id="3-1" data-type="single" data-explain="四层按与处理器距离排列：片上缓存（SRAM，16KB～512KB）→ 片外缓存（SRAM，256KB～4MB）→ 主存（DRAM）→ 外存。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-1 存储四层顺序" data-answer="B"><div class="qhead"><span class="chip">3-1</span><span class="chip t">单选</span><span class="chip k">KP-1 存储四层顺序</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">按与处理器的距离由近及远，存储层次的正确顺序是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 片外缓存 → 片上缓存 → 主存 → 外存</button><button class="opt" data-k="B"><b>B.</b> 片上缓存 → 片外缓存 → 主存 → 外存</button><button class="opt" data-k="C"><b>C.</b> 主存 → 片上缓存 → 片外缓存 → 外存</button><button class="opt" data-k="D"><b>D.</b> 片上缓存 → 主存 → 片外缓存 → 外存</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-2" data-type="single" data-explain="A 错：片上是 SRAM；C 错：主存是 DRAM；D 错：外存包括 Flash。两种 SRAM 的容量写在一起，容易看串。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-2 各层介质与容量" data-answer="B"><div class="qhead"><span class="chip">3-2</span><span class="chip t">单选</span><span class="chip k">KP-2 各层介质与容量</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">下列关于各层存储介质的说法，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 片上缓存通常为 DRAM，容量 16KB～512KB</button><button class="opt" data-k="B"><b>B.</b> 片外缓存通常为 SRAM，容量 256KB～4MB</button><button class="opt" data-k="C"><b>C.</b> 主存通常为 SRAM，容量数百 MB 至数十 GB</button><button class="opt" data-k="D"><b>D.</b> 外存不包括 Flash 类介质</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-3" data-type="single" data-explain="SRAM 用六个晶体管存一位（触发器结构），快、不需刷新但贵；DRAM 用电容，需刷新、便宜、密度高。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-3 SRAM 与 DRAM" data-answer="B"><div class="qhead"><span class="chip">3-3</span><span class="chip t">单选</span><span class="chip k">KP-3 SRAM 与 DRAM</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">与 DRAM 相比，SRAM 的特点是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 用电容存储、需定期刷新、单位成本低</button><button class="opt" data-k="B"><b>B.</b> 用触发器存储、无需刷新、速度快但成本高</button><button class="opt" data-k="C"><b>C.</b> 容量大、单位成本低，适合做主存</button><button class="opt" data-k="D"><b>D.</b> 掉电后数据不丢失，可直接作外存</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-4" data-type="single" data-explain="记住这组数字：Flash 约 10 年，光盘数年至数十年，磁盘 10 年以上，磁带 30 年以上——最长的是磁带。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-4 保持年限" data-answer="D"><div class="qhead"><span class="chip">3-4</span><span class="chip t">单选</span><span class="chip k">KP-4 保持年限</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">下列介质中，数据保持年限通常最长的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 机械硬盘</button><button class="opt" data-k="B"><b>B.</b> Flash</button><button class="opt" data-k="C"><b>C.</b> 光盘</button><button class="opt" data-k="D"><b>D.</b> 磁带</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-5" data-type="single" data-explain="两者复杂度都是 O(n)，差别在缓存行为：数组连续布局吃到空间局部性，链表节点分散、频繁缺失。" data-source="拓展" data-diag="B 补充" data-kp="KP-10 数组与链表" data-answer="B"><div class="qhead"><span class="chip">3-5</span><span class="chip t">单选</span><span class="chip k">KP-10 数组与链表</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">同样遍历 10000 个元素，数组通常比链表快，主要原因是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数组的算法复杂度更低</button><button class="opt" data-k="B"><b>B.</b> 数组元素在内存中连续，能利用空间局部性</button><button class="opt" data-k="C"><b>C.</b> 链表节点带指针，计算量更大</button><button class="opt" data-k="D"><b>D.</b> 数组天然支持多线程</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-6" data-type="multi" data-explain="D 错：主频再高也要等数据；E 错：收益受未优化部分占比限制（Amdahl 定律），并非线性叠加。" data-source="拓展" data-diag="B 补充 / C 晦涩" data-kp="KP-9/KP-12 局部性与收益" data-answer="ABC"><div class="qhead"><span class="chip">3-6</span><span class="chip t">不定项</span><span class="chip k">KP-9/KP-12 局部性与收益</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">关于局部性原理与缓存有效性，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 时间局部性指刚访问过的数据很可能再次被访问</button><button class="opt" data-k="B"><b>B.</b> 空间局部性指程序倾向于访问与当前地址相邻的地址</button><button class="opt" data-k="C"><b>C.</b> 遍历同长度链表通常比遍历数组的缓存命中率低</button><button class="opt" data-k="D"><b>D.</b> 只要持续提高主频，就能弥补缓存缺失的损失</button><button class="opt" data-k="E"><b>E.</b> 提高命中率与提高主频对性能的改善是线性可叠加的</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-7" data-type="multi" data-explain="D 错：那是简化模型的表达式；严格模型应为 $hT_c + (1-h)(T_c+T_m)$。" data-source="拓展" data-diag="B 补充" data-kp="KP-11 简化与严格模型" data-answer="ABC"><div class="qhead"><span class="chip">3-7</span><span class="chip t">不定项</span><span class="chip k">KP-11 简化与严格模型</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">关于平均访问时间的计算模型，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 简化模型认为未命中时只需支付主存访问时间 Tm</button><button class="opt" data-k="B"><b>B.</b> 严格模型下未命中耗时为 Tc + Tm</button><button class="opt" data-k="C"><b>C.</b> 题干未说明模型时，一般按简化模型计算</button><button class="opt" data-k="D"><b>D.</b> 严格模型的表达式是 EAT = hTc + (1-h)Tm</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-8" data-type="fill" data-explain="写“寄存器”不算：寄存器不属于这四层。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-1 存储四层名称" data-answer="片上|片外|主存|外存" data-answer-text="片上缓存、片外缓存、主存（内存）、外存"><div class="qhead"><span class="chip">3-8</span><span class="chip t">填空</span><span class="chip k">KP-1 存储四层名称</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">存储体系按与处理器距离由近及远依次为：、、、。</div><div class="fillrow"><input class="fillinput" placeholder="四个层次，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="3-9" data-type="fill" data-explain="0.95×2 + 0.05×100 = 1.9 + 5 = 6.9。得 95.1 说明把 h 乘到了 Tm 上。" data-source="拓展" data-diag="B 补充" data-kp="KP-6 EAT 正向计算" data-answer="6.9" data-answer-text="6.9 ns" data-numeric="6.9"><div class="qhead"><span class="chip">3-9</span><span class="chip t">填空</span><span class="chip k">KP-6 EAT 正向计算</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">Cache 命中率 95%，Tc=2ns，Tm=100ns，则 EAT = ________ ns。</div><div class="fillrow"><input class="fillinput" placeholder="填数字" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="3-10" data-type="fill" data-explain="3.45 = 50 − 49h → h = 95%。移项错会算成 93%。" data-source="拓展" data-diag="B 补充" data-kp="KP-7 EAT 反向求解" data-answer="95|0.95" data-answer-text="95%" data-numeric="95|0.95"><div class="qhead"><span class="chip">3-10</span><span class="chip t">填空</span><span class="chip k">KP-7 EAT 反向求解</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">Tc=1ns，Tm=50ns，测得 EAT=3.45ns，则命中率 h = ________。</div><div class="fillrow"><input class="fillinput" placeholder="填百分数或小数" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="3-11" data-type="fill" data-explain="分层叠加：1 + 0.1×5 + 0.1×0.05×100 = 1 + 0.5 + 0.5 = 2。得 10.9 是漏掉 L2 那一层。" data-source="拓展" data-diag="B 补充" data-kp="KP-8 多级缓存叠加" data-answer="2" data-answer-text="2 ns" data-numeric="2"><div class="qhead"><span class="chip">3-11</span><span class="chip t">填空</span><span class="chip k">KP-8 多级缓存叠加</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">L1 命中率 90%、访问时间 1ns；L2 承接 L1 缺失，其中 95% 命中、访问时间 5ns；主存 100ns。则 EAT = ________ ns。</div><div class="fillrow"><input class="fillinput" placeholder="填数字" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：<strong>部件速度差几个数量级，靠什么让整体看起来很快？</strong><br>
+① 程序有局部性，值得缓存；② 于是有四层阶梯；③ 用命中率量化为平均访问时间，收益非线性。</p>
+<p><strong>留一个问题</strong>：缓存里的数据是怎么进去的？CPU 一次只取一个字节，还是要一次搬一整块？——这涉及总线与接口，下一节讲。</p>
+<hr>
+<h2 id="sec4">第 4 节 总线与接口：部件之间怎么连</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：处理器、内存、外设之间靠什么传递数据？为什么现代总线都从"并行"转向了"串行"？</p>
+</blockquote>
+<h3>一、一块采集卡插错槽引发的故障</h3>
+<p>某工控项目在机箱里加了一块高速采集卡，插上后系统起不来，换到另一个插槽就正常了。查手册发现：两个插槽外观一样，但一个是 PCIe x16 直连 CPU，另一个是 PCIe x4 经芯片组转发，带宽与供电都不同。</p>
+<p>这类问题在工程里很常见，它背后是一个容易被忽略的事实：<strong>计算机不是一个整体，而是由若干速度、协议各不相同的部件通过"总线 + 接口"拼起来的</strong>。插槽不同，本质是挂在了不同的总线上。</p>
+<h3>二、三类总线与一个"翻译官"</h3>
+<p>总线按所处位置分三类：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>位置</th>
+<th>典型作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>内总线（片上总线）</td>
+<td>芯片内部</td>
+<td>核与核、核与 Cache 的互连</td>
+</tr>
+<tr>
+<td>系统总线</td>
+<td>CPU、主存、I/O 接口之间</td>
+<td>承载处理器与内存的数据流</td>
+</tr>
+<tr>
+<td>外部总线（通信总线）</td>
+<td>机箱与外设、系统与系统之间</td>
+<td>USB、以太网、CAN、RS-485 等</td>
+</tr>
+</tbody>
+</table>
+<p>计算机发展为多总线结构后，系统总线的含义有所变化：狭义上专指 CPU 与主存、通信桥连接的总线；广义上还包含由系统总线再次级联的<strong>局部总线</strong>。</p>
+<p>三类总线之间协议不同，需要一个"翻译官"——<strong>桥（Bridge）</strong>。它是特殊的外设，负责总线协议之间的转换。上一节说"片外缓存需经交换互联开关访问"，那个开关就是桥的一种形态。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：如果所有部件都挂在同一根总线上，会有什么问题？为什么现代计算机要设计成多总线、多层级结构？</p>
+</blockquote>
+<h3>三、并行与串行：一条被反转的技术路线</h3>
+<p>早期的总线多是<strong>并行</strong>的：PCI、ATA(IDE) 一次传多位。但今天的高速总线几乎都改成了<strong>串行</strong>：PCIe、USB、SATA、RapidIO。</p>
+<p>原因不是串行更快，而是<strong>并行到了高频就撑不住</strong>：</p>
+<ul>
+<li>并行总线要求多条线同时到达，频率越高，线间时序偏差（skew）越难对齐；</li>
+<li>线间串扰、反射问题随频率急剧恶化；</li>
+<li>布线密度上不去，走线长度被严格限制。</li>
+</ul>
+<p>串行总线放弃"一次传多位"，改用差分信号 + 高速串行 + 多通道并行（如 PCIe x16 就是 16 条串行通道）。<strong>把"宽度"换成"速度"，再用多条通道换回宽度</strong>——这是过去二十年总线演进的主线。</p>
+<blockquote>
+<p><strong>想一想 ②</strong>：既然并行难做高频，为什么内存条（DDR）至今还是并行结构？</p>
+</blockquote>
+<h3>四、接口：同一根总线的多种"插座"</h3>
+<p>接口是同一计算机不同功能层之间的<strong>通信规则</strong>。这里列出一串常见接口，其实可以按用途归成四组：</p>
+<table>
+<thead>
+<tr>
+<th>用途</th>
+<th>典型接口</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>显示</td>
+<td>HDMI、DVI、DP</td>
+</tr>
+<tr>
+<td>音频</td>
+<td>TRS（耳机）、RCA、XLR</td>
+</tr>
+<tr>
+<td>网络</td>
+<td>RJ45、FC（光纤通道）</td>
+</tr>
+<tr>
+<td>通用/存储/串口</td>
+<td>USB、SATA、PS/2、LPT（打印）、RS-232</td>
+</tr>
+</tbody>
+</table>
+<p>要注意接口与总线不是一一对应：<strong>一种总线可以有多种接口形态</strong>。以太网总线既能用 RJ45，也能用同轴电缆；PCIe 总线则有 x1/x4/x8/x16 多种物理形态。这也是第一节说的"一块采集卡插错槽"的根源——同样叫 PCIe，通道数和挂载位置不同，带宽差几倍。</p>
+<h3>五、外部设备：被重新划分的"输入输出"</h3>
+<p>硬件的划分是"处理器、存储器、总线、接口、外部设备"，而不是"输入设备、输出设备"。原因是：现代外设早已不是"只进或只出"——触屏既是输入也是输出，网卡既能收也能发。</p>
+<p>外设的范围包括<strong>所有输入输出设备以及部分存储设备（即外存）</strong>。常见的有键盘、鼠标、显示器、扫描仪、摄像头、打印机、光驱、网卡、各类存储卡；移动与穿戴设备上还有加速计、GPS、陀螺仪、指纹识别；工业与航空航天领域更多：测温仪、轨迹球、红外/NFC 感应、功率驱动装置、机械臂等。</p>
+<p>不管形态多杂，它们都通过<strong>接口</strong>与计算机主体连接，靠<strong>指令与数据</strong>实现功能。</p>
+<h3>六、例题精解</h3>
+<p><strong>例 1（工程项目：采集卡插槽不匹配）</strong> 前述工控项目中，采集卡要求稳定 6GB/s 带宽。机箱有两个 PCIe 插槽：A 为 PCIe 3.0 x16 直连 CPU，B 为 PCIe 3.0 x4 经芯片组。请判断应该插哪个，并说明理由。</p>
+<p><em>解答</em>：<br>
+- PCIe 3.0 单通道约 1GB/s（8GT/s 编码后有效带宽约 0.985GB/s），x4 约 3.9GB/s，<strong>达不到 6GB/s</strong>；x16 约 15.8GB/s，满足要求。<br>
+- 应插 <strong>A</strong>。除了带宽，直连 CPU 还避免了与芯片组上其他设备争抢带宽、降低时延。<br>
+- 这也解释了"插 B 起不来"：部分采集卡在链路训练阶段会因带宽不足或供电不足直接初始化失败。</p>
+<p><em>点评</em>：考试里常考"某设备应接在哪种总线/接口"，答题关键不是背接口名字，而是<strong>先算带宽需求，再对通道数</strong>。</p>
+<p><strong>例 2（工程选型：现场总线之争）</strong> 某工厂要在车间部署 200 个传感器节点，传输距离 500 米，电磁干扰强，要求支持多主通信与优先级仲裁。候选方案是 RS-485 与 CAN，选哪个？</p>
+<p><em>解答</em>：<br>
+- <strong>选 CAN</strong>。RS-485 只是电气层标准，能差分传输、抗干扰、支持多点，但<strong>没有协议层</strong>，多主仲裁、错误检测、优先级都要自己实现。<br>
+- CAN 在差分物理层之上定义了完整的帧格式、非破坏性位仲裁、CRC 校验与错误帧，天然支持多主与优先级——正好匹配"200 节点 + 仲裁需求"。<br>
+- 若只是点对点或单主轮询、成本极紧，RS-485 更简单便宜。</p>
+<p><em>点评</em>：这题的区分点是"<strong>电气标准 vs 完整协议</strong>"。工程上很多选型错误，都是把"能连上"当成了"能协同"。</p>
+<h3>七、常见误区</h3>
+<p><strong>误区一：认为 PCIe 是并行总线。</strong><br>
+PCIe 的每个通道（lane）是<strong>串行</strong>差分链路，x16 是 16 条独立串行通道并行工作，不是传统意义的多位并行总线。</p>
+<p><strong>误区二：把接口当成总线。</strong><br>
+接口是"插座与规则"，总线是"传输通道"。同一总线可对应多种接口形态。</p>
+<p><strong>误区三：认为 USB 只能接"外设"。</strong><br>
+USB 也承载存储（U 盘、移动硬盘）、网络（USB 网卡）、显示（DisplayLink），它已是通用外部总线。</p>
+<p><strong>误区四：以为外设就是输入输出设备。</strong><br>
+软考口径里，外设还包括部分外存（存储卡、光驱、移动硬盘）。</p>
+<h3>八、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="4-1" data-type="single" data-explain="系统总线指 CPU、主存、I/O 接口的总线；内总线在芯片内部；外部总线是机箱与外设、系统与系统之间。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-13 总线分类" data-answer="B"><div class="qhead"><span class="chip">4-1</span><span class="chip t">单选</span><span class="chip k">KP-13 总线分类</span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">计算机中 CPU、主存、I/O 接口之间的总线属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 内总线（片上总线）</button><button class="opt" data-k="B"><b>B.</b> 系统总线</button><button class="opt" data-k="C"><b>C.</b> 外部总线（通信总线）</button><button class="opt" data-k="D"><b>D.</b> 局部总线</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-2" data-type="single" data-explain="PCI 与 ATA(IDE) 属并行总线；USB、SATA、CAN、RS-232、RS-485、RapidIO、以太网均属串行。含 PCI/ATA 的选项都要排除。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="KP-14 并行与串行" data-answer="B"><div class="qhead"><span class="chip">4-2</span><span class="chip t">单选</span><span class="chip k">KP-14 并行与串行</span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">下列全部属于串行总线的一组是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> PCI、ATA、USB、SATA</button><button class="opt" data-k="B"><b>B.</b> USB、SATA、CAN、RS-232</button><button class="opt" data-k="C"><b>C.</b> PCIe、PCI、ATA、以太网</button><button class="opt" data-k="D"><b>D.</b> 以太网、USB、PCI、RS-485</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-3" data-type="single" data-explain="总线之间通过桥实现连接，它是一种特殊的外设，主要实现总线协议间的转换。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-15 桥的作用" data-answer="B"><div class="qhead"><span class="chip">4-3</span><span class="chip t">单选</span><span class="chip k">KP-15 桥的作用</span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">关于桥（Bridge）的作用，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 用于放大总线信号、延长传输距离</button><button class="opt" data-k="B"><b>B.</b> 实现总线协议之间的转换，是特殊的外设</button><button class="opt" data-k="C"><b>C.</b> 只在芯片内部存在，用于连接多个核心</button><button class="opt" data-k="D"><b>D.</b> 用于替代接口，统一所有外设的连接方式</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-4" data-type="single" data-explain="RS-485 只是电气层标准，无协议层，多主仲裁与优先级需自行实现；CAN 在差分物理层上定义了完整帧格式、非破坏性位仲裁与 CRC，天然支持多主。" data-source="拓展" data-diag="B 补充" data-kp="KP-16 现场总线选型" data-answer="C"><div class="qhead"><span class="chip">4-4</span><span class="chip t">单选</span><span class="chip k">KP-16 现场总线选型</span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">某工厂车间需部署 200 个传感器节点，传输距离 500 米、干扰强，且要求支持多主通信与优先级仲裁。最合适的方案是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> RS-232</button><button class="opt" data-k="B"><b>B.</b> RS-485</button><button class="opt" data-k="C"><b>C.</b> CAN</button><button class="opt" data-k="D"><b>D.</b> USB</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-5" data-type="multi" data-explain="D 错：PCIe x16 就是 16 条串行通道并行工作。并行难做高频的核心原因是线间时序偏差与串扰，未细讲，需补充理解。" data-source="拓展" data-diag="C 晦涩" data-kp="KP-14 并行与串行演进" data-answer="ABCE"><div class="qhead"><span class="chip">4-5</span><span class="chip t">不定项</span><span class="chip k">KP-14 并行与串行演进</span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">关于并行总线与串行总线，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 并行总线一次可传输多位数据，早期 PCI、ATA 均属并行</button><button class="opt" data-k="B"><b>B.</b> 串行总线在高频下更易控制时序偏差与串扰</button><button class="opt" data-k="C"><b>C.</b> PCIe 的每个通道是串行差分链路，x16 表示 16 条通道</button><button class="opt" data-k="D"><b>D.</b> 串行总线只能是单通道，无法通过增加通道提升带宽</button><button class="opt" data-k="E"><b>E.</b> 现代高速总线普遍由并行转向串行</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-6" data-type="fill" data-explain="顺序可以不同，但三类必须齐全；“局部总线”是系统总线的广义组成部分，不单独作为一类。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-13 总线三类" data-answer="内总线|系统总线|外部" data-answer-text="内总线（片上总线）、系统总线、外部总线（通信总线）"><div class="qhead"><span class="chip">4-6</span><span class="chip t">填空</span><span class="chip k">KP-13 总线三类</span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">总线按在计算机中所处的位置划分为三类，分别是________、、。</div><div class="fillrow"><input class="fillinput" placeholder="三个类型，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="4-7" data-type="fill" data-explain="这里列出的显示类接口为 HDMI、DVI 等；网络类为 RJ45、FC 等。写 USB、SATA 属于通用/存储类，不对应本题。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-17 常见接口" data-answer="hdmi/dvi/dp|rj45/rj-45/fc" data-answer-text="显示类：HDMI/DVI/DP；网络类：RJ45/FC"><div class="qhead"><span class="chip">4-7</span><span class="chip t">填空</span><span class="chip k">KP-17 常见接口</span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">显示类接口的典型代表有________，网络类接口的典型代表有________（各写出一个即可）。</div><div class="fillrow"><input class="fillinput" placeholder="两个接口名，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>九、小结与衔接</h3>
+<p>本节回答了两个问题：部件之间怎么连（内总线/系统总线/外部总线，用桥转换协议），以及为什么现代总线从并行转向串行（高频下并行难控时序与串扰，改用串行 + 多通道）。</p>
+<p><strong>留下一个问题</strong>：硬件都齐了，谁来调度它们？多个程序同时要 CPU、要内存、要磁盘时，按什么规则分配？</p>
+<p>下一节进入软件的第一层——操作系统。</p>
+<hr>
+<h2 id="sec5">第 5 节 操作系统：谁在分配资源</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：多个程序同时要 CPU、要内存、要磁盘时，按什么规则分配？为什么"CPU 占用率 100%"有时反而是好事？</p>
+</blockquote>
+<h3>一、一台"很忙但没干活"的服务器</h3>
+<p>某业务服务器监控告警：CPU 使用率连续几天 100%，运维准备扩容。但查下去发现，系统每秒只处理几十个请求——CPU 忙，是在<strong>空转等 IO</strong>。</p>
+<p>同一台机器，换个角度看：磁盘队列排了几十个请求，内存里有一半是缓存。也就是说，三个部件都很"忙"，但真正干活的没几个。</p>
+<p>这就是操作系统要解决的核心问题：<strong>资源是有限的，请求是并发到来的，必须有规则去分配和调度</strong>。我们把操作系统定义为"计算机系统的资源管理者"，一句话点到了本质——它管的不是程序，是资源。</p>
+<h3>二、操作系统管什么、为什么需要它</h3>
+<p>我们把内核的职责归纳为四块：<strong>进程（任务）管理、存储管理、文件管理、设备管理</strong>。所有上层软件——编译器、数据库、浏览器——都建立在这四块能力之上。</p>
+<p>操作系统有三个作用：</p>
+<ol>
+<li><strong>管理运行的程序、分配软硬件资源</strong>。避免冲突，保证程序有序运行。</li>
+<li><strong>提供友善的人机界面</strong>。图形界面、命令行，本质都是"让人不用直接操作硬件"。</li>
+<li><strong>为应用程序提供高效平台</strong>。个很准确的说法：装了操作系统后，呈现在应用面前的是"一台虚拟计算机"——它屏蔽了物理设备细节，用系统调用和库函数提供统一接口。</li>
+</ol>
+<p>四个特征（考试常考）：</p>
+<ul>
+<li><strong>并发性</strong>：宏观上多个程序同时推进，微观上单核一次只执行一个。</li>
+<li><strong>共享性</strong>：资源可被多个并发进程共同使用，分同时共享与互斥共享。</li>
+<li><strong>虚拟性</strong>：把物理上的一个实体变成逻辑上的多个（如虚拟内存），或反过来。</li>
+<li><strong>不确定性</strong>：进程何时执行、何时暂停、何时完成不可预知，因此程序执行结果可能不唯一。</li>
+</ul>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"不确定性"被列为操作系统的特征，而不是缺点？如果系统完全没有不确定性，会付出什么代价？</p>
+</blockquote>
+<h3>三、七类操作系统：按"调度目标"分，而不是按功能分</h3>
+<p>这里列出七类：批处理、分时、实时、网络、分布式、微机、嵌入式。死记容易乱，抓住每类的<strong>调度目标</strong>就清楚了：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>目标</th>
+<th>典型做法</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>批处理（单道/多道）</td>
+<td><strong>吞吐量</strong></td>
+<td>作业排队，IO 时切换给下一个作业</td>
+<td>响应慢，用户无交互</td>
+</tr>
+<tr>
+<td>分时</td>
+<td><strong>响应时间</strong></td>
+<td>时间片轮转（如 20 个终端 × 50ms 一片）</td>
+<td>上下文切换开销</td>
+</tr>
+<tr>
+<td>实时</td>
+<td><strong>确定性/截止时间</strong></td>
+<td>优先级抢占，最坏情况可预测</td>
+<td>平均性能不高</td>
+</tr>
+<tr>
+<td>网络</td>
+<td>资源共享</td>
+<td>通信协议 + 目录服务</td>
+<td>依赖网络</td>
+</tr>
+<tr>
+<td>分布式</td>
+<td>透明性</td>
+<td>统一视图、任务划分</td>
+<td>复杂度高</td>
+</tr>
+</tbody>
+</table>
+<p>一个具体例子：20 个终端的分时系统，每个用户分配 50ms 时间片，每隔 1 秒就能为所有用户服务一遍。<strong>这就是"用响应时间换吞吐"的量化表达</strong>。</p>
+<p>实时系统再分两类：<strong>实时控制系统</strong>（数据采集、武器控制、飞机自动驾驶）和<strong>实时信息处理系统</strong>（订票、情报检索）。前者要求硬实时，后者多为软实时。</p>
+<blockquote>
+<p><strong>想一想 ②</strong>：为什么实时系统"对交互能力要求不高，但要求可靠性有保障"？如果给实时系统加一个漂亮的图形界面，会带来什么风险？</p>
+</blockquote>
+<h3>四、考纲要求、但容易一带而过的三块（补充）</h3>
+<p><strong>本章只讲操作系统的概念、作用、特征与分类，不展开进程调度、分页存储、死锁</strong>。但这三块是上午题的常客，所以下面单独补上，做题时诊断标签会标 B。</p>
+<p><strong>(1) 进程与线程。</strong> 进程 = 程序 + 数据 + PCB，是<strong>资源分配</strong>的基本单位；线程是<strong>调度</strong>的基本单位，共享进程的地址空间，切换开销小。进程有三态：就绪、运行、阻塞，合法转换是"就绪↔运行、运行→阻塞、阻塞→就绪"，<strong>不允许"阻塞→运行"</strong>。</p>
+<p><strong>(2) 调度算法与周转时间。</strong> 常见四种：先来先服务（FCFS）、短作业优先（SJF）、优先级、时间片轮转。</p>
+<blockquote>
+<p>周转时间 = 完成时间 − 到达时间；带权周转时间 = 周转时间 / 运行时间。</p>
+</blockquote>
+<p><strong>(3) 分页与页面置换。</strong> 页式存储把地址空间等长切分，逻辑地址 = 页号 + 页内偏移；页内偏移位数 = log₂(页面大小)。置换算法有 OPT（最优但不可实现）、FIFO（会出现 Belady 异常：页框增多反而缺页更多）、LRU、Clock。</p>
+<h3>五、例题精解</h3>
+<p><strong>例 1（工程项目：批处理平台的调度选择）</strong> 某数据平台每晚跑批，5 个作业的到达时间都是 0，运行时间分别为 12、6、4、3、1 分钟。分别用 FCFS（按给定顺序）与 SJF 计算平均周转时间，并说明为什么生产上不一定选 SJF。</p>
+<p><em>解答</em>：<br>
+- FCFS：完成时间 12、18、22、25、26 → 平均 (12+18+22+25+26)/5 = <strong>20.6 分钟</strong><br>
+- SJF：按 1、3、4、6、12 执行 → 完成时间 1、4、8、14、26 → 平均 (1+4+8+14+26)/5 = <strong>10.6 分钟</strong></p>
+<p>SJF 把平均周转时间几乎砍半，但它有两个工程问题：<strong>必须预知运行时间</strong>（实际只能用历史均值估算），以及<strong>长作业可能饿死</strong>（不断有短作业插队）。生产上通常用"优先级 + 老化"或"时间片 + 分级队列"折中。</p>
+<p><em>点评</em>：这道题的考点不是算对 10.6，而是最后那句"<strong>为什么生产上不一定选最优解</strong>"——这正是论文里写"做了权衡"的素材。</p>
+<p><strong>例 2（工程计算：页式地址变换）</strong> 某系统页面大小 4KB，逻辑地址 32 位。求页内偏移位数、页号位数，以及单个进程最大页表项数。</p>
+<p><em>解答</em>：<br>
+- 4KB = 2¹² → 页内偏移 <strong>12 位</strong><br>
+- 页号 = 32 − 12 = <strong>20 位</strong><br>
+- 页表最多 2²⁰ ≈ <strong>104 万</strong>个表项。这也是为什么大地址空间必须用多级页表——单级页表本身就占 4MB。</p>
+<blockquote>
+<p><strong>想一想 ③</strong>：如果把页面从 4KB 改成 64KB，页表项会少多少？代价是什么？（提示：内部碎片）</p>
+</blockquote>
+<h3>六、常见误区</h3>
+<p><strong>误区一：并发等于并行。</strong><br>
+单核也能并发（时间片轮转），并行必须多核同时执行。判断标准是"物理上是否同时"。</p>
+<p><strong>误区二：CPU 使用率高 = 系统忙 = 该扩容。</strong><br>
+本例的 100% 很可能是在等 IO 自旋。要看的是<strong>有效吞吐</strong>与<strong>IO 等待占比</strong>，不是 CPU 数字本身。</p>
+<p><strong>误区三：把进程当成"运行中的程序"。</strong><br>
+进程还包含 PCB 与资源上下文；同一程序跑两份就是两个进程。</p>
+<p><strong>误区四：FIFO 置换算法"公平所以不会差"。</strong><br>
+FIFO 存在 Belady 异常，页框增加缺页率反而上升，这是它被 LRU 取代的原因。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 10 题（6 单选 + 2 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="5-1" data-type="single" data-explain="内核指能提供进程管理、存储管理、文件管理和设备管理功能的软件模块。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-18 内核职能" data-answer="A"><div class="qhead"><span class="chip">5-1</span><span class="chip t">单选</span><span class="chip k">KP-18 内核职能</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">操作系统内核的四项基本管理职能是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 进程管理、存储管理、文件管理、设备管理</button><button class="opt" data-k="B"><b>B.</b> 编译管理、链接管理、加载管理、运行管理</button><button class="opt" data-k="C"><b>C.</b> 用户管理、权限管理、审计管理、备份管理</button><button class="opt" data-k="D"><b>D.</b> 输入管理、输出管理、中断管理、时钟管理</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-2" data-type="single" data-explain="20×50ms=1000ms=1s。原例即：每隔 1s 可为所有用户服务一遍。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-19 分时系统" data-answer="C"><div class="qhead"><span class="chip">5-2</span><span class="chip t">单选</span><span class="chip k">KP-19 分时系统</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">某分时系统连接 20 个终端，每个用户每次分配 50ms 时间片，则一轮服务周期约为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 50ms</button><button class="opt" data-k="B"><b>B.</b> 500ms</button><button class="opt" data-k="C"><b>C.</b> 1s</button><button class="opt" data-k="D"><b>D.</b> 2s</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-3" data-type="single" data-explain="实时系统要求在被控对象允许的时间范围内做出快速反应，对交互能力要求不高但要求可靠性有保障。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-20 OS 分类" data-answer="C"><div class="qhead"><span class="chip">5-3</span><span class="chip t">单选</span><span class="chip k">KP-20 OS 分类</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">下列操作系统中，最强调"最坏情况可预测"的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 批处理操作系统</button><button class="opt" data-k="B"><b>B.</b> 分时操作系统</button><button class="opt" data-k="C"><b>C.</b> 实时操作系统</button><button class="opt" data-k="D"><b>D.</b> 网络操作系统</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-4" data-type="single" data-explain="阻塞态必须先回到就绪态（等调度），不能直接占用 CPU 运行。合法转换：就绪↔运行、运行→阻塞、阻塞→就绪。" data-source="拓展" data-diag="B 补充" data-kp="KP-21 进程状态" data-answer="D"><div class="qhead"><span class="chip">5-4</span><span class="chip t">单选</span><span class="chip k">KP-21 进程状态</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">进程状态转换中，下列哪一组是不可能的？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 就绪 → 运行</button><button class="opt" data-k="B"><b>B.</b> 运行 → 阻塞</button><button class="opt" data-k="C"><b>C.</b> 阻塞 → 就绪</button><button class="opt" data-k="D"><b>D.</b> 阻塞 → 运行</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-5" data-type="single" data-explain="顺序 1、3、4、6、12，完成时间 1、4、8、14、26，平均 (1+4+8+14+26)/5=10.6。20.6 是 FCFS 的结果。" data-source="拓展" data-diag="B 补充" data-kp="KP-22 SJF 周转" data-answer="A"><div class="qhead"><span class="chip">5-5</span><span class="chip t">单选</span><span class="chip k">KP-22 SJF 周转</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">5 个作业同时到达，运行时间分别为 12、6、4、3、1 分钟。采用短作业优先（SJF），平均周转时间约为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 10.6 分钟</button><button class="opt" data-k="B"><b>B.</b> 12.8 分钟</button><button class="opt" data-k="C"><b>C.</b> 20.6 分钟</button><button class="opt" data-k="D"><b>D.</b> 26 分钟</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-6" data-type="single" data-explain="4KB=2¹²，故偏移 12 位，页号 20 位。" data-source="拓展" data-diag="B 补充" data-kp="KP-23 页式地址" data-answer="B"><div class="qhead"><span class="chip">5-6</span><span class="chip t">单选</span><span class="chip k">KP-23 页式地址</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">某系统页面大小 4KB，逻辑地址 32 位，则页内偏移占多少位？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 10 位</button><button class="opt" data-k="B"><b>B.</b> 12 位</button><button class="opt" data-k="C"><b>C.</b> 20 位</button><button class="opt" data-k="D"><b>D.</b> 22 位</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-7" data-type="multi" data-explain="D 错：资源分配正是内核的核心职能之一。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-18/KP-24 OS 特征" data-answer="ABCE"><div class="qhead"><span class="chip">5-7</span><span class="chip t">不定项</span><span class="chip k">KP-18/KP-24 OS 特征</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">关于操作系统的特征与作用，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 并发性指宏观上多个程序同时推进，微观上单核一次只执行一个</button><button class="opt" data-k="B"><b>B.</b> 虚拟性可把物理上的一个实体变成逻辑上的多个对应物</button><button class="opt" data-k="C"><b>C.</b> 不确定性意味着程序执行结果可能不唯一</button><button class="opt" data-k="D"><b>D.</b> 操作系统只为用户程序提供运行环境，不参与资源分配</button><button class="opt" data-k="E"><b>E.</b> 操作系统通过系统调用向应用提供统一接口，屏蔽硬件细节</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-8" data-type="multi" data-explain="D 错：LRU 确实不出现 Belady 异常，但“一定优于”过于绝对（LRU 实现开销更大）。" data-source="拓展" data-diag="B 补充 / C 晦涩" data-kp="KP-22/KP-23 调度与置换" data-answer="ABCE"><div class="qhead"><span class="chip">5-8</span><span class="chip t">不定项</span><span class="chip k">KP-22/KP-23 调度与置换</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">关于进程调度与页面置换，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 短作业优先可使平均周转时间最短，但需预知运行时间</button><button class="opt" data-k="B"><b>B.</b> 时间片轮转适合分时系统，追求响应时间</button><button class="opt" data-k="C"><b>C.</b> FIFO 置换算法可能出现 Belady 异常</button><button class="opt" data-k="D"><b>D.</b> LRU 置换一定优于 FIFO，不会出现反常现象</button><button class="opt" data-k="E"><b>E.</b> 周转时间等于完成时间减去到达时间</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-9" data-type="fill" data-explain="运行→阻塞（等 IO 等事件），阻塞→就绪（事件完成，等待调度）。" data-source="拓展" data-diag="B 补充" data-kp="KP-21 状态转换" data-answer="阻塞/等待|就绪" data-answer-text="阻塞态（等待态）、就绪态"><div class="qhead"><span class="chip">5-9</span><span class="chip t">填空</span><span class="chip k">KP-21 状态转换</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">进程状态转换中，运行态因等待某事件而暂停，会转入________态；该事件发生后，会转入________态。</div><div class="fillrow"><input class="fillinput" placeholder="两个状态名，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="5-10" data-type="fill" data-explain="8KB=2¹³，偏移 13 位，页号 32−13=19 位。" data-source="拓展" data-diag="B 补充" data-kp="KP-23 页号位数" data-answer="19" data-answer-text="19 位" data-numeric="19"><div class="qhead"><span class="chip">5-10</span><span class="chip t">填空</span><span class="chip k">KP-23 页号位数</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">某系统页面大小 8KB，逻辑地址 32 位，则页号占________位。</div><div class="fillrow"><input class="fillinput" placeholder="填数字" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：多个程序抢资源时，操作系统按"目标"去分配——批处理求吞吐、分时求响应、实时求确定。也补上了进程调度、分页与死锁的基础。</p>
+<p><strong>留一个问题</strong>：操作系统管的是"运行中的程序"，可数据本身放在哪里？谁保证一万个人同时下单不会把库存扣成负数？</p>
+<p>下一节进入数据的地基——数据库与文件系统。</p>
+<hr>
+<h2 id="sec6">第 6 节 数据库与文件系统：数据放在哪、怎么找</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：同一份数据要同时服务交易、报表、审计三种用途，该用什么方式组织与存储？</p>
+</blockquote>
+<h3>一、一个"三套数据"的老问题</h3>
+<p>某零售企业的订单数据，交易系统用关系库，报表系统另存一份到数据仓库，审计部门还要导出 Excel 归档。结果是：三套数据口径不一致，对账要三天。</p>
+<p>这不是工具问题，而是<strong>数据组织方式</strong>没设计好。我们把数据库定义为"长期存储在计算机内、有组织、统一管理的相关数据的集合"——注意三个关键词：<strong>有组织、统一管理、可共享</strong>。这三点恰好是"三套数据"的反面。</p>
+<h3>二、数据库的类型谱系</h3>
+<p>的分类很实用，按<strong>存储体系</strong>分：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>特点</th>
+<th>典型场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>关系型</td>
+<td>数据组织成二维表，用关系运算操作</td>
+<td>交易、账务</td>
+</tr>
+<tr>
+<td>键值（KV）</td>
+<td>简单键值对，键唯一标识</td>
+<td>会话、缓存</td>
+</tr>
+<tr>
+<td>列存储</td>
+<td>按列而非按行存储</td>
+<td>分析、报表（只读少数列，扫描快）</td>
+</tr>
+<tr>
+<td>文档</td>
+<td>存 XML/JSON/BSON，自描述、树状结构</td>
+<td>内容、配置</td>
+</tr>
+<tr>
+<td>搜索引擎</td>
+<td>为检索优化</td>
+<td>全文搜索</td>
+</tr>
+</tbody>
+</table>
+<p>一句很形象的说明：<strong>文档数据库可视为"其值可查的键值数据库"</strong>。</p>
+<p>早期的层次式、网络式数据库今天已少见，主流是关系型与非关系型。</p>
+<h3>三、关系模型与数据库设计六阶段</h3>
+<p>关系可以理解为二维表。选课的例子给出：</p>
+<blockquote>
+<p>学生（学号，姓名，年龄，系别）<br>
+课程（课程号，课程名，学分）<br>
+选课（学号，课程号，分数）</p>
+</blockquote>
+<p>其中带下划线的是主码——主码能唯一确定某个实体（学号能唯一确定一个学生）。</p>
+<p>数据库设计分六个阶段：<strong>需求分析 → 概念结构设计（E-R 模型）→ 逻辑结构设计 → 物理结构设计 → 应用程序设计 → 运行维护</strong>。概念设计最常用的方法是 E-R 方法，分三步：设计局部 E-R 模型 → 设计全局 E-R 模型 → 全局模型优化。</p>
+<p>这套流程在下午案例题里经常考"补全 E-R 图""判定范式"。更细的范式与 SQL 会在 K4（第 6 章）展开，本节只需记住<strong>阶段顺序</strong>与"概念设计产出 E-R 图"。</p>
+<h3>四、分布式数据库：四层模式</h3>
+<p>这里给出我国《分布式数据库系统标准》中的四层结构：</p>
+<pre><code>全局外层（全局视图）
+   ↕ 映射
+全局概念层（全局概念模式 → 分片模式 → 分配模式）
+   ↕ 映射
+局部概念层（局部概念模式）
+   ↕
+局部内层（局部内模式）→ 局部数据库
+</code></pre>
+<p>关键在中间那层：<strong>分片模式</strong>决定"数据怎么切"，<strong>分配模式</strong>决定"切片放哪"。这四层对同构、异构分布式库都适用。</p>
+<p>判断一个分布式数据库是否"完全分布"，看四点：分布性、逻辑相关性、场地透明性、场地自治性。</p>
+<h3>五、文件系统：数据库之下的一层</h3>
+<p>不是所有数据都值得进数据库。日志、图片、备份这类，直接放文件系统更划算。文件系统要解决三件事：</p>
+<p><strong>1. 文件的物理结构。</strong> 三种选择：</p>
+<ul>
+<li><strong>连续分配</strong>：读写最快，但文件增长困难、有外碎片；</li>
+<li><strong>链接分配</strong>：易扩展，但随机访问差（要顺着链走）；</li>
+<li><strong>索引分配</strong>：用索引结点（inode）记录块号，随机访问好，代价是索引本身占空间。</li>
+</ul>
+<p><strong>2. 空闲空间管理。</strong> 这里列出三种：空闲区表、<strong>位示图</strong>、空闲块链。位示图用一位表示一个块是否被占，大小由物理块总数决定——这是考试的计算点。</p>
+<p><strong>3. 链接方式。</strong> 硬链接是"两个目录项指向同一个索引结点"，删掉一个另一个还在；符号链接存的是路径，源文件删了就失效。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么位示图的大小只跟磁盘块数有关，而与文件个数无关？如果改用"空闲块链"，会有什么代价？</p>
+</blockquote>
+<h3>六、例题精解</h3>
+<p><strong>例 1（工程计算：位示图容量）</strong> 某视频平台用位示图管理 2TB 的存储池，块大小 4KB。求位示图需要多少字节；若每 32 位为一个字，需要多少字？</p>
+<p><em>解答</em>：<br>
+- 块数 = 2TB / 4KB = 2×2⁴⁰ / 2¹² = 2²⁸ ≈ 2.68 亿块<br>
+- 位示图位数 = 块数 = 2²⁸ bits → 字节数 = 2²⁸ / 8 = 2²⁵ = <strong>33,554,432 字节 ≈ 32MB</strong><br>
+- 每字 32 位 → 字数 = 2²⁸ / 32 = 2²³ = <strong>8,388,608 字</strong></p>
+<p><em>点评</em>：32MB 看起来很占内存，但相比 2TB 的容量只占十万分之一——这正是位示图被广泛使用的原因：<strong>用极小的元数据换极快的空闲块定位</strong>。</p>
+<p><strong>例 2（工程权衡：订单数据该放哪）</strong> 某电商的"订单评论"需要支持：按订单查、按商品查最近 100 条、全文搜索关键词。请给出存储方案并说明理由。</p>
+<p><em>解答</em>：<br>
+- <strong>主体存关系库</strong>（订单-评论关联、强一致、事务）；<br>
+- <strong>按商品查最近 N 条</strong>建<strong>宽表或列存储</strong>（按商品 ID 分区，只读少数字段）；<br>
+- <strong>全文检索</strong>交给<strong>搜索引擎</strong>（倒排索引）；<br>
+- 三者通过消息队列异步同步，接受秒级延迟，用最终一致换查询性能。</p>
+<p><em>点评</em>：这是"一种数据、多种查法"的典型解——<strong>不要试图让一个存储满足所有访问模式</strong>，而要按访问模式拆存储、用同步机制保持一致。这个思路在 K4 与 K3（多级缓存）里会反复出现。</p>
+<h3>七、常见误区</h3>
+<p><strong>误区一：把"文档数据库"当成"文件系统"。</strong><br>
+文档库有索引、可查询、支持事务语义（部分产品）；文件系统只提供字节流的存取。</p>
+<p><strong>误区二：认为分布式数据库的"分片"就是"分表"。</strong><br>
+分片是逻辑层概念（全局概念层），落地到物理才涉及具体存储；分表更多是应用层的实现手段。</p>
+<p><strong>误区三：认为硬链接可以跨文件系统。</strong><br>
+硬链接共享同一 inode，inode 号只在单个文件系统内唯一，所以不能跨；符号链接存路径，可以跨。</p>
+<p><strong>误区四：把 E-R 设计放到逻辑设计阶段。</strong><br>
+E-R 建模属于<strong>概念结构设计</strong>，逻辑设计是把 E-R 图转换成具体数据模型（关系/层次/网状）。</p>
+<h3>八、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="6-1" data-type="single" data-explain="列式存储相对行式存储（Row-Based）而言，区别在对表中数据的存储形式，适合只读少数列的分析场景。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-25 数据库类型" data-answer="C"><div class="qhead"><span class="chip">6-1</span><span class="chip t">单选</span><span class="chip k">KP-25 数据库类型</span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">按存储体系分类，把同一列的数据连续存放、适合分析型查询的数据库类型是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 关系型数据库</button><button class="opt" data-k="B"><b>B.</b> 键值数据库</button><button class="opt" data-k="C"><b>C.</b> 列存储数据库</button><button class="opt" data-k="D"><b>D.</b> 文档数据库</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-2" data-type="single" data-explain="概念结构设计用 E-R 方法，分三步：局部 E-R → 全局 E-R → 优化。逻辑设计才是把 E-R 转成具体数据模型。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-26 设计阶段" data-answer="B"><div class="qhead"><span class="chip">6-2</span><span class="chip t">单选</span><span class="chip k">KP-26 设计阶段</span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">数据库设计中，E-R 图属于哪个阶段的产出？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 需求分析</button><button class="opt" data-k="B"><b>B.</b> 概念结构设计</button><button class="opt" data-k="C"><b>C.</b> 逻辑结构设计</button><button class="opt" data-k="D"><b>D.</b> 物理结构设计</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-3" data-type="single" data-explain="全局概念层含全局概念模式、分片模式、分配模式：分片决定怎么切，分配决定切完放哪。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-27 分布式四层" data-answer="B"><div class="qhead"><span class="chip">6-3</span><span class="chip t">单选</span><span class="chip k">KP-27 分布式四层</span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">分布式数据库四层结构中，负责决定"数据如何切分"的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 全局外层</button><button class="opt" data-k="B"><b>B.</b> 分片模式</button><button class="opt" data-k="C"><b>C.</b> 分配模式</button><button class="opt" data-k="D"><b>D.</b> 局部内模式</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-4" data-type="single" data-explain="硬链接共享 inode，inode 号在单个文件系统内唯一 → 不能跨；符号链接存路径，源删则失效，且自身占空间。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-28 链接方式" data-answer="C"><div class="qhead"><span class="chip">6-4</span><span class="chip t">单选</span><span class="chip k">KP-28 链接方式</span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">下列关于硬链接与符号链接的说法，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 硬链接可以跨文件系统</button><button class="opt" data-k="B"><b>B.</b> 符号链接删除源文件后仍然有效</button><button class="opt" data-k="C"><b>C.</b> 硬链接的两个目录项指向同一索引结点</button><button class="opt" data-k="D"><b>D.</b> 符号链接不占用额外存储空间</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-5" data-type="single" data-explain="块数 2TB/4KB=2²⁸；位数 2²⁸ bit = 2²⁵ B = 32MB。" data-source="拓展" data-diag="B 补充" data-kp="KP-29 位示图计算" data-answer="A"><div class="qhead"><span class="chip">6-5</span><span class="chip t">单选</span><span class="chip k">KP-29 位示图计算</span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">某存储池 2TB，块大小 4KB，用位示图管理，位示图约占多少空间？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 32MB</button><button class="opt" data-k="B"><b>B.</b> 256MB</button><button class="opt" data-k="C"><b>C.</b> 8MB</button><button class="opt" data-k="D"><b>D.</b> 2GB</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-6" data-type="multi" data-explain="D 错：连续分配读写快，但文件增长困难、有外碎片。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-25/KP-28 特性" data-answer="ABCE"><div class="qhead"><span class="chip">6-6</span><span class="chip t">不定项</span><span class="chip k">KP-25/KP-28 特性</span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">关于数据库与文件系统，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数据库具有较小的数据冗余度、较高的数据独立性与易扩展性</button><button class="opt" data-k="B"><b>B.</b> 文档数据库中的文档可以自描述，呈树状结构</button><button class="opt" data-k="C"><b>C.</b> 文件系统空闲空间管理可采用空闲区表、位示图或空闲块链</button><button class="opt" data-k="D"><b>D.</b> 连续分配的优点是易于文件增长</button><button class="opt" data-k="E"><b>E.</b> 索引分配方式便于随机访问，但索引本身占用空间</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="6-7" data-type="fill" data-explain="顺序不能乱：概念（E-R）→ 逻辑（数据模型）→ 物理（存储与存取路径）。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-26 六阶段" data-answer="概念结构|逻辑结构|物理结构" data-answer-text="概念结构设计、逻辑结构设计、物理结构设计"><div class="qhead"><span class="chip">6-7</span><span class="chip t">填空</span><span class="chip k">KP-26 六阶段</span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">数据库设计分为需求分析、、、________、应用程序设计与运行维护六个阶段。</div><div class="fillrow"><input class="fillinput" placeholder="三个阶段，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="6-8" data-type="fill" data-explain="4KB / 4B = 1024 个指针，每个指向一个数据块。" data-source="拓展" data-diag="B 补充" data-kp="KP-28 索引计算" data-answer="1024" data-answer-text="1024" data-numeric="1024"><div class="qhead"><span class="chip">6-8</span><span class="chip t">填空</span><span class="chip k">KP-28 索引计算</span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">文件系统采用索引结点管理文件，若块大小 4KB、每个指针 4 字节，则一个一级间接索引块可指向________个数据块。</div><div class="fillrow"><input class="fillinput" placeholder="填数字" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>九、小结与衔接</h3>
+<p>本节回答：数据按什么方式组织，取决于<strong>访问模式</strong>——交易要事务，报表要列存，检索要倒排索引，归档要文件系统。数据库设计的六阶段与分布式四层模式，是把这些选择落地的框架。</p>
+<p><strong>留一个问题</strong>：这些数据库、消息、缓存，来自不同厂商、跑在不同平台上，怎么让它们互通？</p>
+<p>下一节讲中间件——异构系统之间的"翻译与调度层"。</p>
+<hr>
+<h2 id="sec7">第 7 节 中间件与软件构件：异构系统怎么连</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：20 个来自不同厂商、跑在不同平台上的系统，如何互不干扰地协作？</p>
+</blockquote>
+<h3>一、银行里的 20 个系统</h3>
+<p>某银行的账户、支付、信贷、风控、报表分别由不同厂商建设，运行在 AIX、Linux、Windows 上，用 Oracle、DB2、SQL Server。若让每个系统两两对接，需要 20×19/2 = 190 条接口。</p>
+<p>中间件要做的，就是把这些"两两对接"变成"统一接入"——<strong>用一层标准化的服务，把异构性挡在外面</strong>。</p>
+<p>这里的定义很直接：中间件处在操作系统、网络和数据库之上，应用软件的下层；它让应用能在不同平台上运行、实现相同的功能。</p>
+<h3>二、中间件的八类职责</h3>
+<p>按在分布式系统中承担的职责，分为八类，这是本节的核心考点：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>解决什么</th>
+<th>代表产品</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>通信处理（消息）中间件</td>
+<td>可靠、高效、实时的跨平台数据传输</td>
+<td>IBM MQSeries、BEA eLink、TongLINK</td>
+</tr>
+<tr>
+<td>事务处理（交易）中间件</td>
+<td>大量 OLTP 事务的并发、负载均衡、故障切换</td>
+<td>BEA Tuxedo</td>
+</tr>
+<tr>
+<td>数据存取管理中间件</td>
+<td>异构数据源的虚拟缓冲、格式转换、解压</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Web 服务器中间件</td>
+<td>扩展 HTTP 的会话与写入能力</td>
+<td>SilverStream</td>
+</tr>
+<tr>
+<td>安全中间件</td>
+<td>国产化的加密、认证、防火墙等安全能力</td>
+<td>—</td>
+</tr>
+<tr>
+<td>跨平台和架构中间件</td>
+<td>集成不同平台/版本的构件</td>
+<td>CORBA、COM+、JavaBeans</td>
+</tr>
+<tr>
+<td>专用平台中间件</td>
+<td>特定领域（电商、网站）的参考架构与构件库</td>
+<td>—</td>
+</tr>
+<tr>
+<td>网络中间件</td>
+<td>网管、接入、测试、虚拟社区等</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>有一点要特别记住：<strong>消息中间件是市面上销售额最大的中间件产品</strong>。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：消息中间件和事务中间件都能"连接系统"，它们的根本区别是什么？提示：一个关心"送到没送到"，一个关心"一起成功或一起失败"。</p>
+</blockquote>
+<h3>三、两件"代表作"的差别</h3>
+<p><strong>MQSeries（消息中间件）</strong>：核心是<strong>消息 + 队列</strong>。关键能力是可靠传输——即使网络不可靠或对端应用"忙"甚至故障，消息也不丢、不阻塞。它实现的是<strong>异步解耦</strong>：发送方发完就走，接收方什么时候处理都行。</p>
+<p><strong>Tuxedo（交易中间件）</strong>：核心是<strong>事务协调</strong>。OLTP 场景下一笔业务要跨多台服务器按顺序完成，中间任何一步故障，不仅要恢复，还要自动切换保证不停机。它实现的是<strong>同步的一致性保障</strong>。</p>
+<p>这个区别决定了选型：<strong>跨系统通知、削峰、最终一致</strong>选消息；<strong>强一致、短事务、高并发 OLTP</strong> 选交易中间件。</p>
+<h3>四、软件构件：复用的一层封装</h3>
+<p>我们把"软件构件"单列一节，落脚点是<strong>复用</strong>。构件的核心思想是：把可复用的功能封装成有明确接口、可独立部署的单元。</p>
+<p>与之相关的工程方法是 CBSE（基于构件的软件工程）：构件模型（定义构件长什么样）→ CBSE 过程（怎么开发与组装）→ 构件组装（怎么拼起来）。这部分在 K7（第 5 章 5.6）会展开，本节只需记住：<strong>构件 = 接口 + 实现 + 可独立部署</strong>。</p>
+<h3>五、应用软件：专用与通用的分界</h3>
+<p>我们把应用软件分两类：</p>
+<ul>
+<li><strong>专用</strong>：为一个单位、一类业务定制（如某银行的信贷系统）；</li>
+<li><strong>通用</strong>：面向大众市场（如 Office、财务软件包）。</li>
+</ul>
+<p>判断标准不是"复杂程度"，而是<strong>服务对象的范围</strong>。这也解释了一个常见困惑：为什么同样叫"管理系统"，有的是产品（通用），有的是项目（专用）——前者卖 license，后者卖实施。</p>
+<h3>六、例题精解</h3>
+<p><strong>例 1（工程项目：中间件选型）</strong> 某银行要打通"柜面系统"与"核心账务系统"：一笔转账需在两边同时记账，任一步失败必须整体回滚，峰值 3000 TPS。另有一个"客户画像"系统，需要把交易流水异步推送给风控，允许分钟级延迟。请分别选择中间件类型。</p>
+<p><em>解答</em>：<br>
+- 转账：选<strong>事务处理（交易）中间件</strong>（如 Tuxedo 类）。理由是要求跨系统强一致、失败整体回滚、高并发短事务；消息中间件只能保证"至少一次送达"，不保证两边同时成功。<br>
+- 画像推送：选<strong>消息中间件</strong>（如 MQSeries/Kafka 类）。理由是允许异步与延迟，需要削峰与解耦，发送方不应被下游阻塞。</p>
+<p><em>点评</em>：同一家企业、同一批系统，两套中间件并存是常态。<strong>选型的分水岭是"一致性要求"，不是"技术新旧"</strong>。</p>
+<p><strong>例 2（工程权衡：190 条接口怎么收）</strong> 前述 20 个系统两两对接，改造方案有三种：① 全部点对点；② 引入 ESB 统一接入；③ 建统一 API 网关 + 消息总线。请比较优劣。</p>
+<p><em>解答</em>：<br>
+- ① 点对点：改动小、上线快，但接口数随系统数平方增长，运维不可控；<br>
+- ② ESB：协议转换、路由、监控集中，但 ESB 本身可能成为单点与瓶颈，团队需专门维护；<br>
+- ③ 网关 + 消息总线：HTTP 同步走网关、异步走消息，职责清晰、易水平扩展，但需要治理（限流、鉴权、版本管理）。</p>
+<p>工程上常见的是 ③，把 ESB 的"重"拆成"网关 + 总线"两件"轻"的东西——这正是 K9（云原生/SOA）里"服务网格"与"API 网关"分工的雏形。</p>
+<h3>七、常见误区</h3>
+<p><strong>误区一：认为中间件能"消除"异构性。</strong><br>
+它只是把异构性<strong>封装</strong>起来，底层平台差异仍在，出问题时仍要回到具体平台排查。</p>
+<p><strong>误区二：把消息中间件当成"可靠传输"的全部。</strong><br>
+消息中间件保证"消息不丢"，但业务上的重复消费、顺序性、幂等仍需应用层处理。</p>
+<p><strong>误区三：以为构件一定等于"可复用的类库"。</strong><br>
+构件强调<strong>独立部署 + 明确接口契约</strong>，类库是被编译进应用的，二者部署粒度不同。</p>
+<h3>八、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="7-1" data-type="single" data-explain="图示：中间件处在操作系统、网络和数据库之上，应用软件的下层。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-30 中间件定位" data-answer="B"><div class="qhead"><span class="chip">7-1</span><span class="chip t">单选</span><span class="chip k">KP-30 中间件定位</span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">中间件在系统中的位置是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 应用软件之上</button><button class="opt" data-k="B"><b>B.</b> 操作系统、网络和数据库之上，应用软件之下</button><button class="opt" data-k="C"><b>C.</b> 与操作系统同层</button><button class="opt" data-k="D"><b>D.</b> 硬件与操作系统之间</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-2" data-type="single" data-explain="交易中间件负责 OLTP 事务的并发、负载均衡与故障自动切换；消息中间件只保证消息可靠送达，不保证两端同时成功。" data-source="拓展" data-diag="B 补充" data-kp="KP-31 中间件选型" data-answer="B"><div class="qhead"><span class="chip">7-2</span><span class="chip t">单选</span><span class="chip k">KP-31 中间件选型</span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">某系统需要在多台服务器上协调完成一笔跨库事务，任一步失败必须整体回滚并自动切换，应优先选择：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 消息中间件</button><button class="opt" data-k="B"><b>B.</b> 事务处理（交易）中间件</button><button class="opt" data-k="C"><b>C.</b> Web 服务器中间件</button><button class="opt" data-k="D"><b>D.</b> 数据存取管理中间件</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-3" data-type="single" data-explain="跨平台和架构的中间件，功能最强的是 CORBA，JavaBeans 较灵活简单，COM+ 主要适合 Windows。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-32 中间件分类" data-answer="B"><div class="qhead"><span class="chip">7-3</span><span class="chip t">单选</span><span class="chip k">KP-32 中间件分类</span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">CORBA、COM+、JavaBeans 属于哪一类中间件？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 通信处理（消息）中间件</button><button class="opt" data-k="B"><b>B.</b> 跨平台和架构的中间件</button><button class="opt" data-k="C"><b>C.</b> 安全中间件</button><button class="opt" data-k="D"><b>D.</b> 网络中间件</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-4" data-type="single" data-explain="：按照应用软件使用面的不同，可进一步分为专用的应用软件和通用的应用软件两类。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-33 应用软件分类" data-answer="B"><div class="qhead"><span class="chip">7-4</span><span class="chip t">单选</span><span class="chip k">KP-33 应用软件分类</span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">下列关于应用软件分类的说法，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 按代码规模分为大型与小型</button><button class="opt" data-k="B"><b>B.</b> 按使用面分为专用与通用两类</button><button class="opt" data-k="C"><b>C.</b> 按开发语言分为编译型与解释型</button><button class="opt" data-k="D"><b>D.</b> 按部署方式分为单机与联网</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-5" data-type="multi" data-explain="D 错：ESB 可能成为单点与瓶颈，复杂度未必下降；E 错：异构性被封装而非消除。" data-source="拓展" data-diag="B 补充" data-kp="KP-31/KP-34 中间件特性" data-answer="ABC"><div class="qhead"><span class="chip">7-5</span><span class="chip t">不定项</span><span class="chip k">KP-31/KP-34 中间件特性</span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">关于中间件与构件，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 消息中间件是市面上销售额最大的中间件产品</button><button class="opt" data-k="B"><b>B.</b> 消息中间件实现异步解耦，发送方不必等待接收方处理</button><button class="opt" data-k="C"><b>C.</b> 构件强调明确接口与可独立部署，便于复用</button><button class="opt" data-k="D"><b>D.</b> 引入 ESB 后系统复杂度必然下降</button><button class="opt" data-k="E"><b>E.</b> 中间件封装了异构性，因此底层平台差异不再需要考虑</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-6" data-type="fill" data-explain="消息中间件代表是 IBM MQSeries，交易中间件代表是 BEA Tuxedo，不要混。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-32 产品对应" data-answer="事务|tuxedo" data-answer-text="事务处理（交易）中间件，BEA Tuxedo"><div class="qhead"><span class="chip">7-6</span><span class="chip t">填空</span><span class="chip k">KP-32 产品对应</span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">我们把中间件按职责分为八类，其中负责"大量 OLTP 事务并发处理与故障自动切换"的是________中间件，代表产品是________。</div><div class="fillrow"><input class="fillinput" placeholder="类型 + 产品名" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="7-7" data-type="fill" data-explain="为一个单位定制的是专用；面向大众市场的是通用（如办公软件包）。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-33 应用软件" data-answer="专用|通用" data-answer-text="专用、通用"><div class="qhead"><span class="chip">7-7</span><span class="chip t">填空</span><span class="chip k">KP-33 应用软件</span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">应用软件按使用面可分为________应用软件与________应用软件两类。</div><div class="fillrow"><input class="fillinput" placeholder="两个词，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>九、小结与衔接</h3>
+<p>本节回答：异构系统靠中间件收敛接口数量，靠消息实现异步解耦、靠交易中间件保证强一致；复用靠构件的接口契约。</p>
+<p><strong>留一个问题</strong>：上述讨论都建立在"通用计算机"上。如果设备只有几 MB 内存、要靠电池跑十年，这些设计还成立吗？</p>
+<p>下一节进入嵌入式系统。</p>
+<hr>
+<h2 id="sec8">第 8 节 嵌入式系统：资源受限时怎么取舍</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：只有几 MB 内存、要靠电池跑十年、还要在 10 毫秒内响应——这样的系统怎么设计？</p>
+</blockquote>
+<h3>一、一个刹车信号的时限</h3>
+<p>汽车 ECU 收到刹车踏板信号后，必须在 10 毫秒内点亮刹车灯并通知 ABS。晚 100 毫秒，后果不是"卡顿"，是事故。</p>
+<p>这就是嵌入式与通用计算机的根本差别：<strong>它不是让你用得更爽，而是必须在确定的时间内完成确定的事</strong>。嵌入式软件的描述紧扣这一点——专用、实时、可靠。</p>
+<h3>二、组成与特点</h3>
+<p>嵌入式系统由<strong>硬件（处理器、存储器、I/O）+ 软件（OS、中间件、应用）</strong>组成，特点可以概括为四条：</p>
+<ul>
+<li><strong>专用性强</strong>：为一个具体设备服务，功能固定；</li>
+<li><strong>资源受限</strong>：内存小、字长短、算力有限、供电受限；</li>
+<li><strong>实时性</strong>：必须在截止时间内响应；</li>
+<li><strong>可靠性</strong>：常年在无人值守环境下运行。</li>
+</ul>
+<p>嵌入式操作系统的五点要求，几乎就是为上述约束量身定做的：</p>
+<table>
+<thead>
+<tr>
+<th>要求</th>
+<th>为什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>微型化</td>
+<td>内存少、字长短、能耗低</td>
+</tr>
+<tr>
+<td>可定制</td>
+<td>同一 OS 要适配不同 MCU 与硬件配置</td>
+</tr>
+<tr>
+<td>实时性</td>
+<td>过程控制、数据采集必须及时响应</td>
+</tr>
+<tr>
+<td>可靠性</td>
+<td>关键要害领域要容错、防故障</td>
+</tr>
+<tr>
+<td>易移植性</td>
+<td>靠 <strong>HAL（硬件抽象层）+ BSP（板级支撑包）</strong> 实现</td>
+</tr>
+</tbody>
+</table>
+<p>HAL 与 BSP 是这一节唯一需要"理解而不是背"的概念：HAL 把"硬件相关"的代码隔离成一层接口，BSP 提供"这块板子"的具体实现。换一块板子，只改 BSP，上层不动。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：既然嵌入式要"微型化"，为什么不干脆写裸机程序、不要操作系统？</p>
+</blockquote>
+<h3>三、实时不是"快"，是"可预测"</h3>
+<p>这是最容易被误解的一点：<strong>实时 ≠ 高性能</strong>。实时追求的是<strong>最坏情况可预测</strong>——每次执行都能在截止时间前完成，而不是平均很快。</p>
+<p>两类实时调度算法常考：</p>
+<ul>
+<li><strong>RMS（速率单调调度）</strong>：静态优先级，周期越短优先级越高，适合固定周期任务；</li>
+<li><strong>EDF（最早截止优先）</strong>：动态优先级，截止时间越近越先执行，利用率更高但实现更复杂。</li>
+</ul>
+<p>判断 RMS 是否可调度有个经典判据（Liu &amp; Layland 界）：</p>
+<p><span class="math mathblock">∑<span class="frac"><span class="n">C<sub>i</sub></span><span class="d">T<sub>i</sub></span></span> ≤ n(2<sup>1/n</sup>-1)</span></p>
+<p>当 n=3 时，界约为 0.78；利用率低于这个值一定可调度，高于它不一定不可调度（只是判据失效，需精确分析）。</p>
+<h3>四、安全攸关软件：DO-178</h3>
+<p>当嵌入式软件出问题会危及人身安全时，就进入"安全攸关"范畴。这里给出的标准是 <strong>DO-178B/C</strong>，它把软件生命周期分为三个过程：</p>
+<ol>
+<li><strong>软件计划过程</strong>：策划与协调全部生命周期活动，产出各类计划与标准；</li>
+<li><strong>软件开发过程</strong>：含需求、设计、编码、集成四个子过程；</li>
+<li><strong>软件综合过程</strong>：含验证、配置管理、质量保证、审定联络四个子过程。</li>
+</ol>
+<p>专门比较了 DO-178 与 CMMI 的三点差异：</p>
+<ul>
+<li><strong>视角不同</strong>：DO-178 从适航审定出发，关注"软件质量对安全性的影响"；CMMI 从过程改进出发，关注"组织整体能力提升"；</li>
+<li><strong>组成不同</strong>：DO-178 由目标、活动、数据组成，要求具体；CMMI 由实践组成，是各行业最佳实践的抽象；</li>
+<li><strong>范围不同</strong>：DO-178 聚焦软件，表述清晰；CMMI 集成系统/软件/硬件，易产生歧义。</li>
+</ul>
+<p>一句话记：<strong>DO-178 管"这款软件能不能上飞机"，CMMI 管"这家公司会不会做软件"</strong>。</p>
+<h3>五、例题精解</h3>
+<p><strong>例 1（工程判断：要不要上 RTOS）</strong> 某智能门锁项目：需要按键响应、蓝牙通信、指纹识别、低功耗待机。团队争论"用裸机轮询还是上 RTOS"。请给出判断依据。</p>
+<p><em>解答</em>：<br>
+- 若功能之间<strong>没有硬实时约束</strong>、逻辑简单，裸机轮询（前后台结构）功耗更低、启动更快、代码量小，是合理选择；<br>
+- 一旦出现"指纹识别耗时长，但按键必须立即响应"这类<strong>并发 + 时限</strong>需求，轮询会阻塞响应，就应上 RTOS，用任务优先级保证关键路径；<br>
+- 折中方案：主循环 + 中断处理关键事件（中断服务程序极短），也能满足多数家电级需求。</p>
+<p><em>点评</em>：这题的答案是"看约束"，而不是"RTOS 更专业"。嵌入式领域最常见的过度设计，就是给一个只需轮询的设备上 RTOS，白白增加内存占用与启动时间。</p>
+<p><strong>例 2（工程计算：RMS 可调度性）</strong> 三个周期任务：T1（C=1ms, T=4ms）、T2（C=2ms, T=8ms）、T3（C=3ms, T=16ms）。用 Liu &amp; Layland 判据判断是否可调度。</p>
+<p><em>解答</em>：<br>
+- 利用率 U = 1/4 + 2/8 + 3/16 = 0.25 + 0.25 + 0.1875 = <strong>0.6875</strong><br>
+- n=3 时判据界 = 3×(2^(1/3)−1) ≈ 3×0.2599 ≈ <strong>0.7798</strong><br>
+- 0.6875 &lt; 0.7798 → <strong>满足充分条件，一定可调度</strong></p>
+<p><em>点评</em>：注意这只是<strong>充分条件</strong>。U 超过界不代表不可调度，需要用响应时间分析（RTA）做精确判断——考试若问"是否一定可调度"，答案取决于是否满足充分条件。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：实时系统 = 高性能系统。</strong><br>
+实时追求可预测的最坏情况，很多实时系统的平均性能并不高，甚至刻意降低主频以保证时序确定。</p>
+<p><strong>误区二：认为 HAL 和 BSP 是一回事。</strong><br>
+HAL 是抽象接口层（与具体芯片无关），BSP 是针对某块板子的实现（含驱动、启动代码）。</p>
+<p><strong>误区三：把 DO-178 当成"开发方法"。</strong><br>
+它是<strong>审定标准</strong>，规定"要达到什么目标、产出什么数据"，不规定具体开发流程。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="8-1" data-type="single" data-explain="嵌入式 OS 五特点：微型化、可定制、实时性、可靠性、易移植性。“通用性强”恰是它不具备的。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-35 嵌入式OS特点" data-answer="C"><div class="qhead"><span class="chip">8-1</span><span class="chip t">单选</span><span class="chip k">KP-35 嵌入式OS特点</span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">下列不属于嵌入式操作系统典型特点的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 微型化</button><button class="opt" data-k="B"><b>B.</b> 可定制</button><button class="opt" data-k="C"><b>C.</b> 通用性强，支持海量第三方应用</button><button class="opt" data-k="D"><b>D.</b> 实时性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-2" data-type="single" data-explain="：通常采用硬件抽象层（HAL）和板级支撑包（BSP）的底层设计技术提高易移植性。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-36 HAL/BSP" data-answer="A"><div class="qhead"><span class="chip">8-2</span><span class="chip t">单选</span><span class="chip k">KP-36 HAL/BSP</span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">嵌入式系统中，用于隔离硬件相关代码、提高可移植性的两层设计是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> HAL 与 BSP</button><button class="opt" data-k="B"><b>B.</b> BIOS 与 UEFI</button><button class="opt" data-k="C"><b>C.</b> JVM 与 CLR</button><button class="opt" data-k="D"><b>D.</b> MMU 与 Cache</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-3" data-type="single" data-explain="实时的核心是确定性而非平均速度。说实时系统“对交互能力要求不高，但要求可靠性有保障”。" data-source="拓展" data-diag="C 晦涩" data-kp="KP-37 实时语义" data-answer="B"><div class="qhead"><span class="chip">8-3</span><span class="chip t">单选</span><span class="chip k">KP-37 实时语义</span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">关于"实时"，下列理解正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 实时系统就是平均响应最快的系统</button><button class="opt" data-k="B"><b>B.</b> 实时系统追求最坏情况可预测，能在截止时间内完成</button><button class="opt" data-k="C"><b>C.</b> 实时系统必须使用多核处理器</button><button class="opt" data-k="D"><b>D.</b> 实时系统不需要考虑可靠性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-4" data-type="single" data-explain="三个过程：计划、开发（含需求/设计/编码/集成）、综合（含验证/配置管理/质量保证/审定联络）。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-38 DO-178" data-answer="D"><div class="qhead"><span class="chip">8-4</span><span class="chip t">单选</span><span class="chip k">KP-38 DO-178</span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">DO-178B 将软件生命周期划分为三个过程，下列不属于其中 的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 软件计划过程</button><button class="opt" data-k="B"><b>B.</b> 软件开发过程</button><button class="opt" data-k="C"><b>C.</b> 软件综合过程</button><button class="opt" data-k="D"><b>D.</b> 软件采购过程</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-5" data-type="single" data-explain="U=0.25+0.25+0.1875=0.6875；n=3 时界≈0.7798；低于界为充分条件，故一定可调度。" data-source="拓展" data-diag="B 补充" data-kp="KP-39 RMS 判据" data-answer="B"><div class="qhead"><span class="chip">8-5</span><span class="chip t">单选</span><span class="chip k">KP-39 RMS 判据</span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">三个周期任务：T1(C=1ms,T=4ms)、T2(C=2ms,T=8ms)、T3(C=3ms,T=16ms)。按 Liu &amp; Layland 判据，其结论是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 利用率 0.6875，超过判据界，一定不可调度</button><button class="opt" data-k="B"><b>B.</b> 利用率 0.6875，低于 0.7798 的判据界，一定可调度</button><button class="opt" data-k="C"><b>C.</b> 利用率 0.8125，不可调度</button><button class="opt" data-k="D"><b>D.</b> 无法判断，必须用 EDF</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-6" data-type="multi" data-explain="D 错：CMMI 是通用能力成熟度模型；E 错：注意 DO-178 覆盖的过程范围比 CMMI 少。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-38 DO-178 vs CMMI" data-answer="ABC"><div class="qhead"><span class="chip">8-6</span><span class="chip t">不定项</span><span class="chip k">KP-38 DO-178 vs CMMI</span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">关于 DO-178 与 CMMI 的差异，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> DO-178 从适航审定视角出发，关注软件质量对安全性的影响</button><button class="opt" data-k="B"><b>B.</b> CMMI 从过程改进视角出发，关注组织整体能力提升</button><button class="opt" data-k="C"><b>C.</b> DO-178 由目标、活动与数据组成，要求较具体</button><button class="opt" data-k="D"><b>D.</b> CMMI 只适用于安全攸关软件</button><button class="opt" data-k="E"><b>E.</b> DO-178 覆盖的过程范围通常比 CMMI 更广</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-7" data-type="fill" data-explain="五特点：微型化、可定制、实时性、可靠性、易移植性。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-35 五特点" data-answer="实时|可靠" data-answer-text="实时性、可靠性"><div class="qhead"><span class="chip">8-7</span><span class="chip t">填空</span><span class="chip k">KP-35 五特点</span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">嵌入式操作系统的五项典型特点是微型化、可定制、、、易移植性。</div><div class="fillrow"><input class="fillinput" placeholder="两个特点，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="8-8" data-type="fill" data-explain="嵌入式硬件 = 处理器 + 存储器 + I/O（含接口与外设）。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-40 组成" data-answer="i/o/io/输入输出/接口" data-answer-text="I/O（输入输出设备）"><div class="qhead"><span class="chip">8-8</span><span class="chip t">填空</span><span class="chip k">KP-40 组成</span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">嵌入式系统通常由硬件与软件两部分组成，其中硬件包括处理器、存储器与________。</div><div class="fillrow"><input class="fillinput" placeholder="填一类部件" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：资源受限时，取舍的标准从"性能"变成"可预测 + 可靠 + 省资源"；HAL/BSP 解决可移植，RMS/EDF 解决时序，DO-178 解决安全审定。</p>
+<p><strong>留一个问题</strong>：一台设备内部的问题解决了，成千上万台设备之间怎么通信？</p>
+<p>下一节进入计算机网络。</p>
+<hr>
+<h2 id="sec9">第 9 节 计算机网络：多台机器怎么协同</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：一次 HTTPS 请求从客户端到服务器，要经过哪些层、哪些设备、哪些协议？</p>
+</blockquote>
+<h3>一、一次请求的旅程</h3>
+<p>你在浏览器输入网址、回车，几百毫秒后页面出现。这期间发生了：DNS 解析域名 → 建立 TCP 连接 → TLS 握手 → 发 HTTP 请求 → 经过交换机、路由器逐跳转发 → 服务端处理 → 原路返回。</p>
+<p>每一跳都在做一件事：<strong>把数据交给"下一层"或"下一跳"</strong>。分层的意义，就是让每一层只关心自己的事。</p>
+<h3>二、两个模型：OSI 七层与 TCP/IP 四层</h3>
+<table>
+<thead>
+<tr>
+<th>OSI 七层</th>
+<th>TCP/IP 四层</th>
+<th>关键协议</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>应用层 / 表示层 / 会话层</td>
+<td>应用层</td>
+<td>HTTP、FTP、SMTP、DNS、SNMP、Telnet、NFS</td>
+</tr>
+<tr>
+<td>传输层</td>
+<td>传输层</td>
+<td>TCP、UDP</td>
+</tr>
+<tr>
+<td>网络层</td>
+<td>网际层</td>
+<td>IP、ICMP、ARP、RARP</td>
+</tr>
+<tr>
+<td>数据链路层 / 物理层</td>
+<td>网络接口层</td>
+<td>以太网、PPP、FDDI</td>
+</tr>
+</tbody>
+</table>
+<p>记忆抓手：<strong>TCP/IP 把 OSI 的"高三层"合成了应用层，"低两层"合成了网络接口层</strong>。网际层的四个协议（IP、ICMP、ARP、RARP）是高频考点：IP 负责寻址路由，ICMP 负责差错报告（ping 用的就是它），ARP 把 IP 解析成 MAC，RARP 反过来。</p>
+<h3>三、设备与层级的对应</h3>
+<p>这是考试里最容易拿分也最容易错的一类题，记住这张对应表即可：</p>
+<table>
+<thead>
+<tr>
+<th>设备</th>
+<th>工作层次</th>
+<th>判断依据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>中继器、集线器</td>
+<td>物理层</td>
+<td>只放大/转发电信号，不识别帧</td>
+</tr>
+<tr>
+<td>网桥、交换机</td>
+<td>数据链路层</td>
+<td>按 MAC 地址转发，隔离冲突域</td>
+</tr>
+<tr>
+<td>路由器</td>
+<td>网络层</td>
+<td>按 IP 与路由表转发，隔离广播域</td>
+</tr>
+<tr>
+<td>防火墙</td>
+<td>门户过滤</td>
+<td>按规则检查进出流量</td>
+</tr>
+</tbody>
+</table>
+<p>交换机的工作机制值得多说一句：<strong>学习（记源 MAC 与端口）→ 转发（查目的 MAC）→ 泛洪（查不到就向除源端口外所有端口发）→ 老化（约 300 秒更新一次）</strong>。为避免环路，用 <strong>STP 生成树协议</strong>；为提升带宽与可靠性，用<strong>链路聚合（802.3ad）</strong>。</p>
+<h3>四、路由：两种算法的取舍</h3>
+<p>路由协议分两类：</p>
+<ul>
+<li><strong>内部网关协议（IGP）</strong>：自治系统内部。又分<strong>距离矢量</strong>（只知邻居，易环路，适合小网）与<strong>链路状态</strong>（掌握全网拓扑，收敛快，OSPF/IS-IS 属于此类）；</li>
+<li><strong>外部网关协议（EGP）</strong>：自治系统之间，主要是 <strong>BGP</strong>。</li>
+</ul>
+<p>一个实用的判断很实用：小网用距离矢量易配置；大网必须链路状态，否则环路与带宽消耗都撑不住。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"只和邻居交换信息"的路由协议，在小网里够用，在大网里会出问题？</p>
+</blockquote>
+<h3>五、网络性能与 5G</h3>
+<p>的性能指标：速率、带宽、吞吐量、时延（发送+传播+处理+排队）、RTT、利用率。其中<strong>香农公式</strong>是唯一需要记住的公式：</p>
+<p><span class="math mathblock">C = B log<sub>2</sub>(1 + S/N)</span></p>
+<p>C 是信道容量（b/s），B 是带宽（Hz），S/N 是信噪比。注意信噪比常以 dB 给出，需先换算：<span class="math">S/N = 10<sup>dB/10</sup></span>。</p>
+<p>5G 部分内容较多，抓三条即可：<strong>服务化架构 SBA</strong>、<strong>网络切片</strong>（eMBB 大带宽 / mMTC 海量物联 / uRLLC 低时延高可靠）、<strong>大规模 MIMO 与毫米波</strong>。切片的价值一句话概括：<strong>在一个物理网络上切出多个逻辑网络，不必为每类业务建专网</strong>。</p>
+<blockquote>
+<p><strong>想一想 ②</strong>：如果 5G 已经能做到 1ms 时延，为什么工业控制领域还在用有线现场总线？</p>
+</blockquote>
+<h3>六、例题精解</h3>
+<p><strong>例 1（工程计算：子网划分）</strong> 某公司分到 192.168.10.0/24，需要划分为 6 个子网，每个子网至少 25 台主机。请给出子网掩码与可用地址数。</p>
+<p><em>解答</em>：<br>
+- 需要 6 个子网 → 至少借 3 位（2³=8 ≥ 6），掩码从 /24 变 <strong>/27</strong>（255.255.255.224）；<br>
+- 每个子网主机位 = 32−27 = 5 位 → 2⁵ = 32 个地址，扣除网络号与广播地址，<strong>可用 30 台</strong>（≥25 满足）；<br>
+- 8 个子网、每个 30 台，正好覆盖需求，且留有 2 个子网余量。</p>
+<p><em>点评</em>：这类题的标准流程是"<strong>先算子网数 → 再算主机数 → 取能同时满足的最小借位数</strong>"。借位过多会浪费地址，过少则不满足主机数。</p>
+<p><strong>例 2（工程排障：为什么交换机不能隔离广播）</strong> 某办公网 200 台机器接在同一台三层交换机上，广播风暴导致全网变慢。请分析原因与解决办法。</p>
+<p><em>解答</em>：<br>
+- 交换机工作在数据链路层，<strong>隔离的是冲突域，不隔离广播域</strong>——所有端口同属一个广播域，广播帧会被泛洪到所有端口；<br>
+- 解决办法是<strong>划分 VLAN</strong>：在交换机上把端口划入不同 VLAN，每个 VLAN 是一个独立广播域；跨 VLAN 通信必须经过三层（路由或三层交换）；<br>
+- 若还需控制广播规模，可进一步用路由器或三层交换机做子网划分。</p>
+<p><em>点评</em>：这题的考点是"<strong>冲突域与广播域的区别</strong>"，也是"交换机 vs 路由器"最常见的考法。</p>
+<h3>七、常见误区</h3>
+<p><strong>误区一：认为交换机可以隔离广播域。</strong><br>
+交换机隔离冲突域；隔离广播域要靠 VLAN 或路由器。</p>
+<p><strong>误区二：把 OSI 七层与 TCP/IP 四层一一对应。</strong><br>
+TCP/IP 的四层是合并后的结果，应用层对应 OSI 的高三层，不存在"四层对应七层"的一一映射。</p>
+<p><strong>误区三：香农公式直接代 dB 值。</strong><br>
+dB 是信噪比的对数表示，必须先换算成比值再代入。</p>
+<p><strong>误区四：认为 STP 是用来"加速"的。</strong><br>
+STP 是为了<strong>消除环路</strong>（阻塞冗余链路），代价是牺牲部分带宽；链路聚合才是提升带宽的手段。</p>
+<h3>八、本节自测</h3>
+<blockquote>
+<p>共 9 题（6 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="9-1" data-type="single" data-explain="网际层除 IP 外还有 ICMP、ARP、RARP；传输层是 TCP/UDP；应用层是 HTTP/FTP/SMTP 等。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-41 协议分层" data-answer="C"><div class="qhead"><span class="chip">9-1</span><span class="chip t">单选</span><span class="chip k">KP-41 协议分层</span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">TCP/IP 模型中，IP、ICMP、ARP、RARP 属于哪一层？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 应用层</button><button class="opt" data-k="B"><b>B.</b> 传输层</button><button class="opt" data-k="C"><b>C.</b> 网际层</button><button class="opt" data-k="D"><b>D.</b> 网络接口层</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-2" data-type="single" data-explain="中继器/集线器在物理层，交换机/网桥在数据链路层，路由器在网络层。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-42 设备层级" data-answer="C"><div class="qhead"><span class="chip">9-2</span><span class="chip t">单选</span><span class="chip k">KP-42 设备层级</span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">下列设备中，工作在数据链路层的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 中继器</button><button class="opt" data-k="B"><b>B.</b> 集线器</button><button class="opt" data-k="C"><b>C.</b> 交换机</button><button class="opt" data-k="D"><b>D.</b> 路由器</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-3" data-type="single" data-explain="借 3 位得 8 个子网（≥6），掩码 /27；主机位 5 位→30 台可用（≥25）。/28 只有 14 台，不够。" data-source="拓展" data-diag="B 补充" data-kp="KP-43 子网划分" data-answer="C"><div class="qhead"><span class="chip">9-3</span><span class="chip t">单选</span><span class="chip k">KP-43 子网划分</span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">某公司分到 192.168.10.0/24，需划分 6 个子网且每子网至少 25 台主机，合适的掩码是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> /25</button><button class="opt" data-k="B"><b>B.</b> /26</button><button class="opt" data-k="C"><b>C.</b> /27</button><button class="opt" data-k="D"><b>D.</b> /28</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-4" data-type="single" data-explain="生成树协议 STP 用于消除链路环路；链路聚合 802.3ad 用于提升带宽与可靠性。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-44 环路防护" data-answer="A"><div class="qhead"><span class="chip">9-4</span><span class="chip t">单选</span><span class="chip k">KP-44 环路防护</span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">为避免交换网络中出现环路，应采用的协议是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> STP</button><button class="opt" data-k="B"><b>B.</b> BGP</button><button class="opt" data-k="C"><b>C.</b> OSPF</button><button class="opt" data-k="D"><b>D.</b> ARP</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-5" data-type="single" data-explain="距离矢量只知邻居、易环路、适合小网；链路状态掌握全网拓扑，OSPF/IS-IS 属于此类，适合大网。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-45 路由协议" data-answer="C"><div class="qhead"><span class="chip">9-5</span><span class="chip t">单选</span><span class="chip k">KP-45 路由协议</span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">关于链路状态路由协议与距离矢量路由协议，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 距离矢量掌握全网拓扑，适合大型网络</button><button class="opt" data-k="B"><b>B.</b> 链路状态只与邻居交换信息，收敛慢</button><button class="opt" data-k="C"><b>C.</b> OSPF、IS-IS 属于链路状态协议，适合较大网络</button><button class="opt" data-k="D"><b>D.</b> 距离矢量协议不会产生环路问题</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-6" data-type="single" data-explain="eMBB 大带宽（4K/8K、AR/VR）、mMTC 海量物联、uRLLC 关键任务（无人驾驶、远程医疗）。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-46 5G 切片" data-answer="C"><div class="qhead"><span class="chip">9-6</span><span class="chip t">单选</span><span class="chip k">KP-46 5G 切片</span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">5G 网络切片中，面向无人驾驶、远程医疗等超低时延超高可靠场景的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> eMBB</button><button class="opt" data-k="B"><b>B.</b> mMTC</button><button class="opt" data-k="C"><b>C.</b> uRLLC</button><button class="opt" data-k="D"><b>D.</b> VLAN</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-7" data-type="multi" data-explain="D 错：dB 是对数表示，需换算 S/N=10^(dB/10) 后再代入。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-41/KP-42 综合" data-answer="ABCE"><div class="qhead"><span class="chip">9-7</span><span class="chip t">不定项</span><span class="chip k">KP-41/KP-42 综合</span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">关于计算机网络，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> OSI 参考模型共七层，TCP/IP 模型共四层</button><button class="opt" data-k="B"><b>B.</b> 交换机按 MAC 地址转发，可隔离冲突域</button><button class="opt" data-k="C"><b>C.</b> 路由器工作在网络层，可隔离广播域</button><button class="opt" data-k="D"><b>D.</b> 香农公式中信噪比可直接以 dB 值代入计算</button><button class="opt" data-k="E"><b>E.</b> ARP 用于把 IP 地址解析为 MAC 地址</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-8" data-type="fill" data-explain="C=B·log₂(1+S/N)=3000×9.97≈29.9kb/s。信噪比 30dB 对应 S/N=1000。" data-source="拓展" data-diag="B 补充" data-kp="KP-47 香农公式" data-answer="29.9/29/30" data-answer-text="约 29.9 kb/s（3000×log₂1001）"><div class="qhead"><span class="chip">9-8</span><span class="chip t">填空</span><span class="chip k">KP-47 香农公式</span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">香农公式中，若带宽 B=3kHz、信噪比 S/N=1000，则信道容量约为________kb/s。</div><div class="fillrow"><input class="fillinput" placeholder="填数字" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="9-9" data-type="fill" data-explain="交换机四步：学习 → 转发 → 泛洪（查不到时）→ 老化（约 300s）。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-42 交换机制" data-answer="泛洪/flood" data-answer-text="泛洪（Flooding）"><div class="qhead"><span class="chip">9-9</span><span class="chip t">填空</span><span class="chip k">KP-42 交换机制</span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">交换机收到一个目的 MAC 地址不在其地址表中的帧时，会向除源端口外的所有端口转发，这一行为称为________。</div><div class="fillrow"><input class="fillinput" placeholder="填两个字" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>九、小结与衔接</h3>
+<p>本节回答：网络靠分层把复杂问题拆开——每层只对上一层负责；设备按各自工作的层次分工；路由在两套算法间按网络规模取舍。</p>
+<p><strong>留一个问题</strong>：网络解决了"机器之间怎么通信"，可机器只认识 0 和 1。人写的代码，是怎么变成机器能执行的指令的？</p>
+<p>下一节讲计算机语言。</p>
+<hr>
+<h2 id="sec10">第 10 节 计算机语言：人怎么指挥机器</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：人写的代码经过哪些步骤变成机器指令？为什么"同一份代码换个平台就要重编译"？</p>
+</blockquote>
+<h3>一、从一行代码到一条指令</h3>
+<p>你写下 <code>a = b + c</code>，机器最终执行的是类似 <code>ADD R1, R2, R3</code> 的一条指令。中间发生了什么？</p>
+<p>我们把计算机语言定义为"人与计算机之间传递信息的媒介"，主要由指令组成，指令包含三部分：<strong>表达式</strong>（变量、常量、字面量、运算符）、<strong>流程控制</strong>（分支、循环、函数、异常）、<strong>集合</strong>（字符串、数组、散列表）。</p>
+<p>这三分法看似简单，其实涵盖了所有编程语言的骨架——把任何一门语言拆开，都能归到这三类。</p>
+<h3>二、语言的五代：从 0/1 到形式化</h3>
+<p>按发展历程分为五类：</p>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>语言</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第一代</td>
+<td>机器语言</td>
+<td>指令系统本身，是计算机的"本地语"；执行快、占内存少，但不可读、不可移植</td>
+</tr>
+<tr>
+<td>第二代</td>
+<td>汇编语言</td>
+<td>用助记符替代二进制串（ADD、MOV）；仍是面向机器的语言，需汇编程序翻译</td>
+</tr>
+<tr>
+<td>第三代</td>
+<td>高级语言</td>
+<td>面向问题、可移植，需编译或解释</td>
+</tr>
+<tr>
+<td>建模语言</td>
+<td>UML 等</td>
+<td>描述结构与行为，不直接执行</td>
+</tr>
+<tr>
+<td>形式化语言</td>
+<td>数学化描述</td>
+<td>用于规约与验证</td>
+</tr>
+</tbody>
+</table>
+<p><strong>机器语言的指令格式</strong>是考点：一条指令由<strong>操作码</strong>与<strong>地址码</strong>组成。按地址域的数量分为三地址、二地址、单地址、零地址（堆栈机）、可变地址数。操作码长度取决于指令条数（如 256 条指令需 8 位操作码）。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"零地址指令"能在堆栈型计算机上工作？它的操作数从哪来？</p>
+</blockquote>
+<h3>三、编译与解释：两种"翻译"策略</h3>
+<ul>
+<li><strong>编译</strong>：先把整个源程序翻译成目标代码，再执行。优点是执行快、可优化；缺点是不跨平台（换个 CPU 架构要重新编译）。</li>
+<li><strong>解释</strong>：逐句翻译并立即执行。优点是跨平台、调试方便；缺点是执行慢。</li>
+</ul>
+<p><strong>Java 的折中</strong>值得单独提一句：先编译成字节码（跨平台的中间表示），再由 JVM 解释/即时编译执行——这解释了"一次编写，到处运行"的由来，也解释了为什么 JVM 本身要针对不同平台各写一套。</p>
+<h3>四、例题精解</h3>
+<p><strong>例 1（工程计算：指令编码）</strong> 某嵌入式处理器有 60 条指令，采用定长指令格式，指令字长 16 位。若采用单地址格式，地址字段最多能表示多少个存储单元？</p>
+<p><em>解答</em>：<br>
+- 60 条指令需 6 位操作码（2⁵=32 &lt; 60 ≤ 2⁶=64）；<br>
+- 剩余地址位 = 16 − 6 = <strong>10 位</strong>；<br>
+- 地址字段可表示 2¹⁰ = <strong>1024 个存储单元</strong>。</p>
+<p><em>点评</em>：这类题的关键是"<strong>操作码位数由指令条数决定，剩余全给地址</strong>"。若题目改成"二地址"，则每个地址字段分 5 位（1024→32），要看清地址字段是共享还是各占一半。</p>
+<p><strong>例 2（工程选型：为什么选解释型）</strong> 某低代码平台要在浏览器里运行用户拖拽生成的逻辑，需要热更新、可随时回滚。选编译型还是解释型方案？</p>
+<p><em>解答</em>：<br>
+- 选<strong>解释/字节码执行</strong>方案。理由：用户逻辑在运行时才能确定，无法提前整体编译；解释执行支持热更新与快速回滚；配合沙箱可限制资源与权限。<br>
+- 代价是执行效率低于 AOT 编译，因此常用"热点代码即时编译（JIT）"折中。</p>
+<p><em>点评</em>：语言与执行方式的选择，本质是"<strong>确定性 vs 灵活性</strong>"的权衡，与第 6 节"一种数据多种查法"是同一类思路。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为汇编语言不是"面向机器"的语言。</strong><br>
+它只是机器语言的符号化，仍依赖具体指令系统，可移植性差。</p>
+<p><strong>误区二：把"编译型语言"与"静态类型语言"混为一谈。</strong><br>
+前者说的是翻译时机，后者说的是类型检查时机，两回事。</p>
+<p><strong>误区三：认为解释执行一定比编译执行慢很多。</strong><br>
+有 JIT 后差距大幅缩小，热点代码甚至可接近编译型性能。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="10-1" data-type="single" data-explain="机器语言是第一代，汇编是第二代（符号化描述，需汇编程序翻译），高级语言是第三代。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-48 语言代际" data-answer="B"><div class="qhead"><span class="chip">10-1</span><span class="chip t">单选</span><span class="chip k">KP-48 语言代际</span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">下列语言中，属于第二代计算机语言的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 机器语言</button><button class="opt" data-k="B"><b>B.</b> 汇编语言</button><button class="opt" data-k="C"><b>C.</b> 高级语言</button><button class="opt" data-k="D"><b>D.</b> 形式化语言</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-2" data-type="single" data-explain="60 条指令需 6 位操作码（2⁶=64）；地址位=16−6=10 → 2¹⁰=1024。" data-source="拓展" data-diag="D 计算" data-kp="KP-49 指令编码" data-answer="B"><div class="qhead"><span class="chip">10-2</span><span class="chip t">单选</span><span class="chip k">KP-49 指令编码</span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">某处理器有 60 条指令、指令字长 16 位、单地址格式，则地址字段最多可表示多少个存储单元？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 512</button><button class="opt" data-k="B"><b>B.</b> 1024</button><button class="opt" data-k="C"><b>C.</b> 64</button><button class="opt" data-k="D"><b>D.</b> 4096</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-3" data-type="single" data-explain="C 错：Java 先编译为字节码再解释/JIT；D 错：解释同样要做词法语法分析。" data-source="拓展" data-diag="B 补充" data-kp="KP-50 编译与解释" data-answer="B"><div class="qhead"><span class="chip">10-3</span><span class="chip t">单选</span><span class="chip k">KP-50 编译与解释</span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">关于编译与解释，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 编译执行跨平台性好，解释执行速度快</button><button class="opt" data-k="B"><b>B.</b> 编译先整体翻译再执行，解释逐句翻译并立即执行</button><button class="opt" data-k="C"><b>C.</b> Java 是纯解释型语言，不存在编译过程</button><button class="opt" data-k="D"><b>D.</b> 解释型语言不需要语法分析</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-4" data-type="single" data-explain="操作码说明操作性质，地址码描述操作对象；按地址数分三地址、二地址、单地址、零地址。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-51 指令格式" data-answer="A"><div class="qhead"><span class="chip">10-4</span><span class="chip t">单选</span><span class="chip k">KP-51 指令格式</span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">一条机器指令通常由哪两部分组成？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 操作码与地址码</button><button class="opt" data-k="B"><b>B.</b> 数据段与代码段</button><button class="opt" data-k="C"><b>C.</b> 寄存器与内存</button><button class="opt" data-k="D"><b>D.</b> 源地址与目标地址</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-5" data-type="multi" data-explain="D 错：建模语言与形式化语言用于描述与验证，不直接生成机器码执行。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-48/KP-51 综合" data-answer="ABCE"><div class="qhead"><span class="chip">10-5</span><span class="chip t">不定项</span><span class="chip k">KP-48/KP-51 综合</span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">关于计算机语言的分类与特征，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 机器语言可被计算机直接识别执行，执行速度快、占用内存少</button><button class="opt" data-k="B"><b>B.</b> 汇编语言需经汇编程序翻译为机器语言</button><button class="opt" data-k="C"><b>C.</b> 高级语言面向问题、可移植性较好</button><button class="opt" data-k="D"><b>D.</b> 建模语言与形式化语言都直接生成本地机器码执行</button><button class="opt" data-k="E"><b>E.</b> 零地址指令常见于堆栈型计算机</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-6" data-type="fill" data-explain="表达式含变量/常量/字面量/运算符；流程控制含分支、循环、函数、异常；集合指字符串、数组、散列表等。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-52 语言组成" data-answer="表达式|流程控制" data-answer-text="表达式、流程控制"><div class="qhead"><span class="chip">10-6</span><span class="chip t">填空</span><span class="chip k">KP-52 语言组成</span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">计算机语言主要由一套指令组成，这些指令一般包括________、________和集合三大部分内容。</div><div class="fillrow"><input class="fillinput" placeholder="两部分，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：语言的分层（机器→汇编→高级）是为了在"机器可执行"与"人可维护"之间找平衡；编译与解释是两种翻译策略，Java 用字节码做了折中。</p>
+<p><strong>留一个问题</strong>：文本、图像、音频、视频这些非结构化数据，计算机怎么处理？</p>
+<p>下一节讲多媒体。</p>
+<hr>
+<h2 id="sec11">第 11 节 多媒体：非结构化数据怎么处理</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：一段 4K 视频每秒产生上 GB 数据，怎么在有限带宽与存储下传输与呈现？</p>
+</blockquote>
+<h3>一、一个算不平的账</h3>
+<p>4K 视频按原始像素算：3840×2160×3 字节×30 帧/秒 ≈ <strong>746 MB/s</strong>。一部两小时的电影就是 <strong>5 TB 以上</strong>——无论带宽还是硬盘都撑不住。</p>
+<p>所以多媒体技术的核心命题只有一个：<strong>压缩与实时</strong>。压缩解决"存不下、传不动"，实时解决"播放时不能卡"。</p>
+<h3>二、媒体的五类划分</h3>
+<p>我们把媒体分为：<strong>感觉媒体</strong>（人直接感知的，如声音、图像）、<strong>表示媒体</strong>（编码形式，如 JPEG、MP3）、<strong>表现媒体</strong>（输入输出设备，如摄像头、显示器）、<strong>存储媒体</strong>（如光盘、硬盘）、<strong>传输媒体</strong>（如光纤、电缆）。</p>
+<p>考试常考"某个东西属于哪类"：<strong>编码格式属于表示媒体</strong>，<strong>摄像头属于表现媒体</strong>——这两个最容易混。</p>
+<h3>三、关键技术：压缩是主线</h3>
+<p>多媒体系统的关键技术，重点是<strong>数据压缩</strong>：</p>
+<ul>
+<li><strong>无损压缩</strong>：Huffman 编码、算术编码、LZW。解压后与原始数据完全一致，适合文本、医疗影像、程序。</li>
+<li><strong>有损压缩</strong>：JPEG（图像）、MPEG（视频）、MP3（音频）。丢弃人眼/人耳不敏感的信息，压缩比可达几十倍。</li>
+</ul>
+<p><strong>为什么能有损</strong>：因为人的感知有阈值——人眼对亮度敏感、对色度迟钝（JPEG 就利用这点做色度下采样）；人耳有掩蔽效应（MP3 就丢掉被强音掩盖的弱音）。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么手术影像必须用无损压缩，而流媒体视频可以用有损？判断标准是什么？</p>
+</blockquote>
+<h3>四、VR/AR 的四种形态</h3>
+<p>我们把 VR/AR 技术分为四类，考点在"特点匹配"：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>特点</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>桌面式 VR</td>
+<td>易实现、应用广泛、成本较低，但受环境干扰、缺体验感</td>
+<td>教学演示</td>
+</tr>
+<tr>
+<td>分布式 VR</td>
+<td>多用户共享同一虚拟环境，共享度高但研发成本极高</td>
+<td>专业训练</td>
+</tr>
+<tr>
+<td>沉浸式 VR</td>
+<td>完全沉浸、全身参与，实时交互好，但硬件与混合技术要求高</td>
+<td>高端体验</td>
+</tr>
+<tr>
+<td>增强式 AR</td>
+<td>虚拟与现实叠加，体验更完美，但混合技术要求最高、起步晚</td>
+<td>工业维修、导航</td>
+</tr>
+</tbody>
+</table>
+<p>关键技术包括：数据采集与优化传输（全向相机、高速摄像机、激光设备）、交互与情形实时再现（力觉/触觉反馈、跟踪定位、渲染、显示）。</p>
+<h3>五、例题精解</h3>
+<p><strong>例 1（工程权衡：直播方案设计）</strong> 某在线教育平台要做 1 万人在线的直播课，要求延迟低于 3 秒、国内多地域可看、成本可控。请给出技术方案并说明取舍。</p>
+<p><em>解答</em>：<br>
+- <strong>编码</strong>：H.264/H.265 有损压缩，按带宽自适应多码率（540p/720p/1080p）；<br>
+- <strong>传输</strong>：RTMP 推流 → 转码集群 → CDN 分发（边缘节点就近服务），而非源站直出；<br>
+- <strong>取舍</strong>：低延迟与成本天然冲突——用 CDN 换延迟与并发，用有损压缩换带宽；若要求"抖动能忍、延迟不能忍"，可换 WebRTC，代价是并发成本更高。</p>
+<p><em>点评</em>：多媒体方案的评价维度永远是三个：<strong>画质、延迟、成本</strong>，三者不可同时最优，必须按业务定优先级。</p>
+<p><strong>例 2（工程判断：存储与压缩的选择）</strong> 某医院 PACS 系统存 CT 影像，要求诊断级精度、可回溯 15 年。是否可用 JPEG 有损压缩？</p>
+<p><em>解答</em>：<br>
+- <strong>不可</strong>。诊断级影像要求像素级保真，有损压缩可能抹掉早期病灶的细微差别；医疗影像通常要求无损或近无损压缩（如 JPEG-LS、JPEG2000 无损模式）。<br>
+- 存储上采用分层：近线用高速存储、归档用磁带库（保持年限最长），配合压缩与去重。</p>
+<p><em>点评</em>：这题与第 3 节"监控存储分层"是同一套思路：<strong>按数据价值与访问频率分层</strong>，而不是一刀切。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：把编码格式当成存储媒体。</strong><br>
+JPEG/MP3 是表示媒体（编码形式），光盘、硬盘才是存储媒体。</p>
+<p><strong>误区二：认为有损压缩"质量差"。</strong><br>
+在感知阈值内的有损压缩，人眼几乎无法分辨，压缩比却可达数十倍，这是流媒体的基础。</p>
+<p><strong>误区三：认为 VR 一定比 AR 高级。</strong><br>
+二者解决不同问题：VR 是"进入虚拟世界"，AR 是"虚拟叠加现实"。AR 对混合技术（跟踪、配准、光照一致性）要求更高。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="11-1" data-type="single" data-explain="表示媒体是编码形式；感觉媒体是人直接感知的；表现媒体是输入输出设备。" data-source="拓展" data-diag="B 补充" data-kp="KP-53 媒体分类" data-answer="B"><div class="qhead"><span class="chip">11-1</span><span class="chip t">单选</span><span class="chip k">KP-53 媒体分类</span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">JPEG、MP3 这类编码格式属于五类媒体中的：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 感觉媒体</button><button class="opt" data-k="B"><b>B.</b> 表示媒体</button><button class="opt" data-k="C"><b>C.</b> 表现媒体</button><button class="opt" data-k="D"><b>D.</b> 存储媒体</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-2" data-type="single" data-explain="表现媒体指用于呈现与获取信息的设备，如摄像头、显示器、扫描仪、打印机。" data-source="拓展" data-diag="B 补充" data-kp="KP-53 媒体分类" data-answer="C"><div class="qhead"><span class="chip">11-2</span><span class="chip t">单选</span><span class="chip k">KP-53 媒体分类</span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">摄像头、显示器、扫描仪属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 感觉媒体</button><button class="opt" data-k="B"><b>B.</b> 表示媒体</button><button class="opt" data-k="C"><b>C.</b> 表现媒体</button><button class="opt" data-k="D"><b>D.</b> 传输媒体</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-3" data-type="single" data-explain="Huffman、算术编码、LZW 属无损；JPEG/MPEG/MP3 属有损。" data-source="拓展" data-diag="B 补充" data-kp="KP-54 压缩" data-answer="C"><div class="qhead"><span class="chip">11-3</span><span class="chip t">单选</span><span class="chip k">KP-54 压缩</span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">下列属于无损压缩的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> JPEG</button><button class="opt" data-k="B"><b>B.</b> MPEG</button><button class="opt" data-k="C"><b>C.</b> Huffman 编码</button><button class="opt" data-k="D"><b>D.</b> MP3</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-4" data-type="single" data-explain="增强式（AR）将虚拟与现实叠加，用户无须脱离真实世界即可提高感知。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-55 VR/AR 分类" data-answer="D"><div class="qhead"><span class="chip">11-4</span><span class="chip t">单选</span><span class="chip k">KP-55 VR/AR 分类</span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">将虚拟世界与现实世界叠加、用户无需脱离真实世界即可提高感知的 VR/AR 形态是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 桌面式 VR</button><button class="opt" data-k="B"><b>B.</b> 分布式 VR</button><button class="opt" data-k="C"><b>C.</b> 沉浸式 VR</button><button class="opt" data-k="D"><b>D.</b> 增强式 AR</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-5" data-type="multi" data-explain="D 错：三者不可同时最优，必须按业务定优先级；E 错：注意分布式 VR 研发成本极高。" data-source="拓展" data-diag="B 补充" data-kp="KP-54/KP-55 综合" data-answer="ABC"><div class="qhead"><span class="chip">11-5</span><span class="chip t">不定项</span><span class="chip k">KP-54/KP-55 综合</span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">关于多媒体技术，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 有损压缩利用了人眼、人耳感知的阈值特性</button><button class="opt" data-k="B"><b>B.</b> 医疗诊断影像通常要求无损或近无损压缩</button><button class="opt" data-k="C"><b>C.</b> 流媒体通过 CDN 就近分发可降低延迟</button><button class="opt" data-k="D"><b>D.</b> 多媒体技术要求同时满足画质、延迟与成本三者的最优</button><button class="opt" data-k="E"><b>E.</b> 分布式 VR 的研发成本极低，适合个人消费</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="11-6" data-type="fill" data-explain="四类：桌面式、分布式、沉浸式、增强式（AR）。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-55 四类形态" data-answer="沉浸|增强" data-answer-text="沉浸式、增强式（AR）"><div class="qhead"><span class="chip">11-6</span><span class="chip t">填空</span><span class="chip k">KP-55 四类形态</span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">我们把 VR/AR 技术分为桌面式、分布式、________和________四种。</div><div class="fillrow"><input class="fillinput" placeholder="两种，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：多媒体靠"压缩 + 分层分发"把不可承受的数据量变成可传输的流；方案评价永远在画质、延迟、成本之间取舍。</p>
+<p><strong>留一个问题</strong>：单个系统内部的问题都解决了，可一个大型工程往往涉及几十个系统、上百个干系人。这么复杂的东西怎么组织？</p>
+<p>下一节讲系统工程。</p>
+<hr>
+<h2 id="sec12">第 12 节 系统工程：复杂系统怎么组织</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：面对一个涉及多种专业、跨越数年的复杂工程，用什么框架把它拆开、排好、管住？</p>
+</blockquote>
+<h3>一、为什么需要"系统工程"</h3>
+<p>造一台交换机是工程问题；建一张覆盖全省的政务云，是系统问题——它同时涉及网络、机房、安全、数据、应用、运维、预算、合规，还有十几个部门。</p>
+<p>系统工程的定位是"一种组织管理技术"：<strong>它不是某一门专业技术，而是把多种专业组织起来达成整体目标的方法</strong>。</p>
+<h3>二、霍尔三维结构：把复杂拆成三个维度</h3>
+<p>这是本节唯一必须记住的模型。霍尔（A.D. Hall）把系统工程活动拆成三维：</p>
+<p><strong>时间维</strong>（按时间顺序的 7 个阶段）：</p>
+<blockquote>
+<p>规划 → 拟订方案 → 研制 → 生产 → 安装 → 运行 → 更新</p>
+</blockquote>
+<p><strong>逻辑维</strong>（每个阶段内要走的 7 个步骤）：</p>
+<blockquote>
+<p>明确问题 → 确定目标 → 系统综合 → 系统分析 → 优化 → 决策 → 实施</p>
+</blockquote>
+<p><strong>知识维</strong>（需要的专业知识）：工程、医学、建筑、商业、法律、管理、社会科学、艺术等。</p>
+<p>记忆口诀：时间维"<strong>规拟研生安运更</strong>"，逻辑维"<strong>问目综析优决实</strong>"。</p>
+<p>它的价值在于：<strong>任何一个工程阶段，都可以用同一套逻辑步骤去推</strong>。比如"研制"阶段，也要走"明确问题→确定目标→…→实施"这七步。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"决策"排在"实施"之前、"优化"之后？如果把决策放到最前面，会出什么问题？</p>
+</blockquote>
+<h3>三、生命周期与 MBSE</h3>
+<p>讲了系统工程的生命周期，以及<strong>基于模型的系统工程（MBSE）</strong>。</p>
+<p>区别一句话概括：<strong>传统系统工程靠文档传递，MBSE 靠模型传递</strong>。文档的问题是"各写各的、对不上"；模型的好处是"改一处、全局一致"，且可仿真验证。</p>
+<p>MBSE 与第 5 节讲的 DO-178、第 8 节的嵌入式开发是同一趋势：<strong>从文档驱动转向模型驱动</strong>。</p>
+<h3>四、例题精解</h3>
+<p><strong>例 1（工程项目：用霍尔三维拆解）</strong> 某市要建"智慧交通"项目：整合 2000 个路口信号、公交调度、停车诱导、应急指挥，工期 3 年。请用霍尔三维说明如何组织。</p>
+<p><em>解答</em>：<br>
+- <strong>时间维</strong>：规划（顶层设计与可行性）→ 拟订方案（技术路线比选）→ 研制（平台与接口开发）→ 生产（设备批量制造）→ 安装（路口改造与联网）→ 运行（试运行与运维）→ 更新（迭代升级）；<br>
+- <strong>逻辑维</strong>（以"规划"阶段为例）：明确问题（拥堵点在哪）→ 确定目标（通行效率提升 15%）→ 系统综合（提出多种方案）→ 系统分析（评估各方案）→ 优化 → 决策 → 实施（立项）；<br>
+- <strong>知识维</strong>：交通工程、通信、软件、数据治理、法规（数据共享合规）、项目管理。</p>
+<p><em>点评</em>：这类题的关键不是把 7×7 全写出来，而是<strong>挑一个阶段完整走一遍逻辑维</strong>，让阅卷人看到你真的会用这个框架。</p>
+<p><strong>例 2（工程判断：文档驱动 vs 模型驱动）</strong> 某装备研制项目，涉及 5 家单位、12 个专业，接口频繁变更。用文档管理还是 MBSE？</p>
+<p><em>解答</em>：<br>
+- 优先 <strong>MBSE</strong>。理由：多单位多专业、接口频繁变更，文档模式下"改一处要通知所有人、且容易漏"；模型可做单一数据源，接口变更自动传导，还能做早期仿真验证；<br>
+- 代价：需要统一建模语言与工具链、团队学习成本高、初期投入大；<br>
+- 折中：先用 MBSE 管接口与关键子系统，非关键部分仍用文档，逐步迁移。</p>
+<p><em>点评</em>：这是典型的"<strong>方法选择跟着协作复杂度走</strong>"——单团队小项目用文档更轻，多单位强耦合才值得上 MBSE。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：把系统工程当成"项目管理"。</strong><br>
+项目管理管进度、成本、风险；系统工程管"技术方案的分解与集成"，两者互补但不同。</p>
+<p><strong>误区二：认为霍尔三维是"7×7=49 个步骤依次执行"。</strong><br>
+时间维是阶段，逻辑维是每阶段内的思维程序，二者是"每个阶段都要走一遍逻辑维"，不是串成 49 步。</p>
+<p><strong>误区三：以为 MBSE 就是"画 UML 图"。</strong><br>
+MBSE 的核心是"模型作为唯一数据源、可追溯、可仿真"，画图只是表现形式。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="12-1" data-type="single" data-explain="时间维是 7 个阶段；逻辑维是 7 个步骤；知识维是各类专业知识。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-56 霍尔三维" data-answer="A"><div class="qhead"><span class="chip">12-1</span><span class="chip t">单选</span><span class="chip k">KP-56 霍尔三维</span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">霍尔三维结构中，"规划、拟订方案、研制、生产、安装、运行、更新"属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 时间维</button><button class="opt" data-k="B"><b>B.</b> 逻辑维</button><button class="opt" data-k="C"><b>C.</b> 知识维</button><button class="opt" data-k="D"><b>D.</b> 方法维</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="12-2" data-type="single" data-explain="顺序：明确问题→确定目标→系统综合→系统分析→优化→决策→实施。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-57 逻辑维步骤" data-answer="B"><div class="qhead"><span class="chip">12-2</span><span class="chip t">单选</span><span class="chip k">KP-57 逻辑维步骤</span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">霍尔三维结构的逻辑维中，紧接"系统分析"之后的步骤是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 系统综合</button><button class="opt" data-k="B"><b>B.</b> 优化</button><button class="opt" data-k="C"><b>C.</b> 决策</button><button class="opt" data-k="D"><b>D.</b> 实施</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="12-3" data-type="single" data-explain="MBSE 的核心是模型作为单一数据源、可追溯可仿真；代价是工具链与学习成本高。" data-source="拓展" data-diag="C 晦涩" data-kp="KP-58 MBSE" data-answer="B"><div class="qhead"><span class="chip">12-3</span><span class="chip t">单选</span><span class="chip k">KP-58 MBSE</span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">关于 MBSE（基于模型的系统工程），正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 就是用 UML 画图的另一种说法</button><button class="opt" data-k="B"><b>B.</b> 以模型作为单一数据源，支持追溯与仿真验证</button><button class="opt" data-k="C"><b>C.</b> 只适用于软件项目，不适用于装备研制</button><button class="opt" data-k="D"><b>D.</b> 相比文档驱动，初期投入更低</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="12-4" data-type="single" data-explain="系统工程是一种组织管理技术。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-59 系统工程定位" data-answer="B"><div class="qhead"><span class="chip">12-4</span><span class="chip t">单选</span><span class="chip k">KP-59 系统工程定位</span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">下列对系统工程的描述，最准确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 一门具体的专业技术</button><button class="opt" data-k="B"><b>B.</b> 一种组织管理技术，把多种专业组织起来达成整体目标</button><button class="opt" data-k="C"><b>C.</b> 等同于项目管理</button><button class="opt" data-k="D"><b>D.</b> 只关注系统的技术实现，不关注过程</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="12-5" data-type="multi" data-explain="D 错：知识维含工程、医学、建筑、商业、法律、管理、社会科学、艺术等。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-56 三维" data-answer="ABCE"><div class="qhead"><span class="chip">12-5</span><span class="chip t">不定项</span><span class="chip k">KP-56 三维</span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">关于霍尔三维结构，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 由时间维、逻辑维、知识维组成</button><button class="opt" data-k="B"><b>B.</b> 时间维包含 7 个阶段</button><button class="opt" data-k="C"><b>C.</b> 逻辑维包含 7 个步骤，每个阶段都要走一遍</button><button class="opt" data-k="D"><b>D.</b> 知识维只包含工程类知识</button><button class="opt" data-k="E"><b>E.</b> 霍尔三维结构体现了系统工程方法的系统化、综合化、最优化</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="12-6" data-type="fill" data-explain="口诀：问、目、综、析、优、决、实。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-57 逻辑维" data-answer="系统综合" data-answer-text="系统综合"><div class="qhead"><span class="chip">12-6</span><span class="chip t">填空</span><span class="chip k">KP-57 逻辑维</span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">霍尔三维结构的逻辑维七个步骤依次为：明确问题、确定目标、________、系统分析、优化、决策、实施。</div><div class="fillrow"><input class="fillinput" placeholder="填一个步骤" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：复杂工程靠"三维分解 + 生命周期 + 模型驱动"来组织；霍尔三维提供的是"任何阶段都用同一套逻辑推演"的方法。</p>
+<p><strong>留一个问题</strong>：系统工程讲的是"怎么做"，可做完之后，怎么判断它做得"快不快、稳不稳、值不值"？</p>
+<p>下一节讲系统性能——这也是与论文最直接相关的一节。</p>
+<hr>
+<h2 id="sec13">第 13 节 系统性能：快慢怎么度量与优化</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：如何用数字说明一个系统"快"，又如何判断优化该往哪里投？</p>
+</blockquote>
+<h3>一、一句"系统很慢"背后的三件事</h3>
+<p>用户说"系统很慢"，可能是：单次请求响应 3 秒（延迟高）、每秒只能处理 50 笔（吞吐低）、高峰期直接超时（稳定性差）。</p>
+<p>这三件事的优化手段完全不同：延迟靠减少单次处理路径（缓存、索引），吞吐靠并行与解耦（集群、消息队列），稳定性靠容量规划与限流降级。</p>
+<p>所以性能的第一步不是优化，是<strong>说清楚在说哪个指标</strong>。</p>
+<h3>二、指标：先分清三组</h3>
+<p>这里列出一大串指标，记住三组就够用：</p>
+<ul>
+<li><strong>计算能力</strong>：主频、运算速度、MIPS、PDR（数据处理速率）；</li>
+<li><strong>服务能力</strong>：吞吐率、响应时间、并发数、最大并发连接数；</li>
+<li><strong>可靠性</strong>：RASIS——可靠性（Reliability）、可用性（Availability）、可维护性（Serviceability）、完整性、安全性；以及 MTBF（平均无故障时间）、MTTR（平均修复时间）。</li>
+</ul>
+<p>可用性公式很实用：<span class="math">A = <span class="frac"><span class="n">MTBF</span><span class="d">MTBF + MTTR</span></span></span>。要提升可用性，要么拉长 MTBF（少出故障），要么缩短 MTTR（快恢复）——工程上后者往往更划算。</p>
+<h3>三、计算：MIPS 与 Amdahl</h3>
+<p><strong>MIPS</strong>（每秒百万条指令）衡量处理器运算速度：<span class="math">MIPS = <span class="frac"><span class="n">指令数</span><span class="d">执行时间 × 10<sup>6</sup></span></span> = 主频 ÷ CPI ÷ 10<sup>6</sup></span>。</p>
+<p><strong>Amdahl 定律</strong>是本节的核心，它回答"优化局部到底值不值"：</p>
+<p><span class="math mathblock">总加速比 = <span class="frac"><span class="n">1</span><span class="d">(1 - 增强比例) + <span class="frac"><span class="n">增强比例</span><span class="d">增强加速比</span></span></span></span></span></p>
+<p>它的含义是：<strong>只优化一部分，整体加速有上限</strong>。如果只有 40% 的执行时间能被优化，那么即使把这一部分加速到无穷快，总加速比也不会超过 <span class="math">1/(1-0.4) = 1.67</span> 倍。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"只优化瓶颈"是共识？用 Amdahl 定律解释，如果优化了非瓶颈部分会怎样。</p>
+</blockquote>
+<h3>四、设计与评估</h3>
+<p><strong>性能设计</strong>：的"性能调整"分两步——准备（识别约束、指定负载、设置性能目标）与循环（收集 → 分析 → 配置 → 测试）。</p>
+<p><strong>性能评估</strong>：方法有基准测试、压力测试、可靠性测试。基准程序分四类，<strong>准确度递减</strong>：真实程序 &gt; 核心程序 &gt; 小型基准程序 &gt; 合成基准程序。常见基准有 Dhrystone（整数）、Linpack（浮点）、Whetstone、SPEC、TPC。</p>
+<blockquote>
+<p><strong>想一想 ②</strong>：为什么"合成基准程序"的准确度最低，但厂商最喜欢用它宣传？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例 1（工程计算：Amdahl 与优化决策）</strong> 某系统耗时分布：数据库查询 45%、业务逻辑 35%、网络传输 15%、其他 5%。团队只能做一项优化，候选是"查询加索引提速 3 倍"或"逻辑重构提速 2 倍"。选哪个？</p>
+<p><em>解答</em>：<br>
+- 加索引：增强比例 0.45，加速 3 → 总加速 = 1/(0.55 + 0.45/3) = 1/(0.55+0.15) = <strong>1.43 倍</strong><br>
+- 重构逻辑：增强比例 0.35，加速 2 → 总加速 = 1/(0.65 + 0.35/2) = 1/(0.65+0.175) = <strong>1.21 倍</strong><br>
+- 选<strong>加索引</strong>。虽然"提速倍数"看起来都不夸张，但索引作用在占比更大的部分。</p>
+<p><em>点评</em>：优化决策的公式化表达就是"<strong>增强比例 × 加速倍数</strong>"，而不是"哪个手段听起来更高级"。这条也是论文里论证"性能优化思路"的标准依据。</p>
+<p><strong>例 2（工程判断：基准程序的选择）</strong> 某团队要采购数据库服务器，厂商给出 SPEC 跑分与 TPC-C 跑分。业务是 OLTP 交易系统，应该看哪个？</p>
+<p><em>解答</em>：<br>
+- 看 <strong>TPC-C</strong>。它是专门针对 OLTP 的基准（模拟订单录入、支付等事务），与业务形态匹配；<br>
+- SPEC 系列更偏通用计算/Web 服务，不能代表交易型负载；<br>
+- 更稳妥的做法是用<strong>自己的真实业务负载</strong>做压测（的"真实程序"准确度最高），厂商跑分只作参考。</p>
+<p><em>点评</em>：基准测试的坑在于"<strong>跑分场景与业务场景不匹配</strong>"。选基准的原则是"越接近真实负载越可信"。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：把"响应时间"与"吞吐量"混为一谈。</strong><br>
+二者常常互相制约：批量处理能提高吞吐但拉长单次响应；实时系统反之。</p>
+<p><strong>误区二：认为优化一定成正比。</strong><br>
+Amdahl 定律说明整体加速受未优化部分限制，优化非瓶颈部分收益极低。</p>
+<p><strong>误区三：认为 MTBF 越大系统越可用。</strong><br>
+可用性取决于 MTBF 与 MTTR 的比值。MTBF 很长但一次故障恢复要 10 小时，可用性依然很差。</p>
+<p><strong>误区四：把 SPEC 跑分直接当成业务性能。</strong><br>
+跑分是特定场景的加权结果，业务负载不同，结论可能完全相反。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="13-1" data-type="single" data-explain="1/[(1−0.4)+0.4/5]=1/(0.6+0.08)=1.47。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-60 Amdahl" data-answer="A"><div class="qhead"><span class="chip">13-1</span><span class="chip t">单选</span><span class="chip k">KP-60 Amdahl</span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">某系统 40% 的执行时间可被优化，且优化部分加速 5 倍，则总加速比约为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 1.47</button><button class="opt" data-k="B"><b>B.</b> 2.00</button><button class="opt" data-k="C"><b>C.</b> 3.00</button><button class="opt" data-k="D"><b>D.</b> 5.00</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="13-2" data-type="single" data-explain="1000/(1000+10)=99.01%。要提升可用性，拉长 MTBF 或缩短 MTTR。" data-source="拓展" data-diag="B 补充" data-kp="KP-61 可用性" data-answer="C"><div class="qhead"><span class="chip">13-2</span><span class="chip t">单选</span><span class="chip k">KP-61 可用性</span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">某系统 MTBF = 1000 小时，MTTR = 10 小时，其可用性约为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 99%</button><button class="opt" data-k="B"><b>B.</b> 99.9%</button><button class="opt" data-k="C"><b>C.</b> 99.01%</button><button class="opt" data-k="D"><b>D.</b> 90%</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="13-3" data-type="single" data-explain="真实程序、核心程序、小型基准程序和合成基准程序，准确程度依次递减。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-62 基准程序" data-answer="B"><div class="qhead"><span class="chip">13-3</span><span class="chip t">单选</span><span class="chip k">KP-62 基准程序</span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">按准确度从高到低，基准测试程序排序正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 合成基准 &gt; 小型基准 &gt; 核心程序 &gt; 真实程序</button><button class="opt" data-k="B"><b>B.</b> 真实程序 &gt; 核心程序 &gt; 小型基准程序 &gt; 合成基准程序</button><button class="opt" data-k="C"><b>C.</b> 核心程序 &gt; 真实程序 &gt; 合成基准 &gt; 小型基准</button><button class="opt" data-k="D"><b>D.</b> 真实程序 &gt; 合成基准 &gt; 核心程序 &gt; 小型基准</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="13-4" data-type="single" data-explain="TPC 系列面向事务处理；Dhrystone 测整数、Linpack 测浮点、Whetstone 测混合浮点。" data-source="拓展" data-diag="B 补充" data-kp="KP-62 基准选择" data-answer="C"><div class="qhead"><span class="chip">13-4</span><span class="chip t">单选</span><span class="chip k">KP-62 基准选择</span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">评估 OLTP 交易系统性能时，更贴切的基准是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> Dhrystone</button><button class="opt" data-k="B"><b>B.</b> Linpack</button><button class="opt" data-k="C"><b>C.</b> TPC-C</button><button class="opt" data-k="D"><b>D.</b> Whetstone</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="13-5" data-type="single" data-explain="：识别约束、指定负载、设置性能目标后，进入“收集、分析、配置、测试”的循环。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-63 性能调整" data-answer="B"><div class="qhead"><span class="chip">13-5</span><span class="chip t">单选</span><span class="chip k">KP-63 性能调整</span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">性能调整的正确顺序是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 先优化代码，再定目标</button><button class="opt" data-k="B"><b>B.</b> 先识别约束、指定负载、设置目标，再循环收集—分析—配置—测试</button><button class="opt" data-k="C"><b>C.</b> 直接上压力测试，边测边改</button><button class="opt" data-k="D"><b>D.</b> 先扩容，再找瓶颈</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="13-6" data-type="multi" data-explain="D 错：扩容提升吞吐，但可能因一致性、锁竞争、跨节点调用反而拉高延迟。" data-source="拓展" data-diag="B 补充" data-kp="KP-60/KP-61 综合" data-answer="ABCE"><div class="qhead"><span class="chip">13-6</span><span class="chip t">不定项</span><span class="chip k">KP-60/KP-61 综合</span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">关于系统性能，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 可用性可用 MTBF/(MTBF+MTTR) 估算</button><button class="opt" data-k="B"><b>B.</b> 提高吞吐与降低单次响应时间往往需要不同的优化手段</button><button class="opt" data-k="C"><b>C.</b> Amdahl 定律说明只优化局部时整体加速存在上限</button><button class="opt" data-k="D"><b>D.</b> 只要增加服务器数量，系统延迟必然降低</button><button class="opt" data-k="E"><b>E.</b> 系统监视可通过命令、日志与可视化工具进行</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="13-7" data-type="fill" data-explain="1/(0.5+0.5/4)=1/0.625=1.6。" data-source="软考口径" data-diag="D 计算" data-kp="KP-60 Amdahl 计算" data-answer="1.6" data-answer-text="1.6" data-numeric="1.6"><div class="qhead"><span class="chip">13-7</span><span class="chip t">填空</span><span class="chip k">KP-60 Amdahl 计算</span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">Amdahl 定律中，若增强比例为 0.5、增强加速比为 4，则总加速比为________。</div><div class="fillrow"><input class="fillinput" placeholder="填数字" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="13-8" data-type="fill" data-explain="RASIS：可靠性、可用性、可维护性、完整性、安全性。" data-source="软考口径" data-diag="A 漏读" data-kp="KP-61 RASIS" data-answer="可用|可维护" data-answer-text="可用性（Availability）、可维护性（Serviceability）"><div class="qhead"><span class="chip">13-8</span><span class="chip t">填空</span><span class="chip k">KP-61 RASIS</span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">评价计算机的综合性可靠性指标 RASIS 中，A 代表________，S 代表________。</div><div class="fillrow"><input class="fillinput" placeholder="两个英文词的中文含义" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：性能要先分清延迟、吞吐、可用性三类指标，再谈优化；Amdahl 定律给出了"优化该往哪投"的判断依据；基准测试的关键是与真实负载匹配。</p>
+<hr>
+<h2 id="sec14">本章总复习</h2>
+<h3>一、全章知识网</h3>
+<pre><code>                      ┌─ 处理器（CISC/RISC、GPU/DSP/FPGA）
+        硬件 ─────────┼─ 存储器（四层阶梯 → 命中率 → EAT）
+                      ├─ 总线与接口（内/系统/外部；并行→串行）
+                      └─ 外部设备
+                      ┌─ 操作系统（四管理、四特征、七分类）
+        软件 ─────────┼─ 数据库（关系/KV/列/文档/搜索；分布式四层；设计六阶段）
+                      ├─ 文件系统（物理结构、位示图、链接）
+                      └─ 中间件（八类职责）+ 构件 + 应用软件
+                      ┌─ 嵌入式（HAL/BSP、RMS/EDF、DO-178）
+        系统 ─────────┼─ 网络（OSI/TCP-IP、设备层级、路由、子网）
+                      ├─ 语言（五代、指令格式、编译/解释）
+                      ├─ 多媒体（五类媒体、无损/有损、VR-AR 四类）
+                      ├─ 系统工程（霍尔三维、MBSE）
+                      └─ 性能（指标、MIPS/Amdahl、基准、监视）
+</code></pre>
+<p><strong>一条主线</strong>：速度差 → 层次化 → 资源调度 → 分层协议 → 度量与优化。每个概念都能挂到这条线上。</p>
+<h3>二、本章必须会算的五类题</h3>
+<ol>
+<li><strong>平均访问时间</strong>：<span class="math">EAT = hT<sub>c</sub> + (1-h)T<sub>m</sub></span>，含反向求解与多级叠加；</li>
+<li><strong>周转时间</strong>：完成时间 − 到达时间，比较 FCFS 与 SJF；</li>
+<li><strong>页式地址变换</strong>：页内偏移位数 = log₂(页面大小)；</li>
+<li><strong>位示图/最大文件大小</strong>：块数 × 位数、索引项数 × 块大小；</li>
+<li><strong>Amdahl 加速比</strong>：<span class="math">1/[(1-p)+p/s]</span>。</li>
+</ol>
+<h3>三、跨节综合自测（12 题）</h3>
+<div class="quiz" data-id="1综-1" data-type="single" data-explain="0.98×2+0.02×100=1.96+2=3.96ns。" data-source="软考口径" data-diag="D 计算" data-kp="跨节：存储与性能" data-answer="B"><div class="qhead"><span class="chip">1综-1</span><span class="chip t">单选</span><span class="chip k">跨节：存储与性能</span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">某系统缓存命中率 98%、缓存访问 2ns、主存 100ns，则 EAT 约为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 2ns</button><button class="opt" data-k="B"><b>B.</b> 3.96ns</button><button class="opt" data-k="C"><b>C.</b> 4ns</button><button class="opt" data-k="D"><b>D.</b> 50ns</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="1综-2" data-type="single" data-explain="上限=1/(1−0.6)=2.5。无论传输多快，剩余 40% 不变。" data-source="软考口径" data-diag="D 计算" data-kp="跨节：Amdahl" data-answer="B"><div class="qhead"><span class="chip">1综-2</span><span class="chip t">单选</span><span class="chip k">跨节：Amdahl</span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">某程序 60% 的时间在网络传输上，若把传输速度提升到无限快，整体加速比上限是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 1.67</button><button class="opt" data-k="B"><b>B.</b> 2.5</button><button class="opt" data-k="C"><b>C.</b> 4</button><button class="opt" data-k="D"><b>D.</b> 无穷</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="1综-3" data-type="single" data-explain="交换机/网桥在数据链路层，集线器/中继器在物理层；路由器在网络层，防火墙作为门户按规则过滤（四层及以上）。" data-source="软考口径" data-diag="A 漏读" data-kp="跨节：网络设备" data-answer="C"><div class="qhead"><span class="chip">1综-3</span><span class="chip t">单选</span><span class="chip k">跨节：网络设备</span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">下列组合中，全部工作在 OSI 网络层及以上的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 交换机、路由器</button><button class="opt" data-k="B"><b>B.</b> 集线器、中继器</button><button class="opt" data-k="C"><b>C.</b> 路由器、防火墙</button><button class="opt" data-k="D"><b>D.</b> 网桥、集线器</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="1综-4" data-type="single" data-explain="128 条指令需 7 位操作码；剩余 25 位分给两个地址，各 12 位（余 1 位）→ 2¹²=4096。" data-source="软考口径" data-diag="D 计算" data-kp="跨节：指令编码" data-answer="A"><div class="qhead"><span class="chip">1综-4</span><span class="chip t">单选</span><span class="chip k">跨节：指令编码</span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">某处理器有 128 条指令、指令字长 32 位、二地址格式（两地址各占等长），每个地址字段最多表示多少存储单元？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 2¹²</button><button class="opt" data-k="B"><b>B.</b> 2¹³</button><button class="opt" data-k="C"><b>C.</b> 2¹⁴</button><button class="opt" data-k="D"><b>D.</b> 2¹⁶</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="1综-5" data-type="single" data-explain="A 反了；B 错（片外仍是 SRAM）；C 错（磁带 30 年以上，长于磁盘 10 年以上）。" data-source="软考口径" data-diag="A 漏读" data-kp="跨节：存储层次" data-answer="D"><div class="qhead"><span class="chip">1综-5</span><span class="chip t">单选</span><span class="chip k">跨节：存储层次</span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">下列关于存储层次的说法，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 越靠近 CPU 容量越大</button><button class="opt" data-k="B"><b>B.</b> 片外缓存由 DRAM 构成</button><button class="opt" data-k="C"><b>C.</b> 磁盘的数据保持年限长于磁带</button><button class="opt" data-k="D"><b>D.</b> 片上缓存与片外缓存通常都由 SRAM 构成</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="1综-6" data-type="single" data-explain="强一致、跨系统、失败整体回滚 → 交易中间件；消息中间件只能保证消息可靠送达。" data-source="软考口径" data-diag="A 漏读" data-kp="跨节：中间件" data-answer="B"><div class="qhead"><span class="chip">1综-6</span><span class="chip t">单选</span><span class="chip k">跨节：中间件</span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">某系统要保证"一笔跨行转账在两边要么都成功、要么都失败"，最相关的技术是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 消息中间件</button><button class="opt" data-k="B"><b>B.</b> 事务处理（交易）中间件</button><button class="opt" data-k="C"><b>C.</b> CDN</button><button class="opt" data-k="D"><b>D.</b> 位示图</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="1综-7" data-type="single" data-explain="HAL 抽象接口、BSP 板级实现；换板只改 BSP。" data-source="软考口径" data-diag="A 漏读" data-kp="跨节：嵌入式" data-answer="B"><div class="qhead"><span class="chip">1综-7</span><span class="chip t">单选</span><span class="chip k">跨节：嵌入式</span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">在嵌入式系统中，把硬件相关代码隔离、便于更换板卡的设计是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 虚拟内存</button><button class="opt" data-k="B"><b>B.</b> HAL 与 BSP</button><button class="opt" data-k="C"><b>C.</b> RAID</button><button class="opt" data-k="D"><b>D.</b> 生成树协议</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="1综-8" data-type="single" data-explain="系统综合是逻辑维的第三步（问、目、综、析、优、决、实）。" data-source="软考口径" data-diag="A 漏读" data-kp="跨节：系统工程" data-answer="B"><div class="qhead"><span class="chip">1综-8</span><span class="chip t">单选</span><span class="chip k">跨节：系统工程</span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">霍尔三维结构中，"系统综合"属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 时间维</button><button class="opt" data-k="B"><b>B.</b> 逻辑维</button><button class="opt" data-k="C"><b>C.</b> 知识维</button><button class="opt" data-k="D"><b>D.</b> 生命周期</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="1综-9" data-type="multi" data-explain="D 错：在感知阈值内的有损压缩人眼几乎无法分辨，这正是流媒体的基础。" data-source="软考口径" data-diag="A 漏读" data-kp="跨节综合" data-answer="ABCE"><div class="qhead"><span class="chip">1综-9</span><span class="chip t">不定项</span><span class="chip k">跨节综合</span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">下列说法正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 进程是资源分配单位，线程是调度单位</button><button class="opt" data-k="B"><b>B.</b> 交换机可隔离冲突域，但默认不隔离广播域</button><button class="opt" data-k="C"><b>C.</b> 位示图大小只与物理块总数有关</button><button class="opt" data-k="D"><b>D.</b> 有损压缩一定导致不可接受的画质损失</button><button class="opt" data-k="E"><b>E.</b> 实时系统的核心目标是最坏情况可预测</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="1综-10" data-type="multi" data-explain="D 错：批量处理提高吞吐但拉长响应，二者常常互相制约。" data-source="软考口径" data-diag="A 漏读" data-kp="跨节综合" data-answer="ABCE"><div class="qhead"><span class="chip">1综-10</span><span class="chip t">不定项</span><span class="chip k">跨节综合</span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">关于性能与评估，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 提高可用性可以靠缩短 MTTR 实现</button><button class="opt" data-k="B"><b>B.</b> 合成基准程序的准确度低于真实程序</button><button class="opt" data-k="C"><b>C.</b> Amdahl 定律可用于判断优化优先级</button><button class="opt" data-k="D"><b>D.</b> 响应时间与吞吐量总是同向变化</button><button class="opt" data-k="E"><b>E.</b> 系统监视可通过系统命令、日志与可视化工具进行</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="1综-11" data-type="fill" data-explain="4KB=2¹²，偏移 12 位，页号 20 位，页表最多 2²⁰ 项——这也是必须用多级页表的原因。" data-source="软考口径" data-diag="D 计算" data-kp="跨节：地址变换" data-answer="20|1048576/2^20/2的20" data-answer-text="20 位、2²⁰（约 1048576 项）"><div class="qhead"><span class="chip">1综-11</span><span class="chip t">填空</span><span class="chip k">跨节：地址变换</span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">若页面大小 4KB、逻辑地址 32 位，则页号占________位，页表最多有________个表项。</div><div class="fillrow"><input class="fillinput" placeholder="两个数字，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="1综-12" data-type="fill" data-explain="L=λ×W=2000×0.05=100。并发数不等于用户数，它等于到达率乘停留时间。" data-source="拓展" data-diag="B 补充" data-kp="跨节：利特尔法则" data-answer="100" data-answer-text="100" data-numeric="100"><div class="qhead"><span class="chip">1综-12</span><span class="chip t">填空</span><span class="chip k">跨节：利特尔法则</span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">某交易系统 QPS 为 2000、平均响应时间 50ms，按利特尔法则，系统平均并发处理请求数约为________。</div><div class="fillrow"><input class="fillinput" placeholder="填数字" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>四、本章结语</h3>
+<p>这一章看起来是最"杂"的一章，但它的价值恰恰在于"杂"——它把你后面要学的所有架构知识，按"硬件—软件—系统"三层铺好了地基：</p>
+<ul>
+<li>讲性能优化，你要用到这里的存储层次与 Amdahl；</li>
+<li>讲高并发，你要用到这里的 OS 调度与网络分层；</li>
+<li>讲数据架构，你要用到这里的数据库类型与文件系统；</li>
+<li>讲嵌入式与安全架构（K10），你要用到这里的实时性与 DO-178。</li>
+</ul>
+<p><strong>本章结束</strong>。下一步进入 K2（信息系统与信息安全）。这两章是上午题的高分区，也是 K10（安全架构）的前置。</p>
+<div class="legend" style="margin-top:44px">标注说明：<b>软考口径</b>＝按官方用书表述给分；<b>拓展</b>＝考纲未展开的补充知识。详见 <a href="k00.html">K0 前言</a>。作答记录保存在本机浏览器。</div>
+<div class="toast" id="toast"></div>
+</div>
+<script>
+const KEY="k1book_v1";
+let state=JSON.parse(localStorage.getItem(KEY)||"{}");
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function norm(s){return (s||"").toLowerCase().replace(/[\s，,、;；。.()（）]/g,"");}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1400);}
+function stats(){const qs=$$(".quiz");let done=0,ok=0;
+ qs.forEach(q=>{const st=state[q.dataset.id];if(st&&st.done){done++;if(st.ok)ok++;}});
+ return {done,total:qs.length,ok};}
+function paint(){const s=stats();const p=s.total?s.done/s.total*100:0;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";}
+function fillKeywords(q){return q.dataset.answer.split("|").map(g=>g.split("/"));}
+function fbHTML(q,ok,userText){
+ const diag=q.dataset.diag||"";const warm=diag.includes("补充")?"#a2540f":"#b42318";
+ const ans=q.dataset.answerText||q.dataset.answer;
+ return '<div class="res">'+(ok?"✔ 回答正确":"✘ 回答错误")+'</div>'
+  +'<div><b>正确答案：</b>'+ans+(userText?'　<span style="color:#6b7280">你的作答：'+userText+'</span>':'')+'</div>'
+  +'<details open><summary>展开解析</summary><div class="inner">'
+  +'<div>'+q.dataset.explain+'</div>'
+  +'<div class="row tags">来源：'+q.dataset.source+'　｜　诊断标签：<b style="color:'+warm+'">'+diag+'</b></div>'
+  +'</div></details>';
+}
+function judge(q,ok,userText){
+ const fb=$(".fb",q);fb.className="fb show "+(ok?"ok":"bad");
+ fb.innerHTML=fbHTML(q,ok,userText);
+ state[q.dataset.id]={done:true,ok:ok};save();paint();
+}
+$$(".quiz").forEach(q=>{
+ const type=q.dataset.type;const ans=q.dataset.answer;
+ const opts=$$(".opt",q);const fb=$(".fb",q);
+ const saved=state[q.dataset.id];
+ if(type==="single"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     opts.forEach(x=>x.disabled=true);
+     const ok=(o.dataset.k===ans);
+     o.classList.add(ok?"right":"wrong");
+     if(!ok){const c=opts.find(x=>x.dataset.k===ans);if(c)c.classList.add("right");}
+     judge(q,ok,o.dataset.k);
+   }));
+ }else if(type==="multi"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     if(o.disabled)return;
+     o.classList.toggle("sel");
+   }));
+   const btn=$(".check",q);
+   if(btn)btn.addEventListener("click",()=>{
+     const picked=opts.filter(o=>o.classList.contains("sel")).map(o=>o.dataset.k).sort().join("");
+     if(!picked){toast("先选择至少一个选项");return;}
+     opts.forEach(o=>{
+       o.disabled=true;o.classList.remove("sel");
+       const k=o.dataset.k;
+       if(ans.includes(k))o.classList.add("right");
+       else if(picked.includes(k))o.classList.add("wrong");
+     });
+     judge(q,picked===ans,picked);
+   });
+ }else{
+   const inp=$(".fillinput",q);const btn=$(".check",q);
+   const go=()=>{
+     const raw=inp.value;const v=norm(raw);
+     if(!v){toast("先填写答案");return;}
+     let ok=false;
+     if(q.dataset.numeric){
+       const m=raw.match(/-?\d+(?:\.\d+)?/);
+       const cands=q.dataset.numeric.split("|");
+       ok=!!m&&cands.some(x=>Math.abs(parseFloat(m[0])-parseFloat(x))<0.011);
+     }else{
+       ok=fillKeywords(q).every(g=>g.some(k=>v.includes(norm(k))));
+     }
+     inp.disabled=true;inp.style.borderColor=ok?"#7cc49b":"#e79a94";
+     if(btn)btn.disabled=true;
+     judge(q,ok,raw.trim());
+   };
+   if(btn)btn.addEventListener("click",go);
+   if(inp)inp.addEventListener("keydown",e=>{if(e.key==="Enter")go();});
+ }
+ if(saved&&saved.done){/* 恢复历史状态：仅标记，不覆盖作答 */}
+});
+window.addEventListener("scroll",()=>{
+ const h=document.documentElement;
+ const p=h.scrollTop/(h.scrollHeight-h.clientHeight||1)*100;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";
+});
+paint();
+</script>
+<div class="book-foot-nav"><div class="bf-box"><a href="k00.html">&larr; 上一章 K0 前言</a><a class="bf-next" href="k02.html">下一章 K2 信息系统与信息安全 &rarr;</a></div><p class="bf-note">作答记录保存在本机浏览器，换设备或清除缓存不会保留。本章支持浏览器直接打印为 PDF。</p></div><script>
+(function(){
+  var el=document.getElementById("book-nav-progress");
+  function refresh(){
+    try{
+      var st=JSON.parse(localStorage.getItem("k1book_v1")||"{}"),done=0;
+      Object.keys(st).forEach(function(k){if(st[k]&&st[k].done)done++;});
+      if(el)el.textContent=done+" / 113 题";
+    }catch(e){}
+  }
+  refresh();setInterval(refresh,1000);
+})();
+</script></body></html>

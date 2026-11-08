@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>系统架构设计师备考学习手册 · 全书目录</title>
+<meta name="description" content="系统架构设计师（高级）备考用书：11 章正文、110 节、857 道随堂题，正文与习题一体，答完立刻看解析与诊断标签。">
+<style>
+:root{--bg:#fbfaf7;--card:#fff;--ink:#1f2328;--sub:#6b7280;--line:#e6e3dd;--accent:#1f4e79;--warm:#fdf6ec}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.85 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",serif}
+a{color:var(--accent)}
+.wrap{max-width:1060px;margin:0 auto;padding:0 24px 90px}
+.topbar{border-bottom:1px solid var(--line);background:#fff}
+.topbar .in{max-width:1060px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-weight:700;color:var(--ink);text-decoration:none;font-size:16px}
+.brand span{color:var(--sub);font-weight:400;font-size:13px;margin-left:8px}
+.ver{margin-left:auto;color:var(--sub);font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+.backblog{font-size:13px;color:var(--sub);text-decoration:none}
+.backblog:hover{color:var(--accent)}
+.hero{padding:64px 0 40px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:13px;letter-spacing:2px;color:var(--accent);font-weight:600;margin:0 0 14px}
+h1{font-size:38px;line-height:1.35;margin:0 0 12px;letter-spacing:.5px}
+.lead{font-size:18px;color:#42505e;margin:0 0 26px;max-width:760px}
+.stats{display:flex;gap:36px;flex-wrap:wrap;margin:28px 0 30px}
+.stat b{display:block;font-size:30px;line-height:1.1;color:var(--accent);font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--sub)}
+.btn{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;border-radius:10px;padding:11px 22px;font-size:16px;font-weight:600}
+.btn:hover{background:#163c5e}
+.btn.ghost{background:#fff;color:var(--accent);border:1px solid var(--line);font-weight:400;margin-left:10px}
+.btn.ghost:hover{background:#eef3f8}
+.hero-note{font-size:13.5px;color:var(--sub);margin:18px 0 0}
+h2{font-size:22px;margin:56px 0 8px;padding-top:20px;border-top:2px solid var(--line)}
+.sec-lead{color:var(--sub);font-size:15px;margin:0 0 22px}
+.grp{display:flex;gap:20px;padding:13px 0;border-bottom:1px dashed var(--line);align-items:baseline;flex-wrap:wrap}
+.grp-name{width:150px;flex-shrink:0;font-weight:600;font-size:14.5px;color:var(--accent)}
+.grp-items{display:flex;gap:8px 18px;flex-wrap:wrap;font-size:14.5px}
+.grp-items a{text-decoration:none}
+.grp-items a:hover{text-decoration:underline}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;margin-top:24px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;text-decoration:none;color:inherit;transition:.16s;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.card:hover{border-color:#9db4c9;transform:translateY(-2px);box-shadow:0 6px 18px rgba(31,78,121,.09)}
+.card-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.card-no{font-size:12.5px;font-weight:700;color:#fff;background:var(--accent);border-radius:999px;padding:2px 10px;letter-spacing:.5px}
+.card-meta{font-size:12.5px;color:var(--sub);font-variant-numeric:tabular-nums}
+.card-name{font-size:18px;font-weight:700;margin:12px 0 6px;line-height:1.45}
+.card-blurb{font-size:14px;color:#5a6672;line-height:1.7;min-height:48px}
+.card-track{height:5px;background:#eeeae3;border-radius:99px;margin-top:16px;overflow:hidden}
+.card-fill{height:100%;width:0;background:#0f7b4f;border-radius:99px;transition:width .4s}
+.card-prog{font-size:12.5px;color:var(--sub);margin-top:7px;font-variant-numeric:tabular-nums}
+.notes{background:var(--warm);border:1px solid #ecdcc0;border-left:3px solid #e0b984;border-radius:0 12px 12px 0;padding:18px 22px;margin-top:26px;font-size:14.5px;line-height:1.85}
+.notes b{color:#8a5a12}
+.notes ul{margin:8px 0 0;padding-left:20px}
+.notes li{margin:5px 0}
+.overall{margin-top:20px;font-size:15px;color:var(--sub)}
+.overall b{color:var(--ink);font-size:19px;font-variant-numeric:tabular-nums}
+footer{border-top:1px solid var(--line);margin-top:60px;padding-top:20px;font-size:13px;color:var(--sub);display:flex;gap:18px;flex-wrap:wrap}
+@media(max-width:600px){h1{font-size:29px}.hero{padding:40px 0 30px}.stats{gap:22px}.grp-name{width:100%}.btn.ghost{margin:10px 0 0;display:table}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="in">
+  <a class="brand" href="index.html">系统架构设计师备考学习手册<span>系统架构设计师（高级）备考用书</span></a>
+  <span class="ver">2026-11</span>
+  <a class="backblog" href="/">&larr; 返回博客</a>
+</div></header>
+<div class="wrap">
+<section class="hero">
+  <p class="eyebrow">SYSTEM ARCHITECT · 备考学习手册</p>
+  <h1>系统架构设计师备考学习手册</h1>
+  <p class="lead">不是现成读物的缩写或导读，而是按考点重新组织的一套备考用书。每章把「问题 → 原理 → 计算 → 误区 → 自测」串成一条线，正文与习题在同一页：读完一节，立刻做题，答完马上看对错、解析与诊断标签。</p>
+  <div class="stats">
+    <div class="stat"><b>11</b><span>章正文 + 1 篇前言</span></div>
+    <div class="stat"><b>110</b><span>节</span></div>
+    <div class="stat"><b>857</b><span>道随堂题</span></div>
+    <div class="stat"><b>0</b><span>外部依赖 / 账号</span></div>
+  </div>
+  <a class="btn" href="k00.html">从 K0 前言开始阅读 &rarr;</a>
+  <a class="btn ghost" href="k01.html">直接进 K1</a>
+  <p class="hero-note">建议按顺序读：前四章是后七章的地基。各章也可单独阅读，章节可单独分享链接。</p>
+</section>
+
+<section>
+  <h2>阅读地图</h2>
+  <p class="sec-lead">标注只有两种：<b>软考口径</b>（按官方用书表述给分，必须照记）与<b>拓展</b>（考纲未展开的补充知识）。通用说明只在 K0 出现一次，各章不再重复。</p>
+  <div class="grp"><div class="grp-name">开篇</div><div class="grp-items"><a href="k00.html">K0 前言</a></div></div><div class="grp"><div class="grp-name">地基 K1–K4</div><div class="grp-items"><a href="k01.html">K1 计算机系统基础</a><a href="k02.html">K2 信息系统与信息安全</a><a href="k03.html">K3 软件工程与可靠性</a><a href="k04.html">K4 数据库设计</a></div></div><div class="grp"><div class="grp-name">架构主线 K5–K8</div><div class="grp-items"><a href="k05.html">K5 架构基础与架构风格</a><a href="k06.html">K6 质量属性与架构评估</a><a href="k07.html">K7 演化与维护</a><a href="k08.html">K8 信息系统架构</a></div></div><div class="grp"><div class="grp-name">现代架构 K9–K10</div><div class="grp-items"><a href="k09.html">K9 云原生与 SOA</a><a href="k10.html">K10 嵌入式、通信与安全架构</a></div></div><div class="grp"><div class="grp-name">前沿 K11</div><div class="grp-items"><a href="k11.html">K11 大数据与未来技术</a></div></div>
+</section>
+
+<section>
+  <h2>全部章节</h2>
+  <p class="sec-lead">每章末尾都有「本章总复习」：一章的主线、必须能说出的判断、8 道跨节综合题、与论文和案例的接口。学完一节能自查，学完一章能回看。</p>
+  <div class="cards">
+<a class="card" href="k00.html" data-key="book_K0前言" data-total="0">
+  <div class="card-top"><span class="card-no">K0</span><span class="card-meta">总说明</span></div>
+  <div class="card-name">前言</div>
+  <div class="card-blurb">全书定位、结构、七段体例、标注约定与读法。先花五分钟读完这一页。</div>
+  <div class="card-prog">从这里开始 →</div>
+</a>
+<a class="card" href="k01.html" data-key="k1book_v1" data-total="113">
+  <div class="card-top"><span class="card-no">K1</span><span class="card-meta">13 节 · 113 题</span></div>
+  <div class="card-name">计算机系统基础</div>
+  <div class="card-blurb">硬件、操作系统、数据库与文件系统、网络、语言、多媒体、系统工程与性能。</div>
+  <div class="card-track"><div class="card-fill"></div></div><div class="card-prog">0 / 113 题已完成</div>
+</a>
+<a class="card" href="k02.html" data-key="book_K2信息系统与信息安全" data-total="91">
+  <div class="card-top"><span class="card-no">K2</span><span class="card-meta">10 节 · 91 题</span></div>
+  <div class="card-name">信息系统与信息安全</div>
+  <div class="card-blurb">信息系统类型与建设、信息安全技术，含官方口径与常见说法的冲突提醒。</div>
+  <div class="card-track"><div class="card-fill"></div></div><div class="card-prog">0 / 91 题已完成</div>
+</a>
+<a class="card" href="k03.html" data-key="book_K3软件工程与可靠性" data-total="107">
+  <div class="card-top"><span class="card-no">K3</span><span class="card-meta">13 节 · 107 题</span></div>
+  <div class="card-name">软件工程与可靠性</div>
+  <div class="card-blurb">过程模型、需求工程、分析与设计、测试、项目管理、可靠性、MDA 与 AI 测试。</div>
+  <div class="card-track"><div class="card-fill"></div></div><div class="card-prog">0 / 107 题已完成</div>
+</a>
+<a class="card" href="k04.html" data-key="book_K4数据库设计" data-total="70">
+  <div class="card-top"><span class="card-no">K4</span><span class="card-meta">9 节 · 70 题</span></div>
+  <div class="card-name">数据库设计</div>
+  <div class="card-blurb">数据模型、三级模式、关系运算、范式、NoSQL、向量数据库与多模数据库。</div>
+  <div class="card-track"><div class="card-fill"></div></div><div class="card-prog">0 / 70 题已完成</div>
+</a>
+<a class="card" href="k05.html" data-key="book_K5架构基础与架构风格" data-total="87">
+  <div class="card-top"><span class="card-no">K5</span><span class="card-meta">11 节 · 87 题</span></div>
+  <div class="card-name">架构基础与架构风格</div>
+  <div class="card-blurb">架构定义与视图、五大类风格、分层与 MVC、ABSD、复用与 DSSA、EDA、六边形架构。</div>
+  <div class="card-track"><div class="card-fill"></div></div><div class="card-prog">0 / 87 题已完成</div>
+</a>
+<a class="card" href="k06.html" data-key="book_K6质量属性与架构评估" data-total="96">
+  <div class="card-top"><span class="card-no">K6</span><span class="card-meta">13 节 · 96 题</span></div>
+  <div class="card-name">质量属性与架构评估</div>
+  <div class="card-blurb">质量属性场景、SAAM/ATAM/CBAM、高并发手段、性能测试、负载均衡与秒杀。</div>
+  <div class="card-track"><div class="card-fill"></div></div><div class="card-prog">0 / 96 题已完成</div>
+</a>
+<a class="card" href="k07.html" data-key="book_K7演化与维护" data-total="69">
+  <div class="card-top"><span class="card-no">K7</span><span class="card-meta">10 节 · 69 题</span></div>
+  <div class="card-name">演化与维护</div>
+  <div class="card-blurb">演化四维度与四时期、18 条原则、网站十阶段、架构维护、DevOps 与 AIOps。</div>
+  <div class="card-track"><div class="card-fill"></div></div><div class="card-prog">0 / 69 题已完成</div>
+</a>
+<a class="card" href="k08.html" data-key="book_K8信息系统架构" data-total="47">
+  <div class="card-top"><span class="card-no">K8</span><span class="card-meta">6 节 · 47 题</span></div>
+  <div class="card-name">信息系统架构</div>
+  <div class="card-blurb">物理/逻辑结构、四种架构模型、四视角框架、ADM 与层次式架构三层。</div>
+  <div class="card-track"><div class="card-fill"></div></div><div class="card-prog">0 / 47 题已完成</div>
+</a>
+<a class="card" href="k09.html" data-key="book_K9云原生与SOA" data-total="77">
+  <div class="card-top"><span class="card-no">K9</span><span class="card-meta">10 节 · 77 题</span></div>
+  <div class="card-name">云原生与 SOA</div>
+  <div class="card-blurb">SOA 与协议、云原生七原则、容器/微服务/Serverless/网格、分布式事务与企业集成。</div>
+  <div class="card-track"><div class="card-fill"></div></div><div class="card-prog">0 / 77 题已完成</div>
+</a>
+<a class="card" href="k10.html" data-key="book_K10嵌入式通信与安全架构" data-total="42">
+  <div class="card-top"><span class="card-no">K10</span><span class="card-meta">6 节 · 42 题</span></div>
+  <div class="card-name">嵌入式、通信与安全架构</div>
+  <div class="card-blurb">嵌入式两种模式、实时设计、通信网络、安全模型与 WPDRRC。</div>
+  <div class="card-track"><div class="card-fill"></div></div><div class="card-prog">0 / 42 题已完成</div>
+</a>
+<a class="card" href="k11.html" data-key="book_K11大数据与未来技术" data-total="58">
+  <div class="card-top"><span class="card-no">K11</span><span class="card-meta">9 节 · 58 题</span></div>
+  <div class="card-name">大数据与未来技术</div>
+  <div class="card-blurb">CPS、AI、机器人、边缘计算、数字孪生、大数据栈、Lambda/Kappa、RAG 与数据湖。</div>
+  <div class="card-track"><div class="card-fill"></div></div><div class="card-prog">0 / 58 题已完成</div>
+</a>
+</div>
+  <p class="overall">本机答题进度：<b id="overall-done">0</b> / 857 题已完成（仅统计当前浏览器）</p>
+</section>
+
+<section>
+  <h2>使用说明</h2>
+  <div class="notes">
+    <b>关于作答记录</b>
+    <ul>
+      <li>答题结果保存在<b>本机浏览器</b>的 localStorage，不上传、不需要登录，换设备或清除浏览器数据后不会保留。</li>
+      <li>错题按四个诊断标签分类：<b>A 漏读</b>（回看该段）、<b>B 补充</b>（拓展知识，记住结论）、<b>C 晦涩</b>（理解优先）、<b>D 计算</b>（重做同类题）。</li>
+      <li>整章页面为纯静态 HTML，无 CDN、无字体外链，离线打开同样可用；浏览器「打印 → 另存为 PDF」可带走纸版，打印样式已内置。</li>
+      <li>页面顶部的细线是本章阅读进度条，导航条右侧的数字是本章已作答题数。</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <span>系统架构设计师备考学习手册</span><span>2026-11</span>
+  <span>正文与随堂题来自本地编纂稿，按原样发布</span>
+  <a href="/">Qianchang's Blog</a>
+</footer>
+</div>
+<script>
+(function(){
+  var cards=[].slice.call(document.querySelectorAll(".card")),sum=0,grand=0;
+  function read(key){try{return JSON.parse(localStorage.getItem(key)||"{}")}catch(e){return {}}}
+  cards.forEach(function(card){
+    var total=parseInt(card.dataset.total,10)||0,key=card.dataset.key;
+    if(!total)return;
+    var st=read(key),done=0;
+    Object.keys(st).forEach(function(k){if(st[k]&&st[k].done)done++;});
+    if(done>total)done=total;
+    sum+=done;grand+=total;
+    var fill=card.querySelector(".card-fill"),prog=card.querySelector(".card-prog");
+    if(fill)fill.style.width=(done/total*100).toFixed(1)+"%";
+    if(prog)prog.textContent=done+" / "+total+" 题已完成";
+  });
+  var el=document.getElementById("overall-done");if(el)el.textContent=sum;
+})();
+</script>
+</body>
+</html>

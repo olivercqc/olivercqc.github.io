@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K8 信息系统架构</title>
+<style>
+:root{--bg:#fbfaf7;--card:#fff;--ink:#1f2328;--sub:#6b7280;--line:#e6e3dd;--accent:#1f4e79;--ok:#0f7b4f;--bad:#b42318;--chip:#eef3f8;--warm:#fdf6ec}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:17px/1.9 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",serif}
+#bar{position:fixed;top:0;left:0;height:3px;background:var(--accent);width:0;z-index:99}
+.wrap{max-width:760px;margin:0 auto;padding:56px 20px 100px}
+h1{font-size:27px;line-height:1.4;letter-spacing:.5px;margin:0 0 10px}
+h2{font-size:21px;margin:52px 0 14px;padding-top:14px;border-top:2px solid var(--line);letter-spacing:.5px}
+h2:first-of-type{border-top:none}
+h3{font-size:17.5px;margin:30px 0 10px;color:#2b3a4a}
+h5{font-size:15px;margin:26px 0 8px;color:var(--sub);font-weight:600}
+p{margin:10px 0}
+blockquote{margin:16px 0;padding:12px 16px;background:var(--warm);border-left:3px solid #e0b984;border-radius:0 8px 8px 0;font-size:16px}
+blockquote p{margin:4px 0}
+strong{color:#12324f}
+hr{border:none;border-top:1px dashed var(--line);margin:26px 0}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px;background:#fff}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f3f1ec;font-weight:600}
+code{background:#f3f1ec;padding:1px 5px;border-radius:4px;font-size:14px}
+pre{background:#f7f5f1;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto}
+ul,ol{margin:10px 0;padding-left:22px}
+li{margin:4px 0}
+.math{font-family:"Cambria Math",Cambria,Georgia,"Times New Roman",serif;font-size:1.03em}
+.mathblock{display:block;text-align:center;margin:16px 0;overflow-x:auto;padding:2px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:-0.55em;text-align:center;margin:0 .3em}
+.frac .n{border-bottom:1px solid currentColor;padding:0 .3em;line-height:1.3}
+.frac .d{padding:0 .3em;line-height:1.4}
+sub,sup{font-size:.72em;line-height:0}
+.toast{position:fixed;right:18px;bottom:18px;background:#1f2937;color:#fff;padding:9px 14px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+
+/* 题卡 */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:18px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.qhead{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.chip{background:var(--chip);color:#33475b;border-radius:999px;padding:1px 9px;font-size:12px}
+.chip.t{background:#eaf4ec;color:#0f7b4f}
+.chip.k{background:#f4f0fa;color:#5b3f8f;font-size:11.5px}
+a.back{margin-left:auto;font-size:12px;color:var(--sub);text-decoration:none;border-bottom:1px dashed #c9c4ba}
+a.back:hover{color:var(--accent);border-color:var(--accent)}
+.qstem{font-weight:600;margin:4px 0 12px;font-size:16px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:15.5px;line-height:1.7;
+ background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 13px;cursor:pointer;transition:.15s}
+.opt:hover{border-color:#b9c6d6;background:#f8fafc}
+.opt b{color:var(--accent);margin-right:2px}
+.opt.sel{border-color:var(--accent);background:#eef4fa}
+.opt.right{border-color:#7cc49b;background:#effaf3}
+.opt.wrong{border-color:#e79a94;background:#fdf1f0}
+.opt:disabled{cursor:default}
+.fillrow{display:flex;gap:10px;margin-top:12px;align-items:center}
+.fillinput{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:15.5px;background:#fff}
+.btn{font:inherit;font-size:14px;padding:7px 16px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer}
+.btn.check{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fb{display:none;margin-top:14px;font-size:15px;line-height:1.8}
+.fb.show{display:block}
+.fb .res{font-weight:700;margin-bottom:6px;font-size:15.5px}
+.fb.ok .res{color:var(--ok)}
+.fb.bad .res{color:var(--bad)}
+.fb details{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:#fcfbf9;padding:0 12px}
+.fb summary{cursor:pointer;padding:9px 0;font-weight:600;color:var(--accent);outline:none}
+.fb .inner{padding:2px 0 12px;border-top:1px dashed var(--line)}
+.fb .row{color:var(--sub);font-size:13px;margin-top:8px}
+.fb .tags b{color:#a2540f}
+.legend{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:20px 0;font-size:14.5px}
+.legend b{color:var(--accent)}
+@media print{
+ #bar,.toast{display:none}
+ .quiz{break-inside:avoid}
+ body{background:#fff;font-size:12pt}
+}
+@media (max-width:600px){
+ body{font-size:16px;line-height:1.85}
+ .wrap{padding:40px 14px 80px}
+ h1{font-size:23px}
+ table{font-size:13px}
+}
+</style>
+<style id="book-nav-css">
+#book-nav{position:sticky;top:0;z-index:100;background:rgba(251,250,247,.96);backdrop-filter:blur(8px);border-bottom:1px solid #e6e3dd;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+#bar{z-index:101!important}
+#book-nav .bn-in{max-width:1060px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+#book-nav a{color:#1f4e79;text-decoration:none;white-space:nowrap}
+#book-nav a:hover{text-decoration:underline}
+#book-nav .bn-home{font-weight:700}
+#book-nav .bn-cur{color:#1f2328;font-weight:600;flex:1;min-width:180px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#book-nav .bn-step{background:#fff;border:1px solid #e6e3dd;border-radius:999px;padding:3px 11px;font-size:13px}
+#book-nav .bn-step.disabled{opacity:.38;pointer-events:none}
+#book-nav .bn-prog{color:#6b7280;font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.book-foot-nav{max-width:760px;margin:0 auto;padding:0 20px 80px;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.book-foot-nav .bf-box{border-top:2px solid #e6e3dd;padding-top:22px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}
+.book-foot-nav a{color:#1f4e79;text-decoration:none}
+.book-foot-nav a:hover{text-decoration:underline}
+.book-foot-nav .bf-next{background:#1f4e79;color:#fff!important;border-radius:10px;padding:9px 18px;font-weight:600}
+.book-foot-nav .bf-next:hover{text-decoration:none;background:#163c5e}
+.book-foot-nav .bf-note{color:#6b7280;font-size:13px;margin-top:14px}
+@media(max-width:600px){#book-nav .bn-cur{order:3;flex-basis:100%;text-align:left}#book-nav .bn-prog{display:none}}
+@media print{#book-nav,.book-foot-nav{display:none}#bar{z-index:0!important}}
+</style>
+</head><body><nav id="book-nav"><div class="bn-in"><a class="bn-home" href="index.html">&larr; 全书目录</a><a class="bn-step" href="k07.html" title="演化与维护">&larr; K7</a><span class="bn-cur">K8 · 信息系统架构</span><a class="bn-step" href="k09.html" title="云原生与 SOA">K9 &rarr;</a><span class="bn-prog" id="book-nav-progress">0 / 47 题</span></div></nav>
+<div id="bar"></div>
+<div class="wrap">
+<h1>K8 信息系统架构</h1>
+<blockquote>
+<p><strong>本章内容</strong>：信息系统架构的物理与逻辑结构 · 四种架构模型 · 企业信息系统总体框架 · ADM 架构开发方法 · 层次式架构的表现层、中间层与数据访问层<br>
+<strong>考纲位置</strong>：上午题常考架构模型与分层职责，案例题考"分层设计与中台"，论文常写"分层架构实践"</p>
+</blockquote>
+<p>本章围绕"<strong>一个组织的信息系统怎么分层、怎么分块</strong>"这一主题展开，共 6 节：</p>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+<th>回答的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>信息系统架构是什么</td>
+<td>物理结构与逻辑结构分别指什么</td>
+</tr>
+<tr>
+<td>2</td>
+<td>四种典型架构模型</td>
+<td>从单机到服务化，为什么这样演进</td>
+</tr>
+<tr>
+<td>3</td>
+<td>企业信息系统总体框架</td>
+<td>业务、应用、数据、技术四个视角怎么摆</td>
+</tr>
+<tr>
+<td>4</td>
+<td>ADM 架构开发方法</td>
+<td>企业级架构怎么一步步开发出来</td>
+</tr>
+<tr>
+<td>5</td>
+<td>层次式架构：表现层</td>
+<td>界面与业务怎么解耦</td>
+</tr>
+<tr>
+<td>6</td>
+<td>中间层与数据访问层</td>
+<td>业务逻辑与数据访问怎么设计</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="sec1">第 1 节 信息系统架构是什么</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：同一个系统为什么要有"物理结构"和"逻辑结构"两种描述？</p>
+</blockquote>
+<h3>一、两种结构</h3>
+<table>
+<thead>
+<tr>
+<th>结构</th>
+<th>描述什么</th>
+<th>关注者</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>物理结构</strong></td>
+<td>硬件、网络、部署节点的实际组织</td>
+<td>运维、集成</td>
+</tr>
+<tr>
+<td><strong>逻辑结构</strong></td>
+<td>功能单元、数据流、模块关系</td>
+<td>设计者、开发者</td>
+</tr>
+</tbody>
+</table>
+<p>物理结构回答"跑在哪几台机器上、怎么连"，逻辑结构回答"分成几块、怎么交互"。同一个逻辑结构可以对应多种物理部署（单体部署、集群部署、云上部署）。</p>
+<h3>二、架构风格在信息系统中的落点</h3>
+<p>K5 讲的五种风格，在信息系统里最常用的是三类：</p>
+<ul>
+<li><strong>分层</strong>：表现层、业务层、数据层——几乎所有企业系统的基本骨架；</li>
+<li><strong>客户机/服务器</strong>：资源不对等下的共享，演化出多层 C/S 与 B/S；</li>
+<li><strong>面向服务</strong>：把能力封装成可复用服务，支撑集成与复用（K9 展开）。</li>
+</ul>
+<h3>三、为什么企业系统偏爱分层</h3>
+<p>三个理由：</p>
+<ol>
+<li><strong>关注点分离</strong>：界面变化不影响业务逻辑，业务变化不影响数据库；</li>
+<li><strong>团队分工</strong>：前端、后端、DBA 可并行工作；</li>
+<li><strong>可替换</strong>：换数据库、换前端框架时，只需改相邻层。</li>
+</ol>
+<p>代价是<strong>调用链变长、性能损耗</strong>，且分层不当会退化成"每层只做透传"的空壳。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：如果一个系统的"业务层"里只有一句"调用数据层"，这说明什么？</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程判断：逻辑与物理的区分）</strong> 某系统做了三项调整：① 把数据库从单机换成主从集群；② 把"订单"与"支付"拆成两个独立服务；③ 新增 CDN 加速静态资源。哪些属于逻辑结构变化？</p>
+<p><em>解答</em>：<br>
+- ① <strong>物理结构</strong>变化：逻辑上仍是"数据访问"这一层，只是部署形态变了；<br>
+- ② <strong>逻辑结构</strong>变化：模块边界改变，出现了新的服务单元与接口；<br>
+- ③ <strong>物理结构</strong>变化：逻辑上仍是静态资源访问，只是分发方式变了。</p>
+<p><em>点评</em>：判据是"<strong>是否改变了功能单元与接口</strong>"。改部署、改容量、改分发方式，属物理结构。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为物理结构就是"部署图"。</strong><br>
+部署图只是物理结构的一种表达，还包括网络拓扑、容量分布。</p>
+<p><strong>误区二：认为逻辑结构可以脱离物理约束设计。</strong><br>
+逻辑结构最终要落到物理上，容量与延迟约束会反过来影响逻辑划分。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="8-1-1" data-type="single" data-explain="逻辑结构管“分成几块、怎么交互”。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8-1-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">描述功能单元、数据流与模块关系的结构是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 物理结构</button><button class="opt" data-k="B"><b>B.</b> 逻辑结构</button><button class="opt" data-k="C"><b>C.</b> 部署结构</button><button class="opt" data-k="D"><b>D.</b> 网络结构</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-1-2" data-type="single" data-explain="功能单元与接口未变，只是部署形态变了。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8-1-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">把数据库从单机换成主从集群，属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 逻辑结构变化</button><button class="opt" data-k="B"><b>B.</b> 物理结构变化</button><button class="opt" data-k="C"><b>C.</b> 接口变化</button><button class="opt" data-k="D"><b>D.</b> 业务变化</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-1-3" data-type="single" data-explain="分层带来调用链变长，性能反而下降。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">8-1-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">企业系统普遍采用分层架构，主要理由不包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 关注点分离</button><button class="opt" data-k="B"><b>B.</b> 团队并行分工</button><button class="opt" data-k="C"><b>C.</b> 便于替换相邻层实现</button><button class="opt" data-k="D"><b>D.</b> 分层越多性能越好</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-1-4" data-type="single" data-explain="空壳层是分层架构最常见的退化形态。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8-1-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">"业务层里只有一句调用数据层"说明：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 分层设计良好</button><button class="opt" data-k="B"><b>B.</b> 业务层退化为透传，分层失去意义</button><button class="opt" data-k="C"><b>C.</b> 数据层多余</button><button class="opt" data-k="D"><b>D.</b> 应当取消表现层</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-1-5" data-type="multi" data-explain="E 错：容量与延迟约束会反过来影响逻辑划分。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">8-1-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">关于信息系统架构，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 物理结构关注硬件、网络与部署节点</button><button class="opt" data-k="B"><b>B.</b> 逻辑结构关注功能单元与模块关系</button><button class="opt" data-k="C"><b>C.</b> 同一逻辑结构可对应多种物理部署</button><button class="opt" data-k="D"><b>D.</b> 分层会带来调用链变长与性能损耗</button><button class="opt" data-k="E"><b>E.</b> 逻辑结构设计不必考虑物理约束</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-1-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="物理|逻辑" data-answer-text="物理、逻辑"><div class="qhead"><span class="chip">8-1-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">信息系统架构可分为________结构与________结构两种描述。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：物理结构管"跑在哪"，逻辑结构管"分成几块"，分层是信息系统的通用骨架。</p>
+<p><strong>留一个问题</strong>：从最原始的单机程序到今天的服务化，架构模型经历了哪几步？</p>
+<p>下一节看四种模型。</p>
+<hr>
+<h2 id="sec2">第 2 节 四种典型架构模型</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：单机、C/S、SOA、企业数据交换总线，各自解决什么问题、留在什么场景？</p>
+</blockquote>
+<h3>一、模型的演进线索</h3>
+<p>四种模型的演进逻辑是<strong>"从封闭到开放、从耦合到解耦"</strong>：</p>
+<blockquote>
+<p>单机 → 客户机/服务器（含多层）→ 面向服务 → 企业数据交换总线</p>
+</blockquote>
+<h3>二、单机应用模式</h3>
+<p>最简单：运行在一台物理机器上的独立应用，可以是多进程/多线程。</p>
+<p>特点：</p>
+<ul>
+<li>部署简单、无网络开销；</li>
+<li>复杂单机系统并不少见（CAD、图像处理等），可能上百万行代码；</li>
+<li>局限：<strong>难以共享、难以扩展、难以与其他系统集成</strong>。</li>
+</ul>
+<h3>三、客户机/服务器模式</h3>
+<p>基于<strong>资源不对等</strong>、为实现共享而提出。</p>
+<ul>
+<li><strong>两层 C/S</strong>：客户机（胖客户端）+ 数据库服务器，业务逻辑在客户端；</li>
+<li><strong>多层 C/S（含 B/S）</strong>：增加应用服务器，形成表示层、功能层、数据层，客户端变"瘦"。</li>
+</ul>
+<p>优点是共享与集中管理，缺点是客户端部署/升级成本（两层）或中间层成为瓶颈（多层）。</p>
+<h3>四、面向服务架构（SOA）模式</h3>
+<p>无论多少层 C/S，对外都只是一个整体。SOA 把能力拆成<strong>可复用的服务</strong>，服务之间通过标准接口与协议交互，从而实现<strong>跨系统集成与复用</strong>。</p>
+<p>关键变化：<strong>接口标准化、服务可编排、松耦合</strong>。</p>
+<h3>五、企业数据交换总线</h3>
+<p>当企业内部有几十个异构系统时，点对点集成会形成"蜘蛛网"。<strong>企业数据交换总线（ESB/EAI）</strong> 提供统一的消息路由、协议转换与数据格式映射，把 n×n 的连接收敛为 n 条接入。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：有了 SOA 和 ESB，为什么后来还出现了微服务？提示：从"集中式总线"的角度想。</p>
+</blockquote>
+<h3>六、例题精解</h3>
+<p><strong>例（工程选型：集成方式）</strong> 某集团有 20 个异构系统（不同厂商、不同数据库），需要打通数据。方案 A 点对点接口，方案 B 建 ESB 统一接入，方案 C 全部改造成微服务。请比较并推荐。</p>
+<p><em>解答</em>：<br>
+- <strong>A</strong>：接口数随系统数平方增长（190 条），运维不可控，适合 2—3 个系统的临时集成；<br>
+- <strong>B</strong>：统一路由与协议转换，接入成本线性（20 条），适合异构、多厂商、改造代价大的现状；缺点是总线可能成为单点与瓶颈；<br>
+- <strong>C</strong>：最彻底但代价最大，等于重建，且 20 个系统同时改造风险不可控；<br>
+- <strong>推荐 B 起步</strong>，逐步把高频、核心能力服务化，避免一次性大改（呼应 K7 的平滑演化原则）。</p>
+<p><em>点评</em>：集成方案的选择依据是"<strong>系统数量 × 改造代价 × 一致性要求</strong>"。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="8-2-1" data-type="single" data-explain="单机模式最原始，仍广泛用于专业软件。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">8-2-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">运行在一台物理机器上的独立应用属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 单机应用模式</button><button class="opt" data-k="B"><b>B.</b> 两层 C/S</button><button class="opt" data-k="C"><b>C.</b> SOA</button><button class="opt" data-k="D"><b>D.</b> ESB</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-2-2" data-type="single" data-explain="所以叫“胖客户机、瘦服务器”。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8-2-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">两层 C/S 的业务逻辑通常位于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数据库服务器</button><button class="opt" data-k="B"><b>B.</b> 客户端</button><button class="opt" data-k="C"><b>C.</b> 应用服务器</button><button class="opt" data-k="D"><b>D.</b> 浏览器</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-2-3" data-type="single" data-explain="SOA 的核心是接口标准化与服务复用。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">8-2-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">把能力封装为可复用服务、通过标准接口交互的模型是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 单机应用</button><button class="opt" data-k="B"><b>B.</b> 两层 C/S</button><button class="opt" data-k="C"><b>C.</b> 面向服务架构</button><button class="opt" data-k="D"><b>D.</b> 文件共享</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-2-4" data-type="single" data-explain="把 n×n 收敛为 n 条接入。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8-2-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">企业数据交换总线主要解决：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 单机性能问题</button><button class="opt" data-k="B"><b>B.</b> 异构系统集成的点对点连接爆炸</button><button class="opt" data-k="C"><b>C.</b> 数据库范式问题</button><button class="opt" data-k="D"><b>D.</b> 前端渲染问题</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-2-5" data-type="multi" data-explain="E 错：微服务改造代价大，异构存量系统常先用 ESB。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">8-2-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">关于四种架构模型，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 单机模式部署简单但难共享与扩展</button><button class="opt" data-k="B"><b>B.</b> 多层 C/S 增加了应用服务器，客户端变瘦</button><button class="opt" data-k="C"><b>C.</b> SOA 强调接口标准化与服务复用</button><button class="opt" data-k="D"><b>D.</b> ESB 把 n×n 连接收敛为 n 条接入</button><button class="opt" data-k="E"><b>E.</b> 微服务一定优于 ESB</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-2-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="多层" data-answer-text="多层"><div class="qhead"><span class="chip">8-2-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">两种 C/S 结构分别是两层 C/S 和________ C/S。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="8-2-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="esb/总线" data-answer-text="ESB"><div class="qhead"><span class="chip">8-2-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">企业数据交换总线常简称为________，用于协议转换与消息路由。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：四种模型从封闭走向开放，SOA 解决复用、ESB 解决集成，选择取决于系统规模与改造代价。</p>
+<p><strong>留一个问题</strong>：一个组织的信息系统不止一套，从全局看该怎么分层组织？</p>
+<p>下一节看企业信息系统总体框架。</p>
+<hr>
+<h2 id="sec3">第 3 节 企业信息系统总体框架</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：企业架构为什么常被拆成业务、应用、数据、技术四个视角？</p>
+</blockquote>
+<h3>一、四个视角</h3>
+<table>
+<thead>
+<tr>
+<th>视角</th>
+<th>关注</th>
+<th>典型产物</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>业务架构</strong></td>
+<td>业务流程、组织、能力</td>
+<td>业务流程模型、能力地图</td>
+</tr>
+<tr>
+<td><strong>应用架构</strong></td>
+<td>有哪些应用系统、如何交互</td>
+<td>应用蓝图、集成关系</td>
+</tr>
+<tr>
+<td><strong>数据架构</strong></td>
+<td>数据分布、主数据、数据流</td>
+<td>数据模型、数据分布图</td>
+</tr>
+<tr>
+<td><strong>技术架构</strong></td>
+<td>基础设施、中间件、平台</td>
+<td>技术栈、部署架构</td>
+</tr>
+</tbody>
+</table>
+<p>四者的关系是：<strong>业务驱动应用，应用产生与消费数据，数据依托技术承载</strong>。</p>
+<h3>二、信息系统架构的一般原理</h3>
+<p>几条常被引用的原理：</p>
+<ol>
+<li><strong>业务与 IT 对齐</strong>：架构服务于业务目标，而不是技术偏好；</li>
+<li><strong>分层与解耦</strong>：通过分层隔离变化；</li>
+<li><strong>标准化</strong>：接口、数据、协议标准化，是集成的前提；</li>
+<li><strong>可演进</strong>：架构要能随业务变化调整（K7）。</li>
+</ol>
+<h3>三、总体框架的意义</h3>
+<p>总体框架解决"<strong>全局视角</strong>"问题：单个系统的架构再好，如果彼此重复建设、数据不通，整体仍是低效的。</p>
+<p>它带来的三个好处：</p>
+<ul>
+<li><strong>避免重复建设</strong>：识别哪些能力可以共享（用户中心、支付中心、消息中心）；</li>
+<li><strong>识别集成点</strong>：明确系统之间的接口责任；</li>
+<li><strong>支撑决策</strong>：投资优先级、改造顺序有据可依。</li>
+</ul>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"数据架构"常常是企业架构中最难的一层？（提示：数据有归属、有口径、有合规）</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：从系统视角到全局视角）</strong> 某集团 12 家子公司各自建了"用户管理"系统，重复投入且用户数据不一致。请从企业架构四视角给出改进思路。</p>
+<p><em>解答</em>：<br>
+- <strong>业务架构</strong>：梳理各公司的用户相关流程，识别共性与差异；<br>
+- <strong>应用架构</strong>：将"用户管理"识别为<strong>共享能力</strong>，规划建设统一的用户中心，各系统改为调用；<br>
+- <strong>数据架构</strong>：定义用户主数据标准（唯一标识、字段口径、更新责任），建立主数据管理；<br>
+- <strong>技术架构</strong>：统一认证与授权平台（IAM），提供标准化接口。</p>
+<p><em>点评</em>：这类题的答题骨架就是"<strong>四视角逐条说明改什么</strong>"，比单说"建个中台"更有说服力。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为企业架构就是"几张全局图"。</strong><br>
+它是一套决策体系，图只是表达。</p>
+<p><strong>误区二：认为技术架构最重要。</strong><br>
+业务对齐才是目的，技术只是承载。</p>
+<p><strong>误区三：认为数据架构是 DBA 的事。</strong><br>
+数据架构涉及口径、归属与治理，是跨部门决策。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="8-3-1" data-type="single" data-explain="业务架构是四视角的起点。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">8-3-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">描述业务流程、组织与能力的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 业务架构</button><button class="opt" data-k="B"><b>B.</b> 应用架构</button><button class="opt" data-k="C"><b>C.</b> 数据架构</button><button class="opt" data-k="D"><b>D.</b> 技术架构</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-3-2" data-type="single" data-explain="应用蓝图 + 集成关系。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8-3-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">描述有哪些应用系统及其交互关系的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 业务架构</button><button class="opt" data-k="B"><b>B.</b> 应用架构</button><button class="opt" data-k="C"><b>C.</b> 数据架构</button><button class="opt" data-k="D"><b>D.</b> 技术架构</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-3-3" data-type="single" data-explain="这是企业架构的基本传导链。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8-3-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">企业架构四视角之间的关系是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 技术驱动业务</button><button class="opt" data-k="B"><b>B.</b> 业务驱动应用，应用产生与消费数据，数据依托技术承载</button><button class="opt" data-k="C"><b>C.</b> 四者互不相关</button><button class="opt" data-k="D"><b>D.</b> 数据架构决定业务架构</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-3-4" data-type="single" data-explain="共享能力识别是应用架构的核心产出。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8-3-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">识别哪些能力可共享（用户中心、支付中心），主要属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 业务架构工作</button><button class="opt" data-k="B"><b>B.</b> 应用架构工作</button><button class="opt" data-k="C"><b>C.</b> 采购工作</button><button class="opt" data-k="D"><b>D.</b> 运维工作</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-3-5" data-type="multi" data-explain="E 错：系统再好，重复建设与数据不通仍会拖垮整体。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">8-3-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">关于企业信息系统总体框架，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 四视角为业务、应用、数据、技术</button><button class="opt" data-k="B"><b>B.</b> 总体框架能避免重复建设</button><button class="opt" data-k="C"><b>C.</b> 总体框架能识别集成点</button><button class="opt" data-k="D"><b>D.</b> 数据架构涉及口径与归属，需要跨部门治理</button><button class="opt" data-k="E"><b>E.</b> 单个系统架构优秀即可保证整体高效</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-3-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="应用|技术" data-answer-text="应用、技术"><div class="qhead"><span class="chip">8-3-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">企业架构常从业务架构、________架构、数据架构和________架构四个视角描述。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：企业架构用四视角提供全局视图，避免重复建设、识别集成点、支撑投资决策。</p>
+<p><strong>留一个问题</strong>：这套全局视角怎么系统地"做出来"？有没有标准方法？</p>
+<p>下一节讲 ADM。</p>
+<hr>
+<h2 id="sec4">第 4 节 ADM 架构开发方法</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：TOGAF 的 ADM 分哪几个阶段？为什么中间要有一个"需求管理"贯穿？</p>
+</blockquote>
+<h3>一、ADM 是什么</h3>
+<p><strong>ADM（Architecture Development Method，架构开发方法）</strong> 是 TOGAF 的核心，提供了一套<strong>迭代的、分阶段的</strong>企业架构开发流程，从架构愿景一直走到变更管理。</p>
+<h3>二、八个阶段（A—H）</h3>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>名称</th>
+<th>主要工作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>预备</strong></td>
+<td>Preliminary</td>
+<td>确定组织、原则、工具与治理</td>
+</tr>
+<tr>
+<td><strong>A</strong></td>
+<td>架构愿景</td>
+<td>明确范围、目标与干系人</td>
+</tr>
+<tr>
+<td><strong>B</strong></td>
+<td>业务架构</td>
+<td>业务流程、组织与能力</td>
+</tr>
+<tr>
+<td><strong>C</strong></td>
+<td>信息系统架构</td>
+<td>应用架构 + 数据架构</td>
+</tr>
+<tr>
+<td><strong>D</strong></td>
+<td>技术架构</td>
+<td>平台、基础设施</td>
+</tr>
+<tr>
+<td><strong>E</strong></td>
+<td>机会与解决方案</td>
+<td>识别可实施的项目与迁移路径</td>
+</tr>
+<tr>
+<td><strong>F</strong></td>
+<td>迁移规划</td>
+<td>制定实施与迁移计划</td>
+</tr>
+<tr>
+<td><strong>G</strong></td>
+<td>实施治理</td>
+<td>管控实施过程符合架构</td>
+</tr>
+<tr>
+<td><strong>H</strong></td>
+<td>架构变更管理</td>
+<td>管理架构演进</td>
+</tr>
+</tbody>
+</table>
+<p><strong>需求管理（Requirements Management）</strong> 是贯穿 A—H 的中心环节：需求在各阶段被提出、被验证、被回溯。</p>
+<h3>三、两个关键理解</h3>
+<ol>
+<li><strong>它是迭代的</strong>：B—D 之间会反复调整，架构不是一次画成；</li>
+<li><strong>它衔接"规划"与"实施"</strong>：E、F 把架构转成项目与计划，G、H 把实施拉回架构约束。</li>
+</ol>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么 ADM 把"机会与解决方案"单独设一个阶段，而不是直接进入迁移规划？</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：用 ADM 组织企业架构工作）</strong> 某集团要做三年信息化规划，现状是 30 个系统、数据口径不一、投资分散。请用 ADM 说明工作顺序与每阶段产出。</p>
+<p><em>解答</em>：<br>
+- <strong>预备</strong>：成立架构组、确定架构原则与治理流程；<br>
+- <strong>A 愿景</strong>：明确三年目标（如"统一数据口径、核心能力共享"）、识别干系人；<br>
+- <strong>B 业务架构</strong>：梳理集团业务能力地图与关键流程；<br>
+- <strong>C 信息系统架构</strong>：应用蓝图（哪些系统保留/整合/新建）+ 数据架构（主数据、数据分布）；<br>
+- <strong>D 技术架构</strong>：统一平台与技术栈（云、中间件、集成平台）；<br>
+- <strong>E 机会与解决方案</strong>：把差距拆成可实施的项目（如"主数据平台建设""用户中心"）；<br>
+- <strong>F 迁移规划</strong>：排优先级与依赖，形成三年路线图；<br>
+- <strong>G/H</strong>：实施治理与变更管理。</p>
+<p><em>点评</em>：答题要点是"<strong>阶段顺序 + 每阶段一句产出</strong>"，并强调 E/F 是"架构转项目"的关键。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为 ADM 是瀑布流程。</strong><br>
+它明确是迭代的，阶段间会回溯。</p>
+<p><strong>误区二：把 C 阶段只理解为"应用架构"。</strong><br>
+C 包含应用架构与数据架构两部分。</p>
+<p><strong>误区三：忽视需求管理。</strong><br>
+它是贯穿全程的中心环节，不是某个阶段的附属。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="8-4-1" data-type="single" data-explain="A 阶段定愿景与边界。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8-4-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">ADM 中明确架构范围、目标与干系人的阶段是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 预备阶段</button><button class="opt" data-k="B"><b>B.</b> 架构愿景（A）</button><button class="opt" data-k="C"><b>C.</b> 业务架构（B）</button><button class="opt" data-k="D"><b>D.</b> 技术架构（D）</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-4-2" data-type="single" data-explain="C = 应用 + 数据。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8-4-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">ADM 的 C 阶段"信息系统架构"包含：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 仅应用架构</button><button class="opt" data-k="B"><b>B.</b> 应用架构与数据架构</button><button class="opt" data-k="C"><b>C.</b> 仅数据架构</button><button class="opt" data-k="D"><b>D.</b> 技术架构与迁移规划</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-4-3" data-type="single" data-explain="E 出项目，F 排计划。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">8-4-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">把架构差距拆成可实施项目、识别迁移路径的阶段是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 机会与解决方案（E）</button><button class="opt" data-k="B"><b>B.</b> 迁移规划（F）</button><button class="opt" data-k="C"><b>C.</b> 实施治理（G）</button><button class="opt" data-k="D"><b>D.</b> 架构变更管理（H）</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-4-4" data-type="single" data-explain="需求贯穿 A—H。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">8-4-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">贯穿 ADM 各阶段的中心环节是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 需求管理</button><button class="opt" data-k="B"><b>B.</b> 代码审查</button><button class="opt" data-k="C"><b>C.</b> 性能测试</button><button class="opt" data-k="D"><b>D.</b> 采购管理</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-4-5" data-type="multi" data-explain="E 错：企业架构是业务与 IT 共同的事。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">8-4-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">关于 ADM，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 是 TOGAF 的核心方法</button><button class="opt" data-k="B"><b>B.</b> 分预备阶段与 A—H 八个阶段</button><button class="opt" data-k="C"><b>C.</b> 它是迭代的，阶段间会回溯</button><button class="opt" data-k="D"><b>D.</b> E、F 阶段把架构转化为项目与计划</button><button class="opt" data-k="E"><b>E.</b> ADM 只适用于 IT 部门内部规划</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-4-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="信息系统/信息|技术" data-answer-text="信息系统、技术"><div class="qhead"><span class="chip">8-4-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">ADM 的 B、C、D 三个阶段分别是业务架构、________架构和________架构。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="8-4-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="实施治理/治理" data-answer-text="实施治理"><div class="qhead"><span class="chip">8-4-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">ADM 中负责管控实施过程符合架构约束的阶段是________（G）。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：ADM 用九个阶段（含预备）加贯穿的需求管理，把企业架构从愿景做到变更管理。</p>
+<p><strong>留一个问题</strong>：企业架构是全局，具体到一个系统，最常用的分层结构怎么设计？</p>
+<p>下面两节看层次式架构的三层。</p>
+<hr>
+<h2 id="sec5">第 5 节 层次式架构：表现层</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：界面代码为什么总是最先腐化？MVC、MVP 与"动态页面生成"各解决什么？</p>
+</blockquote>
+<h3>一、表现层的问题</h3>
+<p>表现层的典型病灶：</p>
+<ul>
+<li>页面里直接写 SQL 与业务判断；</li>
+<li>同一份校验逻辑在多个页面重复；</li>
+<li>换一次 UI 框架，业务代码跟着改。</li>
+</ul>
+<p>根因是<strong>界面逻辑、业务逻辑、数据访问混在一起</strong>。表现层设计的目标就是<strong>分离这三者</strong>。</p>
+<h3>二、三种经典模式</h3>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>分工</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>MVC</strong></td>
+<td>Model 数据、View 视图、Controller 处理输入</td>
+<td>传统 Web 与桌面应用</td>
+</tr>
+<tr>
+<td><strong>MVP</strong></td>
+<td>View 与 Model 完全隔离，Presenter 协调</td>
+<td>界面逻辑复杂、需可测试</td>
+</tr>
+<tr>
+<td><strong>MVVM</strong></td>
+<td>ViewModel 暴露数据与命令，双向绑定</td>
+<td>富客户端、前端框架</td>
+</tr>
+</tbody>
+</table>
+<p>三者的共同目标：<strong>让 View 尽量"笨"，把逻辑放到可测试的地方</strong>。</p>
+<h3>三、UIP 与页面动态生成</h3>
+<p><strong>UIP（User Interface Process）</strong> 的思想是把"界面流程"单独抽象出来：页面之间的跳转、状态保持、返回与中断，由一个<strong>流程组件</strong>统一管理，而不是散落在每个页面里。</p>
+<p><strong>动态生成</strong>指界面由配置/元数据驱动生成（如低代码平台、表单引擎）：用一套模型描述界面，运行时渲染。收益是<strong>变更快、一致性高</strong>，代价是<strong>灵活性受限、复杂交互难表达</strong>。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：如果业务要求"每个客户定制一套界面"，你会选择静态开发还是动态生成？判断依据是什么？</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：表现层重构）</strong> 某系统的 JSP 页面里既有 SQL、又有业务计算、还有页面跳转逻辑，改一次需求要动十几个页面。请给出重构方案。</p>
+<p><em>解答</em>：<br>
+- <strong>分层剥离</strong>：SQL 移到数据访问层，业务计算移到业务层，页面只负责渲染；<br>
+- <strong>引入 MVC</strong>：Controller 处理请求与流程，View 只做展示，Model 承载数据；<br>
+- <strong>流程抽象</strong>：把页面跳转与状态管理抽到 UIP/流程层，避免散落；<br>
+- <strong>校验统一</strong>：用统一校验框架，避免每个页面各写一套；<br>
+- 逐步推进：先抽数据访问，再抽业务，最后整理流程。</p>
+<p><em>点评</em>：这题的关键是"<strong>先分层再模式</strong>"——不分层直接用 MVC 只是换个名字。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为用了 MVC 框架就等于分层。</strong><br>
+在 Controller 里写 SQL 与业务计算，等于没分层。</p>
+<p><strong>误区二：认为动态生成"万能"。</strong><br>
+复杂交互与极致体验场景仍需手写。</p>
+<p><strong>误区三：忽视流程状态管理。</strong><br>
+多步骤表单、跨页流程是最容易出问题的地方。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="8-5-1" data-type="single" data-explain="MVP 的 View 更“笨”，更易测试。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8-5-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">把 View 与 Model 完全隔离、由 Presenter 协调的模式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> MVC</button><button class="opt" data-k="B"><b>B.</b> MVP</button><button class="opt" data-k="C"><b>C.</b> MVVM</button><button class="opt" data-k="D"><b>D.</b> 分层</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-5-2" data-type="single" data-explain="MVVM 靠绑定，适合富客户端。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">8-5-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">采用双向数据绑定、由 ViewModel 暴露数据与命令的模式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> MVC</button><button class="opt" data-k="B"><b>B.</b> MVP</button><button class="opt" data-k="C"><b>C.</b> MVVM</button><button class="opt" data-k="D"><b>D.</b> UIP</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-5-3" data-type="single" data-explain="UIP 管界面流程。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">8-5-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">把页面跳转与状态保持统一抽象出来的思想是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> MVC</button><button class="opt" data-k="B"><b>B.</b> ORM</button><button class="opt" data-k="C"><b>C.</b> UIP</button><button class="opt" data-k="D"><b>D.</b> ESB</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-5-4" data-type="single" data-explain="动态生成的收益是快，代价是灵活性。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8-5-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">界面由配置/元数据在运行时渲染的方式称为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 静态页面</button><button class="opt" data-k="B"><b>B.</b> 动态生成</button><button class="opt" data-k="C"><b>C.</b> 服务端渲染</button><button class="opt" data-k="D"><b>D.</b> 预编译</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-5-5" data-type="multi" data-explain="E 错：在 Controller 写 SQL 与业务，等于没分层。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">8-5-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">关于表现层设计，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> MVC 的目标是分离界面、业务与数据</button><button class="opt" data-k="B"><b>B.</b> MVP 中 View 与 Model 完全隔离，便于测试</button><button class="opt" data-k="C"><b>C.</b> UIP 关注界面流程与状态管理</button><button class="opt" data-k="D"><b>D.</b> 动态生成可降低定制成本，但灵活性受限</button><button class="opt" data-k="E"><b>E.</b> 只要用了 MVC 框架就等于完成分层</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-5-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="mvp|mvvm" data-answer-text="MVP、MVVM"><div class="qhead"><span class="chip">8-5-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">表现层三种经典模式是 MVC、和。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：表现层的核心是"让 View 变笨"，通过 MVC/MVP/MVVM 分离关注点，用 UIP 管流程、用动态生成管定制。</p>
+<p><strong>留一个问题</strong>：界面之下是业务逻辑与数据访问，这两层怎么设计才不腐化？</p>
+<p>下一节看中间层与数据访问层。</p>
+<hr>
+<h2 id="sec6">第 6 节 中间层与数据访问层</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：业务逻辑层和数据访问层各自的典型设计与陷阱是什么？</p>
+</blockquote>
+<h3>一、业务逻辑层（中间层）</h3>
+<p>业务逻辑层的设计可拆成三块：</p>
+<table>
+<thead>
+<tr>
+<th>设计对象</th>
+<th>关注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>业务组件</strong></td>
+<td>按业务能力划分组件，组件对外只暴露接口</td>
+</tr>
+<tr>
+<td><strong>工作流</strong></td>
+<td>跨组件的流程编排：顺序、分支、并发、补偿</td>
+</tr>
+<tr>
+<td><strong>实体</strong></td>
+<td>业务对象的建模与持久化映射</td>
+</tr>
+</tbody>
+</table>
+<p>业务层的设计原则：<strong>组件高内聚、流程与规则分离</strong>。把易变的规则（审批流、计费规则）从流程代码里抽出来，是提升可修改性的关键。</p>
+<h3>二、数据访问层</h3>
+<p>常见的有<strong>5 种数据访问模式</strong>，核心是"如何把 SQL 与业务代码解耦"：</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>要点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>在线访问（逐条）</td>
+<td>直接连接数据库操作，简单但性能与耦合差</td>
+</tr>
+<tr>
+<td>数据访问对象（DAO）</td>
+<td>封装数据访问，隔离具体数据库</td>
+</tr>
+<tr>
+<td>数据传输对象（DTO）</td>
+<td>跨层/跨进程传数据，减少调用次数</td>
+</tr>
+<tr>
+<td>对象/关系映射（ORM）</td>
+<td>对象与表映射，自动化 CRUD</td>
+</tr>
+<tr>
+<td>仓储（Repository）</td>
+<td>以聚合为单位提供持久化接口，屏蔽查询细节</td>
+</tr>
+</tbody>
+</table>
+<p><strong>工厂模式</strong>常用于数据访问层：由工厂根据配置创建具体的数据访问实现，从而支持多数据库。</p>
+<h3>三、ORM 与 Hibernate</h3>
+<p>ORM 把对象模型映射到关系模型，典型价值是<strong>减少样板代码、屏蔽数据库差异</strong>。Hibernate 与 CMP（容器管理持久化）的设计思想：</p>
+<ul>
+<li><strong>Hibernate</strong>：以映射文件/注解描述对象与表的关系，提供会话管理与查询语言（HQL）；</li>
+<li><strong>CMP</strong>：由容器管理实体 Bean 的持久化，开发者只写字段与业务方法。</li>
+</ul>
+<p>ORM 的代价：<strong>复杂查询吃力、性能调优难、容易产生 N+1 问题</strong>（K4 第 6 节）。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：什么情况下应该绕开 ORM 直接写 SQL？给出两个判断标准。</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：数据访问层设计）</strong> 某系统要同时支持 MySQL 与达梦，且报表模块有复杂多表关联。请设计数据访问层。</p>
+<p><em>解答</em>：<br>
+- 用 <strong>DAO/Repository + 工厂</strong>：定义数据访问接口，工厂按配置创建 MySQL/达梦实现，业务层只依赖接口；<br>
+- 简单 CRUD 用 <strong>ORM</strong> 减少样板代码；<br>
+- 复杂报表<strong>绕开 ORM 写原生 SQL</strong>，放进独立的查询组件，避免污染业务层；<br>
+- 跨层传输用 <strong>DTO</strong>，避免把实体直接暴露给前端（也防止懒加载陷阱）。</p>
+<p><em>点评</em>：四个要点——<strong>接口隔离、工厂创建、ORM 与 SQL 分工、DTO 传数据</strong>。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为 ORM 能替代一切 SQL。</strong><br>
+复杂聚合与多表关联仍要手写。</p>
+<p><strong>误区二：把实体直接传给前端。</strong><br>
+会暴露内部结构，还容易触发懒加载与序列化问题。</p>
+<p><strong>误区三：业务层里直接拼 SQL。</strong><br>
+数据库一变，业务代码全改。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="8-6-1" data-type="single" data-explain="DAO 隔离数据库差异。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">8-6-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">封装数据访问、隔离具体数据库的模式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> DAO</button><button class="opt" data-k="B"><b>B.</b> DTO</button><button class="opt" data-k="C"><b>C.</b> UIP</button><button class="opt" data-k="D"><b>D.</b> MVP</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-6-2" data-type="single" data-explain="DTO 只装数据、不带行为。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8-6-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">用于跨层或跨进程传递数据、减少调用次数的对象是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> DAO</button><button class="opt" data-k="B"><b>B.</b> DTO</button><button class="opt" data-k="C"><b>C.</b> ORM</button><button class="opt" data-k="D"><b>D.</b> ESB</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-6-3" data-type="single" data-explain="仓储面向聚合而非单表。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">8-6-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">以聚合为单位提供持久化接口、屏蔽查询细节的模式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> DAO</button><button class="opt" data-k="B"><b>B.</b> DTO</button><button class="opt" data-k="C"><b>C.</b> Repository</button><button class="opt" data-k="D"><b>D.</b> MVC</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-6-4" data-type="single" data-explain="工厂负责“选实现”。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8-6-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">数据访问层使用工厂模式的主要目的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 提高代码行数</button><button class="opt" data-k="B"><b>B.</b> 根据配置创建具体实现，支持多数据库</button><button class="opt" data-k="C"><b>C.</b> 替代 ORM</button><button class="opt" data-k="D"><b>D.</b> 管理事务</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-6-5" data-type="multi" data-explain="E 错：复杂聚合查询 ORM 吃力。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">8-6-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">关于中间层与数据访问层，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 业务组件应按业务能力划分、对外只暴露接口</button><button class="opt" data-k="B"><b>B.</b> 把易变规则从流程代码中抽出来有助于可修改性</button><button class="opt" data-k="C"><b>C.</b> ORM 减少样板代码，但复杂查询吃力</button><button class="opt" data-k="D"><b>D.</b> DTO 用于跨层传输数据</button><button class="opt" data-k="E"><b>E.</b> ORM 可以完全替代 SQL</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8-6-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="repository/仓储" data-answer-text="Repository（仓储）"><div class="qhead"><span class="chip">8-6-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">常见的数据访问模式包括在线访问、DAO、DTO、ORM 和________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="8-6-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="实体" data-answer-text="实体"><div class="qhead"><span class="chip">8-6-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">业务逻辑层设计通常包含业务组件、工作流和________三部分。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：业务层要"组件化 + 流程与规则分离"，数据层要"接口隔离 + 工厂创建 + ORM 与 SQL 分工"。</p>
+<h2 id="sec7">本章总复习</h2>
+<h3>一、这一章的主线</h3>
+<p>信息系统架构这一章回答的是"一个组织的信息系统怎么分层、怎么分块"。六节从"一个系统"走到"全局蓝图"：先分物理结构与逻辑结构，再看四种架构模型（单机、C/S、SOA、企业数据交换总线），然后是四视角总体框架与 ADM 架构开发方法；后半部分落到层次式架构的三层——表现层、中间层、数据访问层。</p>
+<h3>二、必须能说出的判断</h3>
+<ul>
+<li><strong>物理结构管"跑在哪"，逻辑结构管"分成几块"</strong>，换部署不改逻辑；</li>
+<li><strong>ADM 的 C 阶段包含应用架构与数据架构两块</strong>，不是只画应用蓝图；</li>
+<li><strong>表现层的目标是把 View 变笨</strong>，逻辑放到可测试的地方；</li>
+<li><strong>数据访问层要"接口隔离 + 工厂创建 + ORM 与 SQL 分工"</strong>，不用 ORM 硬扛复杂报表；</li>
+<li><strong>企业架构四视角是传导关系</strong>：业务驱动应用，应用产生数据，数据依托技术。</li>
+</ul>
+<h3>三、跨节综合自测（8 题）</h3>
+<div class="quiz" data-id="8综-1" data-type="single" data-explain="这是企业架构的基本逻辑链。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8综-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">企业架构四视角的传导关系是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 技术驱动业务</button><button class="opt" data-k="B"><b>B.</b> 业务驱动应用，应用产生数据，数据依托技术</button><button class="opt" data-k="C"><b>C.</b> 数据决定业务</button><button class="opt" data-k="D"><b>D.</b> 四者相互独立</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8综-2" data-type="single" data-explain="C = 应用 + 数据。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8综-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">ADM 中同时包含应用架构与数据架构的阶段是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> B 业务架构</button><button class="opt" data-k="B"><b>B.</b> C 信息系统架构</button><button class="opt" data-k="C"><b>C.</b> D 技术架构</button><button class="opt" data-k="D"><b>D.</b> E 机会与解决方案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8综-3" data-type="multi" data-explain="E 错：存量异构系统常先用总线集成。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">8综-3</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">关于信息系统四种架构模型，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 单机应用模式部署简单但难共享</button><button class="opt" data-k="B"><b>B.</b> 多层 C/S 增加应用服务器使客户端变瘦</button><button class="opt" data-k="C"><b>C.</b> SOA 强调接口标准化与服务复用</button><button class="opt" data-k="D"><b>D.</b> 企业数据交换总线把 n×n 连接收敛为 n 条接入</button><button class="opt" data-k="E"><b>E.</b> 微服务必然优于企业数据交换总线</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8综-4" data-type="single" data-explain="接口隔离 + 工厂是标准做法。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8综-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">数据访问层要同时支持两种数据库时，最关键的设计是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 把 SQL 写进业务层</button><button class="opt" data-k="B"><b>B.</b> 用接口隔离 + 工厂创建具体实现</button><button class="opt" data-k="C"><b>C.</b> 只支持一种库</button><button class="opt" data-k="D"><b>D.</b> 用存储过程替代 ORM</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8综-5" data-type="single" data-explain="让 View 变笨，逻辑放到可测试处。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8综-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">表现层引入 MVC 的根本目的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 减少代码行数</button><button class="opt" data-k="B"><b>B.</b> 把界面、业务与数据的职责分离</button><button class="opt" data-k="C"><b>C.</b> 提升数据库性能</button><button class="opt" data-k="D"><b>D.</b> 简化部署</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8综-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="物理|逻辑" data-answer-text="物理、逻辑"><div class="qhead"><span class="chip">8综-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">信息系统架构分为________结构与________结构，前者关注部署与硬件，后者关注功能单元。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="8综-7" data-type="single" data-explain="规则与流程分离是可修改性的关键。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">8综-7</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">层次式架构中，把易变的业务规则从流程代码中抽出来，主要提升：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 性能</button><button class="opt" data-k="B"><b>B.</b> 可修改性</button><button class="opt" data-k="C"><b>C.</b> 安全性</button><button class="opt" data-k="D"><b>D.</b> 互操作性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="8综-8" data-type="multi" data-explain="D 错：总体框架不直接改善单系统性能。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">8综-8</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">建设企业架构总体框架的直接收益包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 识别可共享能力、避免重复建设</button><button class="opt" data-k="B"><b>B.</b> 明确系统间的接口责任</button><button class="opt" data-k="C"><b>C.</b> 为投资优先级提供依据</button><button class="opt" data-k="D"><b>D.</b> 自动提升单个系统的性能</button><button class="opt" data-k="E"><b>E.</b> 支撑改造顺序的决策</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<h3>四、与论文、案例的接口</h3>
+<p>案例题的"企业架构规划""中台建设""分层设计"来自这里；论文里"信息化总体规划"的答题骨架就是 ADM 的九个阶段。</p>
+<h3>五、下一步</h3>
+<p><strong>本章结束</strong>。下一步进入 K9（云原生与 SOA）。</p>
+<hr>
+<div class="legend" style="margin-top:44px">标注说明：<b>软考口径</b>＝按官方用书表述给分；<b>拓展</b>＝考纲未展开的补充知识。详见 <a href="k00.html">K0 前言</a>。作答记录保存在本机浏览器。</div>
+<div class="toast" id="toast"></div>
+</div>
+<script>
+const KEY="book_K8信息系统架构";
+let state=JSON.parse(localStorage.getItem(KEY)||"{}");
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function norm(s){return (s||"").toLowerCase().replace(/[\s，,、;；。.()（）]/g,"");}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1400);}
+function stats(){const qs=$$(".quiz");let done=0,ok=0;
+ qs.forEach(q=>{const st=state[q.dataset.id];if(st&&st.done){done++;if(st.ok)ok++;}});
+ return {done,total:qs.length,ok};}
+function paint(){const s=stats();const p=s.total?s.done/s.total*100:0;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";}
+function fillKeywords(q){return q.dataset.answer.split("|").map(g=>g.split("/"));}
+function fbHTML(q,ok,userText){
+ const diag=q.dataset.diag||"";const warm=diag.includes("补充")?"#a2540f":"#b42318";
+ const ans=q.dataset.answerText||q.dataset.answer;
+ return '<div class="res">'+(ok?"✔ 回答正确":"✘ 回答错误")+'</div>'
+  +'<div><b>正确答案：</b>'+ans+(userText?'　<span style="color:#6b7280">你的作答：'+userText+'</span>':'')+'</div>'
+  +'<details open><summary>展开解析</summary><div class="inner">'
+  +'<div>'+q.dataset.explain+'</div>'
+  +'<div class="row tags">来源：'+q.dataset.source+'　｜　诊断标签：<b style="color:'+warm+'">'+diag+'</b></div>'
+  +'</div></details>';
+}
+function judge(q,ok,userText){
+ const fb=$(".fb",q);fb.className="fb show "+(ok?"ok":"bad");
+ fb.innerHTML=fbHTML(q,ok,userText);
+ state[q.dataset.id]={done:true,ok:ok};save();paint();
+}
+$$(".quiz").forEach(q=>{
+ const type=q.dataset.type;const ans=q.dataset.answer;
+ const opts=$$(".opt",q);const fb=$(".fb",q);
+ const saved=state[q.dataset.id];
+ if(type==="single"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     opts.forEach(x=>x.disabled=true);
+     const ok=(o.dataset.k===ans);
+     o.classList.add(ok?"right":"wrong");
+     if(!ok){const c=opts.find(x=>x.dataset.k===ans);if(c)c.classList.add("right");}
+     judge(q,ok,o.dataset.k);
+   }));
+ }else if(type==="multi"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     if(o.disabled)return;
+     o.classList.toggle("sel");
+   }));
+   const btn=$(".check",q);
+   if(btn)btn.addEventListener("click",()=>{
+     const picked=opts.filter(o=>o.classList.contains("sel")).map(o=>o.dataset.k).sort().join("");
+     if(!picked){toast("先选择至少一个选项");return;}
+     opts.forEach(o=>{
+       o.disabled=true;o.classList.remove("sel");
+       const k=o.dataset.k;
+       if(ans.includes(k))o.classList.add("right");
+       else if(picked.includes(k))o.classList.add("wrong");
+     });
+     judge(q,picked===ans,picked);
+   });
+ }else{
+   const inp=$(".fillinput",q);const btn=$(".check",q);
+   const go=()=>{
+     const raw=inp.value;const v=norm(raw);
+     if(!v){toast("先填写答案");return;}
+     let ok=false;
+     if(q.dataset.numeric){
+       const m=raw.match(/-?\d+(?:\.\d+)?/);
+       const cands=q.dataset.numeric.split("|");
+       ok=!!m&&cands.some(x=>Math.abs(parseFloat(m[0])-parseFloat(x))<0.011);
+     }else{
+       ok=fillKeywords(q).every(g=>g.some(k=>v.includes(norm(k))));
+     }
+     inp.disabled=true;inp.style.borderColor=ok?"#7cc49b":"#e79a94";
+     if(btn)btn.disabled=true;
+     judge(q,ok,raw.trim());
+   };
+   if(btn)btn.addEventListener("click",go);
+   if(inp)inp.addEventListener("keydown",e=>{if(e.key==="Enter")go();});
+ }
+ if(saved&&saved.done){/* 恢复历史状态：仅标记，不覆盖作答 */}
+});
+window.addEventListener("scroll",()=>{
+ const h=document.documentElement;
+ const p=h.scrollTop/(h.scrollHeight-h.clientHeight||1)*100;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";
+});
+paint();
+</script>
+<div class="book-foot-nav"><div class="bf-box"><a href="k07.html">&larr; 上一章 K7 演化与维护</a><a class="bf-next" href="k09.html">下一章 K9 云原生与 SOA &rarr;</a></div><p class="bf-note">作答记录保存在本机浏览器，换设备或清除缓存不会保留。本章支持浏览器直接打印为 PDF。</p></div><script>
+(function(){
+  var el=document.getElementById("book-nav-progress");
+  function refresh(){
+    try{
+      var st=JSON.parse(localStorage.getItem("book_K8信息系统架构")||"{}"),done=0;
+      Object.keys(st).forEach(function(k){if(st[k]&&st[k].done)done++;});
+      if(el)el.textContent=done+" / 47 题";
+    }catch(e){}
+  }
+  refresh();setInterval(refresh,1000);
+})();
+</script></body></html>

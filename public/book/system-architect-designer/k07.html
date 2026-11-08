@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K7 演化与维护</title>
+<style>
+:root{--bg:#fbfaf7;--card:#fff;--ink:#1f2328;--sub:#6b7280;--line:#e6e3dd;--accent:#1f4e79;--ok:#0f7b4f;--bad:#b42318;--chip:#eef3f8;--warm:#fdf6ec}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:17px/1.9 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",serif}
+#bar{position:fixed;top:0;left:0;height:3px;background:var(--accent);width:0;z-index:99}
+.wrap{max-width:760px;margin:0 auto;padding:56px 20px 100px}
+h1{font-size:27px;line-height:1.4;letter-spacing:.5px;margin:0 0 10px}
+h2{font-size:21px;margin:52px 0 14px;padding-top:14px;border-top:2px solid var(--line);letter-spacing:.5px}
+h2:first-of-type{border-top:none}
+h3{font-size:17.5px;margin:30px 0 10px;color:#2b3a4a}
+h5{font-size:15px;margin:26px 0 8px;color:var(--sub);font-weight:600}
+p{margin:10px 0}
+blockquote{margin:16px 0;padding:12px 16px;background:var(--warm);border-left:3px solid #e0b984;border-radius:0 8px 8px 0;font-size:16px}
+blockquote p{margin:4px 0}
+strong{color:#12324f}
+hr{border:none;border-top:1px dashed var(--line);margin:26px 0}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px;background:#fff}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f3f1ec;font-weight:600}
+code{background:#f3f1ec;padding:1px 5px;border-radius:4px;font-size:14px}
+pre{background:#f7f5f1;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto}
+ul,ol{margin:10px 0;padding-left:22px}
+li{margin:4px 0}
+.math{font-family:"Cambria Math",Cambria,Georgia,"Times New Roman",serif;font-size:1.03em}
+.mathblock{display:block;text-align:center;margin:16px 0;overflow-x:auto;padding:2px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:-0.55em;text-align:center;margin:0 .3em}
+.frac .n{border-bottom:1px solid currentColor;padding:0 .3em;line-height:1.3}
+.frac .d{padding:0 .3em;line-height:1.4}
+sub,sup{font-size:.72em;line-height:0}
+.toast{position:fixed;right:18px;bottom:18px;background:#1f2937;color:#fff;padding:9px 14px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+
+/* 题卡 */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:18px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.qhead{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.chip{background:var(--chip);color:#33475b;border-radius:999px;padding:1px 9px;font-size:12px}
+.chip.t{background:#eaf4ec;color:#0f7b4f}
+.chip.k{background:#f4f0fa;color:#5b3f8f;font-size:11.5px}
+a.back{margin-left:auto;font-size:12px;color:var(--sub);text-decoration:none;border-bottom:1px dashed #c9c4ba}
+a.back:hover{color:var(--accent);border-color:var(--accent)}
+.qstem{font-weight:600;margin:4px 0 12px;font-size:16px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:15.5px;line-height:1.7;
+ background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 13px;cursor:pointer;transition:.15s}
+.opt:hover{border-color:#b9c6d6;background:#f8fafc}
+.opt b{color:var(--accent);margin-right:2px}
+.opt.sel{border-color:var(--accent);background:#eef4fa}
+.opt.right{border-color:#7cc49b;background:#effaf3}
+.opt.wrong{border-color:#e79a94;background:#fdf1f0}
+.opt:disabled{cursor:default}
+.fillrow{display:flex;gap:10px;margin-top:12px;align-items:center}
+.fillinput{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:15.5px;background:#fff}
+.btn{font:inherit;font-size:14px;padding:7px 16px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer}
+.btn.check{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fb{display:none;margin-top:14px;font-size:15px;line-height:1.8}
+.fb.show{display:block}
+.fb .res{font-weight:700;margin-bottom:6px;font-size:15.5px}
+.fb.ok .res{color:var(--ok)}
+.fb.bad .res{color:var(--bad)}
+.fb details{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:#fcfbf9;padding:0 12px}
+.fb summary{cursor:pointer;padding:9px 0;font-weight:600;color:var(--accent);outline:none}
+.fb .inner{padding:2px 0 12px;border-top:1px dashed var(--line)}
+.fb .row{color:var(--sub);font-size:13px;margin-top:8px}
+.fb .tags b{color:#a2540f}
+.legend{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:20px 0;font-size:14.5px}
+.legend b{color:var(--accent)}
+@media print{
+ #bar,.toast{display:none}
+ .quiz{break-inside:avoid}
+ body{background:#fff;font-size:12pt}
+}
+@media (max-width:600px){
+ body{font-size:16px;line-height:1.85}
+ .wrap{padding:40px 14px 80px}
+ h1{font-size:23px}
+ table{font-size:13px}
+}
+</style>
+<style id="book-nav-css">
+#book-nav{position:sticky;top:0;z-index:100;background:rgba(251,250,247,.96);backdrop-filter:blur(8px);border-bottom:1px solid #e6e3dd;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+#bar{z-index:101!important}
+#book-nav .bn-in{max-width:1060px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+#book-nav a{color:#1f4e79;text-decoration:none;white-space:nowrap}
+#book-nav a:hover{text-decoration:underline}
+#book-nav .bn-home{font-weight:700}
+#book-nav .bn-cur{color:#1f2328;font-weight:600;flex:1;min-width:180px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#book-nav .bn-step{background:#fff;border:1px solid #e6e3dd;border-radius:999px;padding:3px 11px;font-size:13px}
+#book-nav .bn-step.disabled{opacity:.38;pointer-events:none}
+#book-nav .bn-prog{color:#6b7280;font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.book-foot-nav{max-width:760px;margin:0 auto;padding:0 20px 80px;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.book-foot-nav .bf-box{border-top:2px solid #e6e3dd;padding-top:22px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}
+.book-foot-nav a{color:#1f4e79;text-decoration:none}
+.book-foot-nav a:hover{text-decoration:underline}
+.book-foot-nav .bf-next{background:#1f4e79;color:#fff!important;border-radius:10px;padding:9px 18px;font-weight:600}
+.book-foot-nav .bf-next:hover{text-decoration:none;background:#163c5e}
+.book-foot-nav .bf-note{color:#6b7280;font-size:13px;margin-top:14px}
+@media(max-width:600px){#book-nav .bn-cur{order:3;flex-basis:100%;text-align:left}#book-nav .bn-prog{display:none}}
+@media print{#book-nav,.book-foot-nav{display:none}#bar{z-index:0!important}}
+</style>
+</head><body><nav id="book-nav"><div class="bn-in"><a class="bn-home" href="index.html">&larr; 全书目录</a><a class="bn-step" href="k06.html" title="质量属性与架构评估">&larr; K6</a><span class="bn-cur">K7 · 演化与维护</span><a class="bn-step" href="k08.html" title="信息系统架构">K8 &rarr;</a><span class="bn-prog" id="book-nav-progress">0 / 69 题</span></div></nav>
+<div id="bar"></div>
+<div class="wrap">
+<h1>K7 演化与维护</h1>
+<blockquote>
+<p><strong>本章内容</strong>：演化的必要性 · 面向对象的架构演化 · 四个演化时期 · 静态与动态演化 · 18 条演化原则 · 演化评估 · 大型网站架构演化十阶段 · 架构维护 · 从运维到 DevOps · 从运维到 DevOps<br>
+<strong>考纲位置</strong>：上午题中等频次，案例题常考"架构演化路径"，论文里"系统演进"是常见素材</p>
+</blockquote>
+<p>本章围绕"<strong>架构不是一次成型的，怎么演进而不过早腐化</strong>"这一主题展开，共 10 节：</p>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+<th>回答的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>为什么架构必须演化</td>
+<td>演化与初始定义是什么关系</td>
+</tr>
+<tr>
+<td>2</td>
+<td>面向对象的架构演化</td>
+<td>对象、消息、片段、约束怎么变</td>
+</tr>
+<tr>
+<td>3</td>
+<td>演化的四个时期</td>
+<td>在什么时候演化，代价差多少</td>
+</tr>
+<tr>
+<td>4</td>
+<td>静态演化与动态演化</td>
+<td>停机改还是运行时改</td>
+</tr>
+<tr>
+<td>5</td>
+<td>演化原则</td>
+<td>判断一次演化"该不该做"的标准</td>
+</tr>
+<tr>
+<td>6</td>
+<td>演化评估</td>
+<td>演化前后怎么量化比较</td>
+</tr>
+<tr>
+<td>7</td>
+<td>大型网站演化十阶段</td>
+<td>一条被验证过的演进路径</td>
+</tr>
+<tr>
+<td>8</td>
+<td>架构维护</td>
+<td>演化过程中怎么管知识、改动与版本</td>
+</tr>
+<tr>
+<td>9</td>
+<td>从运维到 DevOps</td>
+<td>开发与运维怎么打通</td>
+</tr>
+<tr>
+<td>10</td>
+<td>从 AIOps 到智能运维</td>
+<td>运维闭环与 AI 的落点</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="sec1">第 1 节 为什么架构必须演化</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：既然架构设计要慎重，为什么还要允许它变？变与不变之间怎么把握？</p>
+</blockquote>
+<h3>一、一个"设计得很好"的系统</h3>
+<p>某系统的架构文档写得很漂亮，三年后却没人敢改：新增一个字段要动五处，改一处就崩一次。</p>
+<p>问题不是当初设计得不好，而是<strong>架构没有跟着需求演化</strong>——需求变了、环境变了，架构还在原地。</p>
+<h3>二、演化的必然性</h3>
+<p>三条驱动因素：</p>
+<ol>
+<li><strong>需求变化</strong>：业务扩张、政策调整、新渠道接入；</li>
+<li><strong>技术演进</strong>：框架升级、中间件替换、云化改造；</li>
+<li><strong>缺陷与债务累积</strong>：临时方案越堆越多，结构逐渐腐化。</li>
+</ol>
+<p>架构演化是软件生命周期中<strong>持续存在</strong>的过程，而不是一次性的"重构活动"。</p>
+<h3>三、演化与定义的关系</h3>
+<p>架构的"定义"（初始设计）与"演化"不是对立的两件事：</p>
+<ul>
+<li><strong>定义</strong>决定了演化的<strong>空间</strong>：好的架构留出扩展点，演化就便宜；差的架构每改一次都在拆墙；</li>
+<li><strong>演化</strong>反过来<strong>修正定义</strong>：实践中发现的分层不合理、耦合过紧，通过演化调整。</li>
+</ul>
+<p>一句话：<strong>架构定义是"初稿"，演化是"持续修订"，两者的质量互相决定</strong>。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：如果一个系统上线三年从未演化过，可能说明什么？（提示：两种截然相反的解释）</p>
+</blockquote>
+<h3>四、演化的代价曲线</h3>
+<p>演化越晚，代价越高：</p>
+<table>
+<thead>
+<tr>
+<th>演化时机</th>
+<th>代价</th>
+<th>风险</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>设计阶段调整</td>
+<td>最低</td>
+<td>低</td>
+</tr>
+<tr>
+<td>编码阶段调整</td>
+<td>中</td>
+<td>中</td>
+</tr>
+<tr>
+<td>上线后重构</td>
+<td>高</td>
+<td>高（影响业务）</td>
+</tr>
+</tbody>
+</table>
+<p>但过早演化也有代价：<strong>在没有真实需求时过度设计</strong>，会带来不必要的复杂度。工程上的判断是"<strong>为已知的近期变化留扩展点，不为想象中的变化做抽象</strong>"。</p>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：判断是否该演化）</strong> 某系统近期出现三个诉求：① 三个月内要接入两家新的支付渠道；② 明年可能要做国际化（多语言、多币种）；③ 数据库查询变慢，加了索引后缓解。请判断哪些应当现在做架构演化。</p>
+<p><em>解答</em>：<br>
+- ① <strong>应当现在做</strong>：时间明确、需求确定，且支付渠道属高频变化点，适合做成插件式扩展点；<br>
+- ② <strong>只做"留口子"</strong>：国际化不确定，现在做完整方案属于过度设计；可先保证文案与金额字段可扩展（不硬编码）；<br>
+- ③ <strong>不涉及架构演化</strong>：加索引属性能调优，架构不变。</p>
+<p><em>点评</em>：判断依据是"<strong>需求确定性 × 变化频率 × 影响范围</strong>"。确定且高频的，现在做；不确定的，只留扩展点。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为演化就是"重写"。</strong><br>
+大多数演化是增量式的结构调整，重写是最后手段。</p>
+<p><strong>误区二：认为"不动"最安全。</strong><br>
+结构腐化的系统，不动也在贬值——维护成本会持续上升。</p>
+<p><strong>误区三：为想象中的需求提前抽象。</strong><br>
+过度设计是另一种债务。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="7-1-1" data-type="single" data-explain="演化由需求、技术、债务驱动，不靠个人偏好。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">7-1-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">推动架构演化的主要因素不包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 需求变化</button><button class="opt" data-k="B"><b>B.</b> 技术演进</button><button class="opt" data-k="C"><b>C.</b> 缺陷与技术债务累积</button><button class="opt" data-k="D"><b>D.</b> 开发人员个人偏好</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-1-2" data-type="single" data-explain="好的定义留出扩展点，演化又反哺定义。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-1-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">关于架构定义与演化的关系，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 二者互不影响</button><button class="opt" data-k="B"><b>B.</b> 定义决定演化空间，演化反过来修正定义</button><button class="opt" data-k="C"><b>C.</b> 演化只发生在系统上线前</button><button class="opt" data-k="D"><b>D.</b> 定义一旦确定不能修改</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-1-3" data-type="single" data-explain="越晚代价越高、风险越大。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">7-1-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">演化代价最高的时机通常是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 设计阶段</button><button class="opt" data-k="B"><b>B.</b> 编码阶段</button><button class="opt" data-k="C"><b>C.</b> 测试阶段</button><button class="opt" data-k="D"><b>D.</b> 上线后的重构</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-1-4" data-type="single" data-explain="过度设计也是债务。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-1-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">"为已知的近期变化留扩展点，不为想象中的变化做抽象"体现的原则是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 尽量多抽象</button><button class="opt" data-k="B"><b>B.</b> 按需求确定性决定演化时机</button><button class="opt" data-k="C"><b>C.</b> 完全不做设计</button><button class="opt" data-k="D"><b>D.</b> 只做性能优化</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-1-5" data-type="multi" data-explain="D 错：结构腐化会推高维护成本。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">7-1-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">关于架构演化，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 需求、技术、债务累积都会驱动演化</button><button class="opt" data-k="B"><b>B.</b> 好的架构留出扩展点，演化成本更低</button><button class="opt" data-k="C"><b>C.</b> 演化越晚代价越高</button><button class="opt" data-k="D"><b>D.</b> 只要系统能运行就不需要演化</button><button class="opt" data-k="E"><b>E.</b> 过度设计也是债务</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-1-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="高|高" data-answer-text="高、高"><div class="qhead"><span class="chip">7-1-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">架构演化越晚，代价越________，风险越________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：演化是架构生命周期中的常态，定义与演化互相决定，演化时机按"需求确定性"判断。</p>
+<p><strong>留一个问题</strong>：具体到面向对象的系统，架构演化到底在改哪些东西？</p>
+<p>下一节拆开看。</p>
+<hr>
+<h2 id="sec2">第 2 节 面向对象的架构演化</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：一个面向对象架构的演化，具体表现为哪几类变化？</p>
+</blockquote>
+<h3>一、四个演化维度</h3>
+<p>面向对象架构的基本元素是<strong>对象、消息、复合片段与约束</strong>，演化也沿着这四类展开：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>演化的表现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>对象演化</strong></td>
+<td>增加/删除对象，修改属性与方法，调整对象间关系</td>
+</tr>
+<tr>
+<td><strong>消息演化</strong></td>
+<td>增加/删除消息，调整消息顺序、发送者与接收者</td>
+</tr>
+<tr>
+<td><strong>复合片段演化</strong></td>
+<td>对交互中的组合片段（如循环、条件、并行）增删与调整</td>
+</tr>
+<tr>
+<td><strong>约束演化</strong></td>
+<td>修改时序、状态或业务约束</td>
+</tr>
+</tbody>
+</table>
+<p>这四类演化在 UML 的<strong>顺序图/时序图</strong>上体现得最直观：加一个对象是一次对象演化，加一次调用是一次消息演化。</p>
+<h3>二、对象演化</h3>
+<p>典型动作：</p>
+<ul>
+<li><strong>新增对象</strong>：拆分出一个新职责（如从"订单"中拆出"订单状态机"）；</li>
+<li><strong>删除对象</strong>：合并职责或下线功能；</li>
+<li><strong>修改属性/方法</strong>：字段增减、接口签名变化；</li>
+<li><strong>调整关系</strong>：继承改组合、依赖方向反转（依赖倒置）。</li>
+</ul>
+<p>其中"<strong>依赖方向反转</strong>"是架构级演化里最常见也最有效的一招：让稳定的抽象被依赖，让易变的实现依赖抽象。</p>
+<h3>三、消息演化</h3>
+<p>典型动作：</p>
+<ul>
+<li>新增/删除消息（新增一次调用、去掉一次冗余调用）；</li>
+<li>调整<strong>顺序</strong>（把串行改并行、把同步改异步）；</li>
+<li>调整<strong>发送者/接收者</strong>（把直连改成经中间件转发）。</li>
+</ul>
+<p><strong>同步改异步</strong>是架构演化中最常见的消息演化，它同时影响性能与一致性（呼应 K6 的权衡点）。</p>
+<h3>四、复合片段与约束演化</h3>
+<ul>
+<li><strong>复合片段</strong>：交互图中的 <code>alt</code>（分支）、<code>loop</code>（循环）、<code>par</code>（并行）等结构的变化；</li>
+<li><strong>约束演化</strong>：业务规则、时序约束、状态约束的调整（如"支付前必须先锁定库存"）。</li>
+</ul>
+<blockquote>
+<p><strong>想一想 ①</strong>：把"下单后同步扣库存"改成"下单后发消息异步扣库存"，属于哪几类演化？会引入什么新问题？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：演化动作分类）</strong> 某电商系统做了四项调整：① 从订单模块拆出"优惠计算"对象；② 支付回调由同步调用改为消息通知；③ 在支付流程中增加"超时未支付自动取消"的分支；④ 新增约束"同一订单不允许重复支付"。请分类。</p>
+<p><em>解答</em>：<br>
+- ① <strong>对象演化</strong>（新增对象、拆分职责）；<br>
+- ② <strong>消息演化</strong>（发送方式由同步改异步、接收者变为消息中间件）；<br>
+- ③ <strong>复合片段演化</strong>（增加 alt/条件分支与定时触发）；<br>
+- ④ <strong>约束演化</strong>（业务规则约束）。</p>
+<p><em>点评</em>：分类题的关键是看"<strong>变的是结构、交互、控制流还是规则</strong>"，分别对应四类。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为演化就是"加功能"。</strong><br>
+加功能只是对象与消息演化的一部分，结构关系与约束的调整同样重要。</p>
+<p><strong>误区二：忽视约束演化。</strong><br>
+业务规则的变更往往是最容易引发缺陷的演化类型。</p>
+<p><strong>误区三：把同步改异步当成"纯性能优化"。</strong><br>
+它同时改变了一致性语义，必须配套补偿与幂等。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="7-2-1" data-type="single" data-explain="四维度：对象、消息、复合片段、约束。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">7-2-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">面向对象架构演化通常沿四个维度展开，不包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 对象演化</button><button class="opt" data-k="B"><b>B.</b> 消息演化</button><button class="opt" data-k="C"><b>C.</b> 数据库演化</button><button class="opt" data-k="D"><b>D.</b> 约束演化</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-2-2" data-type="single" data-explain="新增对象/拆分职责=对象演化。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-2-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">把"订单"模块中的优惠计算拆成独立对象，属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 消息演化</button><button class="opt" data-k="B"><b>B.</b> 对象演化</button><button class="opt" data-k="C"><b>C.</b> 约束演化</button><button class="opt" data-k="D"><b>D.</b> 复合片段演化</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-2-3" data-type="single" data-explain="交互方式变化=消息演化。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-2-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">把同步调用改为异步消息通知，属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 对象演化</button><button class="opt" data-k="B"><b>B.</b> 消息演化</button><button class="opt" data-k="C"><b>C.</b> 约束演化</button><button class="opt" data-k="D"><b>D.</b> 部署演化</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-2-4" data-type="single" data-explain="业务规则变化=约束演化。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">7-2-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">"同一订单不允许重复支付"这条规则的加入属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 对象演化</button><button class="opt" data-k="B"><b>B.</b> 消息演化</button><button class="opt" data-k="C"><b>C.</b> 约束演化</button><button class="opt" data-k="D"><b>D.</b> 接口演化</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-2-5" data-type="multi" data-explain="E 错：约束演化直接影响行为与正确性。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">7-2-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">关于面向对象的架构演化，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 四类演化是对象、消息、复合片段与约束</button><button class="opt" data-k="B"><b>B.</b> 依赖方向反转是常见的架构级演化手段</button><button class="opt" data-k="C"><b>C.</b> 同步改异步会同时影响性能与一致性</button><button class="opt" data-k="D"><b>D.</b> 复合片段演化指交互图中分支、循环等结构的变化</button><button class="opt" data-k="E"><b>E.</b> 约束演化不影响系统行为</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-2-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="消息|约束" data-answer-text="消息、约束"><div class="qhead"><span class="chip">7-2-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">面向对象架构演化的四个维度是对象演化、________演化、复合片段演化和________演化。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：面向对象的演化分为对象、消息、复合片段、约束四类，分别对应结构、交互、控制流与规则的变化。</p>
+<p><strong>留一个问题</strong>：同样一次演化，在设计阶段改和上线后改，方式与代价完全不同。演化的"时点"怎么分？</p>
+<p>下一节讲四个时期。</p>
+<hr>
+<h2 id="sec3">第 3 节 演化的四个时期</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：演化可以发生在哪些时点？各时期的约束与技术手段有什么不同？</p>
+</blockquote>
+<h3>一、四个时期</h3>
+<p>按演化发生的<strong>时点</strong>，分为四类：</p>
+<table>
+<thead>
+<tr>
+<th>时期</th>
+<th>时点</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>设计时演化</strong></td>
+<td>架构模型与代码编译之前</td>
+<td>成本最低、无运行风险</td>
+</tr>
+<tr>
+<td><strong>运行前演化</strong></td>
+<td>执行之前、编译之后</td>
+<td>如部署配置调整、字节码增强</td>
+</tr>
+<tr>
+<td><strong>有限制运行时演化</strong></td>
+<td>系统运行时，但演化方式在设计时已规定</td>
+<td>有约束的"可预期"变更</td>
+</tr>
+<tr>
+<td><strong>运行时演化</strong></td>
+<td>系统运行时，无预先规定</td>
+<td>最灵活、风险最高</td>
+</tr>
+</tbody>
+</table>
+<h3>二、为什么这样分</h3>
+<p>划分的意义在于<strong>风险与能力的权衡</strong>：</p>
+<ul>
+<li>越靠前，风险越低，但灵活性越差（改完要重新编译部署）；</li>
+<li>越靠后，灵活性越高，但要求系统具备<strong>运行时动态调整</strong>的能力（如动态加载、热更新、配置驱动），且验证更难。</li>
+</ul>
+<p><strong>有限制运行时演化</strong>是个务实的中间态：系统预留了扩展点（如插件接口、规则配置），运行时只能在这些点上演化——<strong>灵活但可控</strong>。</p>
+<h3>三、运行时演化的技术支撑</h3>
+<p>要在运行时改架构，通常需要：</p>
+<ul>
+<li><strong>动态加载/卸载</strong>：OSGi、类加载器隔离、插件框架；</li>
+<li><strong>配置驱动</strong>：把易变部分外置为配置；</li>
+<li><strong>热部署/灰度</strong>：不停机替换版本；</li>
+<li><strong>服务注册发现</strong>：新实例上线即被路由。</li>
+</ul>
+<blockquote>
+<p><strong>想一想 ①</strong>：微服务的"滚动发布"属于哪个时期的演化？如果把数据库表结构也一起改了，风险有什么变化？</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：演化时期选择）</strong> 某系统有三类变更：① 新增一个业务字段；② 调整某个风控规则阈值；③ 替换底层消息中间件。请分别选择演化时期并说明理由。</p>
+<p><em>解答</em>：<br>
+- ① <strong>设计时/运行前演化</strong>：涉及表结构与代码，需要发版；<br>
+- ② <strong>有限制运行时演化</strong>：阈值外置为配置，运行时修改即可，风险可控；<br>
+- ③ <strong>设计时演化</strong>：中间件替换涉及协议、客户端依赖，需改代码并重新部署，通常还要灰度切换。</p>
+<p><em>点评</em>：判断标准是"<strong>这次变更能否在不改代码的前提下完成</strong>"。能，则靠配置/插件（运行时或受限运行时）；不能，则只能设计时演化。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为运行时演化"更先进"。</strong><br>
+它带来验证困难与状态一致性风险，只在需要不停机时才值得。</p>
+<p><strong>误区二：认为运行前演化不需要测试。</strong><br>
+改的是部署配置与字节码，同样需要回归测试。</p>
+<p><strong>误区三：把"配置化"等同于"运行时演化"。</strong><br>
+配置化是手段，是否属于运行时演化看<strong>变更是否发生在运行中</strong>。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="7-3-1" data-type="single" data-explain="四时期按时间先后排。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">7-3-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">发生在架构模型与代码编译之前的演化是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 设计时演化</button><button class="opt" data-k="B"><b>B.</b> 运行前演化</button><button class="opt" data-k="C"><b>C.</b> 有限制运行时演化</button><button class="opt" data-k="D"><b>D.</b> 运行时演化</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-3-2" data-type="single" data-explain="灵活但可控的中间态。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">7-3-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">"系统在设计时就规定了演化的具体方式，运行时只能在这些点上演化"属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 设计时演化</button><button class="opt" data-k="B"><b>B.</b> 运行前演化</button><button class="opt" data-k="C"><b>C.</b> 有限制运行时演化</button><button class="opt" data-k="D"><b>D.</b> 运行时演化</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-3-3" data-type="single" data-explain="运行时改结构必须靠动态能力。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">7-3-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">下列最可能需要"动态加载/热部署"支撑的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 设计时演化</button><button class="opt" data-k="B"><b>B.</b> 运行前演化</button><button class="opt" data-k="C"><b>C.</b> 运行时演化</button><button class="opt" data-k="D"><b>D.</b> 静态演化</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-3-4" data-type="single" data-explain="越靠后越灵活也越难验证。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-3-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">关于四个演化时期的风险，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 越靠前风险越高</button><button class="opt" data-k="B"><b>B.</b> 越靠后风险越高</button><button class="opt" data-k="C"><b>C.</b> 风险与时期无关</button><button class="opt" data-k="D"><b>D.</b> 运行时演化没有风险</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-3-5" data-type="multi" data-explain="D 错：运行时演化验证更难。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">7-3-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">关于演化时期，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 设计时演化成本最低、无运行风险</button><button class="opt" data-k="B"><b>B.</b> 运行前演化发生在执行前、编译后</button><button class="opt" data-k="C"><b>C.</b> 有限制运行时演化是灵活性与可控性的折中</button><button class="opt" data-k="D"><b>D.</b> 运行时演化验证更容易</button><button class="opt" data-k="E"><b>E.</b> 运行时演化通常需要插件、配置或服务发现等支撑</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-3-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="运行前|运行时" data-answer-text="运行前、运行时"><div class="qhead"><span class="chip">7-3-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">按演化时点分为四个时期：设计时演化、________演化、有限制运行时演化和________演化。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：演化分四个时期，越靠后越灵活也越危险，工程上常把易变点外置为配置或插件以获得"受限的运行时演化"。</p>
+<p><strong>留一个问题</strong>：不问"什么时候改"，改问"改的时候要不要停机"，这就分成静态与动态两条路。</p>
+<p>下一节讲。</p>
+<hr>
+<h2 id="sec4">第 4 节 静态演化与动态演化</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：静态演化与动态演化的差别在哪？动态演化要解决哪些"运行时难题"？</p>
+</blockquote>
+<h3>一、静态演化</h3>
+<p><strong>静态演化</strong>指在系统<strong>不运行</strong>（或停机窗口内）完成的架构变更：改代码、改配置、重新部署。</p>
+<p>特点：</p>
+<ul>
+<li>实现简单、验证充分（可以在测试环境完整回归）；</li>
+<li>需要<strong>停机或切换窗口</strong>，对连续性要求高的系统不可接受；</li>
+<li>变更粒度大（通常整体发布）。</li>
+</ul>
+<h3>二、动态演化</h3>
+<p><strong>动态演化</strong>指系统<strong>在运行过程中</strong>完成的架构变更，要求不停机、不中断服务。</p>
+<p>它要解决四类难题：</p>
+<table>
+<thead>
+<tr>
+<th>难题</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>状态一致性</strong></td>
+<td>演化时正在处理的请求怎么办？旧状态如何迁移到新结构</td>
+</tr>
+<tr>
+<td><strong>版本共存</strong></td>
+<td>新旧版本可能同时在跑，接口要兼容</td>
+</tr>
+<tr>
+<td><strong>原子切换</strong></td>
+<td>演化失败要能回滚，不能出现"半新半旧"</td>
+</tr>
+<tr>
+<td><strong>可观测性</strong></td>
+<td>演化过程中行为变化要能被监控发现</td>
+</tr>
+</tbody>
+</table>
+<p><strong>典型技术</strong>：蓝绿部署、灰度发布、滚动更新、特性开关（feature flag）、服务网格流量切分。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"特性开关"能让一次代码发布变成"运行时演化"？它的代价是什么（提示：开关组合爆炸）？</p>
+</blockquote>
+<h3>三、两者的对照</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>静态演化</th>
+<th>动态演化</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>是否停机</td>
+<td>需要</td>
+<td>不需要</td>
+</tr>
+<tr>
+<td>验证难度</td>
+<td>低（可完整回归）</td>
+<td>高（只能部分验证）</td>
+</tr>
+<tr>
+<td>风险</td>
+<td>集中（一次切换）</td>
+<td>分散（渐进暴露）</td>
+</tr>
+<tr>
+<td>适用</td>
+<td>内部系统、可停机窗口</td>
+<td>在线业务、7×24 系统</td>
+</tr>
+</tbody>
+</table>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：不停机改造方案）</strong> 某在线支付系统要把单体拆成服务，但不能停机，且要求任何时刻都能回滚。请给出演化路径。</p>
+<p><em>解答</em>：<br>
+- <strong>先做"可拆分"的准备</strong>：按业务边界梳理模块、消除跨模块的直接数据库访问（改为接口）；<br>
+- <strong>新老并行</strong>：新服务与旧单体同时运行，通过<strong>流量切分</strong>（网关/服务网格）把一小部分流量导到新服务；<br>
+- <strong>数据双写与校验</strong>：过渡期双写并比对，确保一致性；<br>
+- <strong>逐步放量</strong>：1% → 10% → 50% → 100%，每步观察关键指标；<br>
+- <strong>可回滚</strong>：保留旧路径开关，异常时秒级切回；<br>
+- <strong>收尾</strong>：流量全切后，下线旧模块、清理双写。</p>
+<p><em>点评</em>：这类题的得分点不在"用微服务"，而在<strong>并行运行、流量切分、数据校验、可回滚</strong>这四件套。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为动态演化"没有风险"。</strong><br>
+风险从"集中一次爆发"变成"长时间持续暴露"，可能更难定位。</p>
+<p><strong>误区二：认为拆分服务就是动态演化。</strong><br>
+拆分只是结构变化，是否"动态"取决于<strong>是否在运行中完成</strong>。</p>
+<p><strong>误区三：忽视数据层演化。</strong><br>
+服务能灰度，数据库表结构往往最难灰度，需要提前设计兼容方案（双写、扩展字段）。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="7-4-1" data-type="single" data-explain="静态=停机；动态=不停机。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">7-4-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">在系统不运行或停机窗口内完成的架构变更是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 静态演化</button><button class="opt" data-k="B"><b>B.</b> 动态演化</button><button class="opt" data-k="C"><b>C.</b> 运行时演化</button><button class="opt" data-k="D"><b>D.</b> 设计时演化</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-4-2" data-type="single" data-explain="需求获取属需求工程。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">7-4-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">动态演化需要解决的核心难题不包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 状态一致性</button><button class="opt" data-k="B"><b>B.</b> 版本共存</button><button class="opt" data-k="C"><b>C.</b> 原子切换与回滚</button><button class="opt" data-k="D"><b>D.</b> 需求获取</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-4-3" data-type="single" data-explain="蓝绿、灰度、滚动、特性开关。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-4-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">下列属于动态演化典型技术的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 全量停机发布</button><button class="opt" data-k="B"><b>B.</b> 蓝绿部署与灰度发布</button><button class="opt" data-k="C"><b>C.</b> 需求评审</button><button class="opt" data-k="D"><b>D.</b> 单元测试</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-4-4" data-type="single" data-explain="动态演化的风险是持续暴露，更难定位。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-4-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">关于静态演化与动态演化，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 动态演化验证更容易</button><button class="opt" data-k="B"><b>B.</b> 静态演化需要停机但验证充分</button><button class="opt" data-k="C"><b>C.</b> 静态演化风险更分散</button><button class="opt" data-k="D"><b>D.</b> 二者没有区别</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-4-5" data-type="multi" data-explain="E 错：数据层往往最难灰度。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">7-4-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">关于静态与动态演化，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 静态演化通常整体发布、变更粒度大</button><button class="opt" data-k="B"><b>B.</b> 动态演化要求不停机、不中断服务</button><button class="opt" data-k="C"><b>C.</b> 特性开关可把代码发布变成运行时行为切换</button><button class="opt" data-k="D"><b>D.</b> 动态演化过程中新旧版本可能同时存在</button><button class="opt" data-k="E"><b>E.</b> 数据库表结构比服务更容易灰度</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-4-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="原子" data-answer-text="原子"><div class="qhead"><span class="chip">7-4-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">动态演化要解决的难题包括状态一致性、版本共存、________切换与可观测性。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：静态演化停机但验证充分，动态演化不停机但要解决状态、版本、回滚与可观测四类难题。</p>
+<p><strong>留一个问题</strong>：演化做得好不好，有没有一套判断标准？</p>
+<p>下一节给出 18 条原则。</p>
+<hr>
+<h2 id="sec5">第 5 节 演化原则</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：判断一次演化"该不该做、做得对不对"，有哪些可依据的原则？</p>
+</blockquote>
+<h3>一、18 条原则的定位</h3>
+<p>软件架构的可持续演化原则共 <strong>18 条</strong>，每条都配了度量方案——目的是让"演化质量"从主观判断变成可度量。</p>
+<p>不需要背全 18 条，抓住<strong>四类</strong>即可：</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>原则</th>
+<th>关注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>成本与进度</strong></td>
+<td>演化成本控制、进度可控、风险可控</td>
+<td>这次演化值不值、来不来得及</td>
+</tr>
+<tr>
+<td><strong>结构与影响</strong></td>
+<td>主体维持、系统总体结构优化、模块独立演化、影响可控、复杂性可控</td>
+<td>改了会不会伤筋动骨</td>
+</tr>
+<tr>
+<td><strong>方向与质量</strong></td>
+<td>平滑演化、目标一致、质量向好、适应新需求</td>
+<td>改完是不是更好</td>
+</tr>
+<tr>
+<td><strong>可复用与规范</strong></td>
+<td>有利于重构、有利于重用、设计原则遵从性、适应新技术、环境适应性、标准依从性</td>
+<td>改完是否便于下一步</td>
+</tr>
+</tbody>
+</table>
+<h3>二、几条最常用的</h3>
+<table>
+<thead>
+<tr>
+<th>原则</th>
+<th>含义</th>
+<th>判断标准</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>演化成本控制</strong></td>
+<td>演化成本要明显小于重新开发的成本</td>
+<td>否则不如重写</td>
+</tr>
+<tr>
+<td><strong>进度可控</strong></td>
+<td>演化要在预期时间内完成</td>
+<td>体现迭代、递增的节奏</td>
+</tr>
+<tr>
+<td><strong>风险可控</strong></td>
+<td>经济、时间、人力、技术、环境风险都可控</td>
+<td>风险不可控则不做</td>
+</tr>
+<tr>
+<td><strong>主体维持</strong></td>
+<td>演化不应破坏系统的主体结构</td>
+<td>结构大改视为重写更合适</td>
+</tr>
+<tr>
+<td><strong>影响可控</strong></td>
+<td>单次演化影响范围有限</td>
+<td>影响面过大就拆分多次</td>
+</tr>
+<tr>
+<td><strong>平滑演化</strong></td>
+<td>演化应渐进，避免剧烈跳变</td>
+<td>一次只动一处关键结构</td>
+</tr>
+<tr>
+<td><strong>质量向好</strong></td>
+<td>演化后质量属性应提升或至少不劣化</td>
+<td>用场景度量验证</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"演化成本要明显小于重新开发"是第一条？如果两者接近，该选哪个？</p>
+</blockquote>
+<h3>三、原则之间会冲突</h3>
+<p>例如"适应新技术"与"主体维持"可能冲突：全量换框架能享受新技术，但会破坏主体结构。</p>
+<p>处理方式与质量属性一样：<strong>识别冲突点，按业务优先级取舍，并记录理由</strong>。</p>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：用原则否决一次演化）</strong> 某团队提出"把系统整体从单体改成微服务"，预计 8 个月、影响全部 12 个模块、期间不能接新需求。请用演化原则评估该方案。</p>
+<p><em>解答</em>：<br>
+- <strong>主体维持</strong>：全量重构破坏主体结构，已接近重写而非演化；<br>
+- <strong>影响可控</strong>：影响 12 个模块，超出单次演化的合理范围；<br>
+- <strong>进度可控</strong>：8 个月不能接新需求，业务上不可接受；<br>
+- <strong>风险可控</strong>：一次性大改，失败无法回滚；<br>
+- <strong>演化成本控制</strong>：若成本接近重写，应改按"重写"立项，而不是当演化做。<br>
+- 建议：按业务域<strong>分批拆分</strong>，每次只动 2—3 个模块，保留旧路径可回滚。</p>
+<p><em>点评</em>：这题是原则的典型用法——<strong>不是论证"该不该上微服务"，而是论证"要不要一次性做完"</strong>。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为原则是"必须全部满足"。</strong><br>
+18 条之间会冲突，实际是取舍并记录。</p>
+<p><strong>误区二：把"主体维持"理解为"不能改结构"。</strong><br>
+它反对的是<strong>破坏主体</strong>的剧烈改动，渐进的结构调整是允许的。</p>
+<p><strong>误区三：忽视度量。</strong><br>
+每条原则都有对应度量方案，没有度量就无法判断是否满足。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="7-5-1" data-type="single" data-explain="ECC 原则。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-5-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">"演化成本要明显小于重新开发"对应哪条原则？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 主体维持原则</button><button class="opt" data-k="B"><b>B.</b> 演化成本控制原则</button><button class="opt" data-k="C"><b>C.</b> 质量向好原则</button><button class="opt" data-k="D"><b>D.</b> 标准依从性原则</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-5-2" data-type="single" data-explain="主体维持反对剧烈结构改动。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-5-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">"演化不应破坏系统的主体结构"对应：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 影响可控原则</button><button class="opt" data-k="B"><b>B.</b> 主体维持原则</button><button class="opt" data-k="C"><b>C.</b> 平滑演化原则</button><button class="opt" data-k="D"><b>D.</b> 适应新技术原则</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-5-3" data-type="single" data-explain="影响面过大就拆分多次。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">7-5-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">"单次演化的影响范围应有限"对应：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 影响可控原则</button><button class="opt" data-k="B"><b>B.</b> 进度可控原则</button><button class="opt" data-k="C"><b>C.</b> 有利于重用原则</button><button class="opt" data-k="D"><b>D.</b> 目标一致原则</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-5-4" data-type="single" data-explain="18 条，每条配度量方案。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">7-5-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">软件架构可持续演化原则共有多少条？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 9 条</button><button class="opt" data-k="B"><b>B.</b> 12 条</button><button class="opt" data-k="C"><b>C.</b> 18 条</button><button class="opt" data-k="D"><b>D.</b> 24 条</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-5-5" data-type="multi" data-explain="D 错：渐进的结构调整是允许的。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">7-5-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">关于演化原则，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 每条原则都配有度量方案</button><button class="opt" data-k="B"><b>B.</b> 原则之间可能互相冲突，需要取舍</button><button class="opt" data-k="C"><b>C.</b> 平滑演化强调渐进、避免剧烈跳变</button><button class="opt" data-k="D"><b>D.</b> 主体维持原则要求完全不能调整结构</button><button class="opt" data-k="E"><b>E.</b> 质量向好要求演化后质量属性不劣化</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-5-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="成本控制/成本" data-answer-text="演化成本控制"><div class="qhead"><span class="chip">7-5-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">演化原则中，强调"演化成本应明显小于重新开发成本"的是________原则。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：18 条演化原则分四类，核心是"成本可控、结构稳住、影响有限、渐进向好"。</p>
+<p><strong>留一个问题</strong>：原则是定性的，有没有办法量化"这次演化让架构变好了多少"？</p>
+<p>下一节讲演化评估。</p>
+<hr>
+<h2 id="sec6">第 6 节 演化评估</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：演化前后怎么比较？"过程已知"与"过程未知"的评估差别在哪？</p>
+</blockquote>
+<h3>一、两类评估</h3>
+<p>按<strong>演化过程是否已知</strong>，评估分为两类：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>含义</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>演化过程已知</strong></td>
+<td>演化路径、每次变更内容都清楚</td>
+<td>自己控制的迭代式演进</td>
+</tr>
+<tr>
+<td><strong>演化过程未知</strong></td>
+<td>只知道起点与终点，中间经过了多次变更（甚至多次接手）</td>
+<td>遗留系统、第三方交付系统</td>
+</tr>
+</tbody>
+</table>
+<h3>二、过程已知的评估思路</h3>
+<p>基本思路是<strong>把架构度量应用到演化过程中</strong>：对比演化前后不同版本的架构，度量<strong>内部结构差异</strong>以及由此导致的<strong>外部质量属性变化</strong>。</p>
+<p>评估流程大致是：</p>
+<ol>
+<li>确定演化前后的架构版本；</li>
+<li>对每个版本计算架构度量（耦合度、内聚度、模块规模、依赖深度等）；</li>
+<li>计算度量差异；</li>
+<li>结合质量属性场景，判断外部质量是否随结构变化而变化；</li>
+<li>给出该次演化"是否改善了架构"的结论。</li>
+</ol>
+<p>其价值在于：<strong>把"重构后感觉好多了"变成"耦合度下降 X%、循环依赖减少 Y 个"</strong>。</p>
+<h3>三、过程未知的评估思路</h3>
+<p>如果中间演化过程不可考，就只能<strong>从终点反推</strong>：</p>
+<ul>
+<li>通过<strong>逆向分析</strong>（代码结构、依赖关系、调用链）重建当前架构视图；</li>
+<li>用当前架构的质量属性表现，反推可能的架构问题；</li>
+<li>基于重建的视图给出后续演化建议。</li>
+</ul>
+<p>这本质上是"先补上架构文档"，再做评估。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么遗留系统常常"过程未知"？这对接手团队意味着什么？</p>
+</blockquote>
+<h3>四、两种评估的对比</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>过程已知</th>
+<th>过程未知</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>输入</td>
+<td>多个历史版本的架构</td>
+<td>仅当前系统（代码/运行态）</td>
+</tr>
+<tr>
+<td>手段</td>
+<td>版本间度量对比</td>
+<td>逆向重建 + 现状评估</td>
+</tr>
+<tr>
+<td>输出</td>
+<td>演化效果（改善/劣化）</td>
+<td>现状问题与改进建议</td>
+</tr>
+<tr>
+<td>难点</td>
+<td>度量指标选择与解释</td>
+<td>架构重建的准确性与成本</td>
+</tr>
+</tbody>
+</table>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：选择评估方式）</strong> 某团队接手一套运行 8 年的系统，原开发人员已全部离职，架构文档缺失，近期要评估"是否值得重构"。请给出评估方案。</p>
+<p><em>解答</em>：<br>
+- 属于<strong>演化过程未知</strong>：无法获得历史版本与变更记录；<br>
+- 步骤：① 通过代码依赖分析、调用链追踪、部署拓扑<strong>重建当前架构视图</strong>；② 用度量指标（模块耦合、循环依赖、重复代码、变更频率热点）定位问题区；③ 用质量属性场景验证当前架构的短板（如某接口延迟、发布频率低）；<br>
+- 结论形式：给出"<strong>重构哪些模块、预估收益、风险与代价</strong>"，而不是笼统的"该重构"。</p>
+<p><em>点评</em>：过程未知时，"重建视图 + 度量 + 场景验证"是标准三步；直接说"代码太烂要重写"没有说服力。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为评估必须"从头记录"才做得了。</strong><br>
+过程未知时可以用逆向重建。</p>
+<p><strong>误区二：只看代码度量不看质量属性。</strong><br>
+结构指标是内部视角，最终要落到外部质量。</p>
+<p><strong>误区三：把评估结论写成"好/坏"。</strong><br>
+应给出改善/劣化的具体指标与改进建议。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="7-6-1" data-type="single" data-explain="这是演化评估的基本分类。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-6-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">按演化过程是否已知，架构演化评估分为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 静态评估与动态评估</button><button class="opt" data-k="B"><b>B.</b> 过程已知的评估与过程未知的评估</button><button class="opt" data-k="C"><b>C.</b> 定性评估与定量评估</button><button class="opt" data-k="D"><b>D.</b> 内部评估与外部评估</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-6-2" data-type="single" data-explain="度量 + 版本对比。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-6-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">演化过程已知的评估，其基本思路是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 只看最终版本</button><button class="opt" data-k="B"><b>B.</b> 把架构度量应用到演化过程中，比较演化前后版本</button><button class="opt" data-k="C"><b>C.</b> 只做代码审查</button><button class="opt" data-k="D"><b>D.</b> 只做压力测试</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-6-3" data-type="single" data-explain="逆向重建是过程未知时的标准做法。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-6-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">过程未知时，重建当前架构视图的主要手段是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 查阅历史会议纪要</button><button class="opt" data-k="B"><b>B.</b> 逆向分析代码结构、依赖与调用链</button><button class="opt" data-k="C"><b>C.</b> 询问最终用户</button><button class="opt" data-k="D"><b>D.</b> 重新开发一套</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-6-4" data-type="single" data-explain="结论要可执行。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-6-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">演化评估的结论应当包含：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 只有"好"或"坏"</button><button class="opt" data-k="B"><b>B.</b> 具体度量差异与改进建议</button><button class="opt" data-k="C"><b>C.</b> 开发人员名单</button><button class="opt" data-k="D"><b>D.</b> 采购清单</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-6-5" data-type="multi" data-explain="D 错：度量含耦合、内聚、依赖深度等。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">7-6-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">关于演化评估，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 过程已知的评估对比多个历史版本的架构度量</button><button class="opt" data-k="B"><b>B.</b> 过程未知的评估需要逆向重建架构视图</button><button class="opt" data-k="C"><b>C.</b> 评估要结合质量属性场景判断外部质量变化</button><button class="opt" data-k="D"><b>D.</b> 架构度量只包括代码行数</button><button class="opt" data-k="E"><b>E.</b> 评估应给出是否改善架构的结论与依据</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-6-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="已知|未知" data-answer-text="过程已知、过程未知"><div class="qhead"><span class="chip">7-6-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">演化评估按演化过程是否已知，可分为________的评估和________的评估。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：演化评估用度量对比回答"改好了没有"，过程未知时先逆向重建再评估。</p>
+<p><strong>留一个问题</strong>：有没有一条被大量系统验证过的演化路径，可以直接参考？</p>
+<p>下一节讲大型网站的十阶段演化。</p>
+<hr>
+<h2 id="sec7">第 7 节 大型网站架构演化十阶段</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：一个网站从小到大，架构通常按什么顺序演进？每一阶段解决什么问题、引入什么新问题？</p>
+</blockquote>
+<h3>一、十个阶段全景</h3>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>形态</th>
+<th>解决的问题</th>
+<th>引入的新问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>单体架构</strong></td>
+<td>快速上线</td>
+<td>单机容量与单点故障</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>垂直架构</strong>（按业务拆应用 + 独立数据库）</td>
+<td>业务耦合、数据耦合</td>
+<td>重复建设、跨库查询</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>使用缓存</strong></td>
+<td>读性能</td>
+<td>缓存一致性</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>使用服务集群</strong></td>
+<td>单机容量与可用性</td>
+<td>会话共享、负载均衡</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>数据库读写分离</strong></td>
+<td>读多写少的数据库压力</td>
+<td>主从延迟、读一致性</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>反向代理与 CDN</strong></td>
+<td>静态资源与网络延迟</td>
+<td>缓存失效与更新策略</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>分布式文件系统与分布式数据库</strong></td>
+<td>单机存储上限</td>
+<td>分布式事务、运维复杂度</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>NoSQL 与搜索引擎</strong></td>
+<td>海量数据与复杂检索</td>
+<td>数据同步、最终一致</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>业务拆分</strong>（按业务域拆服务）</td>
+<td>系统耦合、团队协作</td>
+<td>分布式事务、链路变长</td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>分布式服务</strong>（服务化/微服务 + 服务治理）</td>
+<td>统一治理、弹性伸缩</td>
+<td>服务治理复杂度、可观测性</td>
+</tr>
+</tbody>
+</table>
+<h3>二、这条路径的规律</h3>
+<p>三句话可以概括：</p>
+<ol>
+<li><strong>先解决"能不能用"（性能与容量），再解决"好不好维护"（拆分与治理）</strong>；</li>
+<li><strong>每一阶段都在用"增加一个中间层"换性能或可用性</strong>（缓存、集群、代理、消息队列）；</li>
+<li><strong>每一步都会引入新的复杂度</strong>，且复杂度向下累积——这正是"架构是演进来的，不是设计出来的"。</li>
+</ol>
+<h3>三、为什么考试爱考这条线</h3>
+<p>它同时回答了三个高频问题：</p>
+<ul>
+<li>"某系统遇到瓶颈该怎么办"——按瓶颈类型对号入座（读瓶颈→缓存/读写分离；写瓶颈→分库分表/异步化）；</li>
+<li>"架构演进路径是否合理"——检查有没有<strong>跳步</strong>（没做缓存就直接分库分表）；</li>
+<li>"当前架构有什么问题"——按阶段找该阶段引入的典型问题。</li>
+</ul>
+<blockquote>
+<p><strong>想一想 ①</strong>：如果一个小系统日活只有 1 万，直接上微服务，会带来什么？这违背了哪条演化原则？</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：诊断演化跳步）</strong> 某初创团队的电商系统上线半年：直接做了微服务拆分，但没有缓存、没有读写分离，数据库是单机 MySQL，大促时数据库 CPU 打满。请诊断问题并给出改进顺序。</p>
+<p><em>解答</em>：<br>
+- <strong>诊断</strong>：典型的"<strong>结构超前、基础欠账</strong>"——服务拆了，但数据层还停在第一阶段；<br>
+- <strong>改进顺序</strong>（先易后难、先见效后结构）：<br>
+  1. 加<strong>缓存</strong>（商品详情、热点查询）→ 立刻降低数据库读压力；<br>
+  2. 做<strong>读写分离</strong>（主写从读）→ 缓解读压力；<br>
+  3. 关键链路<strong>异步化</strong>（下单后置动作走消息）→ 削峰；<br>
+  4. 若仍不足，再考虑<strong>分库分表</strong>；<br>
+- <strong>不建议</strong>：立刻继续拆服务——会放大问题。</p>
+<p><em>点评</em>：这题的判分点在"<strong>按瓶颈类型排序</strong>"，而不是把所有手段列一遍。另外可以点出：它违背了"演化成本控制"与"平滑演化"原则。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为"越新的架构越好"。</strong><br>
+架构要与规模、团队、业务复杂度匹配，超前即负债。</p>
+<p><strong>误区二：认为缓存能解决所有性能问题。</strong><br>
+缓存只解决读热点，写瓶颈要靠异步、分片或批处理。</p>
+<p><strong>误区三：忽视每一阶段引入的新问题。</strong><br>
+如读写分离带来的主从延迟，是后续一致性问题的主要来源。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="7-7-1" data-type="single" data-explain="从单体起步是常态。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-7-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">大型网站架构演化的第一阶段通常是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 微服务架构</button><button class="opt" data-k="B"><b>B.</b> 单体架构</button><button class="opt" data-k="C"><b>C.</b> 分布式服务</button><button class="opt" data-k="D"><b>D.</b> 读写分离</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-7-2" data-type="single" data-explain="缓存治读，不治写。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-7-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">用缓存主要解决的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 写性能</button><button class="opt" data-k="B"><b>B.</b> 读性能</button><button class="opt" data-k="C"><b>C.</b> 存储容量</button><button class="opt" data-k="D"><b>D.</b> 网络延迟</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-7-3" data-type="single" data-explain="主从延迟是后续一致性问题的源头。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-7-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">"数据库读写分离"引入的典型新问题是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 缓存一致性</button><button class="opt" data-k="B"><b>B.</b> 主从延迟与读一致性</button><button class="opt" data-k="C"><b>C.</b> 服务治理复杂</button><button class="opt" data-k="D"><b>D.</b> 分布式事务</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-7-4" data-type="single" data-explain="CDN 就近分发静态资源。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-7-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">反向代理与 CDN 主要解决：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数据库写压力</button><button class="opt" data-k="B"><b>B.</b> 静态资源分发与网络延迟</button><button class="opt" data-k="C"><b>C.</b> 分布式事务</button><button class="opt" data-k="D"><b>D.</b> 服务注册发现</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-7-5" data-type="single" data-explain="超前即负债。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="A"><div class="qhead"><span class="chip">7-7-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">日活仅 1 万的小系统直接上微服务，最可能违背的演化原则是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 演化成本控制与平滑演化</button><button class="opt" data-k="B"><b>B.</b> 标准依从性</button><button class="opt" data-k="C"><b>C.</b> 适应新技术</button><button class="opt" data-k="D"><b>D.</b> 有利于重用</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-7-6" data-type="multi" data-explain="D 错：缓存只解决读热点。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">7-7-6</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">关于大型网站架构演化，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 通常先解决性能与容量，再解决拆分与治理</button><button class="opt" data-k="B"><b>B.</b> 每一阶段常通过增加中间层来换性能或可用性</button><button class="opt" data-k="C"><b>C.</b> 每一步都会引入新的复杂度</button><button class="opt" data-k="D"><b>D.</b> 缓存可以同时解决读瓶颈与写瓶颈</button><button class="opt" data-k="E"><b>E.</b> 架构演化存在跳步风险</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-7-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="缓存" data-answer-text="缓存"><div class="qhead"><span class="chip">7-7-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">大型网站演化的第三阶段通常是使用________改善网站性能。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="7-7-8" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="业务拆分/拆分|分布式/微服务" data-answer-text="业务拆分、分布式"><div class="qhead"><span class="chip">7-7-8</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">大型网站演化的第九阶段是________，第十阶段是________服务。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：大型网站按"单体→垂直→缓存→集群→读写分离→代理/CDN→分布式存储→NoSQL→拆分→分布式服务"十步演进，每步都有代价。</p>
+<p><strong>留一个问题</strong>：在漫长的演化过程中，架构知识、变更与版本怎么管住？</p>
+<p>下一节讲架构维护。</p>
+<hr>
+<h2 id="sec8">第 8 节 架构维护</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：演化过程中，架构知识怎么沉淀、变更怎么控制、版本怎么管理、可维护性怎么度量？</p>
+</blockquote>
+<h3>一、维护与演化的关系</h3>
+<p>软件架构的维护与演化密不可分：<strong>维护需要对演化过程进行追踪和控制</strong>，以保障演化满足需求。</p>
+<p>也有一种说法把架构维护视为<strong>架构演化的一个部分</strong>——两种说法在考试中都可接受，关键是理解"维护是演化过程的管控"。</p>
+<h3>二、架构知识管理</h3>
+<p><strong>架构知识</strong>是软件开发和实现过程中涉及的架构静态信息（架构文档、设计决策、约束、模式说明）。</p>
+<p><strong>架构知识管理</strong>侧重于<strong>架构静态演化</strong>，围绕三条需求：</p>
+<ol>
+<li><strong>知识沉淀</strong>：把架构决策与理由记录下来，而不只是画图；</li>
+<li><strong>知识复用</strong>：新项目能查到既有架构方案与教训；</li>
+<li><strong>支撑演化</strong>：演化时能快速定位"改这里会影响什么"。</li>
+</ol>
+<p>现状问题很典型：知识散落在个人脑中与聊天记录里，人一走就断档——这正是"过程未知"评估的成因。</p>
+<h3>三、架构修改管理与版本管理</h3>
+<p><strong>修改管理</strong>：对每一次架构变更进行登记、评审、影响分析与批准，本质是把 K3 讲的配置管理理念用在架构层。</p>
+<p><strong>版本管理</strong>：为架构演化的<strong>版本演化控制、使用和评价</strong>提供依据，并为<strong>架构演化量化度量</strong>奠定基础。</p>
+<p>两者的关系：<strong>修改管理管"这次改什么、该不该改"，版本管理管"改完是哪个版本、能不能回溯"</strong>。</p>
+<h3>四、可维护性度量</h3>
+<p>可维护性的常见度量维度：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>可理解性</td>
+<td>结构清晰度、文档完整度</td>
+</tr>
+<tr>
+<td>可测试性</td>
+<td>模块可独立验证的程度</td>
+</tr>
+<tr>
+<td>可修改性</td>
+<td>单次变更影响的模块数</td>
+</tr>
+<tr>
+<td>稳定性</td>
+<td>变更后引入缺陷的概率</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"版本管理能为演化量化度量奠定基础"？没有版本管理，度量会缺什么？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：接手系统的维护体系搭建）</strong> 某团队接手一套老系统，面临"没人说得清架构、改动靠口口相传、上线常回滚"的局面。请给出架构维护体系的搭建方案。</p>
+<p><em>解答</em>：<br>
+- <strong>知识管理</strong>：先从代码与部署逆向重建架构视图，补齐关键设计决策与约束说明，形成最小可用的架构文档；<br>
+- <strong>修改管理</strong>：建立变更登记与评审流程，所有架构级变更做影响分析并留档；<br>
+- <strong>版本管理</strong>：把架构版本与发布版本关联，做到"任一次上线可追溯到对应架构状态"；<br>
+- <strong>度量</strong>：跟踪变更影响的模块数、缺陷率、回滚率，作为可维护性基线；<br>
+- <strong>节奏</strong>：先把流程跑起来（轻量），再逐步完善度量。</p>
+<p><em>点评</em>：这类题的答题骨架是"<strong>知识—变更—版本—度量</strong>"四件套，与 K3 配置管理四活动（标识、版本、变更、审计）是同一套思路的不同层次。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为架构维护就是"修 bug"。</strong><br>
+架构维护管的是结构层面的变更控制与知识沉淀。</p>
+<p><strong>误区二：认为版本管理只管代码。</strong><br>
+架构也应版本化（架构基线、决策记录版本）。</p>
+<p><strong>误区三：认为文档写完就完成了知识管理。</strong><br>
+没有决策理由与约束说明的文档，无法支撑后续演化。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="7-8-1" data-type="single" data-explain="知识管理面向静态信息的沉淀与复用。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-8-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">架构知识管理侧重于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 架构动态演化</button><button class="opt" data-k="B"><b>B.</b> 架构静态演化</button><button class="opt" data-k="C"><b>C.</b> 代码重构</button><button class="opt" data-k="D"><b>D.</b> 性能调优</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-8-2" data-type="single" data-explain="版本管理是量化度量的基础。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-8-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">为架构演化的版本控制、使用和评价提供依据的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 架构修改管理</button><button class="opt" data-k="B"><b>B.</b> 架构版本管理</button><button class="opt" data-k="C"><b>C.</b> 需求管理</button><button class="opt" data-k="D"><b>D.</b> 测试管理</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-8-3" data-type="single" data-explain="修改管理管“该不该改”。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-8-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">对每次架构变更进行登记、评审、影响分析与批准，属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 架构版本管理</button><button class="opt" data-k="B"><b>B.</b> 架构修改管理</button><button class="opt" data-k="C"><b>C.</b> 架构知识管理</button><button class="opt" data-k="D"><b>D.</b> 架构评估</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-8-4" data-type="single" data-explain="带宽属性能指标。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">7-8-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">下列不属于可维护性度量维度的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 可理解性</button><button class="opt" data-k="B"><b>B.</b> 可测试性</button><button class="opt" data-k="C"><b>C.</b> 稳定性</button><button class="opt" data-k="D"><b>D.</b> 带宽利用率</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-8-5" data-type="multi" data-explain="D 错：修改管理覆盖架构级变更。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">7-8-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">关于架构维护，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 维护需要对演化过程进行追踪和控制</button><button class="opt" data-k="B"><b>B.</b> 架构知识包括架构文档、设计决策与约束</button><button class="opt" data-k="C"><b>C.</b> 版本管理为演化量化度量奠定基础</button><button class="opt" data-k="D"><b>D.</b> 修改管理只关注代码改动，不关注架构</button><button class="opt" data-k="E"><b>E.</b> 知识散落在个人脑中会导致"演化过程未知"</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-8-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="修改|版本" data-answer-text="修改、版本"><div class="qhead"><span class="chip">7-8-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">架构维护的三个主要方面是架构知识管理、架构________管理和架构________管理。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="7-8-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="可修改|稳定" data-answer-text="可修改性、稳定性"><div class="qhead"><span class="chip">7-8-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">可维护性可从可理解性、可测试性、________和________等维度度量。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：架构维护靠"知识—修改—版本"三件事把演化管住，并用可维护性度量作为基线。</p>
+<hr>
+<h2 id="sec9">第 9 节 从运维到 DevOps</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：DevOps 到底解决了什么问题？它与云原生是什么关系？</p>
+</blockquote>
+<h3>一、先看一条断掉的链</h3>
+<p>传统模式下，开发写完代码交付运维，运维负责部署与值守。问题出在<strong>信息不对称</strong>：</p>
+<ul>
+<li>开发不知道生产环境长什么样，写的脚本到了线上跑不通；</li>
+<li>运维不理解代码变更，出了问题只能找开发，MTTR 拉长；</li>
+<li>每次上线都是一次"大事件"，靠加班、靠窗口期。</li>
+</ul>
+<p>问题很直接：传统方法提高了开发效率与版本更新速度，但<strong>还没有和运维打通</strong>；出于协调"信息对称"问题，才出现了 DevOps。</p>
+<h3>二、DevOps 的定义</h3>
+<blockquote>
+<p><strong>DevOps 可以看作是开发、技术运营和质量保障三者的交集</strong>，促进三者之间的沟通、协作与整合，从而提高开发周期和效率。</p>
+</blockquote>
+<p>三个关键点：</p>
+<ul>
+<li><strong>不是工具，是协作方式</strong>：先解决"谁负责、怎么沟通"，再谈流水线；</li>
+<li><strong>三者的交集</strong>：开发（Dev）、技术运营（Ops）、质量保障（QA）；</li>
+<li><strong>目标是缩短周期、提高效率</strong>，而不是"让运维少干活"。</li>
+</ul>
+<h3>三、与云原生的关系</h3>
+<p>需要明确的是：<strong>云原生的容器、微服务等技术正是为 DevOps 提供了很好的前提条件</strong>，保证实现 DevOps 与持续交付；反过来，<strong>能否实现 DevOps 与持续交付，已成为云原生技术价值不可分割的内涵</strong>。</p>
+<p>这条关系很重要：</p>
+<ul>
+<li>容器让"环境一致"，消除"我这能跑"的问题；</li>
+<li>微服务让变更有边界，可独立发布；</li>
+<li>编排让部署可重复、可回滚。</li>
+</ul>
+<p>一句话：<strong>云原生提供能力，DevOps 提供协作方式，二者互为前提</strong>。</p>
+<h3>四、持续集成、持续交付、持续部署</h3>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>含义</th>
+<th>终点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>持续集成（CI）</strong></td>
+<td>频繁合并代码并自动构建、测试</td>
+<td>产出可部署制品</td>
+</tr>
+<tr>
+<td><strong>持续交付（CD）</strong></td>
+<td>制品随时可发布到生产</td>
+<td><strong>人工</strong>决定何时上线</td>
+</tr>
+<tr>
+<td><strong>持续部署</strong></td>
+<td>通过自动化直接上线生产</td>
+<td>无需人工干预</td>
+</tr>
+</tbody>
+</table>
+<p>三者的区别在"<strong>最后一步是否人工</strong>"：持续交付强调"随时能发"，持续部署强调"自动就发"。</p>
+<h3>五、怎么衡量做得好不好</h3>
+<p>常用的四个度量（业界称 DORA 指标，属拓展知识）：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>部署频率</strong></td>
+<td>多长时间能上线一次</td>
+</tr>
+<tr>
+<td><strong>变更前置时间</strong></td>
+<td>从提交到上线的耗时</td>
+</tr>
+<tr>
+<td><strong>变更失败率</strong></td>
+<td>上线导致故障的比例</td>
+</tr>
+<tr>
+<td><strong>恢复时间（MTTR）</strong></td>
+<td>故障后多久恢复</td>
+</tr>
+</tbody>
+</table>
+<p>这四个指标的好处是：<strong>同时看速度与稳定性</strong>，避免"为了快而牺牲稳定"或"为了稳而不敢发"。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：如果团队部署频率很高但变更失败率也高，说明 DevOps 做得怎么样？应该先补哪一环？</p>
+</blockquote>
+<h3>六、例题精解</h3>
+<p><strong>例（工程项目：DevOps 落地）</strong> 某团队每月发版一次，每次上线要停机 4 小时，上线后平均 2 天才能稳定。请给出 DevOps 改造思路与度量方式。</p>
+<p>*解答**：<br>
+- <strong>先解决协作</strong>：开发与运维共同制定发布标准与值班机制（三者的交集）；<br>
+- <strong>环境一致</strong>：容器化，消除环境差异导致的"上线才发现问题"；<br>
+- <strong>流水线</strong>：CI 自动化构建与测试，CD 产出可部署制品，逐步过渡到自动发布；<br>
+- <strong>发布策略</strong>：从停机发布改为滚动/蓝绿/灰度，缩小故障半径；<br>
+- <strong>可回滚</strong>：每次发布保留上一版本，异常一键回退（缩短 MTTR）；<br>
+- <strong>度量</strong>：跟踪部署频率、变更前置时间、变更失败率、MTTR，用数据判断改进效果。</p>
+<p><em>点评</em>：DevOps 题的答题骨架是"<strong>协作 → 环境 → 流水线 → 发布策略 → 回滚 → 度量</strong>"，顺序体现了"先人后工具"。</p>
+<h3>七、常见误区</h3>
+<p><strong>误区一：认为 DevOps 就是"搭一条 Jenkins 流水线"。</strong><br>
+工具只是载体，协作与责任划分才是核心。</p>
+<p><strong>误区二：把持续交付与持续部署混为一谈。</strong><br>
+区别在最后一步是否人工确认。</p>
+<p><strong>误区三：只追求部署频率。</strong><br>
+不看变更失败率与 MTTR，等于用稳定性换速度。</p>
+<h3>八、本节自测</h3>
+<blockquote>
+<p>共 5 题（3 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="7-9-1" data-type="single" data-explain="先解决协作与责任划分，再谈工具。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-9-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">DevOps 通常被理解为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 一套自动化工具</button><button class="opt" data-k="B"><b>B.</b> 开发、技术运营与质量保障三者的交集</button><button class="opt" data-k="C"><b>C.</b> 一种编程语言</button><button class="opt" data-k="D"><b>D.</b> 一种数据库架构</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-9-2" data-type="single" data-explain="持续交付强调“随时能发”。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-9-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">持续交付与持续部署的关键区别是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 是否使用容器</button><button class="opt" data-k="B"><b>B.</b> 最后一步是否需要人工确认</button><button class="opt" data-k="C"><b>C.</b> 是否有自动化测试</button><button class="opt" data-k="D"><b>D.</b> 是否使用微服务</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-9-3" data-type="single" data-explain="容器保证环境一致，编排保证可重复部署。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-9-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">云原生技术与 DevOps 的关系是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 互不相关</button><button class="opt" data-k="B"><b>B.</b> 云原生为 DevOps 提供前提，DevOps 体现云原生价值</button><button class="opt" data-k="C"><b>C.</b> DevOps 取代云原生</button><button class="opt" data-k="D"><b>D.</b> 云原生取代 DevOps</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-9-4" data-type="multi" data-explain="四项同时看速度与稳定性。" data-source="拓展" data-diag="B 补充" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">7-9-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">关于 DevOps 度量（DORA 指标），包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 部署频率</button><button class="opt" data-k="B"><b>B.</b> 变更前置时间</button><button class="opt" data-k="C"><b>C.</b> 变更失败率</button><button class="opt" data-k="D"><b>D.</b> 恢复时间（MTTR）</button><button class="opt" data-k="E"><b>E.</b> 代码总行数</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-9-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="质量保障/质量/qa" data-answer-text="质量保障"><div class="qhead"><span class="chip">7-9-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">DevOps 是开发、技术运营和________三者的交集。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>九、小结与衔接</h3>
+<p>本节回答：DevOps 解决开发与运维的信息不对称，靠协作 + 自动化 + 度量；云原生为其提供技术前提。</p>
+<hr>
+<h2 id="sec10">第 10 节 从 AIOps 到智能运维</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：运维的核心流程是什么？AIOps 到底在哪些环节起作用，效果怎么衡量？</p>
+</blockquote>
+<h3>一、运维的核心流程闭环</h3>
+<p>无论传统还是智能，运维都是<strong>一个闭环</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>环节</th>
+<th>工作内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>监控</strong></td>
+<td>采集指标、日志、链路，建立基线</td>
+</tr>
+<tr>
+<td><strong>发现（告警）</strong></td>
+<td>阈值/异常检测触发告警，分级派单</td>
+</tr>
+<tr>
+<td><strong>响应</strong></td>
+<td>定位、止损（回滚、切换、限流降级）</td>
+</tr>
+<tr>
+<td><strong>修复</strong></td>
+<td>恢复服务、修补根因</td>
+</tr>
+<tr>
+<td><strong>复盘与改进</strong></td>
+<td>根因分析、改进项落地、预案更新</td>
+</tr>
+</tbody>
+</table>
+<p>闭环的关键在<strong>最后一步</strong>：没有复盘的运维，会反复踩同一个坑。</p>
+<h3>二、三个阶段</h3>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>特征</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>传统运维</strong></td>
+<td>人工巡检、脚本化、被动响应</td>
+</tr>
+<tr>
+<td><strong>DevOps</strong></td>
+<td>开发与运维打通、自动化流水线、持续交付</td>
+</tr>
+<tr>
+<td><strong>AIOps</strong></td>
+<td>用算法处理海量监控数据，做异常检测、根因分析与自动处置</td>
+</tr>
+</tbody>
+</table>
+<p>注意：AIOps 不是"取代 DevOps"，而是在其自动化之上加<strong>智能化</strong>。</p>
+<h3>三、AI 在运维中的五个落点</h3>
+<table>
+<thead>
+<tr>
+<th>落点</th>
+<th>做什么</th>
+<th>价值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>异常检测</strong></td>
+<td>基于时序模型识别偏离基线的指标</td>
+<td>早于阈值告警发现劣化</td>
+</tr>
+<tr>
+<td><strong>告警收敛</strong></td>
+<td>把同一故障引发的成百条告警聚合成一条</td>
+<td>降低噪音、减少"告警风暴"</td>
+</tr>
+<tr>
+<td><strong>根因定位</strong></td>
+<td>依据拓扑与调用链推断故障源</td>
+<td>缩短定位时间</td>
+</tr>
+<tr>
+<td><strong>容量预测</strong></td>
+<td>预测资源需求与增长趋势</td>
+<td>支撑扩容决策</td>
+</tr>
+<tr>
+<td><strong>自动修复</strong></td>
+<td>按预案自动重启、切换、扩容</td>
+<td>缩短 MTTR</td>
+</tr>
+</tbody>
+</table>
+<p><strong>告警收敛</strong>往往是最先见效的一环——很多团队的告警噪音率超过 90%，先解决"看得清"再谈"看得懂"。</p>
+<h3>四、衡量指标</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>可用性 / SLA</strong></td>
+<td>服务达标时间比例</td>
+</tr>
+<tr>
+<td><strong>MTTR</strong></td>
+<td>平均恢复时间</td>
+</tr>
+<tr>
+<td><strong>MTTA</strong></td>
+<td>平均响应（确认）时间</td>
+</tr>
+<tr>
+<td><strong>变更成功率</strong></td>
+<td>变更未导致故障的比例</td>
+</tr>
+<tr>
+<td><strong>告警准确率 / 噪音率</strong></td>
+<td>有效告警占比</td>
+</tr>
+<tr>
+<td><strong>自动化覆盖率</strong></td>
+<td>可自动处置的故障类型占比</td>
+</tr>
+<tr>
+<td><strong>单位业务量成本</strong></td>
+<td>云资源成本效率</td>
+</tr>
+</tbody>
+</table>
+<p>只看"可用性"是不够的：可用性达标但 MTTR 很长，说明恢复能力差；变更成功率高但发布很少，说明不敢发。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"告警准确率"是 AIOps 最该先改进的指标？如果告警 90% 是噪音，智能分析还有什么用？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：AIOps 落地）</strong> 某系统每天产生 2 万条告警，值班人员靠经验判断，MTTR 平均 2 小时。请给出 AIOps 改造路径与效果评估。</p>
+<p>*解答**：<br>
+- <strong>第一步（数据）</strong>：统一指标、日志、链路与变更事件的采集，补齐标签（服务、机房、版本）；<br>
+- <strong>第二步（收敛）</strong>：按拓扑与时间窗口聚合告警，同一根因只留一条，噪音率目标降到 20% 以下；<br>
+- <strong>第三步（检测）</strong>：用动态基线替代静态阈值，识别缓慢劣化；<br>
+- <strong>第四步（定位）</strong>：结合调用链与变更记录推断根因，给出"最可能的原因 Top3"；<br>
+- <strong>第五步（处置）</strong>：对高频已知故障（磁盘满、实例挂）配置自动修复预案；<br>
+- <strong>评估</strong>：跟踪 MTTA、MTTR、告警量、误报率、自动处置占比与业务影响时长。</p>
+<p><em>点评</em>：AIOps 题的得分点是"<strong>先治数据与噪音，再谈算法</strong>"，以及用 MTTA/MTTR 而非"上了智能平台"来证明效果。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为 AIOps 就是买一个智能运维平台。</strong><br>
+没有统一的数据与标签，算法无从下手。</p>
+<p><strong>误区二：只追求自动修复。</strong><br>
+先解决告警噪音与定位，收益更大也更安全。</p>
+<p><strong>误区三：只用可用性衡量运维。</strong><br>
+MTTR、变更成功率、成本同样重要。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 5 题（3 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="7-10-1" data-type="single" data-explain="没有复盘就会反复踩坑。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="D"><div class="qhead"><span class="chip">7-10-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">运维闭环中，最容易被忽略但决定长期效果的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 监控</button><button class="opt" data-k="B"><b>B.</b> 告警</button><button class="opt" data-k="C"><b>C.</b> 响应</button><button class="opt" data-k="D"><b>D.</b> 复盘与改进</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-10-2" data-type="single" data-explain="先治噪音再谈智能。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-10-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">把同一故障引发的成百条告警聚合成一条，属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 异常检测</button><button class="opt" data-k="B"><b>B.</b> 告警收敛</button><button class="opt" data-k="C"><b>C.</b> 容量预测</button><button class="opt" data-k="D"><b>D.</b> 自动修复</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-10-3" data-type="single" data-explain="MTTA 才是平均响应时间。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7-10-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">MTTR 指的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 平均响应时间</button><button class="opt" data-k="B"><b>B.</b> 平均恢复时间</button><button class="opt" data-k="C"><b>C.</b> 平均故障间隔</button><button class="opt" data-k="D"><b>D.</b> 平均部署时间</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-10-4" data-type="multi" data-explain="D 错：数据与标签是前提。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">7-10-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">关于 AIOps，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> AIOps 是在 DevOps 自动化之上的智能化</button><button class="opt" data-k="B"><b>B.</b> 异常检测可发现早于阈值的缓慢劣化</button><button class="opt" data-k="C"><b>C.</b> 根因定位可结合调用链与变更记录</button><button class="opt" data-k="D"><b>D.</b> 没有统一数据与标签也能做好智能分析</button><button class="opt" data-k="E"><b>E.</b> 评估应关注 MTTA、MTTR、误报率与自动处置占比</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7-10-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="mttr/平均恢复" data-answer-text="MTTR"><div class="qhead"><span class="chip">7-10-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">运维指标中，衡量故障后恢复快慢的是________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：运维是"监控—发现—响应—修复—复盘"的闭环，AIOps 在检测、收敛、定位、预测、处置五个点发力，效果用 MTTA/MTTR 等指标衡量。</p>
+<h2 id="sec11">本章总复习</h2>
+<h3>一、这一章的主线</h3>
+<p>演化这一章回答的是"架构不是一次成型的，怎么演进而不过早腐化"。十节按"为什么变—变什么—什么时候变—怎么变—变了值不值"展开：演化与定义的关系、面向对象的四类演化、四个演化时期、静态与动态演化、18 条演化原则、演化评估方法、大型网站十阶段演进实例，最后落到维护（知识、修改、版本管理）与 DevOps、AIOps。</p>
+<h3>二、必须能说出的判断</h3>
+<ul>
+<li><strong>演化越晚代价越高</strong>，但过早抽象也是债务——按"需求确定性 × 变化频率 × 影响范围"判断；</li>
+<li><strong>主体维持、影响可控、平滑演化</strong>三条，是判断"该不该做这次演化"的主要尺子；</li>
+<li><strong>过程未知的系统</strong>要先用逆向工程重建视图，再谈评估；</li>
+<li><strong>十阶段演进每一步都有代价</strong>，跳步（没缓存就分库分表）是最常见的架构问题；</li>
+<li><strong>DevOps 的收益来自协作与自动化</strong>，不是搭一条流水线。</li>
+</ul>
+<h3>三、跨节综合自测（8 题）</h3>
+<div class="quiz" data-id="7综-1" data-type="single" data-explain="按「需求确定性 × 变化频率 × 影响范围」取舍。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7综-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">关于演进时机，正确的判断是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 越晚改越省事</button><button class="opt" data-k="B"><b>B.</b> 越晚代价越高，但过早抽象也是债务</button><button class="opt" data-k="C"><b>C.</b> 只要能用就不必演进</button><button class="opt" data-k="D"><b>D.</b> 必须一次性重构到位</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7综-2" data-type="single" data-explain="跳步是最常见的架构问题，违背平滑演化与成本控制原则。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="A"><div class="qhead"><span class="chip">7综-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">某系统日活不高却直接上了微服务，数据层仍是单机且无缓存，大促时数据库被打满。最恰当的诊断是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 架构超前、基础欠账，应先补缓存与读写分离</button><button class="opt" data-k="B"><b>B.</b> 继续拆更多服务</button><button class="opt" data-k="C"><b>C.</b> 立刻分库分表</button><button class="opt" data-k="D"><b>D.</b> 重写整个系统</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7综-3" data-type="multi" data-explain="E 不是原则，过度拆分反而增加成本。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">7综-3</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">下列属于「演化原则」的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 演化成本控制</button><button class="opt" data-k="B"><b>B.</b> 主体维持</button><button class="opt" data-k="C"><b>C.</b> 影响可控</button><button class="opt" data-k="D"><b>D.</b> 平滑演化</button><button class="opt" data-k="E"><b>E.</b> 服务数量越多越好</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7综-4" data-type="single" data-explain="过程未知时，先恢复理解再评估。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">7综-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">接手一套无文档的老系统，要做演进评估，第一步应是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 直接重写</button><button class="opt" data-k="B"><b>B.</b> 通过逆向分析重建当前架构视图</button><button class="opt" data-k="C"><b>C.</b> 先上微服务</button><button class="opt" data-k="D"><b>D.</b> 先做性能压测</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7综-5" data-type="single" data-explain="需求获取属需求工程。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">7综-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">动态演化需要解决的核心难题不包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 状态一致性</button><button class="opt" data-k="B"><b>B.</b> 版本共存</button><button class="opt" data-k="C"><b>C.</b> 原子切换与回滚</button><button class="opt" data-k="D"><b>D.</b> 需求获取</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7综-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="质量保障/质量|自动化" data-answer-text="质量保障、自动化"><div class="qhead"><span class="chip">7综-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">DevOps 是开发、技术运营和________三者的交集，其价值来自协作与________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="7综-7" data-type="single" data-explain="AIOps 用算法替代重复判断。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="D"><div class="qhead"><span class="chip">7综-7</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">下列最不属于 AIOps 落点的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 告警收敛</button><button class="opt" data-k="B"><b>B.</b> 根因定位</button><button class="opt" data-k="C"><b>C.</b> 容量预测</button><button class="opt" data-k="D"><b>D.</b> 手工巡检打卡</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="7综-8" data-type="multi" data-explain="E 错：架构也应版本化。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">7综-8</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">关于架构维护，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 架构知识包括设计决策与约束，不只是图</button><button class="opt" data-k="B"><b>B.</b> 修改管理关注「该不该改」</button><button class="opt" data-k="C"><b>C.</b> 版本管理为演化量化度量奠定基础</button><button class="opt" data-k="D"><b>D.</b> 知识散落在个人脑中会导致演化过程未知</button><button class="opt" data-k="E"><b>E.</b> 版本管理只需覆盖代码，与架构无关</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<h3>四、与论文、案例的接口</h3>
+<p>论文里"系统演进""架构重构""技术债务治理"的素材来自这里；案例题常考"当前架构有什么问题、下一步怎么演进"，直接对应十阶段表。</p>
+<h3>五、下一步</h3>
+<p><strong>本章结束</strong>。下一步进入 K8（信息系统架构）。</p>
+<div class="legend" style="margin-top:44px">标注说明：<b>软考口径</b>＝按官方用书表述给分；<b>拓展</b>＝考纲未展开的补充知识。详见 <a href="k00.html">K0 前言</a>。作答记录保存在本机浏览器。</div>
+<div class="toast" id="toast"></div>
+</div>
+<script>
+const KEY="book_K7演化与维护";
+let state=JSON.parse(localStorage.getItem(KEY)||"{}");
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function norm(s){return (s||"").toLowerCase().replace(/[\s，,、;；。.()（）]/g,"");}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1400);}
+function stats(){const qs=$$(".quiz");let done=0,ok=0;
+ qs.forEach(q=>{const st=state[q.dataset.id];if(st&&st.done){done++;if(st.ok)ok++;}});
+ return {done,total:qs.length,ok};}
+function paint(){const s=stats();const p=s.total?s.done/s.total*100:0;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";}
+function fillKeywords(q){return q.dataset.answer.split("|").map(g=>g.split("/"));}
+function fbHTML(q,ok,userText){
+ const diag=q.dataset.diag||"";const warm=diag.includes("补充")?"#a2540f":"#b42318";
+ const ans=q.dataset.answerText||q.dataset.answer;
+ return '<div class="res">'+(ok?"✔ 回答正确":"✘ 回答错误")+'</div>'
+  +'<div><b>正确答案：</b>'+ans+(userText?'　<span style="color:#6b7280">你的作答：'+userText+'</span>':'')+'</div>'
+  +'<details open><summary>展开解析</summary><div class="inner">'
+  +'<div>'+q.dataset.explain+'</div>'
+  +'<div class="row tags">来源：'+q.dataset.source+'　｜　诊断标签：<b style="color:'+warm+'">'+diag+'</b></div>'
+  +'</div></details>';
+}
+function judge(q,ok,userText){
+ const fb=$(".fb",q);fb.className="fb show "+(ok?"ok":"bad");
+ fb.innerHTML=fbHTML(q,ok,userText);
+ state[q.dataset.id]={done:true,ok:ok};save();paint();
+}
+$$(".quiz").forEach(q=>{
+ const type=q.dataset.type;const ans=q.dataset.answer;
+ const opts=$$(".opt",q);const fb=$(".fb",q);
+ const saved=state[q.dataset.id];
+ if(type==="single"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     opts.forEach(x=>x.disabled=true);
+     const ok=(o.dataset.k===ans);
+     o.classList.add(ok?"right":"wrong");
+     if(!ok){const c=opts.find(x=>x.dataset.k===ans);if(c)c.classList.add("right");}
+     judge(q,ok,o.dataset.k);
+   }));
+ }else if(type==="multi"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     if(o.disabled)return;
+     o.classList.toggle("sel");
+   }));
+   const btn=$(".check",q);
+   if(btn)btn.addEventListener("click",()=>{
+     const picked=opts.filter(o=>o.classList.contains("sel")).map(o=>o.dataset.k).sort().join("");
+     if(!picked){toast("先选择至少一个选项");return;}
+     opts.forEach(o=>{
+       o.disabled=true;o.classList.remove("sel");
+       const k=o.dataset.k;
+       if(ans.includes(k))o.classList.add("right");
+       else if(picked.includes(k))o.classList.add("wrong");
+     });
+     judge(q,picked===ans,picked);
+   });
+ }else{
+   const inp=$(".fillinput",q);const btn=$(".check",q);
+   const go=()=>{
+     const raw=inp.value;const v=norm(raw);
+     if(!v){toast("先填写答案");return;}
+     let ok=false;
+     if(q.dataset.numeric){
+       const m=raw.match(/-?\d+(?:\.\d+)?/);
+       const cands=q.dataset.numeric.split("|");
+       ok=!!m&&cands.some(x=>Math.abs(parseFloat(m[0])-parseFloat(x))<0.011);
+     }else{
+       ok=fillKeywords(q).every(g=>g.some(k=>v.includes(norm(k))));
+     }
+     inp.disabled=true;inp.style.borderColor=ok?"#7cc49b":"#e79a94";
+     if(btn)btn.disabled=true;
+     judge(q,ok,raw.trim());
+   };
+   if(btn)btn.addEventListener("click",go);
+   if(inp)inp.addEventListener("keydown",e=>{if(e.key==="Enter")go();});
+ }
+ if(saved&&saved.done){/* 恢复历史状态：仅标记，不覆盖作答 */}
+});
+window.addEventListener("scroll",()=>{
+ const h=document.documentElement;
+ const p=h.scrollTop/(h.scrollHeight-h.clientHeight||1)*100;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";
+});
+paint();
+</script>
+<div class="book-foot-nav"><div class="bf-box"><a href="k06.html">&larr; 上一章 K6 质量属性与架构评估</a><a class="bf-next" href="k08.html">下一章 K8 信息系统架构 &rarr;</a></div><p class="bf-note">作答记录保存在本机浏览器，换设备或清除缓存不会保留。本章支持浏览器直接打印为 PDF。</p></div><script>
+(function(){
+  var el=document.getElementById("book-nav-progress");
+  function refresh(){
+    try{
+      var st=JSON.parse(localStorage.getItem("book_K7演化与维护")||"{}"),done=0;
+      Object.keys(st).forEach(function(k){if(st[k]&&st[k].done)done++;});
+      if(el)el.textContent=done+" / 69 题";
+    }catch(e){}
+  }
+  refresh();setInterval(refresh,1000);
+})();
+</script></body></html>

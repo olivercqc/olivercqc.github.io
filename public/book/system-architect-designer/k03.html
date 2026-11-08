@@ -1,0 +1,2039 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K3 软件工程与可靠性</title>
+<style>
+:root{--bg:#fbfaf7;--card:#fff;--ink:#1f2328;--sub:#6b7280;--line:#e6e3dd;--accent:#1f4e79;--ok:#0f7b4f;--bad:#b42318;--chip:#eef3f8;--warm:#fdf6ec}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:17px/1.9 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",serif}
+#bar{position:fixed;top:0;left:0;height:3px;background:var(--accent);width:0;z-index:99}
+.wrap{max-width:760px;margin:0 auto;padding:56px 20px 100px}
+h1{font-size:27px;line-height:1.4;letter-spacing:.5px;margin:0 0 10px}
+h2{font-size:21px;margin:52px 0 14px;padding-top:14px;border-top:2px solid var(--line);letter-spacing:.5px}
+h2:first-of-type{border-top:none}
+h3{font-size:17.5px;margin:30px 0 10px;color:#2b3a4a}
+h5{font-size:15px;margin:26px 0 8px;color:var(--sub);font-weight:600}
+p{margin:10px 0}
+blockquote{margin:16px 0;padding:12px 16px;background:var(--warm);border-left:3px solid #e0b984;border-radius:0 8px 8px 0;font-size:16px}
+blockquote p{margin:4px 0}
+strong{color:#12324f}
+hr{border:none;border-top:1px dashed var(--line);margin:26px 0}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px;background:#fff}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f3f1ec;font-weight:600}
+code{background:#f3f1ec;padding:1px 5px;border-radius:4px;font-size:14px}
+pre{background:#f7f5f1;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto}
+ul,ol{margin:10px 0;padding-left:22px}
+li{margin:4px 0}
+.math{font-family:"Cambria Math",Cambria,Georgia,"Times New Roman",serif;font-size:1.03em}
+.mathblock{display:block;text-align:center;margin:16px 0;overflow-x:auto;padding:2px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:-0.55em;text-align:center;margin:0 .3em}
+.frac .n{border-bottom:1px solid currentColor;padding:0 .3em;line-height:1.3}
+.frac .d{padding:0 .3em;line-height:1.4}
+sub,sup{font-size:.72em;line-height:0}
+.toast{position:fixed;right:18px;bottom:18px;background:#1f2937;color:#fff;padding:9px 14px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+
+/* 题卡 */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:18px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.qhead{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.chip{background:var(--chip);color:#33475b;border-radius:999px;padding:1px 9px;font-size:12px}
+.chip.t{background:#eaf4ec;color:#0f7b4f}
+.chip.k{background:#f4f0fa;color:#5b3f8f;font-size:11.5px}
+a.back{margin-left:auto;font-size:12px;color:var(--sub);text-decoration:none;border-bottom:1px dashed #c9c4ba}
+a.back:hover{color:var(--accent);border-color:var(--accent)}
+.qstem{font-weight:600;margin:4px 0 12px;font-size:16px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:15.5px;line-height:1.7;
+ background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 13px;cursor:pointer;transition:.15s}
+.opt:hover{border-color:#b9c6d6;background:#f8fafc}
+.opt b{color:var(--accent);margin-right:2px}
+.opt.sel{border-color:var(--accent);background:#eef4fa}
+.opt.right{border-color:#7cc49b;background:#effaf3}
+.opt.wrong{border-color:#e79a94;background:#fdf1f0}
+.opt:disabled{cursor:default}
+.fillrow{display:flex;gap:10px;margin-top:12px;align-items:center}
+.fillinput{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:15.5px;background:#fff}
+.btn{font:inherit;font-size:14px;padding:7px 16px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer}
+.btn.check{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fb{display:none;margin-top:14px;font-size:15px;line-height:1.8}
+.fb.show{display:block}
+.fb .res{font-weight:700;margin-bottom:6px;font-size:15.5px}
+.fb.ok .res{color:var(--ok)}
+.fb.bad .res{color:var(--bad)}
+.fb details{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:#fcfbf9;padding:0 12px}
+.fb summary{cursor:pointer;padding:9px 0;font-weight:600;color:var(--accent);outline:none}
+.fb .inner{padding:2px 0 12px;border-top:1px dashed var(--line)}
+.fb .row{color:var(--sub);font-size:13px;margin-top:8px}
+.fb .tags b{color:#a2540f}
+.legend{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:20px 0;font-size:14.5px}
+.legend b{color:var(--accent)}
+@media print{
+ #bar,.toast{display:none}
+ .quiz{break-inside:avoid}
+ body{background:#fff;font-size:12pt}
+}
+@media (max-width:600px){
+ body{font-size:16px;line-height:1.85}
+ .wrap{padding:40px 14px 80px}
+ h1{font-size:23px}
+ table{font-size:13px}
+}
+</style>
+<style id="book-nav-css">
+#book-nav{position:sticky;top:0;z-index:100;background:rgba(251,250,247,.96);backdrop-filter:blur(8px);border-bottom:1px solid #e6e3dd;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+#bar{z-index:101!important}
+#book-nav .bn-in{max-width:1060px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+#book-nav a{color:#1f4e79;text-decoration:none;white-space:nowrap}
+#book-nav a:hover{text-decoration:underline}
+#book-nav .bn-home{font-weight:700}
+#book-nav .bn-cur{color:#1f2328;font-weight:600;flex:1;min-width:180px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#book-nav .bn-step{background:#fff;border:1px solid #e6e3dd;border-radius:999px;padding:3px 11px;font-size:13px}
+#book-nav .bn-step.disabled{opacity:.38;pointer-events:none}
+#book-nav .bn-prog{color:#6b7280;font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.book-foot-nav{max-width:760px;margin:0 auto;padding:0 20px 80px;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.book-foot-nav .bf-box{border-top:2px solid #e6e3dd;padding-top:22px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}
+.book-foot-nav a{color:#1f4e79;text-decoration:none}
+.book-foot-nav a:hover{text-decoration:underline}
+.book-foot-nav .bf-next{background:#1f4e79;color:#fff!important;border-radius:10px;padding:9px 18px;font-weight:600}
+.book-foot-nav .bf-next:hover{text-decoration:none;background:#163c5e}
+.book-foot-nav .bf-note{color:#6b7280;font-size:13px;margin-top:14px}
+@media(max-width:600px){#book-nav .bn-cur{order:3;flex-basis:100%;text-align:left}#book-nav .bn-prog{display:none}}
+@media print{#book-nav,.book-foot-nav{display:none}#bar{z-index:0!important}}
+</style>
+</head><body><nav id="book-nav"><div class="bn-in"><a class="bn-home" href="index.html">&larr; 全书目录</a><a class="bn-step" href="k02.html" title="信息系统与信息安全">&larr; K2</a><span class="bn-cur">K3 · 软件工程与可靠性</span><a class="bn-step" href="k04.html" title="数据库设计">K4 &rarr;</a><span class="bn-prog" id="book-nav-progress">0 / 107 题</span></div></nav>
+<div id="bar"></div>
+<div class="wrap">
+<h1>K3 软件工程与可靠性</h1>
+<blockquote>
+<p><strong>本章内容</strong>：软件过程模型 · 敏捷与 RUP · CMMI · 需求工程 · 结构化分析与设计 · 面向对象方法 · 软件测试 · 净室工程 · 构件工程 · 项目管理 · 软件可靠性<br>
+<strong>考纲位置</strong>：上午题重灾区，案例题主战场（几乎每年一道）</p>
+</blockquote>
+<p>本章围绕"<strong>把软件开发从手工作坊变成可控工程</strong>"这一主题展开，共 13 节：</p>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+<th>回答的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>软件工程与过程模型</td>
+<td>开发软件有哪些固定套路</td>
+</tr>
+<tr>
+<td>2</td>
+<td>敏捷、RUP 与 CMMI</td>
+<td>需求总在变，怎么应对</td>
+</tr>
+<tr>
+<td>3</td>
+<td>需求工程</td>
+<td>怎么把"用户想要的"变成"可实现的"</td>
+</tr>
+<tr>
+<td>4</td>
+<td>结构化分析与设计</td>
+<td>数据怎么流、模块怎么分</td>
+</tr>
+<tr>
+<td>5</td>
+<td>面向对象分析与设计</td>
+<td>对象怎么建模、UML 怎么用</td>
+</tr>
+<tr>
+<td>6</td>
+<td>软件测试</td>
+<td>怎么证明它是对的</td>
+</tr>
+<tr>
+<td>7</td>
+<td>净室与构件工程</td>
+<td>高可靠与高复用两条路</td>
+</tr>
+<tr>
+<td>8</td>
+<td>软件项目管理</td>
+<td>进度、配置、质量怎么管</td>
+</tr>
+<tr>
+<td>9</td>
+<td>软件可靠性基础</td>
+<td>可靠性怎么度量</td>
+</tr>
+<tr>
+<td>10</td>
+<td>可靠性设计与评价</td>
+<td>不可靠怎么办</td>
+</tr>
+<tr>
+<td>11</td>
+<td>模型驱动架构（MDA）</td>
+<td>模型怎么摆脱平台绑定</td>
+</tr>
+<tr>
+<td>12</td>
+<td>提高可维护性的技术</td>
+<td>逆向工程与再工程怎么用</td>
+</tr>
+<tr>
+<td>13</td>
+<td>AI 测试</td>
+<td>AI 怎么测、怎么测 AI</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="sec1">第 1 节 软件工程与过程模型</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：为什么"写代码"需要工程化的组织方式？几种经典过程模型各自解决什么问题、又留下什么隐患？</p>
+</blockquote>
+<h3>一、一个总是延期的项目</h3>
+<p>某团队开发一个业务系统，3 个月的工作做了 9 个月，交付时用户说"这不是我要的"。</p>
+<p>复盘发现三件事：需求只在开头聊过一次；没有阶段评审，问题到集成时才暴露；进度靠"感觉"估计。</p>
+<p>这三件事恰好对应软件工程的三个基本问题：<strong>需求怎么定、过程怎么控、进度怎么估</strong>。过程模型就是对这些问题的标准答案。</p>
+<h3>二、什么是软件工程</h3>
+<p>软件工程是把系统化、规范化、可度量的方法应用于软件开发、运行和维护的过程。它的核心不是"技术"，而是<strong>用工程手段控制复杂度与风险</strong>。</p>
+<p>任何软件都有生命周期：<strong>可行性分析（论证）→ 需求分析 → 概要设计 → 详细设计 → 编码 → 测试 → 运行维护</strong>。过程模型，就是把这些阶段组织起来的方式。</p>
+<h3>三、五种经典模型</h3>
+<p><strong>1. 瀑布模型</strong>——最早、最经典。各阶段<strong>逐次下降</strong>，前一个阶段的输出是后一个阶段的输入，每个阶段结束要过一道<strong>里程碑评审</strong>。</p>
+<ul>
+<li>优点：因果关系紧密、阶段清晰、便于管理；</li>
+<li>缺点：严格串行，<strong>用户见到系统要等很久</strong>；每个阶段要求"一次性完全解决"，不欢迎遗漏与变更。</li>
+</ul>
+<p><strong>2. 原型模型（快速原型）</strong>——先快速做一个能跑的原型给用户看，确认后再开发目标系统。分两阶段：<strong>原型开发</strong>与<strong>目标软件开发</strong>。原型有三种途径：真正开发一个原型、改造现有系统、用工具快速生成。适合<strong>需求不明确</strong>的场景。</p>
+<p><strong>3. 螺旋模型</strong>——把瀑布与原型结合，<strong>每一圈螺旋都是一次迭代</strong>，每圈包含四个象限：制定计划、风险分析、实施工程、客户评估。它最大的特点是<strong>把风险分析显式地放进了过程里</strong>，适合大型、高风险项目。</p>
+<p><strong>4. 增量模型</strong>——把系统切成若干增量，<strong>每次交付一部分可用功能</strong>。用户能较早看到成果，风险分散，但要求系统架构能支持增量拼接。</p>
+<p><strong>5. 迭代模型</strong>——不按功能切分，而是<strong>按"逐步完善"切分</strong>：每一轮都做全流程，但每轮都更细。RUP 是典型代表（下一节讲）。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：如果项目需求明确、合同要求一次性交付、且用户不方便频繁参与，应该选哪种模型？如果需求模糊、技术风险高呢？</p>
+</blockquote>
+<h3>四、模型的演进其实在解决同一个矛盾</h3>
+<p>把五个模型排在一起看，会发现一条演进线：</p>
+<blockquote>
+<p>瀑布（一次做完）→ 原型（先看后做）→ 增量（分批交付）→ 螺旋（每轮都评估风险）→ 迭代/敏捷（持续演进）</p>
+</blockquote>
+<p>它们都在处理同一个矛盾：<strong>变更的代价 vs 反馈的时机</strong>。越靠前，变更越贵、反馈越晚；越靠后，反馈越早、但对管理与架构要求越高。</p>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：选过程模型）</strong> 某政务系统招标要求：6 个月内上线，需求由 5 个部门分别提出且存在冲突，技术上有两处不确定（与旧系统对接、大数据量下的报表性能），交付后需通过等级保护测评。</p>
+<p>请选择过程模型并说明理由。</p>
+<p><em>解答</em>：<br>
+- 主干用<strong>增量 + 迭代</strong>：先交付核心办事流程（增量），每轮迭代细化，保证 6 个月内有可用版本；<br>
+- 对两处技术不确定项单独做<strong>原型验证</strong>（尤其大数据量报表），把技术风险前置；<br>
+- 引入<strong>螺旋模型的风险分析</strong>思想：每一轮迭代前评估"对接风险"与"性能风险"，作为是否进入下一轮的门槛；<br>
+- 若合同要求阶段评审材料，则用瀑布的<strong>里程碑评审</strong>形式封装迭代结果。</p>
+<p><em>点评</em>：现实项目很少"纯用"一种模型，答题时写"主模型 + 补充手段 + 理由"更贴合案例题的给分点。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为瀑布模型"过时了"。</strong><br>
+在需求稳定、合同制交付、需严格评审的场景仍然适用；它的问题不是"旧"，而是"不欢迎变更"。</p>
+<p><strong>误区二：把原型模型等同于"先做个 demo"。</strong><br>
+原型的目的是<strong>澄清需求</strong>，用户确认后要改造成目标系统或推倒重写，不是把 demo 直接上线。</p>
+<p><strong>误区三：混淆增量与迭代。</strong><br>
+增量是<strong>按功能切分</strong>（每次多一块功能），迭代是<strong>按完善度切分</strong>（每轮都全流程、但更细）。二者常组合使用。</p>
+<p><strong>误区四：认为螺旋模型适合所有项目。</strong><br>
+它需要较强的风险分析能力，小项目用它反而增加管理成本。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="3-1-1" data-type="single" data-explain="瀑布模型逐阶段下降，每阶段末设里程碑。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">3-1-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">各阶段严格串行、每阶段结束需通过里程碑评审的模型是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 瀑布模型</button><button class="opt" data-k="B"><b>B.</b> 原型模型</button><button class="opt" data-k="C"><b>C.</b> 螺旋模型</button><button class="opt" data-k="D"><b>D.</b> 敏捷模型</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-1-2" data-type="single" data-explain="螺旋每圈都做风险分析，风险前移。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">3-1-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">把风险分析显式纳入过程、适合大型高风险项目的模型是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 瀑布模型</button><button class="opt" data-k="B"><b>B.</b> 增量模型</button><button class="opt" data-k="C"><b>C.</b> 螺旋模型</button><button class="opt" data-k="D"><b>D.</b> 净室模型</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-1-3" data-type="single" data-explain="原型先做可运行模型，便于澄清需求。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-1-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">需求不明确、需要与用户频繁确认时应优先采用：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 瀑布模型</button><button class="opt" data-k="B"><b>B.</b> 原型模型</button><button class="opt" data-k="C"><b>C.</b> V 模型</button><button class="opt" data-k="D"><b>D.</b> 净室模型</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-1-4" data-type="single" data-explain="增量每次多一块功能；迭代每轮全流程但更细。二者常组合。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="A"><div class="qhead"><span class="chip">3-1-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">关于增量模型与迭代模型的区别，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 增量按功能切分，迭代按完善程度切分</button><button class="opt" data-k="B"><b>B.</b> 增量按完善程度切分，迭代按功能切分</button><button class="opt" data-k="C"><b>C.</b> 两者完全相同</button><button class="opt" data-k="D"><b>D.</b> 增量不能与迭代组合使用</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-1-5" data-type="single" data-explain="串行导致反馈滞后，且要求每阶段一次做全。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-1-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">瀑布模型最主要的缺点是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 无法管理文档</button><button class="opt" data-k="B"><b>B.</b> 严格串行，用户见到系统的时间晚，且不欢迎需求变更</button><button class="opt" data-k="C"><b>C.</b> 不能用于大型项目</button><button class="opt" data-k="D"><b>D.</b> 无法进行阶段评审</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-1-6" data-type="multi" data-explain="D 错：增量是分批交付。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">3-1-6</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">关于软件过程模型，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 瀑布模型的每个阶段结束需要里程碑评审</button><button class="opt" data-k="B"><b>B.</b> 原型模型包含原型开发与目标软件开发两个阶段</button><button class="opt" data-k="C"><b>C.</b> 螺旋模型每一圈螺旋包含计划、风险分析、实施工程与客户评估</button><button class="opt" data-k="D"><b>D.</b> 增量模型要求一次性交付全部功能</button><button class="opt" data-k="E"><b>E.</b> 软件生命周期通常包含可行性分析、需求分析、设计、编码、测试与运行维护</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-1-7" data-type="fill" data-explain="风险分析是螺旋区别于其他模型的核心。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="风险" data-answer-text="风险分析"><div class="qhead"><span class="chip">3-1-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">螺旋模型的每一圈螺旋通常包含四个象限：制定计划、________、实施工程和客户评估。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="3-1-8" data-type="fill" data-explain="需求→概要设计→详细设计→编码→测试→维护。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="概要|详细" data-answer-text="概要设计、详细设计"><div class="qhead"><span class="chip">3-1-8</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">软件生命周期中，紧接"需求分析"之后的阶段是________，再之后是________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：过程模型是控制"变更代价与反馈时机"这一矛盾的工具，五种模型分别适用于不同确定性与风险水平。</p>
+<p><strong>留一个问题</strong>：如果需求注定一直变，靠"把变更挡住"行不通，那该怎么组织过程？</p>
+<p>下一节看敏捷、RUP 与 CMMI 这三条应对路线。</p>
+<hr>
+<h2 id="sec2">第 2 节 敏捷、RUP 与 CMMI</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：需求持续变化时，过程该"重"还是"轻"？RUP 的四阶段与 CMMI 的五级分别衡量什么？</p>
+</blockquote>
+<h3>一、两条相反的路线</h3>
+<p>面对"需求总在变"，有两种截然不同的反应：</p>
+<ul>
+<li><strong>加固</strong>：把需求冻结住，用重文档、强评审来抵抗变更（克制派）；</li>
+<li><strong>拥抱</strong>：承认变更常态，用短周期迭代快速响应（敏捷派）。</li>
+</ul>
+<p>两者并非对错之分，而是适用场景不同。第三条路是 <strong>RUP</strong>——用架构为中心、用例驱动的方式，兼顾"可控"与"迭代"。</p>
+<h3>二、敏捷模型</h3>
+<p>敏捷的核心不是某种工具，而是一组价值观：<strong>个体与交互高于流程与工具、可工作的软件高于详尽的文档、客户合作高于合同谈判、响应变化高于遵循计划</strong>。</p>
+<p>常见实践包括：短迭代（2–4 周）、每日站会、用户故事、持续集成、结对编程、测试驱动开发（TDD）。</p>
+<p>敏捷方法一般按<strong>高内聚、低耦合</strong>的原则把项目划分为若干小组，目的是降低沟通与文档成本。</p>
+<p>敏捷的适用前提常被忽略：<strong>团队要小而强、客户要能持续参与、需求可以增量交付</strong>。缺了这三条，敏捷会退化成"没有文档的混乱"。</p>
+<h3>三、RUP：四个阶段、九个核心工作流</h3>
+<p>RUP（统一过程）把生命周期划为<strong>四个阶段</strong>，每个阶段结束有一个里程碑：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>目标</th>
+<th>里程碑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>初始（Inception）</strong></td>
+<td>确定范围与业务可行性</td>
+<td>生命周期目标</td>
+</tr>
+<tr>
+<td><strong>细化（Elaboration）</strong></td>
+<td>建立架构基线、消除主要风险</td>
+<td>生命周期架构</td>
+</tr>
+<tr>
+<td><strong>构建（Construction）</strong></td>
+<td>完成可交付的产品</td>
+<td>初始运作能力</td>
+</tr>
+<tr>
+<td><strong>移交（Transition）</strong></td>
+<td>交付用户、处理反馈</td>
+<td>产品发布</td>
+</tr>
+</tbody>
+</table>
+<p>RUP 的三个关键特征：<strong>用例驱动</strong>、<strong>以架构为中心</strong>、<strong>迭代与增量</strong>。九个核心工作流分为 6 个工程工作流（业务建模、需求、分析与设计、实现、测试、部署）与 3 个支持工作流（配置与变更管理、项目管理、环境）。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：RUP 为什么把"细化阶段"单独列出、并且以"架构基线"作为里程碑？如果直接进入构建会怎样？</p>
+</blockquote>
+<h3>四、CMMI：五个成熟度等级</h3>
+<p>CMMI 是软件能力成熟度模型集成，把过程改进组织成 <strong>5 个成熟度等级</strong>（含 18 个关键过程域、52 个过程目标）：</p>
+<table>
+<thead>
+<tr>
+<th>等级</th>
+<th>名称</th>
+<th>特征</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>初始级</td>
+<td>过程随意混乱，成功依赖个人英雄主义</td>
+</tr>
+<tr>
+<td>2</td>
+<td>已管理级</td>
+<td>项目级过程被策划、文档化、执行、监督与控制</td>
+</tr>
+<tr>
+<td>3</td>
+<td>已定义级</td>
+<td>组织级标准过程，项目按裁剪使用</td>
+</tr>
+<tr>
+<td>4</td>
+<td>量化管理级</td>
+<td>对质量与过程性能建立<strong>定量目标</strong>并度量</td>
+</tr>
+<tr>
+<td>5</td>
+<td>优化级</td>
+<td>持续改进过程，基于度量做优化</td>
+</tr>
+</tbody>
+</table>
+<p>记忆要点：<strong>1 靠人、2 靠项目、3 靠组织、4 靠数据、5 靠改进</strong>。</p>
+<p>CMMI 是<strong>组织能力</strong>的评级，不是某个项目的成败评价——这一点常与 RUP（过程框架）混淆。</p>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：过程体系选型）</strong> 某公司要同时满足两件事：① 承接的政府项目要求"过程规范、可审计"；② 产品线迭代快、需求周周变。请设计过程体系。</p>
+<p><em>解答</em>：<br>
+- <strong>组织层</strong>用 CMMI 作为过程改进框架：先把项目级管理（等级 2）做实——计划、监控、配置管理；再向等级 3 的组织级标准过程演进；<br>
+- <strong>项目层</strong>按项目类型分两套裁剪：政府项目用<strong>瀑布/RUP 细化阶段评审</strong>的形态（满足可审计与里程碑要求），产品线用<strong>敏捷短迭代</strong>（响应变化）；<br>
+- <strong>架构层</strong>采用 RUP 的"以架构为中心"：产品线先固化架构基线，再让各迭代在架构内演进，避免敏捷失控。</p>
+<p><em>点评</em>：这题的得分点在于区分"组织能力（CMMI）"与"项目过程（瀑布/敏捷/RUP）"两个层次——把两者混为一谈是最常见的失分。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为敏捷等于"不要文档"。</strong><br>
+敏捷反对的是"为文档而文档"，必要的架构决策记录、接口说明仍然要有。</p>
+<p><strong>误区二：把 CMMI 等级当成项目质量评级。</strong><br>
+它评的是组织的过程能力成熟度。</p>
+<p><strong>误区三：认为 RUP 就是"瀑布加了迭代"。</strong><br>
+RUP 的核心是<strong>用例驱动 + 架构为中心 + 风险前移</strong>（细化阶段消除主要风险），不只是把阶段切碎。</p>
+<p><strong>误区四：认为敏捷适用于任何项目。</strong><br>
+客户不能参与、需求无法增量交付、团队分散且能力不足时，敏捷风险很大。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="3-2-1" data-type="single" data-explain="1 靠人、2 靠项目、3 靠组织、4 靠数据、5 靠改进。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">3-2-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">CMMI 的五个成熟度等级中，建立了质量与过程性能的定量目标的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 已管理级</button><button class="opt" data-k="B"><b>B.</b> 已定义级</button><button class="opt" data-k="C"><b>C.</b> 量化管理级</button><button class="opt" data-k="D"><b>D.</b> 优化级</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-2-2" data-type="single" data-explain="细化阶段建立架构基线并消除主要风险。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-2-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">RUP 四个阶段中，以"生命周期架构"为里程碑的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 初始阶段</button><button class="opt" data-k="B"><b>B.</b> 细化阶段</button><button class="opt" data-k="C"><b>C.</b> 构建阶段</button><button class="opt" data-k="D"><b>D.</b> 移交阶段</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-2-3" data-type="single" data-explain="RUP 三要素常与瀑布、敏捷对比出题。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">3-2-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">RUP 的三个关键特征是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 用例驱动、以架构为中心、迭代与增量</button><button class="opt" data-k="B"><b>B.</b> 文档驱动、以数据为中心、一次性交付</button><button class="opt" data-k="C"><b>C.</b> 代码驱动、以性能为中心、持续集成</button><button class="opt" data-k="D"><b>D.</b> 风险驱动、以合同为中心、阶段评审</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-2-4" data-type="single" data-explain="敏捷反对为文档而文档，但必要文档仍要；且依赖客户持续参与。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-2-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">下列关于敏捷的说法，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 敏捷要求详尽的前期文档</button><button class="opt" data-k="B"><b>B.</b> 敏捷强调响应变化，适合需求频繁变动的场景</button><button class="opt" data-k="C"><b>C.</b> 敏捷不需要任何架构设计</button><button class="opt" data-k="D"><b>D.</b> 敏捷适合客户无法参与的项目</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-2-5" data-type="single" data-explain="2 级管项目，3 级建组织级标准过程。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">3-2-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">CMMI 第 3 级"已定义级"的核心特征是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 过程随意混乱</button><button class="opt" data-k="B"><b>B.</b> 项目级过程被管理</button><button class="opt" data-k="C"><b>C.</b> 组织建立标准过程，项目按裁剪使用</button><button class="opt" data-k="D"><b>D.</b> 过程持续优化</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-2-6" data-type="multi" data-explain="D 错：第 5 级是优化级。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">3-2-6</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">关于敏捷、RUP 与 CMMI，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 敏捷按高内聚、低耦合原则划分小组以降低沟通成本</button><button class="opt" data-k="B"><b>B.</b> RUP 把生命周期分为初始、细化、构建、移交四个阶段</button><button class="opt" data-k="C"><b>C.</b> CMMI 衡量的是组织过程能力成熟度</button><button class="opt" data-k="D"><b>D.</b> CMMI 第 5 级是量化管理级</button><button class="opt" data-k="E"><b>E.</b> RUP 的细化阶段目标是建立架构基线、消除主要风险</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-2-7" data-type="fill" data-explain="五级顺序不可乱。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="定义|优化" data-answer-text="已定义级、优化级"><div class="qhead"><span class="chip">3-2-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">CMMI 五个成熟度等级依次为：初始级、已管理级、、量化管理级和。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="3-2-8" data-type="fill" data-explain="6 个工程流 + 3 个支持流（配置与变更、项目管理、环境）。" data-source="拓展" data-diag="B 补充" data-kp="" data-answer="项目管理|环境" data-answer-text="项目管理、环境"><div class="qhead"><span class="chip">3-2-8</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">RUP 的九个核心工作流中，属于支持工作流的是配置与变更管理、和。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：敏捷靠短迭代拥抱变化，RUP 靠架构中心与风险前移兼顾可控，CMMI 衡量组织的过程能力。</p>
+<p><strong>留一个问题</strong>：无论哪种模型，第一步都是"搞清楚要做什么"。可"要做什么"恰恰最难说清。</p>
+<p>下一节讲需求工程。</p>
+<hr>
+<h2 id="sec3">第 3 节 需求工程</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：怎么把用户模糊的诉求，变成开发能落地、测试能验证的需求？需求变了怎么办？</p>
+</blockquote>
+<h3>一、一句"我要一个能统计的系统"</h3>
+<p>用户说"我要一个能统计的系统"。开发照着做了报表，上线后用户说"我要的是实时看板"。</p>
+<p>问题不在沟通态度，而在<strong>需求的层次没有被拆开</strong>：用户说的是业务目标（想掌握经营情况），开发理解的是功能（做张报表）。</p>
+<h3>二、需求的三个层次</h3>
+<p>软件需求分为 3 个层次：</p>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>内容</th>
+<th>谁关心</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>业务需求</strong></td>
+<td>组织机构或客户对系统的高层次目标</td>
+<td>决策层</td>
+</tr>
+<tr>
+<td><strong>用户需求</strong></td>
+<td>用户使用产品必须完成的任务</td>
+<td>业务人员</td>
+</tr>
+<tr>
+<td><strong>功能需求</strong></td>
+<td>系统必须提供的功能（含非功能需求约束）</td>
+<td>开发与测试</td>
+</tr>
+</tbody>
+</table>
+<p>三个层次依次细化。需求文档通常分两份：<strong>用户原始需求说明书</strong>（与用户达成一致）与<strong>软件需求规格说明（SRS）</strong>（指导后续开发与验收）。</p>
+<h3>三、需求获取的常用手段</h3>
+<p>访谈、问卷、观察（跟岗）、联合应用开发（JAD）、原型演示、文档分析、竞品分析。</p>
+<p>一个常被忽略的点：需求获取不是"问用户要什么"，而是<strong>发现真实问题</strong>。用户说"要一个导出 Excel 的按钮"，背后可能是"报表要发给领导看"——真正的需求也许是"定时邮件推送"。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：用户提出"必须支持 1000 人同时在线"，这属于哪一类需求？如果开发直接照做，可能有什么问题？</p>
+</blockquote>
+<h3>四、需求变更与需求追踪</h3>
+<p><strong>需求变更</strong>不可避免。规范的做法是：变更申请 → 影响分析（对架构、进度、成本、测试的影响）→ 变更评审 → 批准或拒绝 → 同步更新文档与基线。</p>
+<p>还有一个关键概念——<strong>需求基线</strong>：一旦基线确定，变更必须走流程，否则"基线"失去意义。</p>
+<p><strong>需求追踪</strong>是双向的：</p>
+<ul>
+<li><strong>正向追踪</strong>：需求 → 设计 → 代码 → 测试用例，确保每条需求都被实现与验证；</li>
+<li><strong>反向追踪</strong>：测试用例 → 需求，确保没有"凭空多出来的功能"。</li>
+</ul>
+<p>追踪矩阵是变更影响分析的依据：改一条需求，能立刻查出会影响哪些模块与用例。</p>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：需求失控）</strong> 某项目开发到第 4 个月，需求文档已修改 12 版，测试用例与代码不同步，验收时用户提出 30 项"遗漏需求"。请指出问题并给出整改。</p>
+<p><em>解答</em>：<br>
+- <strong>问题一</strong>：没有需求基线，12 版文档意味着变更未受控；<br>
+- <strong>问题二</strong>：缺需求追踪矩阵，导致测试用例与代码不同步、无法证明覆盖；<br>
+- <strong>问题三</strong>：需求确认不足，30 项"遗漏"多半是早期未与用户逐条确认。<br>
+- <strong>整改</strong>：① 建立需求基线与变更控制流程（申请—影响分析—评审—批准）；② 建立双向追踪矩阵，变更时自动列出受影响的用例与模块；③ 验收前与用户做一次<strong>需求走查</strong>，逐条签字确认。</p>
+<p><em>点评</em>：案例题里"需求变更失控"的标准答法就是这三件：<strong>基线、变更流程、追踪矩阵</strong>。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：把用户需求直接当成功能需求。</strong><br>
+用户说的是"要完成的任务"，功能需求要再翻译成"系统提供什么能力"。</p>
+<p><strong>误区二：认为需求变更都是坏事。</strong><br>
+变更是常态，问题不在变更本身，而在"没有受控的变更"。</p>
+<p><strong>误区三：认为追踪矩阵只在文档评审时用。</strong><br>
+它真正的价值在<strong>变更影响分析</strong>与<strong>测试覆盖证明</strong>。</p>
+<p><strong>误区四：忽略非功能需求。</strong><br>
+性能、安全、可用性、可维护性属于功能需求的约束条件，遗漏它们往往在验收或上线后才爆发。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="3-3-1" data-type="single" data-explain="业务需求定目标，用户需求定任务，功能需求定能力。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">3-3-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">反映组织机构或客户对系统高层次目标的需求层次是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 业务需求</button><button class="opt" data-k="B"><b>B.</b> 用户需求</button><button class="opt" data-k="C"><b>C.</b> 功能需求</button><button class="opt" data-k="D"><b>D.</b> 非功能需求</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-3-2" data-type="single" data-explain="追踪矩阵的价值在变更分析与覆盖证明，而非统计。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-3-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">需求追踪矩阵最主要的用途是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 统计需求数量</button><button class="opt" data-k="B"><b>B.</b> 变更影响分析与测试覆盖证明</button><button class="opt" data-k="C"><b>C.</b> 估算开发成本</button><button class="opt" data-k="D"><b>D.</b> 评价开发人员绩效</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-3-3" data-type="single" data-explain="基线不是冻结，而是变更受控。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-3-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">需求基线确定之后，正确的做法是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 任何人可随时修改</button><button class="opt" data-k="B"><b>B.</b> 变更须走申请、影响分析、评审、批准的流程</button><button class="opt" data-k="C"><b>C.</b> 基线一旦确定永不修改</button><button class="opt" data-k="D"><b>D.</b> 只更新代码不必更新文档</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-3-4" data-type="single" data-explain="单元测试属于验证活动。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">3-3-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">下列不属于需求获取常用手段的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 访谈与问卷</button><button class="opt" data-k="B"><b>B.</b> 观察（跟岗）</button><button class="opt" data-k="C"><b>C.</b> 联合应用开发（JAD）</button><button class="opt" data-k="D"><b>D.</b> 单元测试</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-3-5" data-type="multi" data-explain="D 错：非功能需求是功能需求的约束，属软件需求。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">3-3-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">关于需求工程，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 软件需求分为业务需求、用户需求与功能需求三个层次</button><button class="opt" data-k="B"><b>B.</b> 需求追踪应双向：需求到用例，用例也可回溯到需求</button><button class="opt" data-k="C"><b>C.</b> 需求变更必须先做影响分析</button><button class="opt" data-k="D"><b>D.</b> 非功能需求不属于软件需求</button><button class="opt" data-k="E"><b>E.</b> 原型演示可用于澄清需求</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-3-6" data-type="fill" data-explain="SRS = Software Requirements Specification。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="srs/需求规格" data-answer-text="SRS"><div class="qhead"><span class="chip">3-3-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">软件需求规格说明通常简称________，它是后续开发与验收的依据。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="3-3-7" data-type="fill" data-explain="反向追踪用于发现“多出来的功能”。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="正向" data-answer-text="正向"><div class="qhead"><span class="chip">3-3-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">需求追踪矩阵中，"需求 → 设计 → 代码 → 测试用例"这一方向称为________追踪。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：需求要分三层拆解、变更要走流程、追踪要双向；需求工程的产出是后续设计与测试的输入。</p>
+<p><strong>留一个问题</strong>：需求确定之后，怎么把它变成"模块"和"数据流"？结构化方法给了一套经典做法。</p>
+<p>下一节讲结构化分析与设计。</p>
+<hr>
+<h2 id="sec4">第 4 节 结构化分析与设计</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：需求确定后，怎么画出"数据怎么流"、怎么把系统切成"好维护的模块"？</p>
+</blockquote>
+<h3>一、一张图就能看出问题</h3>
+<p>某系统的数据流图画了 40 个加工、60 条数据流，全在一张纸上。评审时没人看得懂，更没人能说清"订单状态在哪里被修改"。</p>
+<p>这就是结构化方法要解决的核心问题：<strong>用自顶向下、逐层分解的方式控制复杂度</strong>。</p>
+<h3>二、分析阶段：DFD 与数据字典</h3>
+<p>结构化分析的产物是<strong>功能模型（数据流图 DFD）</strong>、<strong>数据模型（E-R 图）</strong>与<strong>数据字典</strong>。</p>
+<p>DFD 有四种基本元素：</p>
+<table>
+<thead>
+<tr>
+<th>元素</th>
+<th>图形符号（常见画法）</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>外部实体</td>
+<td>矩形</td>
+<td>系统之外的人或系统</td>
+</tr>
+<tr>
+<td>加工（处理）</td>
+<td>圆或圆角矩形</td>
+<td>对数据做的变换</td>
+</tr>
+<tr>
+<td>数据流</td>
+<td>箭头</td>
+<td>数据在元素之间的流动</td>
+</tr>
+<tr>
+<td>数据存储</td>
+<td>两条平行线或开口矩形</td>
+<td>静态存储的数据</td>
+</tr>
+</tbody>
+</table>
+<p>DFD 要<strong>分层</strong>：顶层图（0 层）只有一个加工，表示整个系统；逐层细化到每个加工都能被清楚描述为止。分层时必须遵守<strong>父图与子图平衡</strong>——子图的输入输出要和父图中该加工的输入输出一致。</p>
+<p><strong>数据字典</strong>是对 DFD 中每个数据流、数据项、数据存储的严格定义，是"图"的文字补充。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么 DFD 强调"父子平衡"？如果不平衡，会出什么问题？</p>
+</blockquote>
+<h3>三、设计阶段：模块化与两条量化指标</h3>
+<p>结构化设计把系统分解为模块，衡量分解好坏的两个指标是<strong>耦合</strong>与<strong>内聚</strong>。</p>
+<p><strong>耦合：模块之间联系的程度，从低到高 7 种</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>顺序</th>
+<th>类型</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1（最低）</td>
+<td>非直接耦合</td>
+<td>模块间无直接联系</td>
+</tr>
+<tr>
+<td>2</td>
+<td>数据耦合</td>
+<td>只通过参数传递数据</td>
+</tr>
+<tr>
+<td>3</td>
+<td>标记耦合</td>
+<td>传递的是数据结构（记录/数组）</td>
+</tr>
+<tr>
+<td>4</td>
+<td>控制耦合</td>
+<td>传递控制信息（如标志位）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>通信耦合</td>
+<td>共享同一数据结构或通过参数传递公共数据</td>
+</tr>
+<tr>
+<td>6</td>
+<td>公共耦合</td>
+<td>共享全局变量或公共区</td>
+</tr>
+<tr>
+<td>7（最高）</td>
+<td>内容耦合</td>
+<td>一个模块直接访问另一个模块内部</td>
+</tr>
+</tbody>
+</table>
+<p><strong>内聚：模块内部各成分联系紧密的程度，从高到低 7 种</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>顺序</th>
+<th>类型</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1（最高）</td>
+<td>功能内聚</td>
+<td>完成一个单一功能，缺一不可</td>
+</tr>
+<tr>
+<td>2</td>
+<td>顺序内聚</td>
+<td>处理元素相关且必须顺序执行</td>
+</tr>
+<tr>
+<td>3</td>
+<td>通信内聚</td>
+<td>处理元素集中在同一数据结构上</td>
+</tr>
+<tr>
+<td>4</td>
+<td>过程内聚</td>
+<td>处理元素相关且必须按特定次序执行</td>
+</tr>
+<tr>
+<td>5</td>
+<td>时间内聚</td>
+<td>任务必须在同一时间间隔内执行</td>
+</tr>
+<tr>
+<td>6</td>
+<td>逻辑内聚</td>
+<td>完成逻辑上相关的一组任务</td>
+</tr>
+<tr>
+<td>7（最低）</td>
+<td>偶然内聚</td>
+<td>完成一组没有关系或松散关系的任务</td>
+</tr>
+</tbody>
+</table>
+<p>设计原则一句话：<strong>高内聚、低耦合</strong>。补充一点：内聚越高，耦合通常越低，但并非绝对。</p>
+<p>另有几个模块结构指标：<strong>深度</strong>（控制的层数）、<strong>宽度</strong>（同一层的模块数）、<strong>扇出</strong>（一个模块直接调用的模块数）、<strong>扇入</strong>（被多少个上级调用）。扇入高说明复用性好，扇出过大说明该模块职责过重。</p>
+<h3>四、例题精解</h3>
+<p><strong>例 1（工程判断：耦合/内聚判定）</strong> 某系统有三个模块：A 通过参数把订单号传给 B；C 直接读取 D 内部维护的静态变量；E 中的三个子功能都在"月末结账"这一时间点执行。请分别判断耦合类型或内聚类型。</p>
+<p><em>解答</em>：<br>
+- A→B 只传数据参数，属于<strong>数据耦合</strong>（耦合度低，是推荐做法）；<br>
+- C 直接访问 D 的内部数据，属于<strong>内容耦合</strong>（耦合度最高，应重构为通过接口访问）；<br>
+- E 的三个子功能在同一时间点执行，属于<strong>时间内聚</strong>（内聚度较低，宜拆分）。</p>
+<p><em>点评</em>：这类题的判断标准是"<strong>看联系是通过什么传递的</strong>"：参数→数据耦合，结构→标记耦合，标志位→控制耦合，全局量→公共耦合，内部访问→内容耦合。</p>
+<p><strong>例 2（工程项目：DFD 分层失衡）</strong> 某系统的 DFD 顶层图有 5 个外部实体、3 个加工，第 1 层图中某个加工有 12 个子加工，另一个加工没有分解。请指出问题。</p>
+<p><em>解答</em>：<br>
+- 第 1 层某个加工分解出 12 个子加工，<strong>扇出过大</strong>，应继续分层或按业务域拆分；<br>
+- 有加工未分解，说明<strong>分解不彻底</strong>，需求尚未澄清；<br>
+- 顶层图出现 3 个加工，违反"顶层只有一个加工"的惯例，容易导致层次混乱；<br>
+- 需检查父图与子图是否<strong>平衡</strong>。</p>
+<p><em>点评</em>：DFD 评审的检查清单就是四条：顶层唯一、逐层平衡、扇出适度（一般 3–7）、每个加工可描述。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为耦合越低越好、越低越简单。</strong><br>
+耦合低意味着接口多、调用链长，极端情况下反而增加复杂度。目标是<strong>恰当的耦合</strong>。</p>
+<p><strong>误区二：把"时间内聚"当成高内聚。</strong><br>
+它只是因为时间相同才被放在一起，逻辑上未必相关，属于偏低的内聚。</p>
+<p><strong>误区三：认为 DFD 描述的是"控制流"。</strong><br>
+DFD 描述<strong>数据流</strong>；控制流用状态图或流程图表达。</p>
+<p><strong>误区四：忽视数据字典。</strong><br>
+没有数据字典的 DFD，评审时无法判断数据项定义是否一致。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 9 题（6 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="3-4-1" data-type="single" data-explain="数据耦合是最推荐的耦合形式。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-4-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">模块间只通过参数传递数据，这种耦合属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 标记耦合</button><button class="opt" data-k="B"><b>B.</b> 数据耦合</button><button class="opt" data-k="C"><b>C.</b> 控制耦合</button><button class="opt" data-k="D"><b>D.</b> 内容耦合</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-4-2" data-type="single" data-explain="内容耦合耦合度最高，必须重构。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">3-4-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">一个模块直接访问另一个模块的内部数据，这种耦合属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 公共耦合</button><button class="opt" data-k="B"><b>B.</b> 控制耦合</button><button class="opt" data-k="C"><b>C.</b> 内容耦合</button><button class="opt" data-k="D"><b>D.</b> 通信耦合</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-4-3" data-type="single" data-explain="功能内聚内聚度最高。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">3-4-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">完成一个单一功能、各部分协同工作缺一不可，这种内聚是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 功能内聚</button><button class="opt" data-k="B"><b>B.</b> 顺序内聚</button><button class="opt" data-k="C"><b>C.</b> 逻辑内聚</button><button class="opt" data-k="D"><b>D.</b> 时间内聚</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-4-4" data-type="single" data-explain="时间内聚只因时间相同而聚合，内聚度偏低。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">3-4-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">所包含的任务必须在同一时间间隔内执行，这种内聚是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 过程内聚</button><button class="opt" data-k="B"><b>B.</b> 通信内聚</button><button class="opt" data-k="C"><b>C.</b> 时间内聚</button><button class="opt" data-k="D"><b>D.</b> 偶然内聚</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-4-5" data-type="single" data-explain="父子平衡指子图输入输出与父图对应加工一致。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">3-4-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">DFD 分层时必须遵守的原则是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 父图与子图平衡</button><button class="opt" data-k="B"><b>B.</b> 加工数量必须为奇数</button><button class="opt" data-k="C"><b>C.</b> 每层加工数不得超过 3 个</button><button class="opt" data-k="D"><b>D.</b> 数据存储必须出现在顶层</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-4-6" data-type="single" data-explain="扇入=被多少上级调用；扇出=调用多少下级。扇出过大说明职责过重。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="A"><div class="qhead"><span class="chip">3-4-6</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">关于扇入与扇出，下列说法正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 扇入高通常说明复用性好</button><button class="opt" data-k="B"><b>B.</b> 扇出越大越好</button><button class="opt" data-k="C"><b>C.</b> 扇入扇出与模块独立性无关</button><button class="opt" data-k="D"><b>D.</b> 扇出指被调用次数</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-4-7" data-type="multi" data-explain="E 错：DFD 描述数据流，控制流用状态图/流程图。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">3-4-7</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">关于结构化分析与设计，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 结构化分析的产物包括数据流图、数据字典与 E-R 图</button><button class="opt" data-k="B"><b>B.</b> 耦合从低到高依次为非直接、数据、标记、控制、通信、公共、内容耦合</button><button class="opt" data-k="C"><b>C.</b> 内聚从高到低依次为功能、顺序、通信、过程、时间、逻辑、偶然内聚</button><button class="opt" data-k="D"><b>D.</b> 设计原则是高内聚、低耦合</button><button class="opt" data-k="E"><b>E.</b> DFD 描述的是控制流</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-4-8" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="耦合|内聚" data-answer-text="耦合、内聚"><div class="qhead"><span class="chip">3-4-8</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">结构化设计衡量模块分解质量的两个指标是________和________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="3-4-9" data-type="fill" data-explain="扇入高=复用性好；扇出=调用下级数。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="扇入" data-answer-text="扇入"><div class="qhead"><span class="chip">3-4-9</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">模块结构中，一个模块被多少个上级模块调用的数量称为________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：分析阶段用 DFD 分层描述数据流并用数据字典定义，设计阶段用耦合/内聚衡量模块划分质量，原则是高内聚低耦合。</p>
+<p><strong>留一个问题</strong>：结构化方法以"功能"为中心，可现实世界里更自然的是"事物"。换一种建模视角，会有什么不同？</p>
+<p>下一节讲面向对象方法。</p>
+<hr>
+<h2 id="sec5">第 5 节 面向对象分析与设计</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：为什么面向对象更适合复杂业务？UML 的十几张图分别在什么场景用？</p>
+</blockquote>
+<h3>一、从"功能分解"到"对象协作"</h3>
+<p>结构化方法问的是"系统要做哪些加工"，面向对象问的是"系统里有哪些对象，它们怎么协作"。</p>
+<p>差别在<strong>变化的单位</strong>：需求变更时，结构化方法往往要改数据流与加工链；面向对象方法通常只改某个对象的内部实现，接口不变，影响面小。</p>
+<h3>二、三个基本机制</h3>
+<table>
+<thead>
+<tr>
+<th>机制</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>封装</strong></td>
+<td>把数据与操作包在一起，只暴露接口，隐藏实现</td>
+</tr>
+<tr>
+<td><strong>继承</strong></td>
+<td>子类复用父类的属性与方法，并可扩展</td>
+</tr>
+<tr>
+<td><strong>多态</strong></td>
+<td>同一消息在不同对象上有不同响应（运行时绑定）</td>
+</tr>
+</tbody>
+</table>
+<p>面向对象分析（OOA）通常分四步：<strong>发现对象与类 → 识别属性与服务 → 建立类之间的关系 → 建立交互模型</strong>。</p>
+<h3>三、UML 图：按"结构"与"行为"分两类</h3>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>图</th>
+<th>主要用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>结构图</strong></td>
+<td>类图</td>
+<td>类、属性、方法、关联/继承/聚合/组合</td>
+</tr>
+<tr>
+<td></td>
+<td>对象图</td>
+<td>某一时刻对象实例的快照</td>
+</tr>
+<tr>
+<td></td>
+<td>包图</td>
+<td>组织与分组</td>
+</tr>
+<tr>
+<td></td>
+<td>组件图</td>
+<td>构件的结构与依赖</td>
+</tr>
+<tr>
+<td></td>
+<td>部署图</td>
+<td>物理节点与部署</td>
+</tr>
+<tr>
+<td><strong>行为图</strong></td>
+<td>用例图</td>
+<td>参与者与系统的功能边界</td>
+</tr>
+<tr>
+<td></td>
+<td>活动图</td>
+<td>业务流程与控制流</td>
+</tr>
+<tr>
+<td></td>
+<td>状态图</td>
+<td>单个对象的状态迁移</td>
+</tr>
+<tr>
+<td></td>
+<td>时序图（顺序图）</td>
+<td>对象之间按时间顺序的消息交互</td>
+</tr>
+<tr>
+<td></td>
+<td>通信图（协作图）</td>
+<td>对象之间的连接与消息</td>
+</tr>
+<tr>
+<td></td>
+<td>交互概览图</td>
+<td>活动图与时序图的混合</td>
+</tr>
+</tbody>
+</table>
+<p>判断用哪张图的窍门：<strong>问"对象在干什么"用行为图，问"对象之间什么关系"用结构图</strong>。状态图是"一个对象的一生"，活动图是"一件事的流程"。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：订单从"待支付"变为"已支付"、"已发货"，该画状态图还是活动图？如果描述"下单流程"呢？</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：建模选择）</strong> 某电商要重构订单模块，需要向开发团队说清四件事：① 订单有哪些状态、如何流转；② 下单过程中库存、支付、通知如何协作；③ 订单与用户、商品之间的静态关系；④ 系统部署在哪些服务器上。请分别为每件事选择 UML 图。</p>
+<p><em>解答</em>：<br>
+- ① 用<strong>状态图</strong>：描述订单对象的状态与触发事件；<br>
+- ② 用<strong>时序图</strong>：强调按时间顺序的消息交互（可用活动图描述业务流程）；<br>
+- ③ 用<strong>类图</strong>：描述类、属性、关联与多重性；<br>
+- ④ 用<strong>部署图</strong>：描述节点与构件部署。</p>
+<p><em>点评</em>：案例题常问"该用哪种图说明某需求"，判断依据是<strong>问题问的是"状态、交互、结构还是部署"</strong>。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：混淆活动图与状态图。</strong><br>
+活动图描述<strong>流程</strong>（可跨多个对象、可并行），状态图描述<strong>单个对象的状态迁移</strong>。</p>
+<p><strong>误区二：把聚合与组合混为一谈。</strong><br>
+聚合是"整体与部分可分离"（弱），组合是"同生共死"（强）。</p>
+<p><strong>误区三：认为用 UML 就等于面向对象。</strong><br>
+画出类图但内部仍是面向过程的代码，说明设计没落地。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="3-5-1" data-type="single" data-explain="状态图是“一个对象的一生”。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-5-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">描述单个对象状态迁移的 UML 图是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 活动图</button><button class="opt" data-k="B"><b>B.</b> 状态图</button><button class="opt" data-k="C"><b>C.</b> 时序图</button><button class="opt" data-k="D"><b>D.</b> 用例图</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-5-2" data-type="single" data-explain="时序图强调时间顺序的交互。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-5-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">强调对象之间按时间顺序传递消息的图是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 类图</button><button class="opt" data-k="B"><b>B.</b> 时序图</button><button class="opt" data-k="C"><b>C.</b> 部署图</button><button class="opt" data-k="D"><b>D.</b> 包图</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-5-3" data-type="single" data-explain="结构图：类、对象、包、组件、部署；其余为行为图。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">3-5-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">下列属于 UML 结构图的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 用例图</button><button class="opt" data-k="B"><b>B.</b> 活动图</button><button class="opt" data-k="C"><b>C.</b> 类图</button><button class="opt" data-k="D"><b>D.</b> 状态图</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-5-4" data-type="single" data-explain="多态=运行时绑定。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">3-5-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">"同一消息在不同对象上产生不同响应"体现的机制是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 封装</button><button class="opt" data-k="B"><b>B.</b> 继承</button><button class="opt" data-k="C"><b>C.</b> 多态</button><button class="opt" data-k="D"><b>D.</b> 组合</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-5-5" data-type="multi" data-explain="D 错：部署图描述物理节点与部署。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">3-5-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">关于面向对象方法与 UML，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 封装隐藏实现细节，只暴露接口</button><button class="opt" data-k="B"><b>B.</b> 组合比聚合的耦合更强，整体与部分同生共死</button><button class="opt" data-k="C"><b>C.</b> 用例图描述参与者与系统功能边界</button><button class="opt" data-k="D"><b>D.</b> 部署图描述对象的生命周期</button><button class="opt" data-k="E"><b>E.</b> 面向对象方法在需求变更时通常只影响局部</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-5-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="行为|部署" data-answer-text="行为、部署"><div class="qhead"><span class="chip">3-5-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">UML 图分为结构图与________图两大类，其中________图用于描述系统的物理部署。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="3-5-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="多态" data-answer-text="多态"><div class="qhead"><span class="chip">3-5-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">面向对象的三个基本机制是封装、继承与________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：面向对象以"对象协作"建模，UML 用结构图与行为图分别描述静态关系与动态行为。</p>
+<p><strong>留一个问题</strong>：设计做完了，怎么证明它是对的？靠"跑一遍看看"显然不够。</p>
+<p>下一节讲软件测试。</p>
+<hr>
+<h2 id="sec6">第 6 节 软件测试</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：怎么用有限的用例，最大概率地发现问题？测试分哪几个阶段？</p>
+</blockquote>
+<h3>一、测试不是为了"证明对"</h3>
+<p>一个常见的误解是"测试是为了证明程序正确"。实际上，测试能证明的是<strong>存在错误</strong>，而非<strong>没有错误</strong>。</p>
+<p>测试目的的表述要克制：发现软件的错误、确认软件以正确的方式做了用户期望的事情、支撑风险评估。所以测试的目标是<strong>以有限成本获得对质量的信心</strong>。</p>
+<h3>二、测试方法的三个分类维度</h3>
+<p>常见的是三个维度：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>分类</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>程序是否运行</td>
+<td><strong>静态测试</strong>（不运行，分析源码/文档）、<strong>动态测试</strong>（运行程序、构造用例）</td>
+</tr>
+<tr>
+<td>是否了解内部结构</td>
+<td><strong>黑盒测试</strong>、<strong>白盒测试</strong>、<strong>灰盒测试</strong></td>
+</tr>
+<tr>
+<td>执行方式</td>
+<td><strong>人工测试</strong>、<strong>自动化测试</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>黑盒测试</strong>不看内部实现，只依据需求规格设计用例。常用方法：等价类划分、边界值分析、错误推测、因果图、判定表。</p>
+<p><strong>白盒测试</strong>依据内部逻辑设计用例。覆盖强度由弱到强：</p>
+<blockquote>
+<p>语句覆盖 &lt; 判定覆盖（分支覆盖）&lt; 条件覆盖 &lt; 判定/条件覆盖 &lt; 条件组合覆盖 &lt; 路径覆盖</p>
+</blockquote>
+<p>注意：<strong>路径覆盖最强，但用例数可能爆炸</strong>；实际工程中常用判定覆盖加重点路径。</p>
+<p><strong>灰盒测试</strong>介于两者之间——知道部分内部结构（如接口与数据库结构），但不深入代码逻辑。</p>
+<h3>三、测试阶段与 V 模型</h3>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>依据</th>
+<th>谁来做</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>单元测试</strong></td>
+<td>详细设计</td>
+<td>开发人员</td>
+</tr>
+<tr>
+<td><strong>集成测试</strong></td>
+<td>概要设计</td>
+<td>开发/测试</td>
+</tr>
+<tr>
+<td><strong>确认测试（系统测试）</strong></td>
+<td>需求规格</td>
+<td>独立测试团队</td>
+</tr>
+<tr>
+<td><strong>验收测试</strong></td>
+<td>用户需求</td>
+<td>用户</td>
+</tr>
+</tbody>
+</table>
+<p><strong>V 模型</strong>把测试阶段与开发阶段对应起来：单元测试对应详细设计，集成测试对应概要设计，系统测试对应需求分析，验收测试对应需求获取。这解释了一条原则：<strong>测试计划应在对应开发阶段就开始编写</strong>，而不是等代码写完。</p>
+<p>集成测试有两种策略：<strong>一次性集成（大爆炸）</strong> 与<strong>增量集成</strong>（自顶向下、自底向上、三明治）。后者更容易定位问题。</p>
+<p><strong>回归测试</strong>在每次修改后重跑，用于确认"改一处没弄坏别处"，通常依赖自动化。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"路径覆盖"最强却很少作为验收标准？如果强制要求 100% 路径覆盖，会付出什么代价？</p>
+</blockquote>
+<p><strong>回归测试怎么组织实施</strong></p>
+<p>"每次改完重跑一遍"只是原则，落地要回答五个问题：</p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>做法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>什么时候跑</strong></td>
+<td>每次合并到主干、每次发布前、每次热修复后；核心链路每次变更都跑</td>
+</tr>
+<tr>
+<td><strong>跑多少</strong></td>
+<td>按<strong>变更影响分析</strong>选范围：改动模块 + 其下游调用方 + 依赖该数据的用例</td>
+</tr>
+<tr>
+<td><strong>怎么分层</strong></td>
+<td>冒烟集（分钟级，每次必跑）→ 核心集（半小时级，每日）→ 全量集（发布前）</td>
+</tr>
+<tr>
+<td><strong>靠什么跑</strong></td>
+<td>自动化用例 + 流水线门禁，失败即阻断合并；手工回归只覆盖探索性场景</td>
+</tr>
+<tr>
+<td><strong>结果怎么用</strong></td>
+<td>输出通过率与新增失败清单，失败用例必须定位到"是缺陷还是用例过期"</td>
+</tr>
+</tbody>
+</table>
+<p>关键在<strong>用例分层</strong>：全量回归跑不起是常态，靠"冒烟必跑 + 影响面选跑"才可持续。</p>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：测试策略设计）</strong> 某支付系统上线前，要求：① 核心结算算法必须充分验证；② 接口协议需与第三方联调；③ 整体业务流程需端到端验证；④ 上线后每次修复要防止回归。请分别说明应采用什么测试。</p>
+<p><em>解答</em>：<br>
+- ① 核心算法用<strong>白盒测试</strong>（判定覆盖 + 关键路径）+ 单元测试；<br>
+- ② 接口联调用<strong>集成测试</strong>（自底向上或三明治），配合契约测试；<br>
+- ③ 端到端用<strong>系统测试/确认测试</strong>，按需求规格设计黑盒用例（等价类 + 边界值）；<br>
+- ④ 用<strong>自动化回归测试</strong>，纳入持续集成。</p>
+<p><em>点评</em>：这题的关键是把"测试类型"与"验证目标"对应起来，而不是罗列方法名。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为测试越晚越省事。</strong><br>
+缺陷发现得越晚，修复成本越高（需求阶段 1 倍、编码 10 倍、上线后 100 倍量级），所以测试要左移。</p>
+<p><strong>误区二：把单元测试等同于"开发自测"。</strong><br>
+单元测试是<strong>有明确依据（详细设计）、有覆盖率要求、可自动化</strong>的正式活动。</p>
+<p><strong>误区三：认为覆盖率 100% 就没有缺陷。</strong><br>
+覆盖率衡量"代码被执行到"，不衡量"逻辑是否正确"，也不覆盖需求遗漏。</p>
+<p><strong>误区四：把验收测试与系统测试混为一谈。</strong><br>
+系统测试由开发方验证"是否符合需求规格"，验收测试由用户验证"是否满足业务目标"。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 11 题（7 单选 + 2 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="3-6-1" data-type="single" data-explain="静态测试含代码审查、走查。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-6-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">不运行程序、只分析源程序与文档的测试属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 动态测试</button><button class="opt" data-k="B"><b>B.</b> 静态测试</button><button class="opt" data-k="C"><b>C.</b> 黑盒测试</button><button class="opt" data-k="D"><b>D.</b> 验收测试</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-6-2" data-type="single" data-explain="路径覆盖最强但用例可能爆炸。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">3-6-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">下列覆盖准则中，强度最高的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 语句覆盖</button><button class="opt" data-k="B"><b>B.</b> 判定覆盖</button><button class="opt" data-k="C"><b>C.</b> 条件覆盖</button><button class="opt" data-k="D"><b>D.</b> 路径覆盖</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-6-3" data-type="single" data-explain="单元测试依据详细设计。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">3-6-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">单元测试的主要依据是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 需求规格说明</button><button class="opt" data-k="B"><b>B.</b> 概要设计</button><button class="opt" data-k="C"><b>C.</b> 详细设计</button><button class="opt" data-k="D"><b>D.</b> 用户手册</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-6-4" data-type="single" data-explain="系统测试对需求分析，集成测试对概要设计。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">3-6-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">V 模型中，"系统测试"对应哪个开发阶段？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 需求分析</button><button class="opt" data-k="B"><b>B.</b> 概要设计</button><button class="opt" data-k="C"><b>C.</b> 详细设计</button><button class="opt" data-k="D"><b>D.</b> 编码</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-6-5" data-type="single" data-explain="回归测试通常依赖自动化。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-6-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">每次修改代码后重跑、用于确认没有引入新问题的测试是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 单元测试</button><button class="opt" data-k="B"><b>B.</b> 回归测试</button><button class="opt" data-k="C"><b>C.</b> 验收测试</button><button class="opt" data-k="D"><b>D.</b> 性能测试</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-6-6" data-type="multi" data-explain="D 错：测试只能证明存在缺陷，不能证明没有缺陷。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">3-6-6</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">关于软件测试，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 黑盒测试依据需求规格设计用例</button><button class="opt" data-k="B"><b>B.</b> 等价类划分与边界值分析属于黑盒方法</button><button class="opt" data-k="C"><b>C.</b> 集成测试可采用自顶向下、自底向上等增量策略</button><button class="opt" data-k="D"><b>D.</b> 测试可以证明软件完全没有缺陷</button><button class="opt" data-k="E"><b>E.</b> 测试计划应在对应开发阶段就开始编写</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-6-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="判定/分支|路径" data-answer-text="判定、路径"><div class="qhead"><span class="chip">3-6-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">白盒测试的覆盖准则由弱到强依次为：语句覆盖、________覆盖、条件覆盖、判定/条件覆盖、条件组合覆盖、________覆盖。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="3-6-8" data-type="fill" data-explain="系统测试对需求规格，验收测试对用户需求。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="用户需求/业务|用户/客户" data-answer-text="用户需求、用户"><div class="qhead"><span class="chip">3-6-8</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">验收测试的依据是________，由________组织执行。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="3-6-9" data-type="single" data-explain="全量跑不起是常态。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-6-9</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">回归测试的范围应根据什么确定：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 全部用例每次都跑</button><button class="opt" data-k="B"><b>B.</b> 变更影响分析与风险分级</button><button class="opt" data-k="C"><b>C.</b> 开发人员意愿</button><button class="opt" data-k="D"><b>D.</b> 随机抽样</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-6-10" data-type="single" data-explain="冒烟必跑、按影响面选跑。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-6-10</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">回归测试用例分层的典型方式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 按文件大小分</button><button class="opt" data-k="B"><b>B.</b> 冒烟集、核心集、全量集</button><button class="opt" data-k="C"><b>C.</b> 按语言分</button><button class="opt" data-k="D"><b>D.</b> 按人员分</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-6-11" data-type="multi" data-explain="D 错：可持续的回归必须自动化。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">3-6-11</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">组织实施回归测试的要点包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 明确触发时机（合并、发布、热修复）</button><button class="opt" data-k="B"><b>B.</b> 按变更影响分析选范围</button><button class="opt" data-k="C"><b>C.</b> 用流水线门禁自动阻断失败合并</button><button class="opt" data-k="D"><b>D.</b> 只靠手工执行</button><button class="opt" data-k="E"><b>E.</b> 失败用例要区分是缺陷还是用例过期</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：测试方法按"是否运行、是否看内部、是否自动"三维分类，测试阶段与 V 模型对应，核心原则是测试左移与回归自动化。</p>
+<p><strong>留一个问题</strong>：如果对可靠性要求极高（如航天、核电），"靠测试发现缺陷"这条路走不通怎么办？</p>
+<p>下一节讲净室工程与构件复用。</p>
+<hr>
+<h2 id="sec7">第 7 节 净室工程与基于构件的软件工程</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：怎么在"不依赖大量测试"的前提下做出高可靠软件？怎么用现成构件快速搭建系统？</p>
+</blockquote>
+<h3>一、两个极端的需求</h3>
+<p>航天软件的可靠性要求是"每千小时失效次数极小"，靠测试穷举不现实；而某企业要在 3 个月内上线一个业务系统，全部重写也来不及。</p>
+<p>前者对应<strong>净室软件工程</strong>（用数学方法保证正确性），后者对应<strong>基于构件的软件工程</strong>（用现成构件组装）。</p>
+<h3>二、净室软件工程</h3>
+<p>净室（Cleanroom）借鉴制造业的"无尘车间"理念：<strong>与其事后检验剔除次品，不如在过程中不产生次品</strong>。</p>
+<p>它有三个理论基础：</p>
+<ol>
+<li><strong>函数理论</strong>：把程序看作从输入到输出的函数，用数学方式定义"正确性"；</li>
+<li><strong>抽样理论</strong>：用统计抽样推断整体质量，而不是穷举测试；</li>
+<li><strong>正确性验证</strong>：在编码前后用形式化或半形式化的方式<strong>证明</strong>程序满足规约，而不是靠运行发现错误。</li>
+</ol>
+<p>技术手段包括：增量式开发、盒结构（黑盒/状态盒/清盒）、正确性验证、统计质量控制。</p>
+<p>它的缺点也很明确：<strong>对人员数学能力要求高、学习曲线陡、前期投入大</strong>，因此主要用于高可靠、高安全领域。</p>
+<h3>三、基于构件的软件工程（CBSE）</h3>
+<p>CBSE 的核心是<strong>复用</strong>：把功能封装成有明确接口、可独立部署的构件，通过组装构建系统。</p>
+<p>三个关键活动：</p>
+<table>
+<thead>
+<tr>
+<th>活动</th>
+<th>内容</th>
+<th>关键问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>构件识别/获取</strong></td>
+<td>从现有资产或市场获取构件</td>
+<td>功能匹配度、质量、许可</td>
+</tr>
+<tr>
+<td><strong>构件 qualification（合格性验证）</strong></td>
+<td>验证构件是否满足需求</td>
+<td>接口兼容、非功能属性</td>
+</tr>
+<tr>
+<td><strong>构件组装</strong></td>
+<td>把构件组合成系统</td>
+<td>接口适配、胶水代码、全局约束</td>
+</tr>
+</tbody>
+</table>
+<p>构件组装分三类：<strong>顺序组装</strong>（按顺序调用）、<strong>层次组装</strong>（上层调用下层）、<strong>叠加组装</strong>（在已有构件上增加功能）。</p>
+<p>CBSE 的收益是缩短周期、降低成本、提高质量（构件已被验证）；风险是<strong>构件与需求的匹配度</strong>、<strong>版本升级的连带影响</strong>、<strong>黑盒构件的质量不可控</strong>。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么 CBSE 特别强调"构件合格性验证"？直接拿来用会有什么风险？</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程选型：净室还是 CBSE）</strong> 某公司要开发两个系统：A 是高铁信号控制系统，要求极高可靠性与可认证性；B 是内部审批系统，要求 2 个月内上线、功能标准化。请分别给出技术路线并说明理由。</p>
+<p><em>解答</em>：<br>
+- <strong>A 用净室工程</strong>：安全性关键、需通过认证，靠测试无法证明"极低失效率"，需要正确性验证与统计质量控制；代价是投入大、周期长，但这是可靠性的必要成本；<br>
+- <strong>B 用 CBSE</strong>：功能标准化意味着市场上已有成熟构件（工作流引擎、表单引擎、权限组件），组装即可，2 个月可行；代价是受构件能力约束，需做合格性验证与版本管理。</p>
+<p><em>点评</em>：这类题的判断依据是"<strong>可靠性要求 vs 交付速度</strong>"这一对矛盾，两端分别对应净室与 CBSE。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为净室工程"不做测试"。</strong><br>
+它也做测试，但测试主要用于<strong>统计质量认证</strong>，而不是主要靠测试找缺陷。</p>
+<p><strong>误区二：认为 CBSE 就是"用开源库"。</strong><br>
+构件强调<strong>接口契约 + 可独立部署 + 可替换</strong>，比"引一个库"的要求高得多。</p>
+<p><strong>误区三：忽视构件的版本与许可风险。</strong><br>
+黑盒构件升级可能改变行为，许可证可能限制商用。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="3-7-1" data-type="single" data-explain="净室=过程中不产生次品。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-7-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">净室软件工程的核心思想是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 用大量测试剔除缺陷</button><button class="opt" data-k="B"><b>B.</b> 在过程中避免引入缺陷，用正确性验证保证质量</button><button class="opt" data-k="C"><b>C.</b> 用原型快速确认需求</button><button class="opt" data-k="D"><b>D.</b> 用构件组装缩短周期</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-7-2" data-type="single" data-explain="理论基础：函数理论、抽样理论、正确性验证。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">3-7-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">净室工程的理论基础不包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 函数理论</button><button class="opt" data-k="B"><b>B.</b> 抽样理论</button><button class="opt" data-k="C"><b>C.</b> 正确性验证</button><button class="opt" data-k="D"><b>D.</b> 敏捷宣言</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-7-3" data-type="single" data-explain="三类：顺序、层次、叠加。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">3-7-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">按顺序调用构件、上层调用下层的组装方式分别属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 顺序组装、层次组装</button><button class="opt" data-k="B"><b>B.</b> 层次组装、叠加组装</button><button class="opt" data-k="C"><b>C.</b> 叠加组装、顺序组装</button><button class="opt" data-k="D"><b>D.</b> 并行组装、顺序组装</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-7-4" data-type="single" data-explain="合格性验证是 CBSE 的关键风险控制点。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-7-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">CBSE 中"验证构件是否满足需求与接口兼容"的活动称为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 构件识别</button><button class="opt" data-k="B"><b>B.</b> 构件合格性验证</button><button class="opt" data-k="C"><b>C.</b> 构件组装</button><button class="opt" data-k="D"><b>D.</b> 构件退役</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-7-5" data-type="multi" data-explain="D 错：存在匹配度、版本、许可等风险。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">3-7-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">关于净室工程与 CBSE，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 净室工程适用于高可靠、高安全领域</button><button class="opt" data-k="B"><b>B.</b> 净室工程对人员数学能力要求高、学习曲线陡</button><button class="opt" data-k="C"><b>C.</b> CBSE 的收益包括缩短周期与复用已验证的质量</button><button class="opt" data-k="D"><b>D.</b> CBSE 完全没有风险</button><button class="opt" data-k="E"><b>E.</b> 构件可独立部署、有明确接口契约</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-7-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="层次|叠加" data-answer-text="层次、叠加"><div class="qhead"><span class="chip">3-7-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">构件组装的三种方式为顺序组装、________组装和________组装。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：净室用"过程中不引入缺陷"换极高可靠性，CBSE 用"组装已验证构件"换速度与成本。</p>
+<p><strong>留一个问题</strong>：无论哪种技术路线，项目都要有人管进度、管版本、管质量。这些事怎么做？</p>
+<p>下一节讲软件项目管理。</p>
+<hr>
+<h2 id="sec8">第 8 节 软件项目管理</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：进度怎么排、版本怎么管、质量怎么保证？</p>
+</blockquote>
+<h3>一、一个"越管越乱"的项目</h3>
+<p>某项目有 5 个开发、3 个测试，代码用共享目录传递，需求文档有 7 个版本散落在各人电脑里，上线前一天发现"谁改了什么"无人说得清。</p>
+<p>这不是技术问题，而是<strong>配置管理缺失</strong>。项目管理要解决的三件事正是：<strong>进度可见、变更可控、质量可证</strong>。</p>
+<h3>二、进度管理：从工作分解到关键路径</h3>
+<p>标准流程是：<strong>WBS（工作分解）→ 估算 → 排序依赖 → 排期 → 监控</strong>。</p>
+<p>两个常用工具：</p>
+<ul>
+<li><strong>甘特图</strong>：横轴时间、纵轴任务，直观展示起止与并行关系，便于向干系人汇报；</li>
+<li><strong>PERT/CPM（关键路径法）</strong>：用网络图表示依赖，计算每条路径的时长，<strong>最长路径即关键路径</strong>——它决定项目最短工期。</li>
+</ul>
+<p>关键路径上的任务一旦延迟，项目就延迟；非关键路径有<strong>浮动时间</strong>，可适度调配资源。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"给关键路径上的任务加人"经常无效，甚至更慢？（提示：布鲁克斯法则）</p>
+</blockquote>
+<h3>三、配置管理：项目的"版本控制 + 审计"</h3>
+<p>配置管理有四个核心活动：</p>
+<table>
+<thead>
+<tr>
+<th>活动</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>配置标识</strong></td>
+<td>确定哪些是配置项（代码、文档、脚本、数据），统一命名与编号</td>
+</tr>
+<tr>
+<td><strong>版本控制</strong></td>
+<td>记录每次变更，可回溯、可分支合并</td>
+</tr>
+<tr>
+<td><strong>变更控制</strong></td>
+<td>变更申请 → 评估 → 批准 → 实施 → 验证，受基线约束</td>
+</tr>
+<tr>
+<td><strong>配置审计</strong></td>
+<td>检查实际产物与配置记录是否一致（功能配置审计、物理配置审计）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>基线</strong>是关键概念：基线一经确立，变更必须走流程。常见基线有功能基线、分配基线、产品基线。</p>
+<p>还有一项常被忽略——<strong>配置状态报告</strong>：随时能回答"当前版本是什么、包含哪些变更"。</p>
+<h3>四、质量管理：评审 + 度量 + 保证</h3>
+<p>软件质量保证（SQA）的活动包括：过程审查、产品评审、度量与统计、缺陷跟踪。</p>
+<p>两类评审要分清：</p>
+<ul>
+<li><strong>技术评审</strong>：由同行专家检查技术方案与产物，目的是发现缺陷；</li>
+<li><strong>管理评审</strong>：由管理层检查进度、资源、风险，目的是决策。</li>
+</ul>
+<p>质量度量常看：缺陷密度、缺陷发现率、测试覆盖率、返工率、平均修复时间。</p>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：配置管理失控）</strong> 某项目上线后发现三处问题：① 生产环境运行的版本与测试通过的版本不一致；② 某需求变更只改了代码没改文档，验收时对不上；③ 无法回答"这个缺陷是哪个版本引入的"。请逐条给出配置管理层面的整改。</p>
+<p><em>解答</em>：<br>
+- ① 建立<strong>配置标识与发布基线</strong>，构建产物统一由配置库出包，禁止手工拷贝；环境与版本一一对应登记；<br>
+- ② 变更控制流程补上"文档同步更新"为必检项，变更完成后做<strong>配置审计</strong>；<br>
+- ③ 强化<strong>版本控制</strong>（每次提交关联需求/缺陷编号），并保留构建记录，实现可追溯。</p>
+<p><em>点评</em>：案例题问"配置管理问题"时，标准答法是"<strong>标识、版本控制、变更控制、审计</strong>"四件事逐条对应现象。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为配置管理就是"用 Git"。</strong><br>
+工具只是载体，标识、基线、变更流程、审计才是管理内容。</p>
+<p><strong>误区二：把关键路径理解为"最重要的任务"。</strong><br>
+它是<strong>时长最长的那条路径</strong>，决定项目最短工期，未必是"最重要"的任务。</p>
+<p><strong>误区三：认为评审是"走过场签字"。</strong><br>
+评审要有检查单、有记录、有缺陷跟踪闭环。</p>
+<p><strong>误区四：混淆质量保证与质量控制。</strong><br>
+保证（QA）关注<strong>过程</strong>是否按要求做，控制（QC）关注<strong>产品</strong>是否达标。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="3-8-1" data-type="single" data-explain="关键路径时长决定总工期。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-8-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">决定项目最短工期的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 任务最多的路径</button><button class="opt" data-k="B"><b>B.</b> 关键路径（时长最长的路径）</button><button class="opt" data-k="C"><b>C.</b> 浮动时间最大的路径</button><button class="opt" data-k="D"><b>D.</b> 资源最少的路径</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-8-2" data-type="single" data-explain="四活动是配置管理的标准框架。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-8-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">配置管理的四个核心活动是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 估算、排期、监控、验收</button><button class="opt" data-k="B"><b>B.</b> 配置标识、版本控制、变更控制、配置审计</button><button class="opt" data-k="C"><b>C.</b> 需求、设计、编码、测试</button><button class="opt" data-k="D"><b>D.</b> 计划、执行、检查、改进</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-8-3" data-type="single" data-explain="基线≠冻结，而是受控。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-8-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">基线确定后，对变更的正确做法是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 直接修改</button><button class="opt" data-k="B"><b>B.</b> 走变更控制流程并做影响分析</button><button class="opt" data-k="C"><b>C.</b> 另存为新文件即可</button><button class="opt" data-k="D"><b>D.</b> 由开发人员自行决定</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-8-4" data-type="single" data-explain="技术评审看技术，管理评审看进度资源。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-8-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">由同行专家检查技术方案与产物、以发现缺陷为目的的评审是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 管理评审</button><button class="opt" data-k="B"><b>B.</b> 技术评审</button><button class="opt" data-k="C"><b>C.</b> 配置审计</button><button class="opt" data-k="D"><b>D.</b> 质量审计</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-8-5" data-type="single" data-explain="QA 防患于未然（过程），QC 检验结果（产品）。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-8-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">质量保证（QA）与质量控制（QC）的区别在于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> QA 关注产品，QC 关注过程</button><button class="opt" data-k="B"><b>B.</b> QA 关注过程，QC 关注产品</button><button class="opt" data-k="C"><b>C.</b> 二者完全相同</button><button class="opt" data-k="D"><b>D.</b> QA 只做测试</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-8-6" data-type="multi" data-explain="E 错：工具只是载体，还含标识、基线、变更流程、审计。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">3-8-6</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">关于软件项目管理，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 甘特图能直观展示任务的起止与并行关系</button><button class="opt" data-k="B"><b>B.</b> 关键路径上的任务延迟会导致项目整体延迟</button><button class="opt" data-k="C"><b>C.</b> 非关键路径任务存在浮动时间</button><button class="opt" data-k="D"><b>D.</b> 配置审计包括功能配置审计与物理配置审计</button><button class="opt" data-k="E"><b>E.</b> 配置管理只需要版本控制工具即可</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-8-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="最长|工期" data-answer-text="时长最长、最短工期"><div class="qhead"><span class="chip">3-8-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">项目的关键路径是指网络图中________的那条路径，它决定了项目的________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="3-8-8" data-type="fill" data-explain="功能审计查“做对了”，物理审计查“做出来了”。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="功能|物理" data-answer-text="功能、物理"><div class="qhead"><span class="chip">3-8-8</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">配置审计通常分为________配置审计和________配置审计。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>九、小结与衔接</h3>
+<p>本节回答：进度靠 WBS/甘特图/关键路径，配置靠标识—版本—变更—审计，质量靠评审与度量。</p>
+<p><strong>留一个问题</strong>：以上谈的都是"过程"。可用户最终关心的是"它会不会坏"。</p>
+<p>下一节起进入可靠性：怎么度量、怎么设计、怎么评价。</p>
+<hr>
+<h2 id="sec9">第 9 节 软件可靠性基础</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：可靠性怎么用数字表达？可靠度、失效率、MTTF、MTTR 之间是什么关系？</p>
+</blockquote>
+<h3>一、"很稳定"到底是多少</h3>
+<p>产品经理说"这个系统很稳定"，运维说"上周挂了两次"。两句话都没法验收。</p>
+<p>可靠性要变成可管理的指标，必须能回答三个问题：<strong>在多长时间内、不发生失效的概率是多少、平均能撑多久</strong>。</p>
+<h3>二、几个基本概念</h3>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>失效（failure）</strong></td>
+<td>系统不能完成规定功能的事件</td>
+</tr>
+<tr>
+<td><strong>故障（fault）</strong></td>
+<td>导致失效的内在原因（缺陷、环境、设计问题）</td>
+</tr>
+<tr>
+<td><strong>缺陷（defect）</strong></td>
+<td>存在于软件中的错误，未必立即表现为失效</td>
+</tr>
+</tbody>
+</table>
+<p>注意三者的关系：<strong>缺陷是"因"，故障是"状态"，失效是"果"</strong>。不是所有缺陷都会导致失效（可能从未被执行）。</p>
+<h3>三、定量描述：四个核心指标</h3>
+<p><strong>1. 可靠度 R(t)</strong>：系统在 [0, t] 时间内不出现失效的概率。</p>
+<p><span class="math mathblock">R(t) = 1 - F(t)</span></p>
+<p>其中 F(t) 是失效概率（累积分布函数）。</p>
+<p><strong>2. 失效强度</strong>：单位时间内发生失效的概率密度，反映"哪个阶段最容易坏"。软件失效强度曲线通常呈<strong>浴盆形</strong>的变形——早期下降（缺陷被暴露）、中期平稳、后期可能上升（修改引入新缺陷）。</p>
+<p><strong>3. 平均失效前时间 MTTF</strong>（Mean Time To Failure）：从开始运行到首次失效的平均时间，对应"不可修复系统"的寿命。</p>
+<p><strong>4. 平均恢复前时间 MTTR</strong>（Mean Time To Restoration）：修复所需时间的期望。</p>
+<p>由此得到<strong>可用度</strong>：</p>
+<p><span class="math mathblock">A = <span class="frac"><span class="n">MTBF</span><span class="d">MTBF + MTTR</span></span></span></p>
+<p>其中 MTBF 为平均失效间隔时间。这个公式点明了两条提升可用性的路径：<strong>拉长无故障时间</strong>，或<strong>缩短恢复时间</strong>——工程上后者往往更划算。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：某系统 MTTF 是 10000 小时，能否说"它可以连续运行 10000 小时不坏"？为什么？</p>
+</blockquote>
+<h3>四、可靠性目标与测试</h3>
+<p>可靠性目标由<strong>使用场景</strong>决定，而不是越高越好：银行交易系统要求年可用性 99.99%，而内部报表系统可能 99% 就够。</p>
+<p>可靠性测试有<strong>广义</strong>与<strong>狭义</strong>之分：</p>
+<ul>
+<li><strong>狭义</strong>：在特定条件下、按运行剖面施加输入，统计失效数据；</li>
+<li><strong>广义</strong>：还包括设计阶段的可靠性分析、测试中的缺陷管理、运行阶段的监控。</li>
+</ul>
+<p>可靠性测试的前提是<strong>定义运行剖面</strong>（哪种操作被使用得多），否则测出来的数据没有代表性——下一节展开。</p>
+<h3>五、例题精解</h3>
+<p><strong>例 1（工程计算：可用度）</strong> 某系统 MTBF = 2000 小时，MTTR = 2 小时。求可用度；若要达到 99.99%，在 MTTR 不变时 MTBF 需要多少？</p>
+<p><em>解答</em>：<br>
+- 当前：<span class="math">A = 2000 / (2000 + 2) = 99.90%</span><br>
+- 目标 99.99%：<span class="math"><span class="frac"><span class="n">MTBF</span><span class="d">MTBF+2</span></span> ≥ 0.9999 RightarrowMTBF ≥ 19998</span> 小时<br>
+- 结论：靠延长 MTBF 到 2 万小时不现实，更可行的是<strong>把 MTTR 降到 0.2 小时</strong>（12 分钟），就能在 MTBF=2000 时达到 99.99%。</p>
+<p><em>点评</em>：这道题的意义在于说明"<strong>可用性靠缩短恢复时间更划算</strong>"，这是架构设计里做高可用的核心逻辑（冗余、故障转移、快速回滚）。</p>
+<p><strong>例 2（工程判断：三个概念的区别）</strong> 某系统上线后：① 代码中有一处未处理的空指针（从未触发）；② 某次内存泄漏导致服务变慢；③ 服务最终崩溃不可用。分别对应缺陷、故障还是失效？</p>
+<p><em>解答</em>：<br>
+- ① <strong>缺陷</strong>（存在于软件中，未触发）；<br>
+- ② <strong>故障</strong>（系统处于异常状态，尚能部分工作）；<br>
+- ③ <strong>失效</strong>（不能完成规定功能）。</p>
+<p><em>点评</em>：这三个词在案例题里常被混用，判分时会扣细节分。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：把 MTTF 当成"保证运行时长"。</strong><br>
+MTTF 是统计期望，不代表单个系统一定运行这么久。</p>
+<p><strong>误区二：认为可靠性越高越好。</strong><br>
+可靠性有成本，应按业务影响确定目标，而不是一律追求最高。</p>
+<p><strong>误区三：把缺陷等同于失效。</strong><br>
+缺陷是潜在原因，是否导致失效取决于是否被执行、环境是否触发。</p>
+<p><strong>误区四：认为可用性只与硬件有关。</strong><br>
+软件缺陷、发布过程、运维响应速度都直接影响 MTTR。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="3-9-1" data-type="single" data-explain="R(t)=1−F(t)。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-9-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">系统在 [0, t] 时间内不出现失效的概率称为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 失效强度</button><button class="opt" data-k="B"><b>B.</b> 可靠度</button><button class="opt" data-k="C"><b>C.</b> 可用度</button><button class="opt" data-k="D"><b>D.</b> MTTF</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-9-2" data-type="single" data-explain="1000/1010≈99.01%。" data-source="软考口径" data-diag="D 计算" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-9-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">某系统 MTBF = 1000 小时、MTTR = 10 小时，可用度约为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 99%</button><button class="opt" data-k="B"><b>B.</b> 99.01%</button><button class="opt" data-k="C"><b>C.</b> 99.9%</button><button class="opt" data-k="D"><b>D.</b> 90%</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-9-3" data-type="single" data-explain="因果链：缺陷→故障→失效，但缺陷未必触发。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-9-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">关于缺陷、故障与失效的关系，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 三者是同义词</button><button class="opt" data-k="B"><b>B.</b> 缺陷是内在原因，故障是异常状态，失效是不能完成规定功能</button><button class="opt" data-k="C"><b>C.</b> 失效一定由缺陷引起</button><button class="opt" data-k="D"><b>D.</b> 缺陷必然导致失效</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-9-4" data-type="single" data-explain="MTBF 提升有限，MTTR 压缩空间大。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-9-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">要提高系统可用性，下列做法中通常最经济的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 无限延长 MTBF</button><button class="opt" data-k="B"><b>B.</b> 缩短 MTTR（加快故障恢复）</button><button class="opt" data-k="C"><b>C.</b> 提高硬件采购标准</button><button class="opt" data-k="D"><b>D.</b> 增加测试轮次</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-9-5" data-type="single" data-explain="运行剖面决定用例分布的代表性。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">3-9-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">可靠性测试的前提是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 定义运行剖面</button><button class="opt" data-k="B"><b>B.</b> 完成全部单元测试</button><button class="opt" data-k="C"><b>C.</b> 通过等级保护测评</button><button class="opt" data-k="D"><b>D.</b> 使用自动化工具</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-9-6" data-type="multi" data-explain="E 错：环境、配置、操作也会导致失效。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">3-9-6</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">关于软件可靠性，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 可靠度 R(t) = 1 − F(t)</button><button class="opt" data-k="B"><b>B.</b> MTTF 表示平均失效前时间</button><button class="opt" data-k="C"><b>C.</b> 可用度可用 MTBF/(MTBF+MTTR) 估算</button><button class="opt" data-k="D"><b>D.</b> 可靠性目标应结合业务影响确定</button><button class="opt" data-k="E"><b>E.</b> 软件不存在缺陷就不会发生失效</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-9-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="mtbf" data-answer-text="MTBF"><div class="qhead"><span class="chip">3-9-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">可用度公式为 A = ________ / (MTBF + MTTR)。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="3-9-8" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="mttf|mttr" data-answer-text="MTTF、MTTR"><div class="qhead"><span class="chip">3-9-8</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">软件可靠性中，平均失效前时间缩写为________，平均恢复前时间缩写为________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：可靠性用可靠度、失效强度、MTTF、MTTR 与可用度量化；缺陷—故障—失效是因果链。</p>
+<p><strong>留一个问题</strong>：度量出来了，可系统还是会坏。设计上能做些什么，让"坏了也不影响业务"？</p>
+<p>下一节讲可靠性设计与评价。</p>
+<hr>
+<h2 id="sec10">第 10 节 可靠性设计与评价</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：怎么在设计阶段就把可靠性做进去？可靠性测试与评价怎么做才算数？</p>
+</blockquote>
+<h3>一、从"不出错"到"出错也可用"</h3>
+<p>再好的软件也会出错。高可靠系统的思路不是"消灭所有错误"，而是<strong>让错误不影响服务</strong>——这就是容错。</p>
+<p>可靠性设计技术分四类：<strong>容错设计、检错技术、降低复杂度设计、系统配置技术</strong>。</p>
+<h3>二、容错设计：三种经典手段</h3>
+<table>
+<thead>
+<tr>
+<th>手段</th>
+<th>做法</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>恢复块设计</strong></td>
+<td>一组功能相同、设计相异的程序块，当前块失效则切换到备份块（动态冗余）</td>
+<td>需要状态保存与切换机制</td>
+</tr>
+<tr>
+<td><strong>N 版本程序设计</strong></td>
+<td>独立开发 N 个功能相同的版本，<strong>表决</strong>输出</td>
+<td>开发成本 ×N，需表决器</td>
+</tr>
+<tr>
+<td><strong>冗余设计</strong></td>
+<td>硬件/数据/时间冗余（备份、校验、重试）</td>
+<td>资源与成本</td>
+</tr>
+</tbody>
+</table>
+<p>三者的区别值得记牢：<strong>恢复块是"事后切换"（串行），N 版本是"同时计算、投票"（并行），冗余是"多备一份"</strong>。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：N 版本程序设计要求"独立开发"，为什么？如果几个版本由同一个团队用同一套设计开发，会有什么问题？</p>
+</blockquote>
+<h3>三、检错、降复杂度与系统配置</h3>
+<p><strong>检错技术</strong>：断言、校验和、心跳检测、超时与看门狗——目标是<strong>尽早发现异常</strong>，为容错争取时间。</p>
+<p><strong>降低复杂度设计</strong>：简化结构、减少耦合、限制模块规模。复杂度是缺陷的温床，这条常被忽略但成本最低。</p>
+<p><strong>系统配置技术</strong>（工程上最常用）：</p>
+<table>
+<thead>
+<tr>
+<th>配置</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>双机热备</td>
+<td>主备切换，切换时间决定可用性</td>
+</tr>
+<tr>
+<td>集群/负载均衡</td>
+<td>多机同时服务，单点故障不影响整体</td>
+</tr>
+<tr>
+<td>多活</td>
+<td>多地同时提供服务，容灾能力强、成本最高</td>
+</tr>
+</tbody>
+</table>
+<h3>四、可靠性测试：运行剖面是关键</h3>
+<p>可靠性测试要回答"在真实使用中会怎样"，所以必须先定义<strong>运行剖面</strong>：把系统的使用方式按<strong>发生概率</strong>建模。</p>
+<p>例如某系统有 5 类操作，实际使用中 A 占 60%、B 占 25%、C 占 10%、D 占 4%、E 占 1%。测试用例就应按这个比例生成，否则测出来的失效率没有代表性——<strong>只测冷门功能会低估风险，只测热门功能会漏掉长尾缺陷</strong>。</p>
+<p>测试实施步骤：定义运行剖面 → 生成测试用例 → 执行并记录失效数据 → 分析失效强度 → 评估可靠性。</p>
+<h3>五、可靠性评价</h3>
+<p>评价要做三件事：</p>
+<ol>
+<li><strong>选择模型</strong>：不同模型适用于不同失效规律（指数型、递减型、S 型），选错模型预测就不准；</li>
+<li><strong>收集数据</strong>：失效时间、失效间隔、缺陷数、测试覆盖；</li>
+<li><strong>评估与预测</strong>：用模型拟合历史数据，外推未来可靠度或预计失效时间。</li>
+</ol>
+<p>要提醒的是：<strong>模型只是工具，数据质量决定结论质量</strong>；预测结果要随测试进展滚动更新，而不是一次定终身。</p>
+<h3>六、例题精解</h3>
+<p><strong>例（工程项目：高可用方案设计）</strong> 某支付系统要求年可用性 99.99%（约 52 分钟/年停机），单次故障恢复需 30 分钟。请给出可靠性设计组合，并说明各手段解决哪一段问题。</p>
+<p><em>解答</em>：<br>
+- <strong>降低单次故障概率</strong>：降低复杂度、代码评审、自动化测试（减少缺陷引入）；<br>
+- <strong>缩短故障影响时间</strong>：双机热备 + 自动故障转移（把 MTTR 从 30 分钟压到分钟级）；数据库主从切换；健康检查与自动重启；<br>
+- <strong>防单点</strong>：集群与负载均衡，避免任一节点故障导致整体不可用；<br>
+- <strong>提前发现</strong>：心跳、监控告警、灰度发布（缩小故障半径）；<br>
+- <strong>容灾</strong>：同城双活，应对机房级故障。</p>
+<p><em>点评</em>：答题时把手段按"<strong>降低发生概率 / 缩短恢复时间 / 限制影响范围</strong>"三类归位，比罗列技术名词更得分。</p>
+<h3>七、常见误区</h3>
+<p><strong>误区一：认为容错等于"多买几台服务器"。</strong><br>
+容错需要<strong>故障检测 + 切换机制 + 状态一致性</strong>，单纯堆机器只能提升容量。</p>
+<p><strong>误区二：把恢复块与 N 版本混为一谈。</strong><br>
+恢复块是串行切换（同一时刻一个版本运行），N 版本是并行计算加表决。</p>
+<p><strong>误区三：可靠性测试用例按功能均匀分布。</strong><br>
+应按<strong>运行剖面</strong>的概率分布生成，否则结论失真。</p>
+<p><strong>误区四：认为可靠性模型能"精确预测"。</strong><br>
+模型给出的是趋势与外推，需随数据更新迭代。</p>
+<h3>八、本节自测</h3>
+<blockquote>
+<p>共 9 题（6 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="3-10-1" data-type="single" data-explain="恢复块=动态冗余，串行切换。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-10-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">同一时刻只有一个版本运行、失效时切换到备份块的容错技术是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> N 版本程序设计</button><button class="opt" data-k="B"><b>B.</b> 恢复块设计</button><button class="opt" data-k="C"><b>C.</b> 冗余设计</button><button class="opt" data-k="D"><b>D.</b> 检错技术</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-10-2" data-type="single" data-explain="N 版本并行计算后表决。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-10-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">独立开发多个功能相同版本并用表决器决定输出的技术是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 恢复块设计</button><button class="opt" data-k="B"><b>B.</b> N 版本程序设计</button><button class="opt" data-k="C"><b>C.</b> 双机热备</button><button class="opt" data-k="D"><b>D.</b> 看门狗</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-10-3" data-type="single" data-explain="按使用概率分布生成。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-10-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">可靠性测试用例的生成依据是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 功能清单</button><button class="opt" data-k="B"><b>B.</b> 运行剖面</button><button class="opt" data-k="C"><b>C.</b> 代码覆盖率</button><button class="opt" data-k="D"><b>D.</b> 缺陷密度</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-10-4" data-type="single" data-explain="复杂度是缺陷的温床。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-10-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">下列属于"降低复杂度设计"目的的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 增加功能</button><button class="opt" data-k="B"><b>B.</b> 减少缺陷引入的可能</button><button class="opt" data-k="C"><b>C.</b> 提高并发能力</button><button class="opt" data-k="D"><b>D.</b> 缩短开发周期</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-10-5" data-type="single" data-explain="集群多机同时服务；热备是主备切换。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-10-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">多台服务器同时提供服务、单点故障不影响整体的配置方式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 双机热备</button><button class="opt" data-k="B"><b>B.</b> 集群（多台服务器同时提供服务）</button><button class="opt" data-k="C"><b>C.</b> 单机加固</button><button class="opt" data-k="D"><b>D.</b> 冷备</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-10-6" data-type="single" data-explain="模型只是工具，数据决定结论。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-10-6</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">可靠性评价中最影响结论质量的因素是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 模型的复杂度</button><button class="opt" data-k="B"><b>B.</b> 数据的质量与代表性</button><button class="opt" data-k="C"><b>C.</b> 工具的品牌</button><button class="opt" data-k="D"><b>D.</b> 测试人员数量</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-10-7" data-type="multi" data-explain="D 错：模型需随数据滚动更新。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">3-10-7</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">关于可靠性设计与评价，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 恢复块设计属于动态冗余</button><button class="opt" data-k="B"><b>B.</b> N 版本程序设计要求各版本独立开发</button><button class="opt" data-k="C"><b>C.</b> 心跳与看门狗属于检错技术</button><button class="opt" data-k="D"><b>D.</b> 可靠性模型一旦选定无需更新</button><button class="opt" data-k="E"><b>E.</b> 运行剖面反映各类操作的使用概率</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-10-8" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="n 版本/n版本|冗余" data-answer-text="N 版本、冗余"><div class="qhead"><span class="chip">3-10-8</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">软件容错的三种常用技术是恢复块设计、________程序设计和________设计。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="3-10-9" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="mttr/恢复" data-answer-text="MTTR"><div class="qhead"><span class="chip">3-10-9</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">高可用架构中，缩短 ________ 往往比追求无限延长 MTBF 更经济。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>九、小结与衔接</h3>
+<p>本节回答：可靠性设计靠容错（恢复块/N 版本/冗余）、检错、降复杂度与系统配置；测试靠运行剖面，评价靠模型与数据。</p>
+<hr>
+<h2 id="sec11">第 11 节 模型驱动架构（MDA）</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：能不能让"模型"而不是"代码"成为主要开发产物，从而摆脱平台绑定？</p>
+</blockquote>
+<h3>一、问题的由来</h3>
+<p>同一个业务逻辑，换了技术栈就要重写：Java 版、.NET 版、移动端版，逻辑一样，代码三套。</p>
+<p>根源是<strong>模型与平台耦合</strong>——设计成果直接落在具体语言与框架上，平台一变，设计就失效。</p>
+<p>MDA（Model Driven Architecture，模型驱动架构）的主张是：<strong>把模型作为主要产物，通过模型转换自动生成（部分）代码</strong>，让业务模型与平台解耦。</p>
+<h3>二、三个层次的模型</h3>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>含义</th>
+<th>谁关心</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CIM</strong>（计算无关模型）</td>
+<td>业务视角，不含任何计算概念</td>
+<td>业务人员、需求分析</td>
+</tr>
+<tr>
+<td><strong>PIM</strong>（平台无关模型）</td>
+<td>形式化的业务逻辑，与具体技术无关</td>
+<td>架构师、设计人员</td>
+</tr>
+<tr>
+<td><strong>PSM</strong>（平台相关模型）</td>
+<td>绑定到具体平台（J2EE、.NET、某框架）</td>
+<td>开发人员</td>
+</tr>
+</tbody>
+</table>
+<p>转换关系是：<strong>CIM → PIM → PSM → 代码</strong>。其中 <strong>PIM → PSM 的转换是 MDA 的核心</strong>，通常由转换规则（映射）自动完成。</p>
+<p><strong>MDA 的开发全过程</strong></p>
+<p>模型驱动不是"画完图就完事"，它是一条从业务到部署的链路：</p>
+<blockquote>
+<p>需求分析 → <strong>CIM</strong>（业务模型）→ <strong>PIM</strong>（平台无关模型）→ <strong>转换规则</strong> → <strong>PSM</strong>（平台相关模型）→ <strong>代码生成</strong> → 测试与部署</p>
+</blockquote>
+<p>各步的产出与角色：</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>产出</th>
+<th>主要角色</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>需求分析</td>
+<td>业务流程、规则、术语表</td>
+<td>业务分析员</td>
+</tr>
+<tr>
+<td>CIM 建模</td>
+<td>业务概念模型</td>
+<td>业务分析员 + 架构师</td>
+</tr>
+<tr>
+<td>PIM 建模</td>
+<td>用例实现、领域模型、服务契约</td>
+<td>架构师、设计人员</td>
+</tr>
+<tr>
+<td>转换规则</td>
+<td>映射定义（模型→模型）</td>
+<td>架构师、平台专家</td>
+</tr>
+<tr>
+<td>PSM 与代码</td>
+<td>平台模型、骨架代码</td>
+<td>开发人员</td>
+</tr>
+<tr>
+<td>测试与部署</td>
+<td>用例、部署描述</td>
+<td>测试、运维</td>
+</tr>
+</tbody>
+</table>
+<p><strong>两个工程要点</strong>：① 转换规则要<strong>版本化</strong>，否则平台升级后无法复现生成结果；② 手工代码要与生成代码<strong>物理隔离</strong>（生成到独立目录/包），避免下次生成被覆盖。</p>
+<h3>三、MDA 的特点</h3>
+<table>
+<thead>
+<tr>
+<th>特点</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>可移植性</strong></td>
+<td>PIM 不变，换平台只需换转换规则与 PSM</td>
+</tr>
+<tr>
+<td><strong>生产率</strong></td>
+<td>大量样板代码由转换生成</td>
+</tr>
+<tr>
+<td><strong>互操作性</strong></td>
+<td>借助 UML、MOF、XMI 等标准，模型可跨工具交换</td>
+</tr>
+<tr>
+<td><strong>可维护性</strong></td>
+<td>改模型即可，不必逐处改代码</td>
+</tr>
+</tbody>
+</table>
+<p>支撑标准：<strong>UML</strong>（建模语言）、<strong>MOF</strong>（元建模）、<strong>XMI</strong>（模型交换格式）、<strong>CWM</strong>（数据仓库元模型）。</p>
+<h3>四、局限与工程现实</h3>
+<ul>
+<li><strong>转换工具成熟度</strong>：复杂业务逻辑难以完全自动生成，常是"生成骨架 + 手工填充"；</li>
+<li><strong>学习与治理成本</strong>：需要建模规范、元模型设计与转换规则维护；</li>
+<li><strong>调试困难</strong>：生成代码出问题时，要同时看模型与模板；</li>
+<li><strong>不适合的场景</strong>：算法密集型、性能极致要求、UI 交互复杂的系统。</li>
+</ul>
+<p>一句话：<strong>MDA 适合"结构稳定、平台多样"的领域（如企业应用、嵌入式控制），不适合"逻辑高度定制"的系统。</strong></p>
+<blockquote>
+<p><strong>想一想 ①</strong>：如果转换只能生成 40% 的代码，MDA 还值得做吗？判断依据是什么？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：MDA 落地）</strong> 某企业同一套订单逻辑要同时支持 Web、移动端与国产化平台三套部署。请说明如何用 MDA 组织开发。</p>
+<p>*解答**：<br>
+- <strong>CIM</strong>：业务人员给出订单业务流程与规则（下单、支付、履约），不含技术细节；<br>
+- <strong>PIM</strong>：设计人员用 UML 建平台无关的领域模型与用例实现，定义服务接口与数据模型；<br>
+- <strong>转换规则</strong>：为 Web/移动/国产化三套平台分别编写 PSM 转换规则（持久层映射、接口协议、部署描述）；<br>
+- <strong>PSM 与代码</strong>：由工具生成骨架代码，开发人员补充平台特有的适配逻辑；<br>
+- <strong>一致性保障</strong>：模型变更后重新生成，用差异比对控制手工代码不被覆盖。</p>
+<p><em>点评</em>：MDA 的答题骨架是"<strong>三层模型 + 转换规则 + 生成与手工的边界</strong>"，最后一点最容易被忽略，但它决定项目成败。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为 MDA 就是"画 UML 图然后生成代码"。</strong><br>
+核心是<strong>模型转换规则</strong>与<strong>分层模型（CIM/PIM/PSM）</strong>，不是画图工具。</p>
+<p><strong>误区二：认为 MDA 能生成 100% 代码。</strong><br>
+现实中是"骨架 + 手工"，边界管理比生成率更重要。</p>
+<p><strong>误区三：把 MDA 与 UML 画图混为一谈。</strong><br>
+UML 是建模语言，MDA 是"以模型驱动开发过程"的方法论。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 2 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="3-11-1" data-type="single" data-explain="CIM 是业务视角，PSM 绑定平台。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-11-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">MDA 中与具体平台无关、形式化表达业务逻辑的模型是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> CIM</button><button class="opt" data-k="B"><b>B.</b> PIM</button><button class="opt" data-k="C"><b>C.</b> PSM</button><button class="opt" data-k="D"><b>D.</b> XMI</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-11-2" data-type="single" data-explain="转换规则决定可移植性。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-11-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">MDA 的核心转换环节是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> CIM → PIM</button><button class="opt" data-k="B"><b>B.</b> PIM → PSM</button><button class="opt" data-k="C"><b>C.</b> PSM → 代码</button><button class="opt" data-k="D"><b>D.</b> 代码 → 模型</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-11-3" data-type="single" data-explain="手工边界管理比生成率更重要。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-11-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">下列关于 MDA 局限的说法，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 能自动生成 100% 代码</button><button class="opt" data-k="B"><b>B.</b> 复杂业务逻辑常需"生成骨架 + 手工填充"</button><button class="opt" data-k="C"><b>C.</b> 不需要建模规范</button><button class="opt" data-k="D"><b>D.</b> 适合算法密集型系统</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-11-4" data-type="multi" data-explain="E 错：现实是骨架 + 手工。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">3-11-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">关于 MDA，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> CIM 是业务视角、不含计算概念</button><button class="opt" data-k="B"><b>B.</b> PIM 与技术平台无关</button><button class="opt" data-k="C"><b>C.</b> PSM 绑定到具体平台</button><button class="opt" data-k="D"><b>D.</b> MDA 借助 UML、MOF、XMI 等标准</button><button class="opt" data-k="E"><b>E.</b> MDA 完全不需要人工编码</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-11-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="psm" data-answer-text="PSM"><div class="qhead"><span class="chip">3-11-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">MDA 的三层模型是 CIM、PIM 和________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="3-11-6" data-type="single" data-explain="PIM→PSM 靠转换规则。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-11-6</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">MDA 开发全过程中，转换规则的位置是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 在 CIM 之前</button><button class="opt" data-k="B"><b>B.</b> 在 PIM 与 PSM 之间</button><button class="opt" data-k="C"><b>C.</b> 在代码之后</button><button class="opt" data-k="D"><b>D.</b> 在测试之后</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-11-7" data-type="single" data-explain="分目录/分包是常见做法。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-11-7</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">为避免下次生成覆盖人工代码，应：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 全部手写</button><button class="opt" data-k="B"><b>B.</b> 生成代码与手工代码物理隔离</button><button class="opt" data-k="C"><b>C.</b> 禁止生成</button><button class="opt" data-k="D"><b>D.</b> 只保留模型</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-11-8" data-type="multi" data-explain="E 错：仍需测试。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">3-11-8</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">MDA 开发全过程的产物包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> CIM 业务模型</button><button class="opt" data-k="B"><b>B.</b> PIM 平台无关模型</button><button class="opt" data-k="C"><b>C.</b> 转换规则</button><button class="opt" data-k="D"><b>D.</b> PSM 与骨架代码</button><button class="opt" data-k="E"><b>E.</b> 无需测试用例</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：MDA 用 CIM→PIM→PSM→代码的层级模型与转换规则解耦平台，代价是转换规则与手工边界的治理成本。</p>
+<p><strong>留一个问题</strong>：系统上线后总要改，改的时候有哪些"提高可维护性"的技术手段？</p>
+<p>下一节展开。</p>
+<hr>
+<h2 id="sec12">第 12 节 提高可维护性的技术</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：维护有四类，那么"提高可维护性"具体靠哪些技术？</p>
+</blockquote>
+<h3>一、先回顾维护的四类</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>改正性维护</strong></td>
+<td>修复运行中发现的错误</td>
+</tr>
+<tr>
+<td><strong>适应性维护</strong></td>
+<td>适应外部环境变化（OS、硬件、数据格式）</td>
+</tr>
+<tr>
+<td><strong>完善性维护</strong></td>
+<td>增加或改进功能、提升性能</td>
+</tr>
+<tr>
+<td><strong>预防性维护</strong></td>
+<td>为未来维护打基础（重构、文档、可测试性）</td>
+</tr>
+</tbody>
+</table>
+<p>其中<strong>完善性维护占比往往最高</strong>，这解释了为什么"维护"不是"修 bug"，而是持续的演化活动。</p>
+<h3>二、提高可维护性的四类技术</h3>
+<table>
+<thead>
+<tr>
+<th>技术</th>
+<th>做法</th>
+<th>效果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>代码重构</strong></td>
+<td>不改变外部行为的前提下改善内部结构（提取方法、消除重复、拆分大类）</td>
+<td>降低理解与修改成本</td>
+</tr>
+<tr>
+<td><strong>文档化</strong></td>
+<td>补齐设计决策、接口说明、部署手册</td>
+<td>减少"知识在个人脑中"</td>
+</tr>
+<tr>
+<td><strong>模块化与解耦</strong></td>
+<td>明确边界、降低耦合、消除循环依赖</td>
+<td>缩小变更影响面</td>
+</tr>
+<tr>
+<td><strong>自动化保障</strong></td>
+<td>单元测试、回归测试、静态检查</td>
+<td>让"敢改"成为可能</td>
+</tr>
+</tbody>
+</table>
+<p><strong>最后一条最容易被低估</strong>：没有自动化测试的系统，重构等于赌博，可维护性自然上不去。</p>
+<h3>三、逆向工程与再工程</h3>
+<p>当系统已经很烂、文档缺失时，需要两把"重活工具"：</p>
+<p><strong>逆向工程（Reverse Engineering）</strong>：从程序代码中<strong>恢复设计信息</strong>，包括数据结构、处理过程、用户界面与文档。它的产物是"理解"，不改代码。</p>
+<p><strong>再工程（Reengineering）</strong>：在<strong>不改变外部行为</strong>的前提下，对现有系统进行检查、改造与重构，使其以新形式存在。它常包含三步：</p>
+<blockquote>
+<p><strong>逆向工程（理解现状）→ 重构/改造（改善结构）→ 前向工程（用新技术重建）</strong></p>
+</blockquote>
+<p>区别一句话：<strong>逆向工程只"看"，再工程要"动"，但都不改变系统对外行为。</strong></p>
+<h3>四、遗留系统的四种演化策略</h3>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>做法</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>淘汰</strong></td>
+<td>停止使用</td>
+<td>业务价值低</td>
+</tr>
+<tr>
+<td><strong>继承</strong></td>
+<td>维持现状、少量维护</td>
+<td>仍可用、改造不划算</td>
+</tr>
+<tr>
+<td><strong>改造</strong></td>
+<td>再工程、重构、封装</td>
+<td>核心价值高、结构差</td>
+</tr>
+<tr>
+<td><strong>集成</strong></td>
+<td>通过接口/服务化接入新系统</td>
+<td>需与新系统协同</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"再工程"强调不改变外部行为？如果连行为一起改，会带来什么风险？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：老系统可维护性提升）</strong> 某系统运行 8 年，无文档、无自动化测试、改一处崩一处。请给出提高可维护性的路线。</p>
+<p>*解答**：<br>
+- <strong>先恢复理解</strong>：逆向工程——用依赖分析、调用链追踪重建模块结构与数据流，补最小可用文档；<br>
+- <strong>再建立安全网</strong>：为高风险模块补"特征测试"（固化现有行为），使后续修改可验证；<br>
+- <strong>结构改造</strong>：消除循环依赖、拆分大类、统一接口，逐步重构而非重写；<br>
+- <strong>流程固化</strong>：变更登记 + 影响分析 + 回归测试；<br>
+- <strong>度量</strong>：跟踪单次变更影响的模块数、缺陷率、回滚率。</p>
+<p><em>点评</em>：顺序不能反——<strong>没有测试网的重构是冒险</strong>，所以第二步必须补测试。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：把再工程等同于重写。</strong><br>
+再工程强调<strong>不改变外部行为</strong>、渐进改造；重写是推倒重来，风险高得多。</p>
+<p><strong>误区二：认为逆向工程就是"反编译"。</strong><br>
+反编译只是手段之一，逆向工程的产物是设计信息与理解。</p>
+<p><strong>误区三：认为文档是负担。</strong><br>
+缺文档的系统，可维护性衰减极快。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 5 题（3 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="3-12-1" data-type="single" data-explain="逆向工程只“看”。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-12-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">从程序代码中恢复设计信息、但不修改代码的技术是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 再工程</button><button class="opt" data-k="B"><b>B.</b> 逆向工程</button><button class="opt" data-k="C"><b>C.</b> 重构</button><button class="opt" data-k="D"><b>D.</b> 前向工程</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-12-2" data-type="single" data-explain="再工程要“动”，但行为不变。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-12-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">在不改变外部行为的前提下改善系统内部结构的技术是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 逆向工程</button><button class="opt" data-k="B"><b>B.</b> 再工程</button><button class="opt" data-k="C"><b>C.</b> 重写</button><button class="opt" data-k="D"><b>D.</b> 移植</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-12-3" data-type="single" data-explain="改造优于推倒重来。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="C"><div class="qhead"><span class="chip">3-12-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">系统仍有价值但结构较差时，合理的演化策略是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 淘汰</button><button class="opt" data-k="B"><b>B.</b> 继承</button><button class="opt" data-k="C"><b>C.</b> 改造（再工程）</button><button class="opt" data-k="D"><b>D.</b> 直接重写</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-12-4" data-type="multi" data-explain="D 错：逆向工程不修改代码。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">3-12-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">关于提高可维护性的技术，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 重构不改变外部行为</button><button class="opt" data-k="B"><b>B.</b> 自动化测试让"敢改"成为可能</button><button class="opt" data-k="C"><b>C.</b> 再工程通常包含逆向工程、重构与前向工程</button><button class="opt" data-k="D"><b>D.</b> 逆向工程会直接修改源代码</button><button class="opt" data-k="E"><b>E.</b> 模块化与解耦能缩小变更影响面</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-12-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="完善" data-answer-text="完善性"><div class="qhead"><span class="chip">3-12-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">维护分为改正性、适应性、________和预防性四类。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：提高可维护性靠重构、文档、解耦与自动化；烂系统用逆向工程恢复理解、用再工程渐进改造。</p>
+<p><strong>留一个问题</strong>：测试本身也在被 AI 改造——AI 怎么生成用例、怎么测大模型？</p>
+<p>下一节展开。</p>
+<hr>
+<h2 id="sec13">第 13 节 AI 测试</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：AI 在测试里具体承担什么角色？把大模型当作被测对象时，测试怎么做？</p>
+</blockquote>
+<h3>一、AI 在测试中的四个落点</h3>
+<table>
+<thead>
+<tr>
+<th>落点</th>
+<th>做什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>用例生成</strong></td>
+<td>从需求、接口文档、历史缺陷中生成测试用例</td>
+</tr>
+<tr>
+<td><strong>缺陷预测</strong></td>
+<td>基于代码度量与历史数据预测高风险模块</td>
+</tr>
+<tr>
+<td><strong>测试预言</strong></td>
+<td>判断输出是否正确（难在非确定性输出）</td>
+</tr>
+<tr>
+<td><strong>自愈脚本</strong></td>
+<td>界面或接口变化后自动修复定位器</td>
+</tr>
+</tbody>
+</table>
+<p>其中<strong>用例生成</strong>是最成熟、也最常被考的方向。</p>
+<h3>二、AI 测试用例生成的基本流程</h3>
+<ol>
+<li><strong>需求解析</strong>：把需求文档、原型、接口定义转成结构化输入；</li>
+<li><strong>语义理解与要素抽取</strong>：识别功能点、输入域、约束、异常分支；</li>
+<li><strong>场景与用例生成</strong>：按等价类、边界值、异常路径生成候选用例；</li>
+<li><strong>去重与优先级排序</strong>：合并重复用例，按风险与覆盖排序；</li>
+<li><strong>人工评审</strong>：剔除不合规、不可执行、语义错误的用例（<strong>这一步不可省</strong>）；</li>
+<li><strong>执行与反馈</strong>：执行结果回流，用于优化生成策略。</li>
+</ol>
+<p>关键点：<strong>AI 生成的是"候选用例"，不是"最终用例"</strong>。把 AI 输出直接入库，会把幻觉变成测试资产的污染。</p>
+<h3>三、测大模型：与传统测试的根本差异</h3>
+<p>传统测试有明确预期输出，<strong>大模型输出是概率性的</strong>，同一个输入可能给出不同答案。因此测试范式要变：</p>
+<table>
+<thead>
+<tr>
+<th>传统测试</th>
+<th>大模型测试</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>断言相等</td>
+<td>断言"满足约束"（如包含关键事实、不违规）</td>
+</tr>
+<tr>
+<td>用例数量有限</td>
+<td>需要<strong>评测集</strong>与统计指标</td>
+</tr>
+<tr>
+<td>覆盖率可计算</td>
+<td>覆盖率难定义，改用能力维度评估</td>
+</tr>
+</tbody>
+</table>
+<p>常用方法：构造<strong>基准评测集</strong>、用<strong>模型评判模型</strong>（LLM-as-judge）、人工抽检、对抗样本测试（越狱、注入）。</p>
+<h3>四、多模态大模型测试框架的四层</h3>
+<p>以移动智能测试为例，可以按四层组织：</p>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>页面识别</strong></td>
+<td>用视觉/多模态模型识别当前界面元素与结构</td>
+</tr>
+<tr>
+<td><strong>路径规划</strong></td>
+<td>基于识别结果规划测试路径与操作序列</td>
+</tr>
+<tr>
+<td><strong>交互执行</strong></td>
+<td>驱动真实设备执行点击、输入、滑动等操作</td>
+</tr>
+<tr>
+<td><strong>结果分析</strong></td>
+<td>判断是否符合预期、记录缺陷、生成报告</td>
+</tr>
+</tbody>
+</table>
+<p>这条链路的价值在于：<strong>把"人看界面点按钮"变成"模型看界面点按钮"</strong>，从而覆盖大量重复的探索式测试。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么多模态测试里"页面识别"是最难的一层？识别错了会怎样传导到后面？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：引入 AI 测试）</strong> 某团队想用大模型生成接口测试用例，并评估生成质量。请给出方案。</p>
+<p>*解答**：<br>
+- <strong>输入准备</strong>：接口文档（OpenAPI）、业务规则、历史缺陷库；<br>
+- <strong>生成</strong>：按功能点生成正常、边界、异常三类候选用例，要求给出断言；<br>
+- <strong>质量把关</strong>：规则校验（语法/参数合法性）+ 人工评审 + 小流量执行验证；<br>
+- <strong>度量</strong>：新增用例的缺陷发现率、无效用例比例、与人工用例的重复率；<br>
+- <strong>闭环</strong>：把执行失败的用例与漏测缺陷回流，迭代提示词与生成策略；<br>
+- <strong>风险控制</strong>：生成用例不直接进主干，先进"候选池"。</p>
+<p><em>点评</em>：AI 测试题的得分点是"<strong>生成—评审—度量—回流</strong>"的闭环，以及对幻觉的显式控制。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为 AI 生成的用例可以直接用。</strong><br>
+必须有人工评审与执行验证。</p>
+<p><strong>误区二：用传统断言测大模型。</strong><br>
+概率性输出要用约束断言与统计评估。</p>
+<p><strong>误区三：认为 AI 测试能替代人。</strong><br>
+它替代的是重复劳动，测试策略与质量判断仍靠人。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 5 题（3 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="3-13-1" data-type="single" data-explain="AI 生成的是候选用例。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-13-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">AI 测试用例生成流程中，不可省略的环节是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 需求解析</button><button class="opt" data-k="B"><b>B.</b> 人工评审</button><button class="opt" data-k="C"><b>C.</b> 用例去重</button><button class="opt" data-k="D"><b>D.</b> 优先级排序</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-13-2" data-type="single" data-explain="输出是概率性的。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-13-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">测试大模型时，断言方式应改为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 断言输出完全相等</button><button class="opt" data-k="B"><b>B.</b> 断言满足约束（含关键事实、不违规）</button><button class="opt" data-k="C"><b>C.</b> 只统计执行次数</button><button class="opt" data-k="D"><b>D.</b> 只做性能测试</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-13-3" data-type="single" data-explain="识别→规划→执行→分析。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3-13-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">多模态大模型测试框架中，负责规划操作序列的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 页面识别</button><button class="opt" data-k="B"><b>B.</b> 路径规划</button><button class="opt" data-k="C"><b>C.</b> 交互执行</button><button class="opt" data-k="D"><b>D.</b> 结果分析</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-13-4" data-type="multi" data-explain="D 错：须评审与执行验证。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">3-13-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">关于 AI 测试，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> AI 可用于用例生成、缺陷预测、测试预言与自愈脚本</button><button class="opt" data-k="B"><b>B.</b> 大模型输出具有概率性，需要评测集与统计指标</button><button class="opt" data-k="C"><b>C.</b> 可用模型评判模型（LLM-as-judge）辅助评估</button><button class="opt" data-k="D"><b>D.</b> AI 生成的用例可直接进主干</button><button class="opt" data-k="E"><b>E.</b> 对抗样本测试可覆盖越狱与注入风险</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3-13-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="llm" data-answer-text="LLM"><div class="qhead"><span class="chip">3-13-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec13">↑ 回到本节开头</a></div><div class="qstem">测试大模型时常用"用模型评判模型"的方式，通常称为________-as-judge。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：AI 在测试中承担生成、预测、评判与自愈四类角色；测大模型要换成约束断言与评测集范式。</p>
+<h2 id="sec14">本章总复习</h2>
+<h3>一、这一章的主线</h3>
+<p>软件工程这一章回答的是"怎么把开发从手工作坊变成可控工程"。十三个节按开发的时间顺序排：先选过程模型（瀑布/原型/螺旋/增量/迭代），再谈敏捷与 RUP 的组织方式、CMMI 的成熟度；进入开发后依次是需求、结构化分析与设计、面向对象与 UML、测试；最后两块是横切的——项目管理管进度与配置，可靠性管"不出错、出了错能扛住"。</p>
+<h3>二、必须能说出的判断</h3>
+<ul>
+<li><strong>瀑布、螺旋、增量的分界</strong>在"变更的代价"与"风险的暴露时机"，不在文档多少；</li>
+<li><strong>高内聚低耦合</strong>有四组具体指标（耦合 7 种升序、内聚 7 种降序），答题要能报出名字；</li>
+<li><strong>测试覆盖准则的强弱</strong>：语句 &lt; 判定 &lt; 条件 &lt; 判定/条件 &lt; 条件组合 &lt; 路径；</li>
+<li><strong>关键路径是时长最长的路径</strong>，它决定最短工期；</li>
+<li><strong>可用性 = MTBF/(MTBF+MTTR)</strong>，工程上缩短 MTTR 往往比拉长 MTBF 更划算。</li>
+</ul>
+<h3>三、跨节综合自测（8 题）</h3>
+<div class="quiz" data-id="3综-1" data-type="single" data-explain="需求与技术双重不确定时，螺旋的风险分析能提前暴露问题。" data-source="拓展" data-diag="B 补充" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3综-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">某项目需求变动频繁、技术方案存在多处未知，最应优先选择的过程模型是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 瀑布模型</button><button class="opt" data-k="B"><b>B.</b> 螺旋模型</button><button class="opt" data-k="C"><b>C.</b> 净室模型</button><button class="opt" data-k="D"><b>D.</b> V 模型</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3综-2" data-type="single" data-explain="基线不是冻结，而是变更受控；缺影响分析是常见失分。" data-source="拓展" data-diag="B 补充" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3综-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">需求基线确定后发生变更，规范的处理顺序是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 直接改代码并补文档</button><button class="opt" data-k="B"><b>B.</b> 提出申请→影响分析→评审→批准→实施→验证回写</button><button class="opt" data-k="C"><b>C.</b> 先实现再补变更单</button><button class="opt" data-k="D"><b>D.</b> 由开发人员自行判断</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3综-3" data-type="single" data-explain="覆盖的是代码，回归要覆盖的是「被影响的行为」。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3综-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">关于测试覆盖率与回归测试的关系，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 覆盖率高说明回归充分</button><button class="opt" data-k="B"><b>B.</b> 覆盖率高不代表回归充分，还应按变更影响选范围</button><button class="opt" data-k="C"><b>C.</b> 二者无关</button><button class="opt" data-k="D"><b>D.</b> 回归测试只看覆盖率</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3综-4" data-type="multi" data-explain="D 错：压缩有极限，且受并行度与依赖约束。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">3综-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">关于关键路径，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 是网络图中时长最长的路径</button><button class="opt" data-k="B"><b>B.</b> 决定项目最短工期</button><button class="opt" data-k="C"><b>C.</b> 其上任务浮动时间为零</button><button class="opt" data-k="D"><b>D.</b> 增加资源可无限压缩其工期</button><button class="opt" data-k="E"><b>E.</b> 其上任一任务延迟会导致整体延迟</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3综-5" data-type="single" data-explain="细化阶段的里程碑就是生命周期架构。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3综-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">RUP 细化阶段的主要产出是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 可运行的完整系统</button><button class="opt" data-k="B"><b>B.</b> 架构基线并消除主要风险</button><button class="opt" data-k="C"><b>C.</b> 用户验收报告</button><button class="opt" data-k="D"><b>D.</b> 运维手册</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3综-6" data-type="single" data-explain="净室=过程不引入缺陷 + 抽样测试评估可靠性。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">3综-6</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">净室工程强调「过程预防缺陷」，它与统计测试的关系是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 完全不需要测试</button><button class="opt" data-k="B"><b>B.</b> 仍需要以运行剖面为基础的统计测试</button><button class="opt" data-k="C"><b>C.</b> 只做代码审查</button><button class="opt" data-k="D"><b>D.</b> 只做形式化证明</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="3综-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="需求分析/需求|用户需求/验收" data-answer-text="需求分析、用户需求"><div class="qhead"><span class="chip">3综-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">V 模型中，系统测试对应________阶段，验收测试对应________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="3综-8" data-type="multi" data-explain="D 错：直连会加剧耦合并破坏可维护性。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">3综-8</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec14">↑ 回到本节开头</a></div><div class="qstem">下列属于「提高可维护性」手段的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 在不改变外部行为前提下重构</button><button class="opt" data-k="B"><b>B.</b> 补齐自动化测试作为安全网</button><button class="opt" data-k="C"><b>C.</b> 对遗留系统做逆向工程重建理解</button><button class="opt" data-k="D"><b>D.</b> 让业务代码直接连接数据库以简化调用</button><button class="opt" data-k="E"><b>E.</b> 模块化与解耦以缩小影响面</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<h3>四、与论文、案例的接口</h3>
+<p>案例题几乎每年有一道落在这一章（过程模型选择、测试策略、进度压缩、质量保障体系）；论文里"如何保证交付质量""如何做需求管理"的素材也主要来自这里。</p>
+<h3>五、下一步</h3>
+<p><strong>本章结束</strong>。下一步进入 K4（数据库设计）。</p>
+<div class="legend" style="margin-top:44px">标注说明：<b>软考口径</b>＝按官方用书表述给分；<b>拓展</b>＝考纲未展开的补充知识。详见 <a href="k00.html">K0 前言</a>。作答记录保存在本机浏览器。</div>
+<div class="toast" id="toast"></div>
+</div>
+<script>
+const KEY="book_K3软件工程与可靠性";
+let state=JSON.parse(localStorage.getItem(KEY)||"{}");
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function norm(s){return (s||"").toLowerCase().replace(/[\s，,、;；。.()（）]/g,"");}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1400);}
+function stats(){const qs=$$(".quiz");let done=0,ok=0;
+ qs.forEach(q=>{const st=state[q.dataset.id];if(st&&st.done){done++;if(st.ok)ok++;}});
+ return {done,total:qs.length,ok};}
+function paint(){const s=stats();const p=s.total?s.done/s.total*100:0;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";}
+function fillKeywords(q){return q.dataset.answer.split("|").map(g=>g.split("/"));}
+function fbHTML(q,ok,userText){
+ const diag=q.dataset.diag||"";const warm=diag.includes("补充")?"#a2540f":"#b42318";
+ const ans=q.dataset.answerText||q.dataset.answer;
+ return '<div class="res">'+(ok?"✔ 回答正确":"✘ 回答错误")+'</div>'
+  +'<div><b>正确答案：</b>'+ans+(userText?'　<span style="color:#6b7280">你的作答：'+userText+'</span>':'')+'</div>'
+  +'<details open><summary>展开解析</summary><div class="inner">'
+  +'<div>'+q.dataset.explain+'</div>'
+  +'<div class="row tags">来源：'+q.dataset.source+'　｜　诊断标签：<b style="color:'+warm+'">'+diag+'</b></div>'
+  +'</div></details>';
+}
+function judge(q,ok,userText){
+ const fb=$(".fb",q);fb.className="fb show "+(ok?"ok":"bad");
+ fb.innerHTML=fbHTML(q,ok,userText);
+ state[q.dataset.id]={done:true,ok:ok};save();paint();
+}
+$$(".quiz").forEach(q=>{
+ const type=q.dataset.type;const ans=q.dataset.answer;
+ const opts=$$(".opt",q);const fb=$(".fb",q);
+ const saved=state[q.dataset.id];
+ if(type==="single"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     opts.forEach(x=>x.disabled=true);
+     const ok=(o.dataset.k===ans);
+     o.classList.add(ok?"right":"wrong");
+     if(!ok){const c=opts.find(x=>x.dataset.k===ans);if(c)c.classList.add("right");}
+     judge(q,ok,o.dataset.k);
+   }));
+ }else if(type==="multi"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     if(o.disabled)return;
+     o.classList.toggle("sel");
+   }));
+   const btn=$(".check",q);
+   if(btn)btn.addEventListener("click",()=>{
+     const picked=opts.filter(o=>o.classList.contains("sel")).map(o=>o.dataset.k).sort().join("");
+     if(!picked){toast("先选择至少一个选项");return;}
+     opts.forEach(o=>{
+       o.disabled=true;o.classList.remove("sel");
+       const k=o.dataset.k;
+       if(ans.includes(k))o.classList.add("right");
+       else if(picked.includes(k))o.classList.add("wrong");
+     });
+     judge(q,picked===ans,picked);
+   });
+ }else{
+   const inp=$(".fillinput",q);const btn=$(".check",q);
+   const go=()=>{
+     const raw=inp.value;const v=norm(raw);
+     if(!v){toast("先填写答案");return;}
+     let ok=false;
+     if(q.dataset.numeric){
+       const m=raw.match(/-?\d+(?:\.\d+)?/);
+       const cands=q.dataset.numeric.split("|");
+       ok=!!m&&cands.some(x=>Math.abs(parseFloat(m[0])-parseFloat(x))<0.011);
+     }else{
+       ok=fillKeywords(q).every(g=>g.some(k=>v.includes(norm(k))));
+     }
+     inp.disabled=true;inp.style.borderColor=ok?"#7cc49b":"#e79a94";
+     if(btn)btn.disabled=true;
+     judge(q,ok,raw.trim());
+   };
+   if(btn)btn.addEventListener("click",go);
+   if(inp)inp.addEventListener("keydown",e=>{if(e.key==="Enter")go();});
+ }
+ if(saved&&saved.done){/* 恢复历史状态：仅标记，不覆盖作答 */}
+});
+window.addEventListener("scroll",()=>{
+ const h=document.documentElement;
+ const p=h.scrollTop/(h.scrollHeight-h.clientHeight||1)*100;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";
+});
+paint();
+</script>
+<div class="book-foot-nav"><div class="bf-box"><a href="k02.html">&larr; 上一章 K2 信息系统与信息安全</a><a class="bf-next" href="k04.html">下一章 K4 数据库设计 &rarr;</a></div><p class="bf-note">作答记录保存在本机浏览器，换设备或清除缓存不会保留。本章支持浏览器直接打印为 PDF。</p></div><script>
+(function(){
+  var el=document.getElementById("book-nav-progress");
+  function refresh(){
+    try{
+      var st=JSON.parse(localStorage.getItem("book_K3软件工程与可靠性")||"{}"),done=0;
+      Object.keys(st).forEach(function(k){if(st[k]&&st[k].done)done++;});
+      if(el)el.textContent=done+" / 107 题";
+    }catch(e){}
+  }
+  refresh();setInterval(refresh,1000);
+})();
+</script></body></html>

@@ -1,0 +1,1864 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K5 架构基础与架构风格</title>
+<style>
+:root{--bg:#fbfaf7;--card:#fff;--ink:#1f2328;--sub:#6b7280;--line:#e6e3dd;--accent:#1f4e79;--ok:#0f7b4f;--bad:#b42318;--chip:#eef3f8;--warm:#fdf6ec}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:17px/1.9 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",serif}
+#bar{position:fixed;top:0;left:0;height:3px;background:var(--accent);width:0;z-index:99}
+.wrap{max-width:760px;margin:0 auto;padding:56px 20px 100px}
+h1{font-size:27px;line-height:1.4;letter-spacing:.5px;margin:0 0 10px}
+h2{font-size:21px;margin:52px 0 14px;padding-top:14px;border-top:2px solid var(--line);letter-spacing:.5px}
+h2:first-of-type{border-top:none}
+h3{font-size:17.5px;margin:30px 0 10px;color:#2b3a4a}
+h5{font-size:15px;margin:26px 0 8px;color:var(--sub);font-weight:600}
+p{margin:10px 0}
+blockquote{margin:16px 0;padding:12px 16px;background:var(--warm);border-left:3px solid #e0b984;border-radius:0 8px 8px 0;font-size:16px}
+blockquote p{margin:4px 0}
+strong{color:#12324f}
+hr{border:none;border-top:1px dashed var(--line);margin:26px 0}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px;background:#fff}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f3f1ec;font-weight:600}
+code{background:#f3f1ec;padding:1px 5px;border-radius:4px;font-size:14px}
+pre{background:#f7f5f1;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto}
+ul,ol{margin:10px 0;padding-left:22px}
+li{margin:4px 0}
+.math{font-family:"Cambria Math",Cambria,Georgia,"Times New Roman",serif;font-size:1.03em}
+.mathblock{display:block;text-align:center;margin:16px 0;overflow-x:auto;padding:2px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:-0.55em;text-align:center;margin:0 .3em}
+.frac .n{border-bottom:1px solid currentColor;padding:0 .3em;line-height:1.3}
+.frac .d{padding:0 .3em;line-height:1.4}
+sub,sup{font-size:.72em;line-height:0}
+.toast{position:fixed;right:18px;bottom:18px;background:#1f2937;color:#fff;padding:9px 14px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+
+/* 题卡 */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:18px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.qhead{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.chip{background:var(--chip);color:#33475b;border-radius:999px;padding:1px 9px;font-size:12px}
+.chip.t{background:#eaf4ec;color:#0f7b4f}
+.chip.k{background:#f4f0fa;color:#5b3f8f;font-size:11.5px}
+a.back{margin-left:auto;font-size:12px;color:var(--sub);text-decoration:none;border-bottom:1px dashed #c9c4ba}
+a.back:hover{color:var(--accent);border-color:var(--accent)}
+.qstem{font-weight:600;margin:4px 0 12px;font-size:16px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:15.5px;line-height:1.7;
+ background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 13px;cursor:pointer;transition:.15s}
+.opt:hover{border-color:#b9c6d6;background:#f8fafc}
+.opt b{color:var(--accent);margin-right:2px}
+.opt.sel{border-color:var(--accent);background:#eef4fa}
+.opt.right{border-color:#7cc49b;background:#effaf3}
+.opt.wrong{border-color:#e79a94;background:#fdf1f0}
+.opt:disabled{cursor:default}
+.fillrow{display:flex;gap:10px;margin-top:12px;align-items:center}
+.fillinput{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:15.5px;background:#fff}
+.btn{font:inherit;font-size:14px;padding:7px 16px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer}
+.btn.check{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fb{display:none;margin-top:14px;font-size:15px;line-height:1.8}
+.fb.show{display:block}
+.fb .res{font-weight:700;margin-bottom:6px;font-size:15.5px}
+.fb.ok .res{color:var(--ok)}
+.fb.bad .res{color:var(--bad)}
+.fb details{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:#fcfbf9;padding:0 12px}
+.fb summary{cursor:pointer;padding:9px 0;font-weight:600;color:var(--accent);outline:none}
+.fb .inner{padding:2px 0 12px;border-top:1px dashed var(--line)}
+.fb .row{color:var(--sub);font-size:13px;margin-top:8px}
+.fb .tags b{color:#a2540f}
+.legend{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:20px 0;font-size:14.5px}
+.legend b{color:var(--accent)}
+@media print{
+ #bar,.toast{display:none}
+ .quiz{break-inside:avoid}
+ body{background:#fff;font-size:12pt}
+}
+@media (max-width:600px){
+ body{font-size:16px;line-height:1.85}
+ .wrap{padding:40px 14px 80px}
+ h1{font-size:23px}
+ table{font-size:13px}
+}
+</style>
+<style id="book-nav-css">
+#book-nav{position:sticky;top:0;z-index:100;background:rgba(251,250,247,.96);backdrop-filter:blur(8px);border-bottom:1px solid #e6e3dd;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+#bar{z-index:101!important}
+#book-nav .bn-in{max-width:1060px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+#book-nav a{color:#1f4e79;text-decoration:none;white-space:nowrap}
+#book-nav a:hover{text-decoration:underline}
+#book-nav .bn-home{font-weight:700}
+#book-nav .bn-cur{color:#1f2328;font-weight:600;flex:1;min-width:180px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#book-nav .bn-step{background:#fff;border:1px solid #e6e3dd;border-radius:999px;padding:3px 11px;font-size:13px}
+#book-nav .bn-step.disabled{opacity:.38;pointer-events:none}
+#book-nav .bn-prog{color:#6b7280;font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.book-foot-nav{max-width:760px;margin:0 auto;padding:0 20px 80px;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.book-foot-nav .bf-box{border-top:2px solid #e6e3dd;padding-top:22px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}
+.book-foot-nav a{color:#1f4e79;text-decoration:none}
+.book-foot-nav a:hover{text-decoration:underline}
+.book-foot-nav .bf-next{background:#1f4e79;color:#fff!important;border-radius:10px;padding:9px 18px;font-weight:600}
+.book-foot-nav .bf-next:hover{text-decoration:none;background:#163c5e}
+.book-foot-nav .bf-note{color:#6b7280;font-size:13px;margin-top:14px}
+@media(max-width:600px){#book-nav .bn-cur{order:3;flex-basis:100%;text-align:left}#book-nav .bn-prog{display:none}}
+@media print{#book-nav,.book-foot-nav{display:none}#bar{z-index:0!important}}
+</style>
+</head><body><nav id="book-nav"><div class="bn-in"><a class="bn-home" href="index.html">&larr; 全书目录</a><a class="bn-step" href="k04.html" title="数据库设计">&larr; K4</a><span class="bn-cur">K5 · 架构基础与架构风格</span><a class="bn-step" href="k06.html" title="质量属性与架构评估">K6 &rarr;</a><span class="bn-prog" id="book-nav-progress">0 / 87 题</span></div></nav>
+<div id="bar"></div>
+<div class="wrap">
+<h1>K5 架构基础与架构风格</h1>
+<blockquote>
+<p><strong>本章内容</strong>：架构的定义与视图 · 架构风格五大类 · 数据流/调用返回/数据为中心/虚拟机/独立构件 · 分层与 MVC · ABSD 方法 · 架构复用与 DSSA · 事件驱动架构的工程边界 · 事件驱动架构的工程边界<br>
+<strong>考纲位置</strong>：架构风格是上午题与案例题的双重核心，论文也常以风格选型为切口</p>
+</blockquote>
+<p>本章围绕"<strong>系统该怎么拆、拆开的部件怎么协作</strong>"这一主题展开，共 11 节：</p>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+<th>回答的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>架构是什么</td>
+<td>架构由什么构成、为什么要分视图</td>
+</tr>
+<tr>
+<td>2</td>
+<td>架构风格总览</td>
+<td>风格的本质是什么、分哪几大类</td>
+</tr>
+<tr>
+<td>3</td>
+<td>数据流风格</td>
+<td>数据一步步被加工，怎么组织</td>
+</tr>
+<tr>
+<td>4</td>
+<td>调用/返回风格</td>
+<td>谁调用谁，分层与 C/S 怎么长出来</td>
+</tr>
+<tr>
+<td>5</td>
+<td>以数据为中心</td>
+<td>数据在中间，程序围着转</td>
+</tr>
+<tr>
+<td>6</td>
+<td>虚拟机风格</td>
+<td>造一个环境去解释规则</td>
+</tr>
+<tr>
+<td>7</td>
+<td>独立构件风格</td>
+<td>构件互不直接调用，靠事件协作</td>
+</tr>
+<tr>
+<td>8</td>
+<td>基于架构的软件开发</td>
+<td>架构驱动开发的具体流程</td>
+</tr>
+<tr>
+<td>9</td>
+<td>架构复用与 DSSA</td>
+<td>怎么在一个领域里反复用同一套架构</td>
+</tr>
+<tr>
+<td>10</td>
+<td>事件驱动架构的工程边界</td>
+<td>事件范式与事件系统风格有何不同</td>
+</tr>
+<tr>
+<td>11</td>
+<td>六边形架构</td>
+<td>怎么让业务不被技术绑死</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="sec1">第 1 节 架构是什么</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：架构与"详细设计"的界限在哪？为什么同一套系统要用多个视图描述？</p>
+</blockquote>
+<h3>一、一句被说滥的话</h3>
+<p>"架构是系统的骨架"——这句话没错，但没法指导设计。更准确的说法来自 Bass、Clements 和 Kazman 的定义：</p>
+<blockquote>
+<p>软件架构是系统的一个或多个结构，包括<strong>软件构件</strong>、构件的<strong>外部可见属性</strong>，以及它们之间的<strong>关系</strong>。</p>
+</blockquote>
+<p>三个关键词值得拆开：</p>
+<ul>
+<li><strong>构件</strong>：系统里承担计算的单元（模块、对象、服务、进程）；</li>
+<li><strong>外部可见属性</strong>：只关心别人能看到的接口与行为，不关心内部实现——这是"架构"区别于"详细设计"的分界线；</li>
+<li><strong>关系</strong>：构件之间怎么连（调用、消息、共享数据）。</li>
+</ul>
+<p>一句话：<strong>架构关心"分几块、块之间怎么连、对方的可见接口是什么"，不关心"块内部怎么写"</strong>。</p>
+<h3>二、构件与连接件</h3>
+<p>架构描述里有两个基本角色：</p>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>含义</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>构件</strong></td>
+<td>计算或存储的单元</td>
+<td>服务、模块、数据库、过滤器</td>
+</tr>
+<tr>
+<td><strong>连接件</strong></td>
+<td>构件之间的交互机制</td>
+<td>调用、消息队列、管道、共享数据</td>
+</tr>
+</tbody>
+</table>
+<p>很多风格的区别，<strong>本质上是连接件的区别</strong>：管道-过滤器的连接件是数据流管道，事件系统的连接件是事件总线，仓库风格的连接件是对中央数据的存取。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：如果把"函数调用"换成"消息队列"，构件本身不变，系统会变成什么风格？质量属性会怎么变？</p>
+</blockquote>
+<h3>三、为什么要多视图</h3>
+<p>一个系统不能只用一张图说清。要从不同<strong>视角</strong>观察架构，形成不同<strong>视图</strong>。</p>
+<p>经典的 4+1 视图：</p>
+<table>
+<thead>
+<tr>
+<th>视图</th>
+<th>关注</th>
+<th>面向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>逻辑视图</strong></td>
+<td>功能组织、对象与类</td>
+<td>设计人员、用户</td>
+</tr>
+<tr>
+<td><strong>进程视图</strong></td>
+<td>并发、同步、性能</td>
+<td>系统集成人员</td>
+</tr>
+<tr>
+<td><strong>开发视图</strong>（实现视图）</td>
+<td>模块组织、编译与复用</td>
+<td>开发人员</td>
+</tr>
+<tr>
+<td><strong>物理视图</strong>（配置视图）</td>
+<td>部署到硬件节点</td>
+<td>运维、系统工程师</td>
+</tr>
+<tr>
+<td><strong>场景/用例</strong></td>
+<td>串起四个视图的验证场景</td>
+<td>全体</td>
+</tr>
+</tbody>
+</table>
+<p>判断用哪个视图，看<strong>你关心什么质量属性</strong>：功能与可维护性看逻辑视图，性能与并发看进程视图，可移植与部署看物理视图。</p>
+<h3>四、架构为什么重要</h3>
+<p>三个层面的理由：</p>
+<ol>
+<li><strong>沟通</strong>：架构是干系人之间的共同语言，说"这是 C/S 结构"就能省掉大量解释；</li>
+<li><strong>决策的载体</strong>：早期决策（技术选型、分层、集成方式）代价最大、最难改；</li>
+<li><strong>质量的载体</strong>：性能、可用性、安全性等质量属性主要由架构决定，而非靠后期优化。</li>
+</ol>
+<p>还有一句话值得记住：<strong>架构是演化的，不是一次成型的</strong>——需求与环境变化会驱动架构演化（第 8 节展开）。</p>
+<h3>五、例题精解</h3>
+<p><strong>例（工程判断：架构决策的边界）</strong> 某团队争论三个问题：① 订单服务内部用策略模式还是状态模式；② 前端与后端通过 REST 还是消息队列通信；③ 数据库里某字段是否要加索引。哪些属于架构决策？</p>
+<p><em>解答</em>：<br>
+- ① 属于<strong>构件内部的实现细节</strong>，不是架构决策（不影响外部可见属性）；<br>
+- ② 属于<strong>连接件选择</strong>，直接决定耦合方式、可用性与一致性，是架构决策；<br>
+- ③ 属于物理设计/性能调优，尽管影响性能，通常归入详细设计与运维范畴。</p>
+<p><em>点评</em>：判据是"<strong>是否改变构件的可见边界或连接方式</strong>"。改连接件、改分层、改部署单元，都是架构决策。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：把架构等同于"高层设计文档"。</strong><br>
+架构是一组结构决策，文档只是载体；没有决策的文档不叫架构。</p>
+<p><strong>误区二：认为架构只关心功能。</strong><br>
+恰恰相反，架构主要承载<strong>质量属性</strong>（性能、可用、安全、可修改）。</p>
+<p><strong>误区三：认为视图越多越全越好。</strong><br>
+视图是为特定关注点服务的，多余视图只增加维护成本。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="5-1-1" data-type="single" data-explain="只看外部可见属性，是架构与详细设计的分界。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-1-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">关于软件架构的定义，下列最准确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 系统的全部源代码结构</button><button class="opt" data-k="B"><b>B.</b> 系统的构件、构件的外部可见属性以及它们之间的关系</button><button class="opt" data-k="C"><b>C.</b> 系统的数据库表结构</button><button class="opt" data-k="D"><b>D.</b> 系统的部署脚本</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-1-2" data-type="single" data-explain="连接件定义构件如何交互。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-1-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">架构描述中的"连接件"指的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数据库表</button><button class="opt" data-k="B"><b>B.</b> 构件之间的交互机制</button><button class="opt" data-k="C"><b>C.</b> 服务器的网线</button><button class="opt" data-k="D"><b>D.</b> 单元测试用例</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-1-3" data-type="single" data-explain="进程视图面向并发与性能。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-1-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">关注并发、同步与性能的视图是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 逻辑视图</button><button class="opt" data-k="B"><b>B.</b> 进程视图</button><button class="opt" data-k="C"><b>C.</b> 开发视图</button><button class="opt" data-k="D"><b>D.</b> 物理视图</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-1-4" data-type="single" data-explain="改连接件=架构决策；类内模式属实现细节。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-1-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">下列属于架构决策的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 某个类内部使用策略模式</button><button class="opt" data-k="B"><b>B.</b> 前端与后端采用消息队列异步通信</button><button class="opt" data-k="C"><b>C.</b> 给某字段加索引</button><button class="opt" data-k="D"><b>D.</b> 变量命名风格</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-1-5" data-type="single" data-explain="物理视图描述部署到硬件节点。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">5-1-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">物理视图（配置视图）主要面向：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 最终用户</button><button class="opt" data-k="B"><b>B.</b> 开发人员</button><button class="opt" data-k="C"><b>C.</b> 运维与系统工程师</button><button class="opt" data-k="D"><b>D.</b> 测试人员</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-1-6" data-type="multi" data-explain="D 错：架构决策早、代价大，后期优化补不回来。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">5-1-6</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">关于架构与视图，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 架构关注构件的外部可见属性，不关注内部实现</button><button class="opt" data-k="B"><b>B.</b> 逻辑视图关注功能组织与对象结构</button><button class="opt" data-k="C"><b>C.</b> 4+1 视图中的"场景/用例"用于串起其他视图</button><button class="opt" data-k="D"><b>D.</b> 架构主要由后期优化决定</button><button class="opt" data-k="E"><b>E.</b> 质量属性主要由架构决定</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-1-7" data-type="fill" data-explain="物理视图又称配置视图。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="物理/配置" data-answer-text="物理"><div class="qhead"><span class="chip">5-1-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">4+1 视图包括逻辑视图、进程视图、开发视图、________视图以及场景（用例）。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="5-1-8" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="连接件" data-answer-text="连接件"><div class="qhead"><span class="chip">5-1-8</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">架构描述的两个基本角色是构件和________，其中后者定义构件之间的交互机制。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：架构是"构件 + 可见接口 + 关系"的结构决策，用多视图承载不同关注点，连接件的差异往往是风格差异的根源。</p>
+<p><strong>留一个问题</strong>：既然连接件不同就形成不同风格，那业界公认的风格一共有几类？</p>
+<p>下一节给出全景。</p>
+<hr>
+<h2 id="sec2">第 2 节 架构风格总览</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：到底什么是"架构风格"？五大类风格各自解决什么问题？</p>
+</blockquote>
+<h3>一、风格是"惯用模式"</h3>
+<p>定义是：</p>
+<blockquote>
+<p>软件体系结构风格是描述某一特定应用领域中系统组织方式的<strong>惯用模式</strong>。</p>
+</blockquote>
+<p>它定义一个系统家族，包含两样东西：</p>
+<ul>
+<li><strong>词汇表</strong>：这类风格里有哪些构件与连接件类型；</li>
+<li><strong>一组约束</strong>：这些构件如何组合。</li>
+</ul>
+<p>举例：说"这是管道-过滤器风格"，听者立刻知道构件是过滤器、连接件是管道、数据单向流动——不需要任何细节。</p>
+<h3>二、五大类，十一种</h3>
+<table>
+<thead>
+<tr>
+<th>大类</th>
+<th>具体风格</th>
+<th>核心特征</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>数据流</strong></td>
+<td>批处理、管道-过滤器</td>
+<td>数据按流被逐步加工</td>
+</tr>
+<tr>
+<td><strong>调用/返回</strong></td>
+<td>主程序/子程序、面向对象、层次型、客户端/服务器</td>
+<td>通过调用与返回传递控制</td>
+</tr>
+<tr>
+<td><strong>以数据为中心</strong></td>
+<td>仓库、黑板</td>
+<td>有一个中央数据结构</td>
+</tr>
+<tr>
+<td><strong>虚拟机</strong></td>
+<td>解释器、规则系统</td>
+<td>人为构造运行环境</td>
+</tr>
+<tr>
+<td><strong>独立构件</strong></td>
+<td>进程通信、事件系统</td>
+<td>构件不直接交互</td>
+</tr>
+</tbody>
+</table>
+<p>记忆方法：<strong>数据在流、控制在调、数据在中间、解释执行、各自独立</strong>。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"分层"被归入调用/返回风格，而不是"以数据为中心"？分类的依据是什么？</p>
+</blockquote>
+<h3>三、怎么选风格</h3>
+<p>风格不是"越新越好"，要看质量属性：</p>
+<table>
+<thead>
+<tr>
+<th>想强化的属性</th>
+<th>倾向的风格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>可复用、可组合</td>
+<td>管道-过滤器、分层</td>
+</tr>
+<tr>
+<td>松耦合、可扩展</td>
+<td>事件系统、进程通信</td>
+</tr>
+<tr>
+<td>高并发、可伸缩</td>
+<td>分层 + 服务化、事件驱动</td>
+</tr>
+<tr>
+<td>可移植、可替换</td>
+<td>分层、虚拟机（解释器）</td>
+</tr>
+<tr>
+<td>处理非结构化问题</td>
+<td>黑板</td>
+</tr>
+</tbody>
+</table>
+<p>这句话很到位：<strong>风格的研究与实践促进设计重用</strong>，一些被验证过的方案可以可靠地用于新问题。</p>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：按风格归类）</strong> 判断下列系统属于哪种架构风格：① 编译器（词法→语法→语义→代码生成）；② 客服系统（坐席接起电话后触发录音、工单、质检三个模块）；③ 专家系统（规则库+推理引擎）；④ 数据仓库（多个分析工具共享一个中央数据存储）。</p>
+<p><em>解答</em>：<br>
+- ① <strong>管道-过滤器</strong>：每个处理阶段是过滤器，数据单向流经管道；<br>
+- ② <strong>事件系统（隐式调用）</strong>：接听事件触发多个注册的处理模块，触发方不关心谁响应；<br>
+- ③ <strong>规则系统（虚拟机风格）</strong>：规则集 + 规则解释器 + 工作内存；<br>
+- ④ <strong>仓库风格</strong>：中央数据结构被多个独立构件存取。</p>
+<p><em>点评</em>：归类题的抓手是"<strong>连接件是什么</strong>"——数据管道、事件、规则解释器、中央存储。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为风格之间互斥。</strong><br>
+真实系统常是组合风格（分层 + 事件 + 管道），只要说清哪部分用哪种。</p>
+<p><strong>误区二：把设计模式等同于架构风格。</strong><br>
+模式是类/对象级别的解法，风格是系统级组织方式。</p>
+<p><strong>误区三：认为风格只影响结构，不影响质量。</strong><br>
+风格直接决定耦合、并发、可替换性，是质量属性的第一杠杆。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="5-2-1" data-type="single" data-explain="词汇表定义构件/连接件类型，约束规定组合方式。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-2-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">架构风格由哪两部分定义？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 模块与接口</button><button class="opt" data-k="B"><b>B.</b> 词汇表与一组约束</button><button class="opt" data-k="C"><b>C.</b> 数据库与中间件</button><button class="opt" data-k="D"><b>D.</b> 需求与测试用例</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-2-2" data-type="single" data-explain="以数据为中心含仓库与黑板。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-2-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">下列属于"以数据为中心"风格的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 管道-过滤器</button><button class="opt" data-k="B"><b>B.</b> 黑板</button><button class="opt" data-k="C"><b>C.</b> 层次型</button><button class="opt" data-k="D"><b>D.</b> 解释器</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-2-3" data-type="single" data-explain="虚拟机=解释器 + 规则系统。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">5-2-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">"虚拟机"风格包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 批处理与管道</button><button class="opt" data-k="B"><b>B.</b> 仓库与黑板</button><button class="opt" data-k="C"><b>C.</b> 解释器与规则系统</button><button class="opt" data-k="D"><b>D.</b> 事件系统与进程通信</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-2-4" data-type="single" data-explain="事件系统通过隐式调用解耦。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-2-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">想获得松耦合、可扩展的构件协作，最倾向的风格是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 主程序/子程序</button><button class="opt" data-k="B"><b>B.</b> 事件系统</button><button class="opt" data-k="C"><b>C.</b> 批处理</button><button class="opt" data-k="D"><b>D.</b> 仓库</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-2-5" data-type="multi" data-explain="E 错：真实系统常是多种风格的组合。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">5-2-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">关于架构风格，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 风格是特定应用领域中系统组织方式的惯用模式</button><button class="opt" data-k="B"><b>B.</b> 调用/返回风格包括主程序/子程序、面向对象、层次型与 C/S</button><button class="opt" data-k="C"><b>C.</b> 独立构件风格包括进程通信与事件系统</button><button class="opt" data-k="D"><b>D.</b> 数据流风格包括批处理与管道-过滤器</button><button class="opt" data-k="E"><b>E.</b> 一个系统只能采用一种风格</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-2-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="词汇|约束" data-answer-text="词汇、约束"><div class="qhead"><span class="chip">5-2-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">架构风格的两大组成是构件/连接件的________表和一组________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="5-2-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="虚拟机|独立构件/独立" data-answer-text="虚拟机、独立构件"><div class="qhead"><span class="chip">5-2-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">架构风格五大类为数据流、调用/返回、以数据为中心、和。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：风格 = 词汇表 + 约束；五大类十一种，选择依据是质量属性。</p>
+<p><strong>留一个问题</strong>：第一大类"数据流"里，批处理与管道-过滤器差在哪？</p>
+<p>下一节展开。</p>
+<hr>
+<h2 id="sec3">第 3 节 数据流风格</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：数据一步步被加工时，用什么结构组织？批处理与管道-过滤器的关键差异是什么？</p>
+</blockquote>
+<h3>一、数据流风格的本质</h3>
+<p>数据流体系结构没有"程序计数器"——指令的可执行性由<strong>输入数据是否就绪</strong>决定，而不是由控制流决定。</p>
+<p>这句话的含义是：<strong>系统由数据驱动，而不是由调用驱动</strong>。这一类分两种：批处理与管道-过滤器。</p>
+<h3>二、批处理</h3>
+<p>每个处理步骤是一个<strong>独立程序</strong>，前一步结束、数据完整后才开始下一步，数据以<strong>整体</strong>方式传递。</p>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>构件</td>
+<td>独立的应用程序</td>
+</tr>
+<tr>
+<td>连接件</td>
+<td>某种媒介（如磁带、文件）</td>
+</tr>
+<tr>
+<td>特点</td>
+<td>顺序、整批、非交互</td>
+</tr>
+</tbody>
+</table>
+<p>典型例子：传统的日终批处理（对账、结息、报表生成）。</p>
+<p><strong>优点</strong>：结构简单、易于并行化（不同批次可并行）、适合大数据量。<br>
+<strong>缺点</strong>：不适合交互式处理；一步失败往往要整批重来。</p>
+<h3>三、管道-过滤器</h3>
+<p>数据源源不断产生时，系统把处理分解为若干<strong>序贯步骤</strong>，每步由一个<strong>过滤器</strong>实现，步骤之间由<strong>管道</strong>传输数据流。</p>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>构件</td>
+<td>过滤器（Filter）</td>
+</tr>
+<tr>
+<td>连接件</td>
+<td>管道（Pipe）</td>
+</tr>
+<tr>
+<td>特点</td>
+<td>流式、增量、可组合</td>
+</tr>
+</tbody>
+</table>
+<p><strong>优点</strong>：</p>
+<ul>
+<li>过滤器可<strong>独立替换与复用</strong>（只要接口约定一致）；</li>
+<li>支持<strong>并发</strong>（相邻过滤器可流水线作业）；</li>
+<li>便于添加新的处理步骤。</li>
+</ul>
+<p><strong>缺点</strong>：</p>
+<ul>
+<li>交互性差（不适合事件驱动的 UI）；</li>
+<li>过滤器之间需要统一的数据格式约定；</li>
+<li>某些需要全局状态的算法难以拆分。</li>
+</ul>
+<blockquote>
+<p><strong>想一想 ①</strong>：编译器为什么常用管道-过滤器？如果编译一个 10 万行的工程，中间结果要不要落盘？</p>
+</blockquote>
+<h3>四、两者的关键差异</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>批处理</th>
+<th>管道-过滤器</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据传递</td>
+<td>整批、完整数据</td>
+<td>流式、增量</td>
+</tr>
+<tr>
+<td>时间关系</td>
+<td>严格串行</td>
+<td>可流水线并发</td>
+</tr>
+<tr>
+<td>交互能力</td>
+<td>无</td>
+<td>弱</td>
+</tr>
+<tr>
+<td>典型场景</td>
+<td>日终批处理、离线计算</td>
+<td>编译器、日志处理、ETL 流水线</td>
+</tr>
+</tbody>
+</table>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：处理链路设计）</strong> 某日志平台要处理每天 20TB 的访问日志：解析 → 过滤 → 富化（补充用户信息）→ 聚合 → 入库。要求新增字段时尽量不影响已有环节，且能横向扩展。</p>
+<p><em>解答</em>：<br>
+- 采用<strong>管道-过滤器</strong>：每个阶段是一个过滤器，阶段间通过队列/管道传递；<br>
+- 新增"补充地域信息"只需在富化后插入一个过滤器，其余不变（可复用、可组合）；<br>
+- 各过滤器可<strong>独立水平扩展</strong>（按队列积压情况扩实例）；<br>
+- 若某个阶段需要全量数据（如全局去重），则该阶段改用批处理作业，形成"流批混合"。</p>
+<p><em>点评</em>：这道题的答案里"插入一个过滤器、其余不变"正是管道-过滤器的核心价值——<strong>可组合性</strong>。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为管道-过滤器必须用消息队列实现。</strong><br>
+管道可以是内存缓冲区、文件、套接字，形态不限。</p>
+<p><strong>误区二：认为批处理"过时了"。</strong><br>
+离线计算、报表、对账仍以批处理为主，成本最低。</p>
+<p><strong>误区三：把数据流风格与控制流混淆。</strong><br>
+数据流由数据就绪驱动，控制流由程序计数器驱动。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="5-3-1" data-type="single" data-explain="批处理以整体数据传递，媒介（磁带/文件）作连接件。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-3-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">批处理风格的构件与连接件分别是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 过滤器与管道</button><button class="opt" data-k="B"><b>B.</b> 独立应用程序与某种媒介</button><button class="opt" data-k="C"><b>C.</b> 对象与过程调用</button><button class="opt" data-k="D"><b>D.</b> 知识源与黑板</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-3-2" data-type="single" data-explain="管道负责数据流传输。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-3-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">管道-过滤器风格中，连接件是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 过程调用</button><button class="opt" data-k="B"><b>B.</b> 数据流传输管道</button><button class="opt" data-k="C"><b>C.</b> 事件总线</button><button class="opt" data-k="D"><b>D.</b> 共享内存</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-3-3" data-type="single" data-explain="流式处理与交互式场景天然不合。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-3-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">管道-过滤器风格的主要缺点是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 无法复用过滤器</button><button class="opt" data-k="B"><b>B.</b> 不适合交互式处理，且要求统一的数据格式约定</button><button class="opt" data-k="C"><b>C.</b> 不能并发</button><button class="opt" data-k="D"><b>D.</b> 无法扩展</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-3-4" data-type="single" data-explain="数据流风格没有概念上的程序计数器。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-3-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">关于数据流风格，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 由程序计数器控制执行顺序</button><button class="opt" data-k="B"><b>B.</b> 指令的可执行性由输入数据是否就绪决定</button><button class="opt" data-k="C"><b>C.</b> 构件之间必须同步调用</button><button class="opt" data-k="D"><b>D.</b> 只能用于编译器</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-3-5" data-type="multi" data-explain="D 错：批处理不适合交互。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">5-3-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">关于批处理与管道-过滤器，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 批处理数据以整体方式传递，前一步结束后才开始下一步</button><button class="opt" data-k="B"><b>B.</b> 管道-过滤器支持过滤器独立替换与复用</button><button class="opt" data-k="C"><b>C.</b> 管道-过滤器的相邻过滤器可流水线并发</button><button class="opt" data-k="D"><b>D.</b> 批处理适合交互式场景</button><button class="opt" data-k="E"><b>E.</b> 管道-过滤器常见于编译器和 ETL 流水线</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-3-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="程序|整体/完整" data-answer-text="应用程序、整体"><div class="qhead"><span class="chip">5-3-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">批处理风格中，每个处理步骤是一个独立的________，数据以________方式传递。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="5-3-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="管道" data-answer-text="管道"><div class="qhead"><span class="chip">5-3-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">管道-过滤器风格的两个基本元素是过滤器和________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：数据流风格由数据驱动，批处理整批串行、管道-过滤器流式可组合，后者更适合需要灵活扩展的处理链路。</p>
+<p><strong>留一个问题</strong>：如果系统不是"数据流过"，而是"一个调一个"，那是什么风格？</p>
+<p>下一节讲调用/返回。</p>
+<hr>
+<h2 id="sec4">第 4 节 调用/返回风格</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：通过"调用—返回"组织系统，能演化出哪几种具体形态？分层与 C/S 的关键差别是什么？</p>
+</blockquote>
+<h3>一、分而治之的基本策略</h3>
+<p>调用/返回风格的核心思想是<strong>把大系统分解为子系统</strong>，以降低复杂度、提升可修改性。程序从起点执行构件代码，结束后把控制权返回给调用者。</p>
+<p>这一类有四种：<strong>主程序/子程序、面向对象、层次型、客户端/服务器</strong>。</p>
+<h3>二、主程序/子程序</h3>
+<ul>
+<li>构件：主程序与子程序（可合成为模块）；</li>
+<li>连接件：<strong>过程调用</strong>；</li>
+<li>特点：单线程控制，调用关系有层次性，<strong>子程序的正确性取决于它调用的子程序的正确性</strong>。</li>
+</ul>
+<p>这是最经典的结构化程序组织方式，缺点是紧耦合、难以独立替换。</p>
+<h3>三、面向对象风格</h3>
+<ul>
+<li>构件：对象（抽象数据类型的实例）；</li>
+<li>连接件：对象之间的消息/方法调用；</li>
+<li>特点：数据与操作封装在一起，通过接口交互，支持继承与多态。</li>
+</ul>
+<p>相比主程序/子程序，它把"数据"也封装进构件，耦合更低，但对象之间的调用关系仍较紧密。</p>
+<h3>四、层次型风格</h3>
+<p>系统组织成<strong>层次结构</strong>，每层为上层提供服务、作为下层的客户；除精挑细选的输出函数外，<strong>内部层接口只对相邻层可见</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>要点</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>构件</td>
+<td>各层（层内实现虚拟机）</td>
+</tr>
+<tr>
+<td>连接件</td>
+<td>层间协议</td>
+</tr>
+<tr>
+<td>约束</td>
+<td>只允许相邻层交互</td>
+</tr>
+</tbody>
+</table>
+<p><strong>优点</strong>：每层最多只影响两层；只要接口不变，每层可用不同方法实现——<strong>为重用提供强大支持</strong>。<br>
+<strong>缺点</strong>：分层过细会带来性能损耗（请求逐层穿越）；并非所有系统都能自然分层。</p>
+<h3>五、客户端/服务器</h3>
+<p>基于<strong>资源不对等</strong>、为实现共享而提出。</p>
+<p><strong>两层 C/S</strong>：数据库服务器 + 客户应用程序 + 网络。服务器负责数据管理，客户端负责与用户交互，称为"<strong>胖客户机、瘦服务器</strong>"。</p>
+<p><strong>三层 C/S</strong>：增加<strong>应用服务器</strong>，应用逻辑驻留在应用服务器，客户端只保留表示层，称为"<strong>瘦客户机</strong>"。三层分别是：</p>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>表示层</td>
+<td>用户接口（GUI）</td>
+</tr>
+<tr>
+<td>功能层</td>
+<td>业务处理逻辑</td>
+</tr>
+<tr>
+<td>数据层</td>
+<td>数据库管理系统</td>
+</tr>
+</tbody>
+</table>
+<p>三层的好处是<strong>逻辑上独立</strong>：换数据库不影响界面，改界面不影响业务逻辑。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么三层 C/S 被说成"瘦客户机"？如果把业务逻辑放回客户端会有什么问题？</p>
+</blockquote>
+<h3>六、分层与 MVC 一族</h3>
+<p>MVC 是分层思想在表现层的具体化：</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>组成</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>MVC</strong></td>
+<td>Model（数据）、View（视图）、Controller（控制器）</td>
+<td>视图与模型解耦，Controller 处理输入</td>
+</tr>
+<tr>
+<td><strong>MVP</strong></td>
+<td>Model、View、Presenter</td>
+<td>View 与 Model 完全隔离，Presenter 承担交互逻辑</td>
+</tr>
+<tr>
+<td><strong>MVVM</strong></td>
+<td>Model、View、ViewModel</td>
+<td>双向绑定，ViewModel 暴露数据与命令</td>
+</tr>
+</tbody>
+</table>
+<p>三者都为了<strong>把界面与业务分离</strong>，差别在"谁负责协调"：MVC 由 Controller，MVP 由 Presenter，MVVM 由数据绑定。</p>
+<h3>七、例题精解</h3>
+<p><strong>例（工程项目：C/S 结构改造）</strong> 某单位的业务系统是两层 C/S：业务逻辑写在客户端，数据库直连。现在要支持 Web 访问、多地办公、并控制数据库账号外泄风险。请给出改造方案。</p>
+<p><em>解答</em>：<br>
+- 改造为<strong>三层 C/S（或 B/S）</strong>：把业务逻辑从客户端抽到<strong>应用服务器</strong>（功能层），客户端/浏览器只保留表示层；<br>
+- 数据层只允许应用服务器访问，客户端不再持有数据库账号（消除直连风险）；<br>
+- 应用服务器可横向扩展并做负载均衡，支持多地访问；<br>
+- 代价是增加一次网络跳转（性能略降）、需要维护应用服务器集群。</p>
+<p><em>点评</em>：这类题的答题套路是"<strong>问题现象 → 归到哪一层 → 改造后每层职责</strong>"，并补一句代价。</p>
+<h3>八、常见误区</h3>
+<p><strong>误区一：认为分层越多越好。</strong><br>
+层数增加会带来调用链变长、性能下降，层数应与变化边界匹配。</p>
+<p><strong>误区二：把两层 C/S 的"胖客户机"当成优点。</strong><br>
+它意味着客户端承担业务逻辑，升级维护成本高。</p>
+<p><strong>误区三：认为 MVC 是架构风格。</strong><br>
+MVC 更常被当作表现层的设计模式/结构模式，属于分层思想的局部应用。</p>
+<p><strong>误区四：混淆层次型与分层架构的"严格程度"。</strong><br>
+层次型强调相邻层交互约束；工程上的"分层架构"常常允许跨层调用（需明确规范）。</p>
+<h3>九、本节自测</h3>
+<blockquote>
+<p>共 9 题（6 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="5-4-1" data-type="single" data-explain="过程调用是其交互机制。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-4-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">主程序/子程序风格的连接件是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数据管道</button><button class="opt" data-k="B"><b>B.</b> 过程调用</button><button class="opt" data-k="C"><b>C.</b> 事件总线</button><button class="opt" data-k="D"><b>D.</b> 共享数据</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-4-2" data-type="single" data-explain="内部层接口只对相邻层可见。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-4-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">层次型风格对层间交互的约束是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 任意层可互相调用</button><button class="opt" data-k="B"><b>B.</b> 一般只允许相邻层交互</button><button class="opt" data-k="C"><b>C.</b> 只允许顶层调用底层</button><button class="opt" data-k="D"><b>D.</b> 无约束</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-4-3" data-type="single" data-explain="两层结构中业务逻辑在客户端。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-4-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">两层 C/S 结构被称为"胖客户机、瘦服务器"的原因是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 客户端只负责显示</button><button class="opt" data-k="B"><b>B.</b> 业务逻辑主要在客户端，服务器只负责数据管理</button><button class="opt" data-k="C"><b>C.</b> 客户端没有网络</button><button class="opt" data-k="D"><b>D.</b> 服务器承担全部业务逻辑</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-4-4" data-type="single" data-explain="三层：表示、功能、数据。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-4-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">三层 C/S 中，业务处理逻辑位于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 表示层</button><button class="opt" data-k="B"><b>B.</b> 功能层（应用服务器）</button><button class="opt" data-k="C"><b>C.</b> 数据层</button><button class="opt" data-k="D"><b>D.</b> 客户端</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-4-5" data-type="single" data-explain="MVVM 靠绑定，MVP 靠 Presenter 手动协调。" data-source="拓展" data-diag="B 补充" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-4-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">MVVM 与 MVP 的主要区别是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> MVVM 没有 Model</button><button class="opt" data-k="B"><b>B.</b> MVVM 采用双向数据绑定，由 ViewModel 暴露数据与命令</button><button class="opt" data-k="C"><b>C.</b> MVP 不需要 Presenter</button><button class="opt" data-k="D"><b>D.</b> 二者完全相同</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-4-6" data-type="single" data-explain="每层最多影响两层是优点，性能损耗是代价。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-4-6</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">层次型风格的主要缺点是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 无法重用</button><button class="opt" data-k="B"><b>B.</b> 分层过细会带来性能损耗，且并非所有系统都能自然分层</button><button class="opt" data-k="C"><b>C.</b> 不能跨平台</button><button class="opt" data-k="D"><b>D.</b> 无法维护</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-4-7" data-type="multi" data-explain="D 错：业务逻辑在功能层（应用服务器）。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">5-4-7</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">关于调用/返回风格，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 包括主程序/子程序、面向对象、层次型与 C/S</button><button class="opt" data-k="B"><b>B.</b> 面向对象风格的构件是对象，封装数据与操作</button><button class="opt" data-k="C"><b>C.</b> 层次型中每层最多只影响两层</button><button class="opt" data-k="D"><b>D.</b> 三层 C/S 的表示层通常包含业务逻辑</button><button class="opt" data-k="E"><b>E.</b> 主程序/子程序中子程序的正确性取决于它所调用的子程序</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-4-8" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="功能|数据" data-answer-text="功能、数据"><div class="qhead"><span class="chip">5-4-8</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">三层 C/S 结构的三层分别是表示层、________层和________层。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="5-4-9" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="控制器|模型/业务" data-answer-text="控制器、模型"><div class="qhead"><span class="chip">5-4-9</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">MVC 由模型、视图和________组成，其目的是把界面与________分离。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>十、小结与衔接</h3>
+<p>本节回答：调用/返回风格通过调用传递控制，从主程序/子程序演化到对象、分层与 C/S；分层的价值在"只影响相邻层"，C/S 的价值在"资源不对等下的共享"。</p>
+<p><strong>留一个问题</strong>：如果所有构件都围着一个中央数据转，而不是互相调用，那是什么风格？</p>
+<p>下一节讲以数据为中心。</p>
+<hr>
+<h2 id="sec5">第 5 节 以数据为中心的风格</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：仓库与黑板都"有一个中央数据"，它们的区别在哪？黑板为什么适合非结构化问题？</p>
+</blockquote>
+<h3>一、两种"围着数据转"</h3>
+<p>以数据为中心的风格包括<strong>仓库</strong>与<strong>黑板</strong>，共同点是：系统中存在一个中央数据结构，多个独立构件对它进行操作。</p>
+<p>区别在于<strong>中央数据的性质</strong>与<strong>构件的协作方式</strong>。</p>
+<h3>二、仓库风格</h3>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>构件</td>
+<td>中央数据结构 + 一组对中央数据进行操作的独立构件</td>
+</tr>
+<tr>
+<td>连接件</td>
+<td>仓库与独立构件之间的交互</td>
+</tr>
+<tr>
+<td>特点</td>
+<td>中央数据表示当前状态；构件之间的交互方式可能差异很大</td>
+</tr>
+</tbody>
+</table>
+<p>典型例子：数据库系统（中央是数据库，应用是独立构件）、现代 IDE（中央是符号表/项目模型，插件独立处理）。</p>
+<p><strong>优点</strong>：数据集中、易于一致性与共享；构件可独立演进。<br>
+<strong>缺点</strong>：中央数据成为<strong>单点与瓶颈</strong>；构件之间对数据模式的依赖较强。</p>
+<h3>三、黑板风格</h3>
+<p>黑板适用于<strong>复杂的非结构化问题</strong>，能在求解过程中综合运用多种知识源。</p>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>构件</td>
+<td>黑板（共享数据）、知识源（独立的知识模块）、控制模块</td>
+</tr>
+<tr>
+<td>连接件</td>
+<td>对黑板的直接存取与知识源间的触发</td>
+</tr>
+<tr>
+<td>特点</td>
+<td>解空间被组织成分级结构，每层由唯一词汇描述，代表问题的部分解</td>
+</tr>
+</tbody>
+</table>
+<p>工作机制：每个<strong>知识源</strong>负责把某一层次的信息转换成同层或相邻层的信息；控制模块决定下一步由哪个知识源处理。</p>
+<p>典型应用：<strong>语音识别、模式识别</strong>，以及松耦合代理的数据共享存取。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么黑板要"分级结构"？如果所有知识源都直接在同一个平面上写数据，会有什么问题？</p>
+</blockquote>
+<h3>四、仓库与黑板的对比</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>仓库</th>
+<th>黑板</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>中央数据</td>
+<td>表示当前系统状态的数据</td>
+<td>分级的、逐步完善的问题解</td>
+</tr>
+<tr>
+<td>谁决定下一步</td>
+<td>外部调用者/应用逻辑</td>
+<td><strong>控制模块</strong>（根据黑板状态选知识源）</td>
+</tr>
+<tr>
+<td>适用问题</td>
+<td>数据结构清晰、共享需求强</td>
+<td>非结构化、需要多知识源协作</td>
+</tr>
+<tr>
+<td>典型场景</td>
+<td>数据库、IDE、编译器的符号表</td>
+<td>语音识别、模式识别、专家系统前端</td>
+</tr>
+</tbody>
+</table>
+<p>一句话记：<strong>仓库是"共享的数据"，黑板是"逐步求解的过程"</strong>。</p>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：选仓库还是黑板）</strong> 某医学影像辅助诊断系统：输入影像后，需要依次经过"去噪→分割→特征提取→病灶分类→报告生成"，每个环节由不同算法团队提供，且某些环节在置信度不足时会回头要求重做前一步。应选哪种风格？</p>
+<p><em>解答</em>：<br>
+- 选<strong>黑板风格</strong>。理由：问题非结构化、需要多知识源（各算法）协作；解是<strong>逐步完善</strong>的（中间结果写在黑板上）；<strong>控制模块</strong>可根据置信度决定回溯或换算法——这正是黑板的"分级解空间 + 控制模块"。<br>
+- 若流程完全固定、无反悔，则用<strong>管道-过滤器</strong>更简单高效。</p>
+<p><em>点评</em>：判断依据是"<strong>要不要根据中间结果动态决定下一步</strong>"。要，选黑板；不要，选管道。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为仓库风格就是"用数据库"。</strong><br>
+几乎所有系统都用数据库，但仓库风格强调的是"<strong>中央数据结构 + 独立构件围绕它协作</strong>"这一组织结构。</p>
+<p><strong>误区二：把黑板等同于"消息总线"。</strong><br>
+消息总线传递的是事件，黑板存放的是<strong>共享的问题解状态</strong>。</p>
+<p><strong>误区三：认为以数据为中心的风格一定性能差。</strong><br>
+中央数据可以是高性能存储，关键是并发控制与分区策略。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="5-5-1" data-type="single" data-explain="仓库=中央数据 + 独立构件。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-5-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">仓库风格中的两种不同构件是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 过滤器与管道</button><button class="opt" data-k="B"><b>B.</b> 中央数据结构与对数据操作的独立构件</button><button class="opt" data-k="C"><b>C.</b> 知识源与规则解释器</button><button class="opt" data-k="D"><b>D.</b> 事件源与事件处理器</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-5-2" data-type="single" data-explain="黑板正是为非结构化求解而生。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-5-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">适合复杂非结构化问题、需要多知识源协作的风格是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 仓库</button><button class="opt" data-k="B"><b>B.</b> 黑板</button><button class="opt" data-k="C"><b>C.</b> 管道-过滤器</button><button class="opt" data-k="D"><b>D.</b> 解释器</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-5-3" data-type="single" data-explain="控制模块根据黑板状态选知识源。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-5-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">黑板系统中决定下一步由哪个知识源处理的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 用户</button><button class="opt" data-k="B"><b>B.</b> 控制模块</button><button class="opt" data-k="C"><b>C.</b> 数据库触发器</button><button class="opt" data-k="D"><b>D.</b> 编译器</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-5-4" data-type="single" data-explain="教材原例：语音识别与模式识别。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-5-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">黑板系统的传统应用领域是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 编译器</button><button class="opt" data-k="B"><b>B.</b> 信号处理（语音识别、模式识别）</button><button class="opt" data-k="C"><b>C.</b> 报表统计</button><button class="opt" data-k="D"><b>D.</b> 网络路由</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-5-5" data-type="multi" data-explain="D 错：区别在中央数据的性质与是否有控制模块。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">5-5-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">关于以数据为中心的风格，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 仓库风格中中央数据结构表示当前数据状态</button><button class="opt" data-k="B"><b>B.</b> 黑板风格将解空间组织成分级结构</button><button class="opt" data-k="C"><b>C.</b> 黑板风格适用于非结构化问题的求解</button><button class="opt" data-k="D"><b>D.</b> 仓库与黑板的唯一区别是数据量大小</button><button class="opt" data-k="E"><b>E.</b> 黑板中每个知识源可把某层信息转换成同层或相邻层信息</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-5-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="仓库|黑板" data-answer-text="仓库、黑板"><div class="qhead"><span class="chip">5-5-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">以数据为中心的两种风格是________和________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="5-5-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="知识源" data-answer-text="知识源"><div class="qhead"><span class="chip">5-5-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">黑板系统的三个主要组成部分是黑板、________和控制模块。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：仓库是共享数据的组织，黑板是逐步求解的组织；判断依据是"是否需要根据中间结果动态决定下一步"。</p>
+<p><strong>留一个问题</strong>：如果系统本身要"解释"用户写的规则或脚本，架构上该怎么做？</p>
+<p>下一节讲虚拟机风格。</p>
+<hr>
+<h2 id="sec6">第 6 节 虚拟机风格</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：解释器风格为什么能带来灵活性？规则系统由哪四部分组成？</p>
+</blockquote>
+<h3>一、造一个自己的运行环境</h3>
+<p>虚拟机风格的基本思想是：<strong>人为构造一个运行环境</strong>，在这个环境之上解析并运行自定义语言，从而增加架构灵活性。</p>
+<p>代价也很明确：<strong>多一层解释，性能必然下降</strong>。</p>
+<h3>二、解释器风格</h3>
+<p>解释器通常包含四部分：</p>
+<table>
+<thead>
+<tr>
+<th>组成</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>解释引擎</strong></td>
+<td>完成解释工作</td>
+</tr>
+<tr>
+<td><strong>存储区</strong></td>
+<td>存放将被解释的代码</td>
+</tr>
+<tr>
+<td><strong>当前状态数据结构</strong></td>
+<td>记录解释引擎的工作状态</td>
+</tr>
+<tr>
+<td><strong>执行进度结构</strong></td>
+<td>记录源代码被解释执行到哪</td>
+</tr>
+</tbody>
+</table>
+<p>解释器的核心价值是<strong>弥合程序语义与硬件语义的差异</strong>（如 JVM 弥合 Java 字节码与各平台机器指令）。</p>
+<p>两个要点值得记住：它通常是"软件中含有一个虚拟机，仿真硬件执行过程"；<strong>缺点是执行效率较低</strong>，典型例子是专家系统。</p>
+<h3>三、规则系统</h3>
+<p>基于规则的系统包括四部分：</p>
+<table>
+<thead>
+<tr>
+<th>组成</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>规则集</strong></td>
+<td>业务规则（条件—动作）</td>
+</tr>
+<tr>
+<td><strong>规则解释器</strong></td>
+<td>执行规则的引擎</td>
+</tr>
+<tr>
+<td><strong>规则/数据选择器</strong></td>
+<td>决定当前用哪条规则</td>
+</tr>
+<tr>
+<td><strong>工作内存</strong></td>
+<td>存放事实与中间结果</td>
+</tr>
+</tbody>
+</table>
+<p>工作流程是经典的"<strong>匹配—选择—执行</strong>"循环：把工作内存中的事实与规则集匹配，选出可执行规则，执行后更新工作内存，再循环。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：把风控规则写成代码里的 if-else，与放进规则引擎，各有什么代价？什么时候值得用规则引擎？</p>
+</blockquote>
+<h3>四、两种虚拟机的差异</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>解释器</th>
+<th>规则系统</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>被解释的对象</td>
+<td>程序代码（脚本/字节码）</td>
+<td>业务规则</td>
+</tr>
+<tr>
+<td>核心组成</td>
+<td>引擎 + 存储 + 状态</td>
+<td>规则集 + 引擎 + 选择器 + 工作内存</td>
+</tr>
+<tr>
+<td>灵活性来源</td>
+<td>语言层可扩展</td>
+<td>规则可热更新、业务人员可维护</td>
+</tr>
+<tr>
+<td>典型场景</td>
+<td>脚本引擎、JVM、DSL</td>
+<td>风控、审批、促销规则</td>
+</tr>
+</tbody>
+</table>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：规则引擎的取舍）</strong> 某银行的风控规则每月调整 20 次以上，每次调整需要开发改代码、测试、发版，平均 5 天。请评估是否引入规则引擎，并说明代价。</p>
+<p><em>解答</em>：<br>
+- <strong>值得引入</strong>：规则高频变更、且规则相对独立于主流程，规则引擎可把"改规则"从发版变成配置，缩短响应时间到小时级；<br>
+- <strong>代价</strong>：① 引入解释执行，性能低于硬编码（需评估单笔耗时是否可接受）；② 规则表达能力受限，复杂逻辑仍需代码；③ 需要规则治理（版本、测试、回滚），否则规则本身成为风险源；<br>
+- 折中：核心交易链路保留硬编码，非核心或易变规则放引擎。</p>
+<p><em>点评</em>：虚拟机风格的价值与代价是成对的——<strong>灵活性来自"晚绑定"，代价来自"多一层解释"</strong>。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为解释器只用于编程语言。</strong><br>
+DSL、模板引擎、公式计算都属解释器思路。</p>
+<p><strong>误区二：认为规则引擎能替代复杂业务逻辑。</strong><br>
+它擅长"条件—动作"型规则，流程编排与复杂计算仍靠代码。</p>
+<p><strong>误区三：忽视规则引擎自身的治理成本。</strong><br>
+规则版本、冲突检测、回归测试缺一不可。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="5-6-1" data-type="single" data-explain="多一层解释，性能必然下降。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-6-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">解释器风格的典型缺点是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 无法扩展</button><button class="opt" data-k="B"><b>B.</b> 执行效率较低</button><button class="opt" data-k="C"><b>C.</b> 不能跨平台</button><button class="opt" data-k="D"><b>D.</b> 无法调试</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-6-2" data-type="single" data-explain="规则系统四件：规则集、解释器、选择器、工作内存。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">5-6-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">基于规则的系统不包括下列哪个组成部分？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 规则集</button><button class="opt" data-k="B"><b>B.</b> 规则解释器</button><button class="opt" data-k="C"><b>C.</b> 数据管道</button><button class="opt" data-k="D"><b>D.</b> 工作内存</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-6-3" data-type="single" data-explain="经典 recognize-act 循环。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-6-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">规则系统的执行循环通常是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 编译—链接—执行</button><button class="opt" data-k="B"><b>B.</b> 匹配—选择—执行</button><button class="opt" data-k="C"><b>C.</b> 采集—清洗—入库</button><button class="opt" data-k="D"><b>D.</b> 请求—路由—响应</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-6-4" data-type="single" data-explain="灵活性来自晚绑定。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-6-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">虚拟机风格增加灵活性的根本原因是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 使用了更快的硬件</button><button class="opt" data-k="B"><b>B.</b> 人为构造运行环境，把语义解释推迟到运行时</button><button class="opt" data-k="C"><b>C.</b> 取消了所有接口</button><button class="opt" data-k="D"><b>D.</b> 增加了编译环节</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-6-5" data-type="multi" data-explain="D 错：规则引擎擅长条件-动作型规则，复杂流程仍靠代码。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">5-6-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">关于虚拟机风格，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 解释器通常包含解释引擎、存储区、当前状态与执行进度结构</button><button class="opt" data-k="B"><b>B.</b> 解释器可弥合程序语义与硬件语义的差异</button><button class="opt" data-k="C"><b>C.</b> 规则系统由规则集、规则解释器、规则/数据选择器与工作内存组成</button><button class="opt" data-k="D"><b>D.</b> 规则引擎可以替代所有业务逻辑</button><button class="opt" data-k="E"><b>E.</b> 虚拟机风格通常以牺牲性能换取灵活性</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-6-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="程序|硬件" data-answer-text="程序、硬件"><div class="qhead"><span class="chip">5-6-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">解释器风格通常被用来建立一种虚拟机，以弥合________语义与________语义之间的差异。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：虚拟机风格用"造环境 + 解释执行"换灵活性，解释器面向代码、规则系统面向业务规则，代价都是性能。</p>
+<p><strong>留一个问题</strong>：如果构件之间根本不互相调用，而是"谁关心谁注册"，那是什么风格？</p>
+<p>下一节讲独立构件。</p>
+<hr>
+<h2 id="sec7">第 7 节 独立构件风格</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：构件互不直接调用，怎么协作？隐式调用带来什么好处、又埋下什么隐患？</p>
+</blockquote>
+<h3>一、松耦合的代价与收益</h3>
+<p>独立构件风格强调：<strong>每个构件相对独立，彼此不直接通信</strong>，以降低耦合、提升灵活性。包括两种：<strong>进程通信</strong>与<strong>事件系统</strong>。</p>
+<h3>二、进程通信风格</h3>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>构件</td>
+<td>独立的过程（一般为命名过程）</td>
+</tr>
+<tr>
+<td>连接件</td>
+<td><strong>消息传递</strong></td>
+</tr>
+<tr>
+<td>通信方式</td>
+<td>点到点、同步/异步、远程过程调用（RPC）</td>
+</tr>
+</tbody>
+</table>
+<p>它的特点是"构件之间不共享内存，只交换消息"，天然适合分布式环境。</p>
+<h3>三、事件系统（隐式调用）</h3>
+<p>核心思想：构件<strong>不直接调用</strong>某个过程，而是<strong>触发或广播事件</strong>；其他构件把过程<strong>注册</strong>到事件上，事件发生时系统自动调用所有注册的过程。</p>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>构件</td>
+<td>模块（过程或事件集合）</td>
+</tr>
+<tr>
+<td>连接件</td>
+<td>事件（发布/订阅）</td>
+</tr>
+<tr>
+<td>角色</td>
+<td>事件源、事件管理器、事件处理器</td>
+</tr>
+</tbody>
+</table>
+<p><strong>最大的特点</strong>：事件的触发者<strong>不知道</strong>哪些构件会受影响，也不假定处理顺序。</p>
+<p>一个典型的例子：调试器在断点处停下时声明事件，编辑器自动滚动到断点、变量监视器刷新——<strong>调试器只管声明事件，不关心谁响应</strong>。</p>
+<p><strong>优点</strong>：<br>
+- 松耦合，新增订阅者不影响发布者；<br>
+- 可扩展性强，适合插件化、UI 联动、系统集成。</p>
+<p><strong>缺点</strong>：<br>
+- <strong>无法预知处理结果与顺序</strong>，调试与测试困难；<br>
+- 事件链路过长时难以追踪；<br>
+- 可能出现事件风暴、循环触发。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：电商下单后要触发"扣库存、发短信、加积分、写日志"，用事件系统和用直接调用各有什么利弊？</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：订单后置动作的解耦）</strong> 下单成功后需要做四件事：扣减库存、发确认短信、累加积分、写审计日志。当前是串行直接调用，导致下单接口耗时 800ms，且任一环节失败都会影响下单。请给出改造方案。</p>
+<p><em>解答</em>：<br>
+- 采用<strong>事件系统（隐式调用）</strong>：下单成功后发布"订单已创建"事件，四个处理方各自订阅；<br>
+- 效果：下单主链路只需写库 + 发事件，耗时降到百毫秒级；短信、积分、日志失败不影响下单；<br>
+- 需配套：① <strong>消息可靠性</strong>（持久化、重试、死信队列）；② <strong>顺序与幂等</strong>（积分累计要幂等）；③ <strong>可观测性</strong>（事件链路追踪），弥补"看不见谁在处理"的缺点；<br>
+- 若库存必须强一致（不能超卖），则扣库存仍应同步或采用预留机制，不能纯异步。</p>
+<p><em>点评</em>：这道题的关键是"<strong>哪些能异步、哪些必须同步</strong>"——事件驱动不是万能的，强一致环节要留在主链路。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为事件驱动天然可靠。</strong><br>
+事件可能丢失、重复、乱序，需要持久化与幂等设计。</p>
+<p><strong>误区二：认为隐式调用"没有耦合"。</strong><br>
+发布者与事件定义之间存在<strong>语义耦合</strong>（事件结构变了，订阅者都要改）。</p>
+<p><strong>误区三：把进程通信与事件系统混为一谈。</strong><br>
+进程通信是"点对点消息"，事件系统是"发布/订阅广播"。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="5-7-1" data-type="single" data-explain="构件是命名过程，连接件是消息。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-7-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">进程通信风格的连接件是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 过程调用</button><button class="opt" data-k="B"><b>B.</b> 消息传递</button><button class="opt" data-k="C"><b>C.</b> 数据管道</button><button class="opt" data-k="D"><b>D.</b> 共享黑板</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-7-2" data-type="single" data-explain="隐式调用：注册 + 广播。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-7-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">事件系统风格中，构件之间的交互方式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 直接过程调用</button><button class="opt" data-k="B"><b>B.</b> 触发或广播事件，注册者被自动调用</button><button class="opt" data-k="C"><b>C.</b> 共享内存读写</button><button class="opt" data-k="D"><b>D.</b> 数据库事务</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-7-3" data-type="single" data-explain="这是隐式调用的固有代价。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-7-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">事件系统风格最典型的缺点是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 无法扩展</button><button class="opt" data-k="B"><b>B.</b> 触发者无法预知哪些构件会响应、处理顺序不确定</button><button class="opt" data-k="C"><b>C.</b> 不能跨进程</button><button class="opt" data-k="D"><b>D.</b> 无法复用</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-7-4" data-type="single" data-explain="教材原例强调的就是“不关心”。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-7-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">一个典型例子：调试器声明断点事件，编辑器自动滚动到断点。这说明：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 事件系统需要中央调度器</button><button class="opt" data-k="B"><b>B.</b> 事件的触发者不必关心谁响应、如何处理</button><button class="opt" data-k="C"><b>C.</b> 事件系统只能用于 IDE</button><button class="opt" data-k="D"><b>D.</b> 事件必须同步处理</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-7-5" data-type="multi" data-explain="D 错：异步必然带来一致性问题，需补偿与幂等。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">5-7-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">关于独立构件风格，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 进程通信可采用点到点、同步/异步与 RPC</button><button class="opt" data-k="B"><b>B.</b> 事件系统基于隐式调用，支持发布/订阅</button><button class="opt" data-k="C"><b>C.</b> 事件系统松耦合、易扩展</button><button class="opt" data-k="D"><b>D.</b> 事件驱动不会带来数据一致性问题</button><button class="opt" data-k="E"><b>E.</b> 使用事件系统需考虑消息可靠性与幂等</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-7-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="事件" data-answer-text="事件系统"><div class="qhead"><span class="chip">5-7-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">独立构件风格包括进程通信和________两种具体风格。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="5-7-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="广播/发布" data-answer-text="广播"><div class="qhead"><span class="chip">5-7-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">事件系统中，构件不直接调用过程，而是触发或________事件。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：独立构件靠消息或事件协作，松耦合换来可扩展性，代价是行为不确定、需额外保障可靠性。</p>
+<p><strong>留一个问题</strong>：知道了各种风格，可"怎么用架构驱动开发"还没有答案——需求怎么变成架构、架构怎么落地？</p>
+<p>下一节讲 ABSD。</p>
+<hr>
+<h2 id="sec8">第 8 节 基于架构的软件开发（ABSD）</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：ABSD 与常规开发方法有什么不同？从需求到架构、再到实现，具体分哪几步？</p>
+</blockquote>
+<h3>一、为什么需要"架构驱动"</h3>
+<p>传统方法把架构当作设计阶段的一个产物；ABSD（Architecture-Based Software Design）则把<strong>架构当作开发的核心驱动力</strong>：先定架构，再让需求、设计、实现围绕架构展开。</p>
+<p>定义是：ABSD 是<strong>自顶向下、递归细化</strong>的方法，软件系统的体系结构通过该方法得到细化。</p>
+<h3>二、三个关键概念</h3>
+<p><strong>1. 设计元素</strong>：最顶层把系统分解为若干<strong>概念子系统</strong>和一个<strong>概念构件</strong>，逐层细化到可实现的构件。</p>
+<p><strong>2. 视角与视图</strong>：从不同<strong>视角</strong>观察架构，形成不同<strong>视图</strong>（逻辑视图、进程视图、实现视图、配置视图）。选择哪些视图，取决于要关注哪些质量属性。</p>
+<p><strong>3. 用例与质量场景</strong>：用例用于<strong>功能需求</strong>的驱动，质量场景用于<strong>非功能需求</strong>的驱动——这是 ABSD 的一个要点：<strong>质量属性要靠场景来落地，而不是靠形容词</strong>。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么 ABSD 强调"用质量场景驱动"？只写"系统要高性能"有什么问题？</p>
+</blockquote>
+<h3>三、ABSD 的开发模型</h3>
+<p>开发模型大致是这条链：</p>
+<blockquote>
+<p>体系结构需求 → 体系结构设计 → 体系结构文档化 → 体系结构复审 → 体系结构实现 → 体系结构演化</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>主要工作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>需求</strong></td>
+<td>从需求中提取<strong>质量目标与约束</strong>，形成质量场景；确定哪些需求"架构敏感"</td>
+</tr>
+<tr>
+<td><strong>设计</strong></td>
+<td>选择风格、划分构件、定义接口与连接件，产出架构视图</td>
+</tr>
+<tr>
+<td><strong>文档化</strong></td>
+<td>用标准化的架构描述记录（视图、接口、决策理由）</td>
+</tr>
+<tr>
+<td><strong>复审</strong></td>
+<td>组织评审，检查是否满足质量场景与约束</td>
+</tr>
+<tr>
+<td><strong>实现</strong></td>
+<td>按架构映射到构件与团队分工，逐层细化</td>
+</tr>
+<tr>
+<td><strong>演化</strong></td>
+<td>需求与环境变化时，按"0:N 更新构件相互作用"的方式演进</td>
+</tr>
+</tbody>
+</table>
+<p>两个容易被忽略的点：</p>
+<ul>
+<li><strong>文档化不只是画图</strong>，还要记录<strong>决策理由</strong>（为什么这样分层、为什么选这个风格）；</li>
+<li><strong>复审要对照质量场景</strong>逐条验证，而不是只看图画得对不对。</li>
+</ul>
+<h3>四、ABSD 与常规方法的差别</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>常规方法</th>
+<th>ABSD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>架构的地位</td>
+<td>设计阶段的产物</td>
+<td>开发的核心驱动</td>
+</tr>
+<tr>
+<td>需求驱动</td>
+<td>以功能需求为主</td>
+<td>功能用例 + <strong>质量场景</strong>双驱动</td>
+</tr>
+<tr>
+<td>细化方式</td>
+<td>按模块逐层分解</td>
+<td>自顶向下、<strong>递归细化</strong>设计元素</td>
+</tr>
+<tr>
+<td>变更应对</td>
+<td>改设计</td>
+<td><strong>架构演化</strong>（构件交互关系的更新）</td>
+</tr>
+</tbody>
+</table>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：把质量需求变成架构决策）</strong> 某系统提出三条需求：① 支持 5000 并发；② 单点故障不影响服务；③ 新增支付渠道不超过 2 人周。请把每条转成质量场景，并给出对应的架构决策。</p>
+<p><em>解答</em>：<br>
+- ① <strong>性能场景</strong>："高峰期 5000 并发时，95% 请求响应 &lt; 500ms" → 决策：分层 + 无状态服务 + 缓存 + 水平扩展；<br>
+- ② <strong>可用性场景</strong>："任一节点故障时，服务在 30 秒内自动恢复，不丢请求" → 决策：集群 + 健康检查 + 故障转移 + 幂等重试；<br>
+- ③ <strong>可修改性场景</strong>："新增支付渠道只需实现统一接口，不改核心流程" → 决策：<strong>策略模式/插件式架构</strong>，支付渠道作为可替换构件。</p>
+<p><em>点评</em>：AWSD 的答题模板就是"<strong>把形容词写成带度量与条件的场景，再倒推结构决策</strong>"——这也是架构评估（下一章）的输入。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为 ABSD 只适用于大型系统。</strong><br>
+它的核心是"先用质量场景约束结构"，小系统同样受益，只是文档可以更轻。</p>
+<p><strong>误区二：把架构文档等同于"几张图"。</strong><br>
+缺少决策理由与约束说明的文档，无法支撑后续演化。</p>
+<p><strong>误区三：认为架构一旦确定不再变化。</strong><br>
+ABSD 明确包含"演化"阶段，架构随需求与环境演进。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="5-8-1" data-type="single" data-explain="ABSD 自顶向下递归细化设计元素。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-8-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">ABSD 方法的基本特征是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 自底向上、逐步聚合</button><button class="opt" data-k="B"><b>B.</b> 自顶向下、递归细化</button><button class="opt" data-k="C"><b>C.</b> 完全并行、无层次</button><button class="opt" data-k="D"><b>D.</b> 以代码为中心</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-8-2" data-type="single" data-explain="用例驱动功能，场景驱动质量。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-8-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">ABSD 中用于驱动非功能需求的手段是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 用例</button><button class="opt" data-k="B"><b>B.</b> 质量场景</button><button class="opt" data-k="C"><b>C.</b> 数据流图</button><button class="opt" data-k="D"><b>D.</b> 甘特图</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-8-3" data-type="single" data-explain="ABSD 阶段围绕架构展开。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">5-8-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">下列不属于 ABSD 开发模型阶段的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 体系结构需求</button><button class="opt" data-k="B"><b>B.</b> 体系结构文档化</button><button class="opt" data-k="C"><b>C.</b> 体系结构复审</button><button class="opt" data-k="D"><b>D.</b> 单元测试覆盖率统计</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-8-4" data-type="single" data-explain="没有决策理由的文档无法支撑演化。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-8-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">"体系结构文档化"除了视图与接口，还应记录：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 源代码行数</button><button class="opt" data-k="B"><b>B.</b> 决策理由与约束</button><button class="opt" data-k="C"><b>C.</b> 人员绩效</button><button class="opt" data-k="D"><b>D.</b> 采购清单</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-8-5" data-type="single" data-explain="复审对照场景逐条验证。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-8-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">架构复审的核心依据应是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 图是否美观</button><button class="opt" data-k="B"><b>B.</b> 质量场景与约束是否被满足</button><button class="opt" data-k="C"><b>C.</b> 文档页数是否足够</button><button class="opt" data-k="D"><b>D.</b> 是否用了最新技术</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-8-6" data-type="multi" data-explain="D 错：ABSD 明确包含架构演化。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">5-8-6</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">关于 ABSD，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 架构是开发的核心驱动力</button><button class="opt" data-k="B"><b>B.</b> 通过视角观察、形成不同视图</button><button class="opt" data-k="C"><b>C.</b> 功能需求由用例驱动，非功能需求由质量场景驱动</button><button class="opt" data-k="D"><b>D.</b> 架构确定后不再演化</button><button class="opt" data-k="E"><b>E.</b> 设计元素自顶向下逐层细化</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-8-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="视角|视图" data-answer-text="视角、视图"><div class="qhead"><span class="chip">5-8-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">ABSD 强调从不同________观察架构，形成逻辑、进程、实现、配置等________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="5-8-8" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="复审|演化" data-answer-text="复审、演化"><div class="qhead"><span class="chip">5-8-8</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">ABSD 开发模型的主要阶段包括体系结构需求、设计、文档化、、实现和。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>九、小结与衔接</h3>
+<p>本节回答：ABSD 用"质量场景 + 自顶向下递归细化"把架构变成开发主线，涵盖需求、设计、文档化、复审、实现与演化。</p>
+<p><strong>留一个问题</strong>：如果一个领域里有几十个相似系统，能不能把架构本身做成可复用的资产？</p>
+<p>下一节讲架构复用与 DSSA。</p>
+<hr>
+<h2 id="sec9">第 9 节 架构复用与特定领域软件架构（DSSA）</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：架构怎么复用？DSSA 的"三层次、三活动"分别是什么？</p>
+</blockquote>
+<h3>一、从"复用代码"到"复用架构"</h3>
+<p>复用代码能省编码时间，但架构决定了系统的骨架——<strong>复用架构的收益远大于复用代码</strong>。</p>
+<p>软件架构复用分两类：</p>
+<ul>
+<li><strong>资产复用</strong>：复用已有的架构资产（架构、构件、文档、测试用例）；</li>
+<li><strong>过程复用</strong>：复用开发过程与经验（如标准过程、检查单）。</li>
+</ul>
+<h3>二、复用的对象与形式</h3>
+<table>
+<thead>
+<tr>
+<th>对象</th>
+<th>形式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>架构本身</td>
+<td>参考架构、架构模式</td>
+</tr>
+<tr>
+<td>构件</td>
+<td>构件库、开源组件</td>
+</tr>
+<tr>
+<td>领域模型</td>
+<td>领域知识、术语体系</td>
+</tr>
+<tr>
+<td>过程资产</td>
+<td>过程模板、检查单、估算模型</td>
+</tr>
+</tbody>
+</table>
+<h3>三、DSSA：为一个领域造"标准架构"</h3>
+<p><strong>DSSA（Domain Specific Software Architecture）</strong> 的定义：在<strong>一个特定应用领域</strong>中，为一组应用提供组织结构参考的<strong>标准软件体系结构</strong>。</p>
+<p>两个有代表性的定义：</p>
+<ul>
+<li>Hayes Roth：专用于一类特定任务领域、能在整个领域有效使用、为成功构造应用系统<strong>限定了标准组合结构</strong>的软件构件集合；</li>
+<li>Tracz：特定问题领域中支持一组应用的<strong>领域模型、参考需求、参考体系结构</strong>组成的开发基础，目标是支持该领域中多个应用的生成。</li>
+</ul>
+<p>DSSA 的必备特征：有严格定义的问题域与解决域；具有普遍性，可用于领域内特定应用的开发；是整个领域构件组织模型的恰当抽象；具备该领域固定的、典型的可重用元素。</p>
+<h3>四、DSSA 的三个层次</h3>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>面向</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>领域开发环境</strong></td>
+<td>领域专家/架构师</td>
+<td>领域分析、领域设计，产出参考架构与可复用构件</td>
+</tr>
+<tr>
+<td><strong>领域特定应用开发环境</strong></td>
+<td>应用开发者</td>
+<td>基于参考架构与构件，选择、配置、生成应用</td>
+</tr>
+<tr>
+<td><strong>应用执行环境</strong></td>
+<td>最终系统</td>
+<td>运行生成的应用</td>
+</tr>
+</tbody>
+</table>
+<p>一句话记：<strong>上层造资产，中层用资产，下层跑系统</strong>。</p>
+<h3>五、DSSA 的三个基本活动</h3>
+<table>
+<thead>
+<tr>
+<th>活动</th>
+<th>产出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>领域分析</strong></td>
+<td>领域模型（术语、共性需求、可变性）</td>
+</tr>
+<tr>
+<td><strong>领域设计</strong></td>
+<td>参考体系结构（DSSA 本身）</td>
+</tr>
+<tr>
+<td><strong>领域实现</strong></td>
+<td>可复用构件与生成器</td>
+</tr>
+</tbody>
+</table>
+<p>三者是迭代的：领域分析发现共性 → 领域设计固化结构 → 领域实现产出资产 → 实践中反馈修正领域模型。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：DSSA 与"产品线"是什么关系？如果一个领域里各系统的差异很大，DSSA 还适用吗？</p>
+</blockquote>
+<h3>六、例题精解</h3>
+<p><strong>例（工程项目：领域内多系统建设）</strong> 某集团要在 12 个省份分别建设"医保结算系统"，业务规则 80% 相同、20% 因地方政策不同。当前每个省独立招标建设。请用 DSSA 思路给出改进方案。</p>
+<p><em>解答</em>：<br>
+- <strong>领域分析</strong>：梳理 12 省的共性流程与差异点（报销比例、目录、接口），形成<strong>领域模型</strong>与可变性清单；<br>
+- <strong>领域设计</strong>：产出<strong>参考体系结构</strong>——统一的分层（接入、结算、清算、对账）+ 可配置的业务规则引擎 + 标准接口；<br>
+- <strong>领域实现</strong>：沉淀可复用构件（结算核心、规则引擎、报文适配器），并做成<strong>生成器/配置模板</strong>；<br>
+- <strong>应用开发</strong>：各省只需配置政策参数与本地接口适配，20% 的差异通过扩展点实现；<br>
+- 收益：交付周期与成本显著下降，且质量一致；风险：领域分析不到位会导致参考架构"过度约束"或"覆盖不足"。</p>
+<p><em>点评</em>：案例题里"多系统重复建设"的标准答法就是 <strong>DSSA 三活动 + 可变性管理</strong>。</p>
+<h3>七、常见误区</h3>
+<p><strong>误区一：认为 DSSA 就是一个"框架代码"。</strong><br>
+DSSA 是<strong>领域级的参考架构 + 领域模型 + 可复用资产</strong>，框架只是其中一种载体。</p>
+<p><strong>误区二：认为 DSSA 要求领域内系统完全相同。</strong><br>
+恰恰相反，DSSA 必须具备<strong>可变性设计</strong>，用扩展点容纳差异。</p>
+<p><strong>误区三：把架构复用等同于"复制粘贴"</strong>。<br>
+复用需要接口契约、版本管理与适配，复制粘贴是负债不是资产。</p>
+<h3>八、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="5-9-1" data-type="single" data-explain="Domain Specific Software Architecture。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-9-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">DSSA 的中文含义是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 分布式软件体系结构</button><button class="opt" data-k="B"><b>B.</b> 特定领域软件体系结构</button><button class="opt" data-k="C"><b>C.</b> 动态系统安全架构</button><button class="opt" data-k="D"><b>D.</b> 数据驱动软件架构</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-9-2" data-type="single" data-explain="上层造资产、中层用资产、下层跑系统。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-9-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">DSSA 三个层次中，面向应用开发者、用于选择配置构件生成应用的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 领域开发环境</button><button class="opt" data-k="B"><b>B.</b> 领域特定应用开发环境</button><button class="opt" data-k="C"><b>C.</b> 应用执行环境</button><button class="opt" data-k="D"><b>D.</b> 运维环境</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-9-3" data-type="single" data-explain="三活动是 DSSA 的标准框架。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-9-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">DSSA 的三个基本活动是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 需求、设计、测试</button><button class="opt" data-k="B"><b>B.</b> 领域分析、领域设计、领域实现</button><button class="opt" data-k="C"><b>C.</b> 规划、执行、检查</button><button class="opt" data-k="D"><b>D.</b> 采集、加工、输出</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-9-4" data-type="single" data-explain="DSSA 的核心是共性 + 可变性。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-9-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">DSSA 能够支持一个领域中多个应用的关键是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 所有应用完全相同</button><button class="opt" data-k="B"><b>B.</b> 通过扩展点与可变性设计容纳差异</button><button class="opt" data-k="C"><b>C.</b> 每个应用单独开发</button><button class="opt" data-k="D"><b>D.</b> 不使用参考架构</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-9-5" data-type="multi" data-explain="D 错：DSSA 必须容纳差异。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">5-9-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">关于架构复用与 DSSA，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 架构复用可分为资产复用与过程复用</button><button class="opt" data-k="B"><b>B.</b> DSSA 为特定领域的一组应用提供参考体系结构</button><button class="opt" data-k="C"><b>C.</b> 领域分析的产出包括领域模型与可变性</button><button class="opt" data-k="D"><b>D.</b> DSSA 要求领域内所有系统功能完全一致</button><button class="opt" data-k="E"><b>E.</b> 复用需要接口契约与版本管理</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-9-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="领域特定/应用开发|执行" data-answer-text="领域特定应用、应用执行"><div class="qhead"><span class="chip">5-9-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">DSSA 的三个层次是领域开发环境、________开发环境和________环境。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="5-9-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="分析|实现" data-answer-text="领域分析、领域实现"><div class="qhead"><span class="chip">5-9-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">DSSA 的三个基本活动是________、领域设计和________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>九、小结与衔接</h3>
+<p>本节回答：架构复用分资产与过程两类，DSSA 用"三层次 + 三活动"把领域共性沉淀成参考架构，用可变性容纳差异。</p>
+<hr>
+<h2 id="sec10">第 10 节 事件驱动架构的工程边界</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：事件驱动架构（EDA）与"事件系统风格"是同一件事吗？什么场景适合、什么场景不适合？</p>
+</blockquote>
+<h3>一、从"风格"到"架构范式"</h3>
+<p>第 7 节讲的是<strong>事件系统作为架构风格</strong>：构件不直接调用，而是触发事件、注册处理。</p>
+<p><strong>事件驱动架构（EDA）</strong> 是把这个思想上升为<strong>系统级的架构范式</strong>：以事件的<strong>产生、检测、消费与响应</strong>为核心组织整个分布式系统，组件之间通过异步事件通信解耦。</p>
+<p>区别在于<strong>范围</strong>：风格描述"构件怎么交互"，范式描述"整个系统的组织方式与数据流"。</p>
+<h3>二、三类角色</h3>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>事件生产者（Producer）</strong></td>
+<td>检测状态变化并发布事件</td>
+</tr>
+<tr>
+<td><strong>事件通道（Broker / Topic）</strong></td>
+<td>持久化、路由、分发事件</td>
+</tr>
+<tr>
+<td><strong>事件消费者（Consumer）</strong></td>
+<td>订阅并处理事件，可能再产生新事件</td>
+</tr>
+</tbody>
+</table>
+<p>关键设计点：<strong>事件通道要能持久化</strong>，否则消费者宕机就丢事件；<strong>事件要带唯一 ID</strong>，以便幂等与去重。</p>
+<h3>三、三种常见的事件使用模式</h3>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>做法</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>事件通知</strong></td>
+<td>事件只带"发生了什么"，消费者回查详情</td>
+<td>解耦优先、事件很小</td>
+</tr>
+<tr>
+<td><strong>事件携带状态</strong></td>
+<td>事件里带足够数据，消费者无需回查</td>
+<td>减少耦合调用、性能优先</td>
+</tr>
+<tr>
+<td><strong>事件溯源（Event Sourcing）</strong></td>
+<td>以事件序列作为<strong>唯一事实来源</strong>，状态由重放事件得到</td>
+<td>需要审计、可回溯</td>
+</tr>
+</tbody>
+</table>
+<p>第三种最重：它把"存状态"改成"存变更历史"，天然支持审计与回放，但查询需要物化视图，复杂度高。</p>
+<h3>四、适用边界（重要）</h3>
+<p>事件驱动不是万能的。判断很清楚：</p>
+<p><strong>适合</strong>：事件驱动的<strong>数据计算任务</strong>、计算时间短的请求/响应应用、<strong>没有复杂相互调用</strong>的长周期任务。</p>
+<p><strong>不适合</strong>：</p>
+<ul>
+<li>涉及<strong>频繁的外部 IO</strong>（网络、存储、服务间调用）——繁重的 IO 负担会让时延变大；</li>
+<li><strong>复杂的相互调用链</strong>——链路一长，事件编排与排错成本急剧上升；</li>
+<li><strong>强一致、低延迟</strong>的核心交易主链路——异步会引入最终一致与补偿。</li>
+</ul>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"计算时间短"反而是适合 Serverless/事件驱动的条件？长任务会带来什么问题？</p>
+</blockquote>
+<h3>五、与消息队列的关系</h3>
+<ul>
+<li><strong>消息队列是传输设施</strong>，EDA 是<strong>架构范式</strong>；</li>
+<li>用 MQ 不等于做了 EDA：如果只是"点对点发个消息"，仍是调用式思维；</li>
+<li>真正的 EDA 要满足：<strong>事件是领域事实（已发生的事）</strong>、<strong>生产者不关心谁消费</strong>、<strong>消费者可独立增减</strong>。</li>
+</ul>
+<p>命名也能帮助判断：事件名应是<strong>过去式</strong>（OrderCreated、PaymentCompleted），而不是命令式（CreateOrder）——命令式意味着生产者知道谁该做什么，那就退回了调用式。</p>
+<h3>六、例题精解</h3>
+<p><strong>例（工程项目：是否采用 EDA）</strong> 某系统有两块：① 订单创建后要做积分、通知、风控评分；② 核心支付扣款要求强一致、延迟 &lt;100ms。请判断哪些适合 EDA。</p>
+<p>*解答**：<br>
+- ① <strong>适合</strong>：积分、通知、风控评分都是"订单已创建"这一事实的下游反应，彼此独立、可异步、失败可重试；<br>
+- ② <strong>不适合</strong>：扣款要求强一致与低延迟，应留在同步主链路（或采用 TCC 预留 + 确认）；<br>
+- 设计要点：订单服务只发 <code>OrderCreated</code>，不关心谁订阅；消费者各自幂等；通道持久化 + 死信队列；关键动作有对账兜底。</p>
+<p><em>点评</em>：EDA 的边界就是"<strong>反应可异步、可重复、可延迟</strong>"；主链路的强一致动作必须留在同步路径。</p>
+<h3>七、常见误区</h3>
+<p><strong>误区一：认为用了消息队列就是 EDA。</strong><br>
+点对点调用式发消息不是 EDA。</p>
+<p><strong>误区二：认为 EDA 一定能提升性能。</strong><br>
+它提升的是<strong>解耦与可扩展</strong>，单次链路可能更长。</p>
+<p><strong>误区三：事件命名用命令式。</strong><br>
+<code>CreateOrder</code> 这种命名说明生产者仍在指挥下游。</p>
+<h3>八、本节自测</h3>
+<blockquote>
+<p>共 5 题（3 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="5-10-1" data-type="single" data-explain="生产者—通道—消费者是 EDA 的基本结构。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">5-10-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">事件驱动架构的三类角色是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 生产者、事件通道、消费者</button><button class="opt" data-k="B"><b>B.</b> 客户端、服务器、数据库</button><button class="opt" data-k="C"><b>C.</b> 网关、服务、缓存</button><button class="opt" data-k="D"><b>D.</b> 主、备、仲裁</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-10-2" data-type="single" data-explain="强一致低延迟的主链路必须留在同步路径。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-10-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">下列场景中最不适合采用事件驱动架构的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 订单创建后发通知、加积分</button><button class="opt" data-k="B"><b>B.</b> 核心支付扣款，要求强一致、低延迟</button><button class="opt" data-k="C"><b>C.</b> 日志与指标上报</button><button class="opt" data-k="D"><b>D.</b> 风控异步评分</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-10-3" data-type="single" data-explain="事件溯源（Event Sourcing）最重，需物化视图。" data-source="拓展" data-diag="B 补充" data-kp="" data-answer="C"><div class="qhead"><span class="chip">5-10-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">以事件序列作为唯一事实来源、状态由重放事件得到的模式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 事件通知</button><button class="opt" data-k="B"><b>B.</b> 事件携带状态</button><button class="opt" data-k="C"><b>C.</b> 事件溯源</button><button class="opt" data-k="D"><b>D.</b> 请求响应</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-10-4" data-type="multi" data-explain="D 错：点对点发消息仍是调用式思维。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">5-10-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">关于事件驱动架构，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> EDA 以事件的产生、检测、消费与响应为核心</button><button class="opt" data-k="B"><b>B.</b> 事件通道应能持久化，避免消费者宕机丢事件</button><button class="opt" data-k="C"><b>C.</b> 事件应带唯一 ID 以支持幂等去重</button><button class="opt" data-k="D"><b>D.</b> 用了消息队列就等于实现了 EDA</button><button class="opt" data-k="E"><b>E.</b> 事件命名宜用过去式，表示已发生的领域事实</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-10-5" data-type="fill" data-explain="命令式命名意味着生产者仍在指挥下游。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="过去" data-answer-text="过去"><div class="qhead"><span class="chip">5-10-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">EDA 中事件命名宜用________式（如 OrderCreated），表示已经发生的领域事实。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>九、小结与衔接</h3>
+<p>本节回答：EDA 是系统级的事件范式，靠生产者—通道—消费者解耦；适合可异步、可重复、链路简单的场景，不适合强一致主链路。</p>
+<hr>
+<h2 id="sec11">第 11 节 六边形架构</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：怎么让核心业务逻辑完全不被数据库、框架、界面绑住？</p>
+</blockquote>
+<h3>一、分层架构的隐性问题</h3>
+<p>分层架构看起来是"上下关系"：表现层 → 业务层 → 数据层。但依赖方向是<strong>向下</strong>的——业务层要 import 数据访问代码。</p>
+<p>结果：<strong>业务逻辑依赖了基础设施</strong>。换数据库、换框架，业务代码要跟着改；写单元测试也要连数据库。</p>
+<p>六边形架构（Hexagonal Architecture，又称<strong>端口与适配器架构</strong>）要修正的正是这个方向。</p>
+<h3>二、核心思想：内外对称</h3>
+<p>把系统看成"<strong>内圈 + 外圈</strong>"：</p>
+<table>
+<thead>
+<tr>
+<th>圈层</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>内圈（领域核心）</strong></td>
+<td>实体、领域服务、业务规则——不依赖任何技术</td>
+</tr>
+<tr>
+<td><strong>应用层</strong></td>
+<td>用例编排：调用领域对象、协调事务</td>
+</tr>
+<tr>
+<td><strong>端口（Port）</strong></td>
+<td>内圈定义的<strong>接口</strong>，声明"我需要什么能力"</td>
+</tr>
+<tr>
+<td><strong>适配器（Adapter）</strong></td>
+<td>外圈实现端口，对接数据库、消息、UI、第三方</td>
+</tr>
+</tbody>
+</table>
+<p>"六边形"只是示意：<strong>有几个外部交互面就画几条边</strong>，边数没有含义。重点在<strong>端口在内、适配器在外</strong>。</p>
+<h3>三、依赖方向：全部指向内部</h3>
+<p>这是与分层架构最本质的差别：</p>
+<ul>
+<li>分层：业务层 → 数据层（业务依赖基础设施）；</li>
+<li>六边形：适配器 → 端口 → 领域（<strong>基础设施依赖领域</strong>，即依赖倒置）。</li>
+</ul>
+<p>于是：<strong>换数据库只换一个适配器</strong>，领域代码一行不动；测试时用内存实现替代真实数据库。</p>
+<h3>四、两种端口</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>方向</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>驱动端口（入站）</strong></td>
+<td>外部驱动系统</td>
+<td>REST 接口、消息消费者、定时任务</td>
+</tr>
+<tr>
+<td><strong>被驱动端口（出站）</strong></td>
+<td>系统驱动外部</td>
+<td>仓储接口、消息发送、外部服务调用</td>
+</tr>
+</tbody>
+</table>
+<p>入站适配器把 HTTP 请求转成用例调用；出站适配器把仓储接口实现成具体 SQL。</p>
+<p><strong>分析、设计、开发的三段流程</strong></p>
+<p>六边形不是画完就有的，它按三步落地：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>做什么</th>
+<th>产出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>分析</strong></td>
+<td>识别用例与外部交互方（谁驱动系统、系统驱动谁），把每个交互面变成候选端口</td>
+<td>用例清单、端口候选表</td>
+</tr>
+<tr>
+<td><strong>设计</strong></td>
+<td>在内圈建领域模型与用例，在边界定义端口接口（方法签名、数据契约）；为每个端口规划适配器</td>
+<td>领域模型、端口契约、适配器清单</td>
+</tr>
+<tr>
+<td><strong>开发</strong></td>
+<td>内外并行：一队写领域与应用层（只依赖端口），一队写适配器；用内存实现做单元测试</td>
+<td>可运行系统、测试替身</td>
+</tr>
+</tbody>
+</table>
+<p><strong>判断是否做对了，只看一条</strong>：断网、去掉数据库与消息中间件，领域层的单元测试还能不能全部跑通。能，说明依赖真的倒置了。</p>
+<h3>五、收益与代价</h3>
+<p><strong>收益</strong>：</p>
+<ul>
+<li>领域逻辑<strong>与技术无关</strong>，可长期演进；</li>
+<li>可测试性强（适配器可替换为 Mock）；</li>
+<li>换技术栈的半径被限制在适配器层。</li>
+</ul>
+<p><strong>代价</strong>：</p>
+<ul>
+<li><strong>间接层多</strong>：一个请求要经过适配器 → 端口 → 用例 → 领域，链路长；</li>
+<li><strong>前期成本高</strong>：需要设计端口边界，小项目显得"过度设计"；</li>
+<li><strong>团队要求</strong>：成员要理解依赖倒置，否则容易把业务写进适配器。</li>
+</ul>
+<blockquote>
+<p><strong>想一想 ①</strong>：如果团队把业务判断写在了 Controller 里，六边形架构还成立吗？</p>
+</blockquote>
+<h3>六、与分层架构、微服务的区别</h3>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>分层架构</th>
+<th>六边形架构</th>
+<th>微服务</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>组织维度</td>
+<td>上下（技术职责）</td>
+<td>内外（依赖方向）</td>
+<td>进程边界（业务域）</td>
+</tr>
+<tr>
+<td>解决的问题</td>
+<td>关注点分离</td>
+<td>核心与基础设施解耦</td>
+<td>独立部署与扩展</td>
+</tr>
+<tr>
+<td>是否互斥</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+<p>三者可以叠加：<strong>微服务内部用六边形组织，六边形内部再用分层思想划分模块</strong>。</p>
+<h3>七、例题精解</h3>
+<p><strong>例（工程项目：改造为六边形）</strong> 某系统业务逻辑里直接写了 SQL 与 Redis 调用，换数据库要改 200 处。请给出六边形改造方案。</p>
+<p>*解答**：<br>
+- <strong>抽端口</strong>：把"存取订单"抽象为 <code>OrderRepository</code> 接口，"发送通知"抽象为 <code>Notifier</code> 接口，放在领域/应用层；<br>
+- <strong>写适配器</strong>：<code>OrderRepositoryJdbc</code>、<code>OrderRepositoryRedis</code> 实现端口，SQL 与 Redis 调用全部移入；<br>
+- <strong>依赖倒置</strong>：领域层只依赖接口，启动时注入具体适配器（DI 容器）；<br>
+- <strong>入站适配</strong>：Controller、消息消费者作为入站适配器，只做协议转换与用例调用；<br>
+- <strong>验证</strong>：用内存实现替换仓储，领域层可脱离数据库做单元测试。</p>
+<p><em>点评</em>：答题骨架是"<strong>先抽端口、再写适配器、最后倒置依赖</strong>"，并强调"领域层零技术依赖"这个验收标准。</p>
+<h3>八、常见误区</h3>
+<p><strong>误区一：认为六边形就是"六层"。</strong><br>
+边数无意义，关键在端口与适配器的内外关系。</p>
+<p><strong>误区二：认为用了依赖注入就是六边形。</strong><br>
+要看<strong>领域层是否依赖了技术细节</strong>。</p>
+<p><strong>误区三：认为六边形等于微服务。</strong><br>
+它是单个服务内部的组织方式，与进程边界无关。</p>
+<h3>九、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 2 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="5-11-1" data-type="single" data-explain="Hexagonal = Ports &amp; Adapters。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-11-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">六边形架构的另一个名称是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 分层架构</button><button class="opt" data-k="B"><b>B.</b> 端口与适配器架构</button><button class="opt" data-k="C"><b>C.</b> 微服务架构</button><button class="opt" data-k="D"><b>D.</b> 事件驱动架构</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-11-2" data-type="single" data-explain="基础设施依赖领域，而非相反。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-11-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">六边形架构中依赖方向是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 领域依赖适配器</button><button class="opt" data-k="B"><b>B.</b> 适配器依赖领域（依赖倒置）</button><button class="opt" data-k="C"><b>C.</b> 适配器依赖数据库</button><button class="opt" data-k="D"><b>D.</b> 无依赖</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-11-3" data-type="single" data-explain="边数只是示意。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-11-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">"六边形"的边数代表：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 六个固定的层</button><button class="opt" data-k="B"><b>B.</b> 外部交互面的数量，无特殊含义</button><button class="opt" data-k="C"><b>C.</b> 六种数据库</button><button class="opt" data-k="D"><b>D.</b> 六个微服务</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-11-4" data-type="multi" data-explain="D 错：它是服务内部的组织方式。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">5-11-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">关于六边形架构，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 领域核心不依赖任何技术细节</button><button class="opt" data-k="B"><b>B.</b> 端口由内圈定义，适配器在外圈实现</button><button class="opt" data-k="C"><b>C.</b> 入站适配器包括 REST 接口与消息消费者</button><button class="opt" data-k="D"><b>D.</b> 六边形架构等同于微服务</button><button class="opt" data-k="E"><b>E.</b> 适配器可替换为 Mock 以便测试</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-11-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="适配器" data-answer-text="适配器"><div class="qhead"><span class="chip">5-11-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">六边形架构通过把端口定义在内圈、由外圈的________实现，来实现依赖倒置。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="5-11-6" data-type="single" data-explain="分析阶段定交互面。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-11-6</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">六边形架构落地的第一步是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 先写数据库访问层</button><button class="opt" data-k="B"><b>B.</b> 识别用例与外部交互方，形成端口候选</button><button class="opt" data-k="C"><b>C.</b> 先选框架</button><button class="opt" data-k="D"><b>D.</b> 先部署</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-11-7" data-type="single" data-explain="依赖真的倒置才成立。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5-11-7</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">判断六边形是否做对的关键验证是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 代码行数是否减少</button><button class="opt" data-k="B"><b>B.</b> 断开数据库与中间件后领域层单测能否全部跑通</button><button class="opt" data-k="C"><b>C.</b> 是否使用微服务</button><button class="opt" data-k="D"><b>D.</b> 是否用了 DI 框架</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5-11-8" data-type="multi" data-explain="D 错：领域层不应依赖 ORM。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">5-11-8</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">六边形架构的设计与开发要点包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 端口用接口定义方法签名与数据契约</button><button class="opt" data-k="B"><b>B.</b> 为每个端口规划适配器</button><button class="opt" data-k="C"><b>C.</b> 内外可并行开发</button><button class="opt" data-k="D"><b>D.</b> 领域层可直接依赖 ORM</button><button class="opt" data-k="E"><b>E.</b> 测试时用内存实现替代真实适配器</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<h3>十、小结与衔接</h3>
+<p>本节回答：六边形架构用"端口在内、适配器在外"把领域核心与技术细节解耦，代价是间接层与前期成本。</p>
+<h2 id="sec12">本章总复习</h2>
+<h3>一、这一章的主线</h3>
+<p>架构这一章回答的是"系统该怎么拆、拆开的部件怎么协作"。前七节建立"风格"的框架：构件与连接件、五大类十一种风格，逐一展开数据流、调用返回、以数据为中心、虚拟机、独立构件；第八节讲怎么用架构驱动开发（ABSD），第九节讲架构怎么复用（DSSA）；最后三节补三个工程视角——事件驱动架构的边界、六边形架构。</p>
+<h3>二、必须能说出的判断</h3>
+<ul>
+<li><strong>风格的本质是连接件</strong>：管道、事件、共享数据、解释引擎，换连接件就是换风格；</li>
+<li><strong>分层只影响相邻层</strong>，这是它可替换性的来源，也是性能损耗的来源；</li>
+<li><strong>事件系统的代价是"行为不确定"</strong>，所以关键链路必须留在同步路径；</li>
+<li><strong>六边形架构的验收标准</strong>：断网、去掉数据库后，领域层单测仍能跑通；</li>
+<li><strong>微服务不是 SOA 的对立面</strong>，而是把"重总线"换成"轻契约 + 自动化"。</li>
+</ul>
+<h3>三、跨节综合自测（8 题）</h3>
+<div class="quiz" data-id="5综-1" data-type="single" data-explain="风格的差别主要体现在连接件上。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5综-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">把一次同步 RPC 调用改为「发布事件 + 多方订阅」，从架构上看是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 仅性能优化</button><button class="opt" data-k="B"><b>B.</b> 连接件改变，风格由调用返回转为事件驱动</button><button class="opt" data-k="C"><b>C.</b> 仅代码重构</button><button class="opt" data-k="D"><b>D.</b> 仅部署调整</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5综-2" data-type="single" data-explain="三层：表示、功能、数据。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">5综-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">三层 C/S 中，业务处理逻辑与数据库访问分别位于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 功能层、数据层</button><button class="opt" data-k="B"><b>B.</b> 表示层、功能层</button><button class="opt" data-k="C"><b>C.</b> 数据层、表示层</button><button class="opt" data-k="D"><b>D.</b> 都在客户端</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5综-3" data-type="multi" data-explain="E 错：微服务内部用六边形，六边形内部仍可分层。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">5综-3</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">关于六边形架构与分层架构的区别，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 分层按技术职责上下切分</button><button class="opt" data-k="B"><b>B.</b> 六边形按「内外」组织，依赖指向内部</button><button class="opt" data-k="C"><b>C.</b> 六边形中领域层不依赖 ORM 与框架</button><button class="opt" data-k="D"><b>D.</b> 六边形要求适配器实现端口</button><button class="opt" data-k="E"><b>E.</b> 二者互斥，不能同时使用</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5综-4" data-type="single" data-explain="强一致主链路必须留在同步路径。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5综-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">下列场景最不适合事件驱动架构的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 下单后异步发通知、加积分</button><button class="opt" data-k="B"><b>B.</b> 核心支付扣款，要求强一致且低延迟</button><button class="opt" data-k="C"><b>C.</b> 日志与指标上报</button><button class="opt" data-k="D"><b>D.</b> 风控异步评分</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5综-5" data-type="single" data-explain="规则与推理由解释引擎执行。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5综-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">专家系统通常采用哪种架构风格：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 管道-过滤器</button><button class="opt" data-k="B"><b>B.</b> 解释器（虚拟机风格）</button><button class="opt" data-k="C"><b>C.</b> 主程序/子程序</button><button class="opt" data-k="D"><b>D.</b> 仓库</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5综-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="管道|就绪/可用" data-answer-text="管道、就绪"><div class="qhead"><span class="chip">5综-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">管道-过滤器风格的连接件是________，数据流风格由数据是否________驱动执行。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="5综-7" data-type="single" data-explain="用例驱动功能，场景驱动质量。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">5综-7</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">ABSD 中用于驱动非功能需求的手段是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 用例</button><button class="opt" data-k="B"><b>B.</b> 质量场景</button><button class="opt" data-k="C"><b>C.</b> 数据流图</button><button class="opt" data-k="D"><b>D.</b> 甘特图</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="5综-8" data-type="multi" data-explain="D 错：DSSA 的核心是共性 + 可变性。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">5综-8</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec12">↑ 回到本节开头</a></div><div class="qstem">关于 DSSA，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 三个层次是领域开发环境、领域特定应用开发环境、应用执行环境</button><button class="opt" data-k="B"><b>B.</b> 三个基本活动是领域分析、领域设计、领域实现</button><button class="opt" data-k="C"><b>C.</b> 通过扩展点容纳领域内差异</button><button class="opt" data-k="D"><b>D.</b> 要求领域内所有系统功能完全一致</button><button class="opt" data-k="E"><b>E.</b> 产出包括参考体系结构与可复用构件</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<h3>四、与论文、案例的接口</h3>
+<p>这一章是论文命中率最高的部分——几乎所有架构类论文都要先说清"用了什么架构风格、为什么"。案例题的"架构风格识别""分层设计"也出自这里。</p>
+<h3>五、下一步</h3>
+<p><strong>本章结束</strong>。下一步进入 K6（质量属性与架构评估）。</p>
+<div class="legend" style="margin-top:44px">标注说明：<b>软考口径</b>＝按官方用书表述给分；<b>拓展</b>＝考纲未展开的补充知识。详见 <a href="k00.html">K0 前言</a>。作答记录保存在本机浏览器。</div>
+<div class="toast" id="toast"></div>
+</div>
+<script>
+const KEY="book_K5架构基础与架构风格";
+let state=JSON.parse(localStorage.getItem(KEY)||"{}");
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function norm(s){return (s||"").toLowerCase().replace(/[\s，,、;；。.()（）]/g,"");}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1400);}
+function stats(){const qs=$$(".quiz");let done=0,ok=0;
+ qs.forEach(q=>{const st=state[q.dataset.id];if(st&&st.done){done++;if(st.ok)ok++;}});
+ return {done,total:qs.length,ok};}
+function paint(){const s=stats();const p=s.total?s.done/s.total*100:0;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";}
+function fillKeywords(q){return q.dataset.answer.split("|").map(g=>g.split("/"));}
+function fbHTML(q,ok,userText){
+ const diag=q.dataset.diag||"";const warm=diag.includes("补充")?"#a2540f":"#b42318";
+ const ans=q.dataset.answerText||q.dataset.answer;
+ return '<div class="res">'+(ok?"✔ 回答正确":"✘ 回答错误")+'</div>'
+  +'<div><b>正确答案：</b>'+ans+(userText?'　<span style="color:#6b7280">你的作答：'+userText+'</span>':'')+'</div>'
+  +'<details open><summary>展开解析</summary><div class="inner">'
+  +'<div>'+q.dataset.explain+'</div>'
+  +'<div class="row tags">来源：'+q.dataset.source+'　｜　诊断标签：<b style="color:'+warm+'">'+diag+'</b></div>'
+  +'</div></details>';
+}
+function judge(q,ok,userText){
+ const fb=$(".fb",q);fb.className="fb show "+(ok?"ok":"bad");
+ fb.innerHTML=fbHTML(q,ok,userText);
+ state[q.dataset.id]={done:true,ok:ok};save();paint();
+}
+$$(".quiz").forEach(q=>{
+ const type=q.dataset.type;const ans=q.dataset.answer;
+ const opts=$$(".opt",q);const fb=$(".fb",q);
+ const saved=state[q.dataset.id];
+ if(type==="single"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     opts.forEach(x=>x.disabled=true);
+     const ok=(o.dataset.k===ans);
+     o.classList.add(ok?"right":"wrong");
+     if(!ok){const c=opts.find(x=>x.dataset.k===ans);if(c)c.classList.add("right");}
+     judge(q,ok,o.dataset.k);
+   }));
+ }else if(type==="multi"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     if(o.disabled)return;
+     o.classList.toggle("sel");
+   }));
+   const btn=$(".check",q);
+   if(btn)btn.addEventListener("click",()=>{
+     const picked=opts.filter(o=>o.classList.contains("sel")).map(o=>o.dataset.k).sort().join("");
+     if(!picked){toast("先选择至少一个选项");return;}
+     opts.forEach(o=>{
+       o.disabled=true;o.classList.remove("sel");
+       const k=o.dataset.k;
+       if(ans.includes(k))o.classList.add("right");
+       else if(picked.includes(k))o.classList.add("wrong");
+     });
+     judge(q,picked===ans,picked);
+   });
+ }else{
+   const inp=$(".fillinput",q);const btn=$(".check",q);
+   const go=()=>{
+     const raw=inp.value;const v=norm(raw);
+     if(!v){toast("先填写答案");return;}
+     let ok=false;
+     if(q.dataset.numeric){
+       const m=raw.match(/-?\d+(?:\.\d+)?/);
+       const cands=q.dataset.numeric.split("|");
+       ok=!!m&&cands.some(x=>Math.abs(parseFloat(m[0])-parseFloat(x))<0.011);
+     }else{
+       ok=fillKeywords(q).every(g=>g.some(k=>v.includes(norm(k))));
+     }
+     inp.disabled=true;inp.style.borderColor=ok?"#7cc49b":"#e79a94";
+     if(btn)btn.disabled=true;
+     judge(q,ok,raw.trim());
+   };
+   if(btn)btn.addEventListener("click",go);
+   if(inp)inp.addEventListener("keydown",e=>{if(e.key==="Enter")go();});
+ }
+ if(saved&&saved.done){/* 恢复历史状态：仅标记，不覆盖作答 */}
+});
+window.addEventListener("scroll",()=>{
+ const h=document.documentElement;
+ const p=h.scrollTop/(h.scrollHeight-h.clientHeight||1)*100;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";
+});
+paint();
+</script>
+<div class="book-foot-nav"><div class="bf-box"><a href="k04.html">&larr; 上一章 K4 数据库设计</a><a class="bf-next" href="k06.html">下一章 K6 质量属性与架构评估 &rarr;</a></div><p class="bf-note">作答记录保存在本机浏览器，换设备或清除缓存不会保留。本章支持浏览器直接打印为 PDF。</p></div><script>
+(function(){
+  var el=document.getElementById("book-nav-progress");
+  function refresh(){
+    try{
+      var st=JSON.parse(localStorage.getItem("book_K5架构基础与架构风格")||"{}"),done=0;
+      Object.keys(st).forEach(function(k){if(st[k]&&st[k].done)done++;});
+      if(el)el.textContent=done+" / 87 题";
+    }catch(e){}
+  }
+  refresh();setInterval(refresh,1000);
+})();
+</script></body></html>

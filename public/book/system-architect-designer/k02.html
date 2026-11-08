@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K2 信息系统与信息安全</title>
+<style>
+:root{--bg:#fbfaf7;--card:#fff;--ink:#1f2328;--sub:#6b7280;--line:#e6e3dd;--accent:#1f4e79;--ok:#0f7b4f;--bad:#b42318;--chip:#eef3f8;--warm:#fdf6ec}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:17px/1.9 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",serif}
+#bar{position:fixed;top:0;left:0;height:3px;background:var(--accent);width:0;z-index:99}
+.wrap{max-width:760px;margin:0 auto;padding:56px 20px 100px}
+h1{font-size:27px;line-height:1.4;letter-spacing:.5px;margin:0 0 10px}
+h2{font-size:21px;margin:52px 0 14px;padding-top:14px;border-top:2px solid var(--line);letter-spacing:.5px}
+h2:first-of-type{border-top:none}
+h3{font-size:17.5px;margin:30px 0 10px;color:#2b3a4a}
+h5{font-size:15px;margin:26px 0 8px;color:var(--sub);font-weight:600}
+p{margin:10px 0}
+blockquote{margin:16px 0;padding:12px 16px;background:var(--warm);border-left:3px solid #e0b984;border-radius:0 8px 8px 0;font-size:16px}
+blockquote p{margin:4px 0}
+strong{color:#12324f}
+hr{border:none;border-top:1px dashed var(--line);margin:26px 0}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px;background:#fff}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f3f1ec;font-weight:600}
+code{background:#f3f1ec;padding:1px 5px;border-radius:4px;font-size:14px}
+pre{background:#f7f5f1;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto}
+ul,ol{margin:10px 0;padding-left:22px}
+li{margin:4px 0}
+.math{font-family:"Cambria Math",Cambria,Georgia,"Times New Roman",serif;font-size:1.03em}
+.mathblock{display:block;text-align:center;margin:16px 0;overflow-x:auto;padding:2px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:-0.55em;text-align:center;margin:0 .3em}
+.frac .n{border-bottom:1px solid currentColor;padding:0 .3em;line-height:1.3}
+.frac .d{padding:0 .3em;line-height:1.4}
+sub,sup{font-size:.72em;line-height:0}
+.toast{position:fixed;right:18px;bottom:18px;background:#1f2937;color:#fff;padding:9px 14px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+
+/* 题卡 */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:18px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.qhead{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.chip{background:var(--chip);color:#33475b;border-radius:999px;padding:1px 9px;font-size:12px}
+.chip.t{background:#eaf4ec;color:#0f7b4f}
+.chip.k{background:#f4f0fa;color:#5b3f8f;font-size:11.5px}
+a.back{margin-left:auto;font-size:12px;color:var(--sub);text-decoration:none;border-bottom:1px dashed #c9c4ba}
+a.back:hover{color:var(--accent);border-color:var(--accent)}
+.qstem{font-weight:600;margin:4px 0 12px;font-size:16px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:15.5px;line-height:1.7;
+ background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 13px;cursor:pointer;transition:.15s}
+.opt:hover{border-color:#b9c6d6;background:#f8fafc}
+.opt b{color:var(--accent);margin-right:2px}
+.opt.sel{border-color:var(--accent);background:#eef4fa}
+.opt.right{border-color:#7cc49b;background:#effaf3}
+.opt.wrong{border-color:#e79a94;background:#fdf1f0}
+.opt:disabled{cursor:default}
+.fillrow{display:flex;gap:10px;margin-top:12px;align-items:center}
+.fillinput{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:15.5px;background:#fff}
+.btn{font:inherit;font-size:14px;padding:7px 16px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer}
+.btn.check{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fb{display:none;margin-top:14px;font-size:15px;line-height:1.8}
+.fb.show{display:block}
+.fb .res{font-weight:700;margin-bottom:6px;font-size:15.5px}
+.fb.ok .res{color:var(--ok)}
+.fb.bad .res{color:var(--bad)}
+.fb details{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:#fcfbf9;padding:0 12px}
+.fb summary{cursor:pointer;padding:9px 0;font-weight:600;color:var(--accent);outline:none}
+.fb .inner{padding:2px 0 12px;border-top:1px dashed var(--line)}
+.fb .row{color:var(--sub);font-size:13px;margin-top:8px}
+.fb .tags b{color:#a2540f}
+.legend{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:20px 0;font-size:14.5px}
+.legend b{color:var(--accent)}
+@media print{
+ #bar,.toast{display:none}
+ .quiz{break-inside:avoid}
+ body{background:#fff;font-size:12pt}
+}
+@media (max-width:600px){
+ body{font-size:16px;line-height:1.85}
+ .wrap{padding:40px 14px 80px}
+ h1{font-size:23px}
+ table{font-size:13px}
+}
+</style>
+<style id="book-nav-css">
+#book-nav{position:sticky;top:0;z-index:100;background:rgba(251,250,247,.96);backdrop-filter:blur(8px);border-bottom:1px solid #e6e3dd;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+#bar{z-index:101!important}
+#book-nav .bn-in{max-width:1060px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+#book-nav a{color:#1f4e79;text-decoration:none;white-space:nowrap}
+#book-nav a:hover{text-decoration:underline}
+#book-nav .bn-home{font-weight:700}
+#book-nav .bn-cur{color:#1f2328;font-weight:600;flex:1;min-width:180px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#book-nav .bn-step{background:#fff;border:1px solid #e6e3dd;border-radius:999px;padding:3px 11px;font-size:13px}
+#book-nav .bn-step.disabled{opacity:.38;pointer-events:none}
+#book-nav .bn-prog{color:#6b7280;font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.book-foot-nav{max-width:760px;margin:0 auto;padding:0 20px 80px;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.book-foot-nav .bf-box{border-top:2px solid #e6e3dd;padding-top:22px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}
+.book-foot-nav a{color:#1f4e79;text-decoration:none}
+.book-foot-nav a:hover{text-decoration:underline}
+.book-foot-nav .bf-next{background:#1f4e79;color:#fff!important;border-radius:10px;padding:9px 18px;font-weight:600}
+.book-foot-nav .bf-next:hover{text-decoration:none;background:#163c5e}
+.book-foot-nav .bf-note{color:#6b7280;font-size:13px;margin-top:14px}
+@media(max-width:600px){#book-nav .bn-cur{order:3;flex-basis:100%;text-align:left}#book-nav .bn-prog{display:none}}
+@media print{#book-nav,.book-foot-nav{display:none}#bar{z-index:0!important}}
+</style>
+</head><body><nav id="book-nav"><div class="bn-in"><a class="bn-home" href="index.html">&larr; 全书目录</a><a class="bn-step" href="k01.html" title="计算机系统基础">&larr; K1</a><span class="bn-cur">K2 · 信息系统与信息安全</span><a class="bn-step" href="k03.html" title="软件工程与可靠性">K3 &rarr;</a><span class="bn-prog" id="book-nav-progress">0 / 91 题</span></div></nav>
+<div id="bar"></div>
+<div class="wrap">
+<h1>K2 信息系统与信息安全</h1>
+<blockquote>
+<p><strong>本章内容</strong>：信息系统的构成与发展 · 生命周期与开发方法 · 六类信息系统 · 电子政务与企业信息化 · 信息安全五要素 · 安全体系 · 密码技术 · 访问控制与数字签名 · 抗攻击 · 等级保护与风险管理<br>
+<strong>考纲位置</strong>：上午题稳定分区，案例题常考安全方案</p>
+</blockquote>
+<p>本章按"先讲系统、再讲威胁、最后讲防护体系"的顺序展开，共 10 节：</p>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+<th>回答的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>信息系统是什么</td>
+<td>它由什么构成、怎么发展、分几类</td>
+</tr>
+<tr>
+<td>2</td>
+<td>生命周期、建设原则与开发方法</td>
+<td>一个系统从无到有要走哪些步</td>
+</tr>
+<tr>
+<td>3</td>
+<td>六类信息系统</td>
+<td>TPS/MIS/DSS/ES/OAS/ERP 各管什么</td>
+</tr>
+<tr>
+<td>4</td>
+<td>电子政务与企业信息化</td>
+<td>政府和企业的信息化长什么样</td>
+</tr>
+<tr>
+<td>5</td>
+<td>信息安全：五要素与四层面</td>
+<td>安全到底在保什么</td>
+</tr>
+<tr>
+<td>6</td>
+<td>安全体系的三根支柱</td>
+<td>光有技术够不够</td>
+</tr>
+<tr>
+<td>7</td>
+<td>密码技术：对称、非对称与密钥管理</td>
+<td>加密凭什么可信</td>
+</tr>
+<tr>
+<td>8</td>
+<td>访问控制与数字签名</td>
+<td>谁能看、怎么证明是你</td>
+</tr>
+<tr>
+<td>9</td>
+<td>抗攻击技术</td>
+<td>攻击有哪些套路，怎么防</td>
+</tr>
+<tr>
+<td>10</td>
+<td>保障体系与风险管理</td>
+<td>安全做到什么程度算"够"</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="sec1">第 1 节 信息系统是什么</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：信息系统由哪些要素构成？它为什么被称为"人机一体化系统"，而不是"一套软件"？</p>
+</blockquote>
+<h3>一、一个被叫错的名字</h3>
+<p>很多单位说"我们要建一个信息系统"，实际做的却是一个软件：买服务器、开发页面、上线。</p>
+<p>但这里的定义是：</p>
+<blockquote>
+<p>信息系统是由计算机硬件、网络和通信设备、计算机软件、信息资源、信息用户和规章制度组成的以处理信息流为目的的人机一体化系统。</p>
+</blockquote>
+<p>六个要素里，<strong>技术只占三个</strong>（硬件、软件、网络），另外三个是<strong>信息资源、信息用户、规章制度</strong>。</p>
+<p>这解释了为什么大量信息化项目"技术上线了，业务没跑起来"——缺的往往不是技术，而是数据标准（信息资源）、使用习惯（用户）和管理制度。</p>
+<h3>二、五个基本功能</h3>
+<p>信息系统有五个基本功能：<strong>输入、存储、处理、输出、控制</strong>。</p>
+<ul>
+<li><strong>输入</strong>：受系统目的与信息环境约束，不是想采什么就采什么。</li>
+<li><strong>存储</strong>：系统保存信息资料与数据的能力。</li>
+<li><strong>处理</strong>：现代处理功能基于<strong>数据仓库 + OLAP（联机分析处理）+ 数据挖掘（DM）</strong>。</li>
+<li><strong>输出</strong>：所有功能最终都为"最佳输出"服务。</li>
+<li><strong>控制</strong>：对设备与信息加工、处理、传输、输出各环节进行控制管理。</li>
+</ul>
+<p>这五项看着平淡，但考试里常考"某功能属于哪一项"。比如"对采集设备进行调度"属于<strong>控制</strong>，不是输入。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：一个没有"控制"功能的信息系统会怎样？举一个现实中的例子。</p>
+</blockquote>
+<h3>三、信息系统的性质：它是人机系统</h3>
+<p>要强调的是一句话：<strong>信息系统是以计算机为基础的人机交互系统</strong>。</p>
+<p>它的意思是：计算机只提供了存储与处理的能力，而"输入数据""解释输出结果"这些工作仍要由人完成。提出问题、以及问题的具体解答，都是通过人与计算机的一系列交互实现的。</p>
+<p>这个性质带来两个直接推论：</p>
+<ol>
+<li>系统设计者既要有计算机知识，<strong>还要懂人的行为</strong>（谁能用、怎么用、会不会用错）；</li>
+<li>评价一个系统，不能只看"功能是否实现"，还要看"人能否顺畅地用起来"。</li>
+</ol>
+<h3>四、诺兰模型：组织信息化的六个阶段</h3>
+<p>诺兰（Richard L. Nolan）1979 年提出的阶段模型，价值在于：<strong>任何组织从手工走向计算机化，都要走同一条路</strong>，跳不过去。</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>特征</th>
+<th>典型问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 初始</td>
+<td>计算机当办公设备，只做报表统计，甚至当打字机</td>
+<td>只有个别人会用；通常从财务部门开始</td>
+</tr>
+<tr>
+<td>2 传播</td>
+<td>需求增加，投入大幅上升</td>
+<td>数据冗余、不一致、难共享；使用效率不高</td>
+</tr>
+<tr>
+<td>3 控制</td>
+<td>管理层发现投资失控，开始整体控制</td>
+<td>出现"部门壁垒"与"信息孤岛"；单点分散</td>
+</tr>
+<tr>
+<td>4 集成</td>
+<td>重新规划，建基础数据库与统一系统</td>
+<td>硬件大增、预算迅速上升</td>
+</tr>
+<tr>
+<td>5 数据管理</td>
+<td>统一数据库平台与信息管理平台</td>
+<td>从"系统集成"转向"数据治理"</td>
+</tr>
+<tr>
+<td>6 成熟</td>
+<td>从事务处理到支持决策，IT 与业务融合</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>前三个阶段是"计算机时代"，后三个阶段是"信息时代"</strong>，转折点是"进行信息资源规划的时机"。</p>
+<p>这段内容经常以"某企业目前处于哪个阶段、下一步该做什么"的形式考。</p>
+<blockquote>
+<p><strong>想一想 ②</strong>：为什么"控制阶段"几乎是每个组织的必经之路？如果一开始就做顶层规划，能跳过它吗？</p>
+</blockquote>
+<h3>五、传统信息系统的五分类</h3>
+<p>我们把传统信息系统分为五类：<strong>业务（数据）处理系统、管理信息系统、决策支持系统、专家系统、办公自动化系统</strong>。它们之间是"从低级到高级、从局部到全局、从简单到复杂"的关系。</p>
+<p>这五类加上后来的 ERP，就是第 3 节要展开的六类系统。这里先记住一条主线：<strong>越往上，处理的问题越非结构化，对人的依赖越强</strong>。</p>
+<h3>六、例题精解</h3>
+<p><strong>例 1（工程项目：为什么系统上线了却没人用）</strong> 某医院上线了电子病历系统，功能完整，但医生仍习惯手写。调研发现：录入一个诊断要点击 12 次、模板不符合科室习惯、且没有与检验系统打通。请用信息系统六要素分析问题出在哪。</p>
+<p><em>解答</em>：<br>
+- <strong>信息资源</strong>缺位：没有统一的术语与模板库，医生每次都要手工填；<br>
+- <strong>信息用户</strong>因素被忽略：交互步骤过多，不符合临床节奏；<br>
+- <strong>规章制度</strong>缺失：没有"必须电子化"的考核要求，纸质仍被接受；<br>
+- <strong>技术</strong>只是一部分：与检验系统未集成，等于数据孤岛。</p>
+<p><em>点评</em>：这就是"六要素"的实际用法——<strong>技术问题往往只占四分之一</strong>。答题时按要素逐条对照，比空谈"用户体验不好"有效得多。</p>
+<p><strong>例 2（工程判断：处于诺兰模型哪一阶段）</strong> 某集团各子公司分别建了财务、人事、库存系统，系统之间不互通，每年 IT 预算增长 30% 但收益不明。请判断所处阶段并给出下一步建议。</p>
+<p><em>解答</em>：<br>
+- 判断为<strong>控制阶段</strong>：出现了"部门壁垒"与信息孤岛，投资增长快但效益不理想，正是这一阶段的典型特征；<br>
+- 下一步应进入<strong>集成阶段</strong>：做统一规划、建基础数据库与统一信息管理平台，而不是继续各自采购。</p>
+<p><em>点评</em>：这类题的关键是抓"<strong>孤岛 + 投资失控</strong>"这两个特征词——它们是控制阶段的标志。</p>
+<h3>七、常见误区</h3>
+<p><strong>误区一：把信息系统等同于软件系统。</strong><br>
+六要素里，人、数据、制度占了一半。只谈技术，是这类题最常见的失分点。</p>
+<p><strong>误区二：认为诺兰模型是"技术演进"。</strong><br>
+它描述的是<strong>组织管理水平</strong>的演进，与技术新旧无关。</p>
+<p><strong>误区三：把"处理"与"控制"混为一谈。</strong><br>
+处理是对数据加工（OLAP/DM），控制是对设备与流程的管理。</p>
+<h3>八、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="2-1-1" data-type="single" data-explain="六要素：硬件、网络和通信设备、软件、信息资源、信息用户、规章制度。技术只占前三项。" data-source="软考口径" data-diag="A 漏读" data-kp="信息系统六要素" data-answer="C"><div class="qhead"><span class="chip">2-1-1</span><span class="chip t">单选</span><span class="chip k">信息系统六要素</span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">按软考口径定义，信息系统由六要素组成，下列不属于其中技术类要素的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 计算机硬件</button><button class="opt" data-k="B"><b>B.</b> 网络和通信设备</button><button class="opt" data-k="C"><b>C.</b> 规章制度</button><button class="opt" data-k="D"><b>D.</b> 计算机软件</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-1-2" data-type="single" data-explain="处理功能基于数据仓库技术的 OLAP 和 DM 技术。" data-source="软考口径" data-diag="A 漏读" data-kp="五功能之处理" data-answer="C"><div class="qhead"><span class="chip">2-1-2</span><span class="chip t">单选</span><span class="chip k">五功能之处理</span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">信息系统的五个基本功能中，基于数据仓库、联机分析处理与数据挖掘的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 输入功能</button><button class="opt" data-k="B"><b>B.</b> 存储功能</button><button class="opt" data-k="C"><b>C.</b> 处理功能</button><button class="opt" data-k="D"><b>D.</b> 控制功能</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-1-3" data-type="single" data-explain="控制阶段的特征是成立领导小组、采用 DB 技术，但各系统间仍有部门壁垒与信息孤岛。" data-source="软考口径" data-diag="A 漏读" data-kp="诺兰模型" data-answer="C"><div class="qhead"><span class="chip">2-1-3</span><span class="chip t">单选</span><span class="chip k">诺兰模型</span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">诺兰模型中，出现"部门壁垒"与"信息孤岛"、IT 投资增长快但效益不理想的阶段是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 初始阶段</button><button class="opt" data-k="B"><b>B.</b> 传播阶段</button><button class="opt" data-k="C"><b>C.</b> 控制阶段</button><button class="opt" data-k="D"><b>D.</b> 集成阶段</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-1-4" data-type="single" data-explain="前 3 阶段具有计算机时代特征，后 3 阶段具有信息时代特征，转折点是进行信息资源规划的时机。" data-source="软考口径" data-diag="A 漏读" data-kp="诺兰模型转折点" data-answer="B"><div class="qhead"><span class="chip">2-1-4</span><span class="chip t">单选</span><span class="chip k">诺兰模型转折点</span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">诺兰模型六个阶段中，区分"计算机时代"与"信息时代"的转折点在于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 是否采购了大型机</button><button class="opt" data-k="B"><b>B.</b> 是否进行信息资源规划</button><button class="opt" data-k="C"><b>C.</b> 是否建立了局域网</button><button class="opt" data-k="D"><b>D.</b> 是否上线了 ERP</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-1-5" data-type="single" data-explain="需要指出的是：输入数据、使用输出结果等工作仍要由人完成，提问与解答都通过人与计算机的交互实现。" data-source="软考口径" data-diag="A 漏读" data-kp="人机交互系统" data-answer="B"><div class="qhead"><span class="chip">2-1-5</span><span class="chip t">单选</span><span class="chip k">人机交互系统</span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">"信息系统是以计算机为基础的人机交互系统"，这句话强调的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 系统必须联网运行</button><button class="opt" data-k="B"><b>B.</b> 计算机只提供存储与处理能力，输入与结果解释仍依赖人</button><button class="opt" data-k="C"><b>C.</b> 系统的所有工作都可由计算机自动完成</button><button class="opt" data-k="D"><b>D.</b> 系统开发只需要计算机专业人员参与</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-1-6" data-type="multi" data-explain="D 错：上线只是开始，还需运行维护与持续改进（诺兰模型说明发展是分阶段的）。" data-source="软考口径" data-diag="A 漏读" data-kp="信息系统的性质" data-answer="ABCE"><div class="qhead"><span class="chip">2-1-6</span><span class="chip t">不定项</span><span class="chip k">信息系统的性质</span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">关于信息系统，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 信息系统既可以是基于计算机的，也可以是基于手工的</button><button class="opt" data-k="B"><b>B.</b> 信息化的核心是信息资源的开发利用</button><button class="opt" data-k="C"><b>C.</b> 传统信息系统可分为五类，呈从低级到高级的发展关系</button><button class="opt" data-k="D"><b>D.</b> 信息系统上线即意味着信息化完成</button><button class="opt" data-k="E"><b>E.</b> 系统的输出功能是其他功能服务的最终目标</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-1-7" data-type="fill" data-explain="五功能：输入、存储、处理、输出、控制。" data-source="软考口径" data-diag="A 漏读" data-kp="五个基本功能" data-answer="控制|输出" data-answer-text="控制、输出"><div class="qhead"><span class="chip">2-1-7</span><span class="chip t">填空</span><span class="chip k">五个基本功能</span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">信息系统的五个基本功能是输入、存储、处理、和。</div><div class="fillrow"><input class="fillinput" placeholder="两部分，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="2-1-8" data-type="fill" data-explain="六阶段：初始、传播、控制、集成、数据管理、成熟。" data-source="软考口径" data-diag="A 漏读" data-kp="诺兰六阶段" data-answer="集成|成熟" data-answer-text="集成、成熟"><div class="qhead"><span class="chip">2-1-8</span><span class="chip t">填空</span><span class="chip k">诺兰六阶段</span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">诺兰模型将信息系统发展划分为初始、传播、控制、________、数据管理和________六个阶段。</div><div class="fillrow"><input class="fillinput" placeholder="两个阶段，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>九、小结与衔接</h3>
+<p>本节回答：信息系统是"技术 + 数据 + 人 + 制度"的人机系统，其发展要经过诺兰六阶段，无法跳过。</p>
+<p><strong>留一个问题</strong>：知道它由什么构成，可一个系统从立项到退役，中间要经过哪些阶段？用什么方法开发？</p>
+<p>下一节讲生命周期与开发方法。</p>
+<hr>
+<h2 id="sec2">第 2 节 生命周期、建设原则与开发方法</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：一个信息系统从"想建"到"退役"，要经过哪些阶段？为什么不能一上来就写代码？</p>
+</blockquote>
+<h3>一、一个跳步项目的代价</h3>
+<p>某单位决定建"智慧园区"平台，跳过总体规划、直接招标开发。半年后系统上线，发现三个问题：数据源方不提供接口、业务流程与园区实际不符、预算只够建一半。</p>
+<p>这不是执行力问题，而是<strong>跳过了生命周期里的关键阶段</strong>。这里给出的阶段划分，本质上是一份"防跳步清单"。</p>
+<h3>二、生命周期：四段，开发段再分五步</h3>
+<p>我们把信息系统的生命周期分为<strong>四个阶段</strong>（注意：不是常见的五段划分）：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1 产生阶段</strong></td>
+<td>也叫概念阶段或需求分析阶段。含两个过程：<strong>概念的产生</strong>（提出建设想法）与<strong>需求分析</strong>（调研并形成需求分析报告）</td>
+</tr>
+<tr>
+<td><strong>2 开发阶段</strong></td>
+<td>生命周期中最关键的一段，又分五个子阶段（见下）</td>
+</tr>
+<tr>
+<td><strong>3 运行阶段</strong></td>
+<td>系统移交用户后进入运行，<strong>长期运行是检验系统质量的试金石</strong>；含系统维护</td>
+</tr>
+<tr>
+<td><strong>4 消亡阶段</strong></td>
+<td>更新改造、功能扩展甚至报废重建</td>
+</tr>
+</tbody>
+</table>
+<p><strong>开发阶段的五个子阶段</strong>是本节最常考的内容：</p>
+<table>
+<thead>
+<tr>
+<th>子阶段</th>
+<th>主要工作</th>
+<th>产出/目的</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>总体规划</td>
+<td>明确开发目标、总体架构、组织结构与管理流程、实施计划、技术规范</td>
+<td>服务于企业总体目标</td>
+</tr>
+<tr>
+<td>系统分析</td>
+<td>组织结构与功能分析、业务流程分析、数据与数据流程分析</td>
+<td><strong>为设计阶段提供系统的逻辑模型</strong></td>
+</tr>
+<tr>
+<td>系统设计</td>
+<td>架构设计、数据库设计、处理流程、功能模块、安全控制方案、组织与队伍、管理流程</td>
+<td><strong>设计出信息系统的实施方案</strong></td>
+</tr>
+<tr>
+<td>系统实施</td>
+<td>把设计文本变成可运行的系统</td>
+<td>用户参与特别重要，此后用户逐步成为主导</td>
+</tr>
+<tr>
+<td>系统验收</td>
+<td>试运行暴露性能与易用性问题</td>
+<td>验收后正式移交</td>
+</tr>
+</tbody>
+</table>
+<p><strong>运行阶段的维护分四类</strong>，这一点几乎每年都考：</p>
+<ul>
+<li><strong>排错性维护</strong>：改 bug；</li>
+<li><strong>适应性维护</strong>：适应环境变化（新系统、新硬件、新政策）；</li>
+<li><strong>完善性维护</strong>：增加用户要的新功能；</li>
+<li><strong>预防性维护</strong>：为将来可能的修改提前改造。</li>
+</ul>
+<p>这里给出一条规律：<strong>运行初期以排错性和适应性维护为主，后期以完善性和预防性维护为主</strong>。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么要强调的是"消亡阶段"容易被忽视？如果一个系统在设计时不考虑退出路径，会付出什么代价？</p>
+</blockquote>
+<h3>三、建设原则：四条主原则 + 四条补充</h3>
+<p>列出信息系统开发的常用原则，主原则有四条：</p>
+<ol>
+<li><strong>高层管理人员介入原则</strong>——只有高层才真正理解企业总体目标，才知道"需要什么样的系统、投多少值得"。这条原则在今天的体现就是<strong>CIO（首席信息官）</strong> 这一职位。</li>
+<li><strong>用户参与开发原则</strong>——"用户第一/用户至上"，用户不参与，需求必然失真。</li>
+<li><strong>自顶向下规划原则</strong>——一个主要目标是<strong>达到信息的一致性</strong>。</li>
+<li><strong>工程化原则</strong>——用工程化的方法组织开发。</li>
+</ol>
+<p>此外还有四条"其他原则"：<strong>创新性</strong>（体现先进性）、<strong>整体性</strong>（体现完整性）、<strong>发展性</strong>（体现超前性）、<strong>经济性</strong>（体现实用性）。</p>
+<blockquote>
+<p><strong>想一想 ②</strong>：为什么"自顶向下规划"的主要目标被表述为"信息的一致性"，而不是"节省成本"？</p>
+</blockquote>
+<h3>四、开发方法：三种主流</h3>
+<p>最常用的方法有三种。</p>
+<p><strong>1. 结构化方法</strong>——目前最成熟、应用最广泛的方法之一。它假定系统是结构化的，遵循系统工程原理，按事先设计好的程序与步骤，使用工具、完成规定文档，在<strong>结构化、模块化</strong>的基础上开发。这里给出四个特点：</p>
+<table>
+<thead>
+<tr>
+<th>特点</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>开发目标清晰化</td>
+<td>遵循"用户第一"，开发中保持与用户沟通</td>
+</tr>
+<tr>
+<td>工作阶段程式化</td>
+<td>每阶段工作内容明确，注重过程控制</td>
+</tr>
+<tr>
+<td>开发文档规范化</td>
+<td>每阶段完成后必须产出相应文档</td>
+</tr>
+<tr>
+<td>设计方法结构化</td>
+<td>自顶向下、结构化模块化，子系统相对独立，便于实现与维护</td>
+</tr>
+</tbody>
+</table>
+<p><strong>2. 原型法</strong>——根据用户需求，用工具快速建立系统模型展示给用户，在此基础上交流并最终实现需求。开发过程包括系统需求分析、系统初步设计、系统调试、系统检测。"大型工程的沙盘、建筑的模型"作类比。</p>
+<p><strong>3. 面向对象方法</strong>——把客观世界看成由相互配合、协作的对象组成的系统，运用封装、继承、多态等机制建模。与结构化方法"面向过程、分解为若干过程"不同，面向对象<strong>采用构造模型的观点</strong>。</p>
+<p>此外另外信息工程方法、业务系统规划法（BSP）等。</p>
+<blockquote>
+<p><strong>想一想 ③</strong>：如果一个项目需求明确、团队经验丰富、且需要通过严格评审，三种方法里最合适的是哪种？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例 1（工程项目：选开发方法）</strong> 某市要建"一网通办"平台，涉及 40 个部门、业务规则复杂、各部门诉求不一致，需求在调研阶段难以一次说清，但必须通过政府评审。请选择开发方法并说明理由。</p>
+<p><em>解答</em>：<br>
+- 主体用<strong>原型法</strong>：需求不明确是最大风险，先做可运行原型与各部门确认，再逐步细化；<br>
+- 同时必须用<strong>结构化方法</strong>做总体规划与文档体系：40 个部门需要统一的接口规范、数据标准与评审材料，且政府项目要求文档规范、阶段可控；<br>
+- 面向对象方法用于核心业务建模（事项、材料、流程对象）。<br>
+- 结论：<strong>以结构化方法为骨架、原型法快速澄清需求、面向对象建模</strong>的组合。</p>
+<p><em>点评</em>：真实项目很少只用一种方法。答题时写"主方法 + 为什么 + 辅方法"比单写一个名词得分高。</p>
+<p><strong>例 2（工程判断：维护类型判定）</strong> 某系统上线两年，运维团队做了四件事：① 修复一处偶发空指针；② 为适配新版浏览器升级前端组件；③ 应业务部门要求新增"电子签章"功能；④ 提前把硬编码的税率改为配置项。请分别判断维护类型。</p>
+<p><em>解答</em>：<br>
+- ① <strong>排错性维护</strong>（改缺陷）；<br>
+- ② <strong>适应性维护</strong>（适应外部环境变化）；<br>
+- ③ <strong>完善性维护</strong>（增加新功能）；<br>
+- ④ <strong>预防性维护</strong>（为将来可能的修改提前改造）。</p>
+<p><em>点评</em>：判断标准是"<strong>改的原因</strong>"：修 bug、适应环境、加功能、防患于未然。四类维护在论文里也常用（写"系统运维阶段的工作"时可直接引用）。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：把生命周期记成五段。</strong><br>
+本书采用<strong>四段</strong>：产生、开发、运行、消亡。另有一种流行的五段划分（规划/分析/设计/实施/维护），遇到时以题干口径为准。</p>
+<p><strong>误区二：把"系统分析"与"系统设计"的产出搞反。</strong><br>
+分析出<strong>逻辑模型</strong>，设计出<strong>实施方案</strong>。</p>
+<p><strong>误区三：认为维护就是"修 bug"。</strong><br>
+四类维护里，排错性只是其一；运行后期主要是完善性与预防性维护。</p>
+<p><strong>误区四：认为结构化方法"过时了"。</strong><br>
+它仍是文档规范、阶段可控场景下的主力方法，尤其在有评审要求的项目里。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="2-2-1" data-type="single" data-explain="生命周期分为产生、开发、运行和消亡四个阶段。五段划分是另一种常见说法，不是本书口径。" data-source="软考口径" data-diag="A 漏读" data-kp="生命周期四段" data-answer="B"><div class="qhead"><span class="chip">2-2-1</span><span class="chip t">单选</span><span class="chip k">生命周期四段</span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">按软考口径，信息系统的生命周期分为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 规划、分析、设计、实施、维护五个阶段</button><button class="opt" data-k="B"><b>B.</b> 产生、开发、运行、消亡四个阶段</button><button class="opt" data-k="C"><b>C.</b> 立项、建设、验收三个阶段</button><button class="opt" data-k="D"><b>D.</b> 需求、设计、编码、测试、上线五个阶段</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-2-2" data-type="single" data-explain="系统分析为设计阶段提供逻辑模型；系统设计则设计出实施方案。" data-source="软考口径" data-diag="A 漏读" data-kp="逻辑模型" data-answer="B"><div class="qhead"><span class="chip">2-2-2</span><span class="chip t">单选</span><span class="chip k">逻辑模型</span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">开发阶段的五个子阶段中，目标是为系统设计提供"逻辑模型"的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 总体规划</button><button class="opt" data-k="B"><b>B.</b> 系统分析</button><button class="opt" data-k="C"><b>C.</b> 系统设计</button><button class="opt" data-k="D"><b>D.</b> 系统实施</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-2-3" data-type="single" data-explain="原型法先快速建立系统模型展示给用户，在此基础上交流并实现需求。" data-source="软考口径" data-diag="A 漏读" data-kp="原型法" data-answer="B"><div class="qhead"><span class="chip">2-2-3</span><span class="chip t">单选</span><span class="chip k">原型法</span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">需求不明确、需要与用户反复确认的项目，最适合采用的开发方法是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 结构化方法</button><button class="opt" data-k="B"><b>B.</b> 原型法</button><button class="opt" data-k="C"><b>C.</b> 瀑布模型</button><button class="opt" data-k="D"><b>D.</b> 净室方法</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-2-4" data-type="single" data-explain="四特点：目标清晰化、工作阶段程式化、文档规范化、设计方法结构化。结构化方法恰恰不鼓励随时变更。" data-source="软考口径" data-diag="A 漏读" data-kp="结构化四特点" data-answer="D"><div class="qhead"><span class="chip">2-2-4</span><span class="chip t">单选</span><span class="chip k">结构化四特点</span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">下列不属于结构化方法四个特点的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 开发目标清晰化</button><button class="opt" data-k="B"><b>B.</b> 工作阶段程式化</button><button class="opt" data-k="C"><b>C.</b> 开发文档规范化</button><button class="opt" data-k="D"><b>D.</b> 需求变更随时化</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-2-5" data-type="single" data-explain="四条主原则：高层介入、用户参与、自顶向下规划、工程化。压缩阶段违背工程化原则。" data-source="软考口径" data-diag="A 漏读" data-kp="建设原则" data-answer="D"><div class="qhead"><span class="chip">2-2-5</span><span class="chip t">单选</span><span class="chip k">建设原则</span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">下列不属于信息系统建设主原则的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 高层管理人员介入原则</button><button class="opt" data-k="B"><b>B.</b> 用户参与开发原则</button><button class="opt" data-k="C"><b>C.</b> 自顶向下规划原则</button><button class="opt" data-k="D"><b>D.</b> 尽量压缩阶段以缩短工期</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-2-6" data-type="multi" data-explain="D 错：面向过程、分解为若干过程的是结构化方法；面向对象采用构造模型的观点。" data-source="软考口径" data-diag="A 漏读" data-kp="生命周期与方法" data-answer="ABCE"><div class="qhead"><span class="chip">2-2-6</span><span class="chip t">不定项</span><span class="chip k">生命周期与方法</span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">关于生命周期、建设原则与开发方法，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 系统设计阶段的产出是信息系统的实施方案</button><button class="opt" data-k="B"><b>B.</b> 自顶向下规划原则的一个主要目标是达到信息的一致性</button><button class="opt" data-k="C"><b>C.</b> 结构化方法强调结构化、模块化，并要求各阶段产出文档</button><button class="opt" data-k="D"><b>D.</b> 面向对象方法面向过程，把系统分解为若干过程</button><button class="opt" data-k="E"><b>E.</b> 运行初期以排错性维护和适应性维护为主</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-2-7" data-type="fill" data-explain="四阶段：产生→开发→运行→消亡。" data-source="软考口径" data-diag="A 漏读" data-kp="四阶段" data-answer="开发|运行" data-answer-text="开发、运行"><div class="qhead"><span class="chip">2-2-7</span><span class="chip t">填空</span><span class="chip k">四阶段</span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">信息系统生命周期的四个阶段依次为：产生阶段、________阶段、________阶段和消亡阶段。</div><div class="fillrow"><input class="fillinput" placeholder="两个阶段，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="2-2-8" data-type="fill" data-explain="四类维护：排错性、适应性、完善性、预防性；初期以前两类为主，后期以后两类为主。" data-source="软考口径" data-diag="A 漏读" data-kp="维护四类" data-answer="适应|完善" data-answer-text="适应性、完善性"><div class="qhead"><span class="chip">2-2-8</span><span class="chip t">填空</span><span class="chip k">维护四类</span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">系统维护分为四类：排错性维护、________维护、________维护和预防性维护。</div><div class="fillrow"><input class="fillinput" placeholder="两类维护，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：系统生命周期是"产生—开发—运行—消亡"四段，开发段再分五步；建设有四条主原则；开发方法有结构化、原型、面向对象三种，选择取决于需求明确程度与文档要求。</p>
+<p><strong>留一个问题</strong>：这些阶段里反复出现的"业务处理""管理""决策""办公""资源规划"，其实对应着不同类型的系统。</p>
+<p>下一节就把六类系统放在一起比一比。</p>
+<hr>
+<h2 id="sec3">第 3 节 六类信息系统：TPS、MIS、DSS、ES、OAS、ERP</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：这六类系统分别解决什么问题？为什么有的面向操作层、有的面向决策层？</p>
+</blockquote>
+<h3>一、一张"管理层次"图就能说明白</h3>
+<p>"功能/层次矩阵"描述管理信息系统：<strong>横向是职能</strong>（销售、生产、后勤、人事、财务、信息处理、高层管理），<strong>纵向是层次</strong>（业务处理、运行控制、管理控制、战略计划）。</p>
+<p>这个矩阵恰好说明了六类系统的分工：<strong>越往下越结构化、越往上越非结构化</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>系统</th>
+<th>面向</th>
+<th>解决的问题</th>
+<th>结构化程度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TPS 业务处理</td>
+<td>操作层</td>
+<td>日常事务的自动化记录与处理</td>
+<td>高度结构化</td>
+</tr>
+<tr>
+<td>MIS 管理信息</td>
+<td>中层管理</td>
+<td>用报表支持运行控制与管理控制</td>
+<td>结构化</td>
+</tr>
+<tr>
+<td>DSS 决策支持</td>
+<td>高层</td>
+<td>半结构化/非结构化问题的决策辅助</td>
+<td>半结构化</td>
+</tr>
+<tr>
+<td>ES 专家系统</td>
+<td>专业领域</td>
+<td>用领域知识模拟专家判断</td>
+<td>依赖知识库</td>
+</tr>
+<tr>
+<td>OAS 办公自动化</td>
+<td>全员</td>
+<td>数据、文字、声音、图像的一体化处理</td>
+<td>事务+管理+决策</td>
+</tr>
+<tr>
+<td>ERP 企业资源规划</td>
+<td>全企业</td>
+<td>物流、资金流、信息流的集成管理</td>
+<td>跨系统集成</td>
+</tr>
+</tbody>
+</table>
+<h3>二、TPS：起点，也是"信息产生器"</h3>
+<p>TPS（Transaction Processing System）是信息系统发展的<strong>最初级形式</strong>，但这不意味着它不重要。这里给了一个很关键的定位：</p>
+<blockquote>
+<p><strong>TPS 是其他类型信息系统的信息产生器</strong>，企业在推进全面信息化的过程中往往是从开发 TPS 入手的。</p>
+</blockquote>
+<p>它有三个特点值得记住：</p>
+<ol>
+<li><strong>处于企业系统的边界</strong>——是把企业与外部环境联系起来的"桥梁"，所以 TPS 性能的好坏直接影响组织的整体形象；</li>
+<li><strong>结构化程度很高</strong>——因此可以采用结构化生命周期法开发；</li>
+<li><strong>同行业事务处理相似</strong>——所以 TPS 大量商品化，企业可直接购买再做少量二次开发，避免低水平重复开发。</li>
+</ol>
+<p>第一点解释了为什么"TPS 一旦故障，企业正常运作就会紊乱"（订票系统、存取款/转账、物料进出库都是典型）。</p>
+<h3>三、MIS：四个部件与开环/闭环</h3>
+<p>MIS（Management Information System）由<strong>四大部件</strong>组成：<strong>信息源、信息处理器、信息用户、信息管理者</strong>。</p>
+<p>按部件之间的联系，可分为两种结构：</p>
+<ul>
+<li><strong>开环结构</strong>：执行决策的过程中不收集外部信息、不据信息改变决策，事后评价只供以后决策参考；</li>
+<li><strong>闭环结构</strong>：决策过程中不断收集信息、不断发给决策者、不断调整决策——<strong>最后执行的决策已不是当初设想的决策</strong>。</li>
+</ul>
+<p>MIS 的功能可以用"<strong>功能/层次矩阵</strong>"表达：横向是职能（销售市场、生产、后勤、人事、财务、信息处理、高层管理），纵向是层次（业务处理、运行控制、管理控制、战略计划），行列交叉即一个功能子系统。</p>
+<p>一个关键局限：<strong>MIS 主要解决结构化问题</strong>，对半结构化问题无能为力——这正是 DSS 出现的原因。</p>
+<h3>四、DSS：辅助而不是替代</h3>
+<p>DSS（Decision Support System）是本节的考试重点，几个特征必须记牢：</p>
+<ol>
+<li><strong>数据和模型是主要资源</strong>；</li>
+<li><strong>支持而不是代替</strong>用户做决策；</li>
+<li>主要解决<strong>半结构化及非结构化</strong>问题；</li>
+<li>作用是提高决策的<strong>有效性</strong>，而不是效率。</li>
+</ol>
+<p>它的经典结构是<strong>两库结构</strong>：数据库子系统 + 模型库子系统 + 对话子系统（三角形分布）。后来增加了知识库、方法库，演化为三库、四库系统。</p>
+<p>DSS 的发展脉络也常考：</p>
+<blockquote>
+<p>两库（数据库+模型库+对话）→ 三库/四库（增加知识库、方法库）→ <strong>智能决策支持系统（IDSS，与 AI 结合）</strong> → <strong>群体决策支持系统（GDSS，支持异地多人协同）</strong> → <strong>分布式决策支持系统（DDSS）</strong></p>
+</blockquote>
+<h3>五、ES：把专家装进系统</h3>
+<p>ES（Expert System）用领域知识模拟人类专家的判断，典型结构包括：<strong>知识库、推理机、综合数据库、人机接口、解释器、知识获取</strong>。</p>
+<p>与 DSS 的区别是常考点：</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>DSS</th>
+<th>ES</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>处理的问题</td>
+<td>半结构化/非结构化</td>
+<td>需要专家经验的专门领域</td>
+</tr>
+<tr>
+<td>核心资源</td>
+<td>数据 + 模型</td>
+<td>知识 + 推理</td>
+</tr>
+<tr>
+<td>使用者</td>
+<td>决策者</td>
+<td>领域内的非专家</td>
+</tr>
+<tr>
+<td>输出</td>
+<td>支持决策的信息</td>
+<td>结论 + 推理过程</td>
+</tr>
+</tbody>
+</table>
+<h3>六、OAS：被低估的一类</h3>
+<p>OAS（Office Automation System）解决的是"数据、文字、声音、图像的一体化处理"，这是它与 TPS/MIS 最大的不同——后两者主要处理数据。</p>
+<p>OAS 按功能分三层：</p>
+<ul>
+<li><strong>事务型</strong>（单机处理、多机处理）：文字处理、日程安排、文档管理、电子报表、数据处理；多机还含电子会议、电子邮件、语音处理、图形图像处理、联机检索；</li>
+<li><strong>管理型</strong>：把孤立的事务处理通过信息交换与共享联系起来；</li>
+<li><strong>决策型</strong>：建立决策模型，辅助高层做方案比较。</li>
+</ul>
+<p>OAS 的组成有 4 部分：<strong>计算机设备、办公设备、数据通信及网络设备、软件系统</strong>。它的四大支柱是<strong>计算机技术、通信技术、系统科学、行为科学</strong>（其中行为科学为主导）。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么 OAS 要把"行为科学"列为主导支柱？一个功能齐全但没人愿意用的 OA，问题出在哪？</p>
+</blockquote>
+<h3>七、ERP：从 MRP Ⅱ 长出来的</h3>
+<p>ERP（Enterprise Resource Planning）由 Gartner Group 于 1990 年提出，是 <strong>MRP Ⅱ（制造资源规划）的下一代</strong>。</p>
+<p>它的核心是管理企业的<strong>三大流：物流、资金流、信息流</strong>。与 MRP Ⅱ 的关键区别是：</p>
+<blockquote>
+<p>MRP Ⅱ 的核心是物流、主线是计划；<strong>ERP 把管理重心转移到财务上，在整个经营过程中贯穿财务成本控制</strong>。</p>
+</blockquote>
+<p>ERP 的特征可以记三条：</p>
+<ol>
+<li><strong>跳出企业边界</strong>，从<strong>供应链</strong>范围优化资源；</li>
+<li>是<strong>管理理论和管理思想</strong>，不仅仅是信息系统；</li>
+<li>功能覆盖采购、生产、销售、库存、财务、人力、质量、设备、分销、运输、多工厂等。</li>
+</ol>
+<h3>八、例题精解</h3>
+<p><strong>例 1（工程项目：系统选型）</strong> 某制造企业要解决三个问题：① 车间报工与库存数据靠手工台账，错误率高；② 老板每月要看分厂利润与成本对比；③ 采购与供应商协同靠电话。请分别指出应建设哪类系统。</p>
+<p><em>解答</em>：<br>
+- ① 属于日常事务的数据采集与处理 → <strong>TPS</strong>（报工、库存出入库系统）；<br>
+- ② 属于跨组织的经营分析与计划控制 → <strong>ERP</strong>（财务与成本核算、多工厂管理），辅以 MIS 报表；<br>
+- ③ 属于供应链协同 → <strong>ERP 的供应链/采购模块</strong>（或独立的 SCM 系统）。</p>
+<p><em>点评</em>：区分 TPS 与 ERP 的关键是"<strong>单一事务</strong>还是<strong>跨流程集成</strong>"。库存出入库是 TPS，库存与采购、生产、财务联动才是 ERP。</p>
+<p><strong>例 2（工程判断：DSS 还是 ES）</strong> 某银行要做一套"小微企业信贷审批辅助"：需要综合财务报表、行业数据与模型打分，但最终审批仍由信贷员决定。该建 DSS 还是 ES？</p>
+<p><em>解答</em>：<br>
+- 建 <strong>DSS</strong>。理由：①问题是半结构化的（有模型也有判断），不是纯专家经验；②核心资源是<strong>数据 + 模型</strong>（财务指标、评分卡）；③系统只做辅助，最终由人决策——正符合 DSS"支持而不是代替"的特征。<br>
+- 若改为"由系统按规则自动给出审批结论并解释理由"，且规则来自资深信贷专家的经验沉淀，才更接近 ES。</p>
+<p><em>点评</em>：这题的关键区分点是"<strong>最终由谁拍板</strong>"和"<strong>核心资源是模型还是知识</strong>"。</p>
+<h3>九、常见误区</h3>
+<p><strong>误区一：认为 DSS 是"更高级的 MIS"。</strong><br>
+二者处理的问题类型不同：MIS 解决结构化问题，DSS 解决半结构化/非结构化问题。DSS 不是 MIS 的功能升级，而是<strong>面向不同问题类型</strong>。</p>
+<p><strong>误区二：认为 DSS 能自动给出决策。</strong><br>
+要强调的是"支持而不是代替"。凡是选项里写"自动决策"的，基本都是错的。</p>
+<p><strong>误区三：把 OAS 等同于"办公软件"。</strong><br>
+OAS 是包含硬件、办公设备、网络与软件的一整套系统，且分事务型、管理型、决策型三个层次。</p>
+<p><strong>误区四：认为 ERP 就是"财务软件 + 进销存"。</strong><br>
+ERP 的核心是<strong>三流集成</strong>与<strong>供应链视角</strong>，财务只是重心，不是全部。</p>
+<h3>十、本节自测</h3>
+<blockquote>
+<p>共 9 题（6 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="2-3-1" data-type="single" data-explain="纵向由下至上：业务处理→运行控制→管理控制→战略计划。" data-source="软考口径" data-diag="A 漏读" data-kp="功能层次矩阵" data-answer="D"><div class="qhead"><span class="chip">2-3-1</span><span class="chip t">单选</span><span class="chip k">功能层次矩阵</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">管理信息系统的功能/层次矩阵中，最底层对应的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 战略计划</button><button class="opt" data-k="B"><b>B.</b> 管理控制</button><button class="opt" data-k="C"><b>C.</b> 运行控制</button><button class="opt" data-k="D"><b>D.</b> 业务处理</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-3-2" data-type="single" data-explain="两库结构 = 数据库子系统 + 模型库子系统 + 对话子系统，三角形分布。" data-source="软考口径" data-diag="A 漏读" data-kp="DSS 两库结构" data-answer="A"><div class="qhead"><span class="chip">2-3-2</span><span class="chip t">单选</span><span class="chip k">DSS 两库结构</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">决策支持系统的两库结构由哪三部分组成？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数据库子系统、模型库子系统、对话子系统</button><button class="opt" data-k="B"><b>B.</b> 知识库、推理机、人机接口</button><button class="opt" data-k="C"><b>C.</b> 数据仓库、OLAP、数据挖掘</button><button class="opt" data-k="D"><b>D.</b> 输入、处理、输出</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-3-3" data-type="single" data-explain="DSS 四特征：数据与模型是主要资源、支持而非代替、解决半/非结构化问题、提高有效性而非效率。" data-source="软考口径" data-diag="A 漏读" data-kp="DSS 特征" data-answer="B"><div class="qhead"><span class="chip">2-3-3</span><span class="chip t">单选</span><span class="chip k">DSS 特征</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">关于决策支持系统，下列表述正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 用于解决高度结构化问题</button><button class="opt" data-k="B"><b>B.</b> 数据和模型是其主要资源，支持而非代替决策者</button><button class="opt" data-k="C"><b>C.</b> 能自动给出最优决策方案</button><button class="opt" data-k="D"><b>D.</b> 主要目的是提高决策效率而非有效性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-3-4" data-type="single" data-explain="ES 六部件：知识库、推理机、综合数据库、人机接口、解释器、知识获取。" data-source="软考口径" data-diag="A 漏读" data-kp="ES 组成" data-answer="B"><div class="qhead"><span class="chip">2-3-4</span><span class="chip t">单选</span><span class="chip k">ES 组成</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">专家系统的核心组成通常包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数据库、模型库、对话子系统</button><button class="opt" data-k="B"><b>B.</b> 知识库、推理机、综合数据库、人机接口</button><button class="opt" data-k="C"><b>C.</b> 数据仓库、OLAP、报表工具</button><button class="opt" data-k="D"><b>D.</b> 订单、库存、财务模块</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-3-5" data-type="single" data-explain="MRP Ⅱ 核心是物流、主线是计划；ERP 把重心转移到财务。" data-source="软考口径" data-diag="A 漏读" data-kp="ERP 与 MRPⅡ" data-answer="B"><div class="qhead"><span class="chip">2-3-5</span><span class="chip t">单选</span><span class="chip k">ERP 与 MRPⅡ</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">关于 ERP 与 MRP Ⅱ 的关系，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> ERP 是 MRP Ⅱ 的前身</button><button class="opt" data-k="B"><b>B.</b> ERP 是 MRP Ⅱ 的下一代，管理重心从物流转向财务</button><button class="opt" data-k="C"><b>C.</b> 二者完全无关</button><button class="opt" data-k="D"><b>D.</b> ERP 只包含生产计划功能</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-3-6" data-type="single" data-explain="四支柱：计算机技术、通信技术、系统科学、行为科学，以行为科学为主导、系统科学为理论基础。" data-source="软考口径" data-diag="A 漏读" data-kp="OAS 四支柱" data-answer="D"><div class="qhead"><span class="chip">2-3-6</span><span class="chip t">单选</span><span class="chip k">OAS 四支柱</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">办公自动化系统的四大支柱中，起主导作用的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 计算机技术</button><button class="opt" data-k="B"><b>B.</b> 通信技术</button><button class="opt" data-k="C"><b>C.</b> 系统科学</button><button class="opt" data-k="D"><b>D.</b> 行为科学</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-3-7" data-type="multi" data-explain="D 错：OAS 解决的正是数据、文字、声音、图像的一体化处理。" data-source="软考口径" data-diag="A 漏读" data-kp="六类系统" data-answer="ABCE"><div class="qhead"><span class="chip">2-3-7</span><span class="chip t">不定项</span><span class="chip k">六类系统</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">关于六类信息系统，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> TPS 处理日常事务，是其他系统的数据来源</button><button class="opt" data-k="B"><b>B.</b> MIS 主要解决结构化问题，输出以报表为主</button><button class="opt" data-k="C"><b>C.</b> DSS 面向半结构化/非结构化问题</button><button class="opt" data-k="D"><b>D.</b> OAS 只处理数据，不处理声音和图像</button><button class="opt" data-k="E"><b>E.</b> ERP 管理物流、资金流与信息流三大流</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-3-8" data-type="fill" data-explain="两库结构：数据库 + 模型库 + 对话。" data-source="软考口径" data-diag="A 漏读" data-kp="DSS 组成" data-answer="模型|对话" data-answer-text="模型库、对话"><div class="qhead"><span class="chip">2-3-8</span><span class="chip t">填空</span><span class="chip k">DSS 组成</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">决策支持系统的经典结构是两库结构，由数据库子系统、________子系统和________子系统组成。</div><div class="fillrow"><input class="fillinput" placeholder="两个子系统，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="2-3-9" data-type="fill" data-explain="OAS 三层次：事务型、管理型、决策型。" data-source="软考口径" data-diag="A 漏读" data-kp="OAS 三层次" data-answer="管理|决策" data-answer-text="管理型、决策型"><div class="qhead"><span class="chip">2-3-9</span><span class="chip t">填空</span><span class="chip k">OAS 三层次</span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">办公自动化系统按功能可分为事务型、________和________三个层次。</div><div class="fillrow"><input class="fillinput" placeholder="两个层次，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>十一、小结与衔接</h3>
+<p>本节回答：六类系统按"处理问题的结构化程度"分工——TPS 记事实、MIS 出报表、DSS 辅助决策、ES 复用专家经验、OAS 处理多形态办公信息、ERP 集成三流。</p>
+<p><strong>留一个问题</strong>：这些系统建在谁身上？政府和企业的信息化，各自有什么典型架构？</p>
+<p>下一节看电子政务与电子商务。</p>
+<hr>
+<h2 id="sec4">第 4 节 电子政务与企业信息化</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：政府信息化有哪些形态与阶段？企业信息化又该用什么方法推进？</p>
+</blockquote>
+<h3>一、两个"看起来一样"的平台</h3>
+<p>某市的"政务服务网"和某企业的"供应链平台"，技术架构几乎相同：门户 + 统一认证 + 业务中台 + 数据共享。</p>
+<p>但两者的分类逻辑完全不同：政务看<strong>行为主体之间的互动关系</strong>，企业看<strong>推进信息化的方法路径</strong>。</p>
+<h3>二、电子政务：三个组成部分</h3>
+<p>我们把电子政务概括为三个组成部分：</p>
+<ol>
+<li><strong>政府部门内部的电子化和网络化办公</strong>；</li>
+<li><strong>政府部门之间</strong>通过计算机网络进行的信息共享和实时通信；</li>
+<li><strong>政府部门通过网络与居民之间</strong>进行的双向信息交流。</li>
+</ol>
+<p>本质是一句话：<strong>用信息技术对政府的管理和服务职能进行集成，在网络上实现组织结构与工作流程的优化重组，超越时间、空间与部门分隔的制约</strong>。</p>
+<h3>三、五个领域：按"互动双方"划分</h3>
+<p>与电子政务相关的行为主体有三个：<strong>政府、企（事）业单位、居民</strong>。由这三者的互动构成<strong>五个领域</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>领域</th>
+<th>互动双方</th>
+<th>典型内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>政府与政府</strong>（G2G）</td>
+<td>政府 ↔ 政府</td>
+<td>基础信息采集（人口）、业务流信息、政府间通信、内部管理信息系统</td>
+</tr>
+<tr>
+<td><strong>政府对企（事）业</strong>（G2B）</td>
+<td>政府 → 企业</td>
+<td>发布方针政策法规、颁发营业执照/许可证/质量认证</td>
+</tr>
+<tr>
+<td><strong>政府对居民</strong>（G2C）</td>
+<td>政府 → 居民</td>
+<td>信息公开、办事服务、双向交流</td>
+</tr>
+<tr>
+<td><strong>企业对政府</strong>（B2G）</td>
+<td>企业 → 政府</td>
+<td>企业向政府报送、申报、纳税</td>
+</tr>
+<tr>
+<td><strong>居民对政府</strong>（C2G）</td>
+<td>居民 → 政府</td>
+<td>居民向政府反馈、申报、投诉建议</td>
+</tr>
+</tbody>
+</table>
+<p>注意第四、五两个方向：<strong>B2G 与 C2G 是"由外向内"的</strong>，与 G2B、G2C 的方向相反。这五个领域才是软考口径。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"政府与政府"这一领域里，我们把"政府与公务员的互动"也放进去了，而不是单列一个"政府对公务员"？</p>
+</blockquote>
+<h3>四、四个技术形式阶段</h3>
+<p>我们把电子政务的技术实现分为递进的四个阶段，这个划分常考"某做法属于哪个阶段"：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>特征</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1 起步阶段</strong></td>
+<td>政府信息<strong>网上发布</strong>（最普遍的形式）</td>
+</tr>
+<tr>
+<td><strong>2 政府与用户单向互动</strong></td>
+<td>政府在网上发布与服务项目有关的动态信息，用户只能看</td>
+</tr>
+<tr>
+<td><strong>3 政府与用户双向互动</strong></td>
+<td>用户可以在网上与政府交互（提问、下载表格、提交信息）</td>
+</tr>
+<tr>
+<td><strong>4 网上事务处理</strong></td>
+<td>整个办事流程在网上完成，如在线报税并获回执</td>
+</tr>
+</tbody>
+</table>
+<p>判断标准很简单：<strong>看用户能不能操作、操作到哪一步</strong>。只发不交互是阶段 1，能问答是阶段 3，全流程办结是阶段 4。</p>
+<h3>五、六个应用领域</h3>
+<p>另外给出我国电子政务的六个应用领域：</p>
+<ol>
+<li><strong>面向社会</strong>的应用（信息发布、公众服务）；</li>
+<li><strong>政府部门之间</strong>的应用（公文传递、政务信息共享）；</li>
+<li><strong>政府部门内部</strong>的各类应用系统（公文流转、审核处理）；</li>
+<li>涉及政府部门内部<strong>核心数据</strong>的应用系统（机要、秘密文件管理）；</li>
+<li><strong>政府电子化采购</strong>（政府的电子商务）；</li>
+<li><strong>电子社区</strong>（城市社区管理中的信息化应用）。</li>
+</ol>
+<h3>六、企业信息化：六种推进方法</h3>
+<p>这里列出六种方法，考试常以"某做法属于哪种方法"出现：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>核心思想</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>业务流程重构</strong></td>
+<td>借助 IT 对组织结构与工作方法进行"彻底的、根本性的"重新设计</td>
+</tr>
+<tr>
+<td><strong>核心业务应用</strong></td>
+<td>围绕企业核心竞争力应用 IT（如石油企业围绕勘探开发）</td>
+</tr>
+<tr>
+<td><strong>信息系统建设</strong></td>
+<td>最普遍的方法——建 ERP、CRM、SCM 等</td>
+</tr>
+<tr>
+<td><strong>主题数据库</strong></td>
+<td>面向业务主题建库，避免各部门局部开发造成信息孤岛</td>
+</tr>
+<tr>
+<td><strong>资源管理</strong></td>
+<td>用 ERP、SCM 等管理企业资源</td>
+</tr>
+<tr>
+<td><strong>人力资本投资</strong></td>
+<td>把优秀员工视为可带来收益的资本，适用于咨询、软件等智力密集企业</td>
+</tr>
+</tbody>
+</table>
+<p>其中"<strong>主题数据库</strong>"最容易被忽略却很实用：大型企业做全覆盖系统往往失败，各部门局部开发又会造成孤岛，主题数据库是"投入少、效益好"的中间路线。</p>
+<h3>七、电子商务：四种常见模式（补充）</h3>
+<p>企业信息化一节 侧重企业信息化，未系统展开电商模式。作为<strong>补充</strong>（诊断标签 B），常见的四类：</p>
+<ul>
+<li><strong>B2B</strong>：企业对企业（供应链采购、批发交易）；</li>
+<li><strong>B2C</strong>：企业对消费者（电商平台、品牌官网）；</li>
+<li><strong>C2C</strong>：消费者对消费者（二手交易、个人卖家）；</li>
+<li><strong>O2O</strong>：线上到线下（线上订餐、购票，到店消费）。</li>
+</ul>
+<h3>八、例题精解</h3>
+<p><strong>例 1（工程项目：识别电子政务阶段）</strong> 某市政务网站先后做了三件事：① 把办事指南挂在网上；② 开通在线咨询与表格下载；③ 实现"企业开办"全流程在线办结。请分别指出对应的技术形式阶段。</p>
+<p><em>解答</em>：<br>
+- ① <strong>起步阶段</strong>（信息网上发布）；<br>
+- ② <strong>政府与用户双向互动</strong>（能问答、能下载）；<br>
+- ③ <strong>网上事务处理</strong>（全流程办结，含结果反馈）。</p>
+<p><em>点评</em>：判断依据是"<strong>用户能操作到哪一步</strong>"，而不是网站做得多漂亮。</p>
+<p><strong>例 2（工程判断：该用主题数据库还是全覆盖系统）</strong> 某大型集团有 30 个子公司、业务差异大，过去各建各的系统形成大量孤岛。集团想推一套统一系统，但预算与周期都不允许。请给出建议。</p>
+<p><em>解答</em>：<br>
+- 建议采用<strong>主题数据库方法</strong>：先梳理集团层面的核心业务主题（客户、产品、供应商、财务科目等），建统一的主数据与主题库；<br>
+- 各子公司系统保留，通过主题库做数据交换与共享，而不是强行替换；<br>
+- 待主数据稳定后，再逐步替换为集团级系统（对应诺兰模型的"集成 → 数据管理"阶段）。</p>
+<p><em>点评</em>：这题把第 1 节的诺兰模型与本节的六种方法串起来了——<strong>信息化路径的选择，本质是"当前处于哪个阶段"的函数</strong>。</p>
+<h3>九、常见误区</h3>
+<p><strong>误区一：只记 G2G/G2B/G2C，漏掉 B2G 与 C2G。</strong><br>
+这里是<strong>五个领域</strong>，后两个方向相反。</p>
+<p><strong>误区二：把"信息网上发布"当成双向互动。</strong><br>
+单向发布属于起步阶段。</p>
+<p><strong>误区三：认为电子商务就是"网上卖东西"。</strong><br>
+B2B 的体量远大于 B2C，且包含采购、供应链协同等非零售场景。</p>
+<p><strong>误区四：把"主题数据库"理解为"一个很大的数据库"。</strong><br>
+它的核心是<strong>按业务主题组织</strong>，不是容量大小。</p>
+<h3>十、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="2-4-1" data-type="single" data-explain="五个领域是：政府与政府、政府对企事业、政府对居民、企业对政府、居民对政府。G2E 是业界常见说法，考纲未单列。" data-source="软考口径" data-diag="A 漏读" data-kp="五个领域" data-answer="D"><div class="qhead"><span class="chip">2-4-1</span><span class="chip t">单选</span><span class="chip k">五个领域</span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">按软考口径，电子政务的行为主体互动构成五个领域，下列不属于其中 的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 政府与政府</button><button class="opt" data-k="B"><b>B.</b> 企业对政府</button><button class="opt" data-k="C"><b>C.</b> 居民对政府</button><button class="opt" data-k="D"><b>D.</b> 政府对公务员（G2E）</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-4-2" data-type="single" data-explain="起步阶段最普遍的形式就是政府信息网上发布。判断依据是用户能否操作、操作到哪一步。" data-source="软考口径" data-diag="A 漏读" data-kp="技术形式阶段" data-answer="A"><div class="qhead"><span class="chip">2-4-2</span><span class="chip t">单选</span><span class="chip k">技术形式阶段</span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">政府把办事指南发布在网上、用户只能浏览，这属于电子政务技术形式的：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 起步阶段</button><button class="opt" data-k="B"><b>B.</b> 政府与用户单向互动</button><button class="opt" data-k="C"><b>C.</b> 政府与用户双向互动</button><button class="opt" data-k="D"><b>D.</b> 网上事务处理</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-4-3" data-type="single" data-explain="注意指出：这种企业应用主题数据库方法推进信息化，是投入少、效益好的方法。" data-source="软考口径" data-diag="A 漏读" data-kp="主题数据库" data-answer="B"><div class="qhead"><span class="chip">2-4-3</span><span class="chip t">单选</span><span class="chip k">主题数据库</span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">某大型企业各部门系统林立、形成信息孤岛，且短期无法统一替换。最合适的信息化推进方法是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 业务流程重构</button><button class="opt" data-k="B"><b>B.</b> 主题数据库方法</button><button class="opt" data-k="C"><b>C.</b> 人力资本投资方法</button><button class="opt" data-k="D"><b>D.</b> 核心业务应用方法</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-4-4" data-type="single" data-explain="三部分：内部办公电子化、部门间信息共享与通信、政府与居民的双向信息交流。" data-source="软考口径" data-diag="A 漏读" data-kp="三个组成部分" data-answer="D"><div class="qhead"><span class="chip">2-4-4</span><span class="chip t">单选</span><span class="chip k">三个组成部分</span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">电子政务的三个组成部分不包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 政府部门内部的电子化和网络化办公</button><button class="opt" data-k="B"><b>B.</b> 政府部门之间通过计算机网络进行的信息共享和实时通信</button><button class="opt" data-k="C"><b>C.</b> 政府部门通过网络与居民之间进行的双向信息交流</button><button class="opt" data-k="D"><b>D.</b> 政府对企业的强制数据报送</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-4-5" data-type="multi" data-explain="D 错：主题数据库的核心是“按业务主题组织”，不是容量大小。" data-source="软考口径" data-diag="A 漏读" data-kp="政务与信息化" data-answer="ABCE"><div class="qhead"><span class="chip">2-4-5</span><span class="chip t">不定项</span><span class="chip k">政务与信息化</span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">关于电子政务与企业信息化，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 电子政务的五个领域包括政府与政府、政府对企事业、政府对居民、企业对政府、居民对政府</button><button class="opt" data-k="B"><b>B.</b> 业务流程重构强调对流程进行彻底的、根本性的重新设计</button><button class="opt" data-k="C"><b>C.</b> 人力资本投资方法适用于咨询服务、软件开发等智力密集型企业</button><button class="opt" data-k="D"><b>D.</b> 主题数据库就是容量最大的那个数据库</button><button class="opt" data-k="E"><b>E.</b> 网上事务处理阶段意味着整个办事流程可在网上完成</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-4-6" data-type="fill" data-explain="五个领域：G2G、G2B、G2C、B2G、C2G。后两个方向与 G2B、G2C 相反。" data-source="软考口径" data-diag="A 漏读" data-kp="五领域" data-answer="企业|居民" data-answer-text="企业对政府、居民对政府"><div class="qhead"><span class="chip">2-4-6</span><span class="chip t">填空</span><span class="chip k">五领域</span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">按软考口径，电子政务的五个领域中，除政府与政府、政府对企事业、政府对居民外，还包括________和________。</div><div class="fillrow"><input class="fillinput" placeholder="两个领域，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="2-4-7" data-type="fill" data-explain="四阶段：起步（信息发布）→单向互动→双向互动→网上事务处理。" data-source="软考口径" data-diag="A 漏读" data-kp="四阶段" data-answer="事务处理/网上事务" data-answer-text="网上事务处理"><div class="qhead"><span class="chip">2-4-7</span><span class="chip t">填空</span><span class="chip k">四阶段</span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">电子政务技术形式的四个阶段依次为：起步阶段、政府与用户单向互动、政府与用户双向互动和________。</div><div class="fillrow"><input class="fillinput" placeholder="填一个阶段名" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>十一、小结与衔接</h3>
+<p>本节回答：政务按"互动双方"分五个领域、按"用户能操作到哪一步"分四个技术形式阶段；企业信息化有六种方法，选择取决于所处阶段与组织复杂度。</p>
+<p><strong>留一个问题</strong>：这些系统里都存着大量敏感数据——个人身份、财务、病历。谁来保证它们不被滥用？</p>
+<p>从下一节起进入第 4 章：信息安全。</p>
+<hr>
+<h2 id="sec5">第 5 节 信息安全：五个要素与四个层面</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：说一个系统"安全"，到底在保什么？为什么"保密"只是其中一项？</p>
+</blockquote>
+<h3>一、一次"没有泄密"的安全事故</h3>
+<p>某医院数据库被勒索病毒加密，患者资料没有外泄，但系统停摆三天，急诊无法调阅病历。</p>
+<p>按"是否泄密"看，这次没泄密；但按信息安全的标准看，这是一次严重事故——因为<strong>可用性</strong>被破坏了。</p>
+<h3>二、五个基本要素</h3>
+<p>这里给出信息安全的五个基本要素：</p>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>定义</th>
+<th>反例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>机密性</strong></td>
+<td>确保信息不暴露给未授权的实体或进程</td>
+<td>病历被非授权人员查看</td>
+</tr>
+<tr>
+<td><strong>完整性</strong></td>
+<td>只有得到允许的人才能修改，并能判别是否被篡改</td>
+<td>订单金额被改</td>
+</tr>
+<tr>
+<td><strong>可用性</strong></td>
+<td>得到授权的实体在需要时可访问数据</td>
+<td>系统被 DDoS 打瘫</td>
+</tr>
+<tr>
+<td><strong>可控性</strong></td>
+<td>可以控制授权范围内的信息流向及行为方式</td>
+<td>数据被导出到境外</td>
+</tr>
+<tr>
+<td><strong>可审查性</strong></td>
+<td>对出现的安全问题提供调查的依据和手段</td>
+<td>日志被删，查不到谁干的</td>
+</tr>
+</tbody>
+</table>
+<p>注意第五个：的是"<strong>可审查性</strong>"，而不是有些资料里的"不可否认性"。答题时按软考口径口径。</p>
+<h3>三、四个层面：安全不只是技术</h3>
+<p>我们把信息安全范围分为四层，这一层是本节的核心：</p>
+<p><strong>1. 设备安全</strong>——物质基础，包含三个"性"：<br>
+- 稳定性：一定时间内不出故障的概率；<br>
+- 可靠性：一定时间内正常执行任务的概率；<br>
+- 可用性：可以正常使用的概率。</p>
+<p><strong>2. 数据安全</strong>——数据本身的三个"性"：秘密性、完整性、可用性。</p>
+<p><strong>3. 内容安全</strong>——政治、法律、道德层面的要求：内容健康、符合法律法规、符合道德规范。</p>
+<p><strong>4. 行为安全</strong>——行为的过程与结果：秘密性（不危害数据秘密）、完整性（过程与结果符合预期）、可控性（偏离预期时能发现、控制、纠正）。</p>
+<p>这四层的关系是递进的：<strong>设备是基础，数据是核心，内容是约束，行为是最终体现</strong>。一句话很关键："信息系统的服务功能最终是通过行为提供给用户的，<strong>确保行为安全，才能最终确保系统的信息安全</strong>。"</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：一台设备没有故障、数据也没被改，但运维人员把数据违规导出——这破坏了哪一层的安全？</p>
+</blockquote>
+<h3>四、存储安全：四件事</h3>
+<p>我们把信息存储安全拆成四块：</p>
+<ol>
+<li><strong>信息使用的安全</strong><br>
+   - <strong>用户标识与验证</strong>：访问控制的基础。方法有两类——基于<strong>物理特征</strong>（签名、指纹、语音识别）与基于<strong>特殊安全物品</strong>（智能 IC 卡、磁条卡）。<br>
+   - <strong>用户存取权限限制</strong>：隔离控制法（物理/时间/逻辑/密码技术隔离）与限制权限法（分类管理、目录与文件权限、临时文件加密）。</li>
+<li><strong>系统安全监控</strong>：建立审计系统与日志管理，监控进程与登录、检查文件属性与权限、检查关键配置文件修改、检查登录历史。</li>
+<li><strong>计算机病毒防治</strong>：病毒有隐蔽性、传染性、潜伏性、触发性、破坏性五个特点；防治靠补丁、杀毒软件、强口令、备份、防火墙、物理隔离、不打开可疑邮件等。</li>
+<li><strong>数据加密与防非法攻击</strong>。</li>
+</ol>
+<h3>五、网络安全：漏洞与威胁</h3>
+<p><strong>四类安全漏洞</strong>：物理安全性、软件安全漏洞（特权软件带恶意代码）、不兼容使用安全漏洞、以及"选择合适的安全哲理"的问题。</p>
+<p><strong>五类安全威胁</strong>：<br>
+1. <strong>非授权访问</strong>（假冒、身份攻击、越权操作）；<br>
+2. <strong>信息泄露或丢失</strong>（传输/存储泄露、隐蔽隧道、流量分析）；<br>
+3. <strong>破坏数据完整性</strong>（删除、修改、插入、重发）；<br>
+4. 拒绝服务（第 9 节展开）；<br>
+5. 利用网络传播病毒等。</p>
+<p>对应这五类威胁，另外给出了网络安全的<strong>五项服务</strong>（常与威胁配套考）：</p>
+<table>
+<thead>
+<tr>
+<th>服务</th>
+<th>确保什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>访问控制</strong></td>
+<td>会话对方（人或计算机）有权做它所声称的事情</td>
+</tr>
+<tr>
+<td><strong>认证</strong></td>
+<td>会话对方的资源与它所声称的一致</td>
+</tr>
+<tr>
+<td><strong>完整性</strong></td>
+<td>接收到的信息与发送的一致</td>
+</tr>
+<tr>
+<td><strong>审计</strong></td>
+<td>任何交易事后可被证实，收发双方都认为交换发生过</td>
+</tr>
+<tr>
+<td><strong>保密</strong></td>
+<td>敏感信息不被窃听</td>
+</tr>
+</tbody>
+</table>
+<p>强调：网络安全的产生与发展，标志着<strong>传统的通信保密时代过渡到了信息安全时代</strong>——从"只保传输"变成"保数据、保系统、保行为"。</p>
+<h3>六、例题精解</h3>
+<p><strong>例 1（工程项目：安全事件归类）</strong> 某政务系统发生三件事：① 攻击者拿到数据库导出脚本，导出了 10 万条个人信息；② 系统被篡改，首页显示错误政策；③ 管理员账号被盗，攻击者删除全部操作日志。请分别指出破坏了哪个安全要素。</p>
+<p><em>解答</em>：<br>
+- ① 破坏<strong>机密性</strong>（未授权访问数据）；<br>
+- ② 破坏<strong>完整性</strong>（数据被非授权修改）；<br>
+- ③ 破坏<strong>可审查性</strong>（失去调查依据），同时涉及<strong>可控性</strong>（越权操作）。</p>
+<p><em>点评</em>：判断标准是"<strong>攻击者做了什么动作</strong>"：看→机密性，改→完整性，停→可用性，导→可控性，删日志→可审查性。</p>
+<p><strong>例 2（工程判断：安全方案为何不够）</strong> 某单位给系统上了防火墙、入侵检测与加密传输，但仍发生内部人员批量导出客户数据的事件。请从"四个层面"分析缺失。</p>
+<p><em>解答</em>：<br>
+- <strong>设备层</strong>：无明显问题；<br>
+- <strong>数据层</strong>：缺少数据脱敏与导出审计，敏感字段未做分级；<br>
+- <strong>内容层</strong>：缺少数据分类分级制度与合规要求落地；<br>
+- <strong>行为层</strong>：缺<strong>行为可控性</strong>——没有对"谁在何时导出了多少数据"的实时监控与阻断。</p>
+<p><em>点评</em>：这正是强调"行为安全"的原因——<strong>技术手段管得住边界，管不住人的操作</strong>。答题时按四层逐条对照，比罗列产品名得分高。</p>
+<h3>七、常见误区</h3>
+<p><strong>误区一：把信息安全等同于"防泄密"。</strong><br>
+五个要素里还有完整性、可用性、可控性、可审查性。勒索病毒破坏的是可用性。</p>
+<p><strong>误区二：认为设备安全就是"设备不坏"。</strong><br>
+它包括稳定性（不出故障）、可靠性（正常执行任务）、可用性（可正常使用）三个不同概率。</p>
+<p><strong>误区三：把"用户标识与验证"与"存取权限限制"混为一谈。</strong><br>
+前者解决"你是谁"，后者解决"你能做什么"。</p>
+<p><strong>误区四：认为内容安全是"技术问题"。</strong><br>
+它属于政治、法律、道德层面的要求，靠制度与审核，不是靠算法。</p>
+<h3>八、本节自测</h3>
+<blockquote>
+<p>共 9 题（6 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="2-5-1" data-type="single" data-explain="原文第五项为“可审查性”，不是“不可否认性”。" data-source="软考口径" data-diag="A 漏读" data-kp="五要素" data-answer="A"><div class="qhead"><span class="chip">2-5-1</span><span class="chip t">单选</span><span class="chip k">五要素</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">信息安全的五个基本要素是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 机密性、完整性、可用性、可控性、可审查性</button><button class="opt" data-k="B"><b>B.</b> 机密性、完整性、可用性、不可否认性、可追溯性</button><button class="opt" data-k="C"><b>C.</b> 保密性、真实性、完整性、可用性、可控性</button><button class="opt" data-k="D"><b>D.</b> 安全性、可靠性、可用性、可维护性、可扩展性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-5-2" data-type="single" data-explain="数据未被泄露也未泄露给非授权者，但授权用户无法访问 → 可用性受损。" data-source="软考口径" data-diag="A 漏读" data-kp="可用性" data-answer="C"><div class="qhead"><span class="chip">2-5-2</span><span class="chip t">单选</span><span class="chip k">可用性</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">勒索病毒加密数据库导致业务停摆三天，主要破坏了：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 机密性</button><button class="opt" data-k="B"><b>B.</b> 完整性</button><button class="opt" data-k="C"><b>C.</b> 可用性</button><button class="opt" data-k="D"><b>D.</b> 可审查性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-5-3" data-type="single" data-explain="可审查性指“对出现的信息安全问题提供调查的依据和手段”，日志被删即失去依据。" data-source="软考口径" data-diag="A 漏读" data-kp="可审查性" data-answer="D"><div class="qhead"><span class="chip">2-5-3</span><span class="chip t">单选</span><span class="chip k">可审查性</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">攻击者删除系统操作日志，主要破坏了：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 机密性</button><button class="opt" data-k="B"><b>B.</b> 可用性</button><button class="opt" data-k="C"><b>C.</b> 可控性</button><button class="opt" data-k="D"><b>D.</b> 可审查性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-5-4" data-type="single" data-explain="行为安全的三个特性：秘密性、完整性、可控性（偏离预期时能发现、控制、纠正）。" data-source="软考口径" data-diag="A 漏读" data-kp="行为安全" data-answer="D"><div class="qhead"><span class="chip">2-5-4</span><span class="chip t">单选</span><span class="chip k">行为安全</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">信息安全的四个层面中，强调"过程与结果符合预期、偏离时能发现和纠正"的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 设备安全</button><button class="opt" data-k="B"><b>B.</b> 数据安全</button><button class="opt" data-k="C"><b>C.</b> 内容安全</button><button class="opt" data-k="D"><b>D.</b> 行为安全</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-5-5" data-type="single" data-explain="基于物理特征：签名、指纹、语音；基于特殊物品：智能 IC 卡、磁条卡。" data-source="软考口径" data-diag="A 漏读" data-kp="身份验证方法" data-answer="C"><div class="qhead"><span class="chip">2-5-5</span><span class="chip t">单选</span><span class="chip k">身份验证方法</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">下列属于"基于特殊安全物品"的用户身份验证方法的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 指纹识别</button><button class="opt" data-k="B"><b>B.</b> 签名识别</button><button class="opt" data-k="C"><b>C.</b> 智能 IC 卡识别</button><button class="opt" data-k="D"><b>D.</b> 语音识别</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-5-6" data-type="single" data-explain="稳定性=不出故障概率；可靠性=正常执行任务概率；可用性=可正常使用概率。" data-source="软考口径" data-diag="A 漏读" data-kp="设备安全三性" data-answer="A"><div class="qhead"><span class="chip">2-5-6</span><span class="chip t">单选</span><span class="chip k">设备安全三性</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">关于设备安全，下列说法正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 稳定性指设备在一定时间内不出故障的概率</button><button class="opt" data-k="B"><b>B.</b> 可靠性指设备可正常使用的概率</button><button class="opt" data-k="C"><b>C.</b> 可用性指设备不出故障的概率</button><button class="opt" data-k="D"><b>D.</b> 三者是同一概念的不同说法</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-5-7" data-type="multi" data-explain="D 错：非授权访问包括假冒、身份攻击、非法用户进入、合法用户越权操作等多种形式。" data-source="软考口径" data-diag="A 漏读" data-kp="存储安全与威胁" data-answer="ABCE"><div class="qhead"><span class="chip">2-5-7</span><span class="chip t">不定项</span><span class="chip k">存储安全与威胁</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">关于信息存储安全与网络安全威胁，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 用户标识与验证是访问控制的基础</button><button class="opt" data-k="B"><b>B.</b> 隔离控制法包括物理隔离、时间隔离、逻辑隔离和密码技术隔离</button><button class="opt" data-k="C"><b>C.</b> 计算机病毒具有隐蔽性、传染性、潜伏性、触发性和破坏性</button><button class="opt" data-k="D"><b>D.</b> 非授权访问只包括非法用户进入系统</button><button class="opt" data-k="E"><b>E.</b> 数据挖掘与分析属于信息泄露的一种途径（流量分析）</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-5-8" data-type="fill" data-explain="五要素：机密性、完整性、可用性、可控性、可审查性。" data-source="软考口径" data-diag="A 漏读" data-kp="五要素" data-answer="可控|审查" data-answer-text="可控性、可审查性"><div class="qhead"><span class="chip">2-5-8</span><span class="chip t">填空</span><span class="chip k">五要素</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">信息安全的五个基本要素是机密性、完整性、可用性、和。</div><div class="fillrow"><input class="fillinput" placeholder="两个要素，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="2-5-9" data-type="fill" data-explain="四层面：设备、数据、内容、行为。" data-source="软考口径" data-diag="A 漏读" data-kp="四层面" data-answer="内容|行为" data-answer-text="内容、行为"><div class="qhead"><span class="chip">2-5-9</span><span class="chip t">填空</span><span class="chip k">四层面</span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">信息安全范围包含四个层面，分别是设备安全、数据安全、________安全和________安全。</div><div class="fillrow"><input class="fillinput" placeholder="两个层面，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>九、小结与衔接</h3>
+<p>本节回答：安全要保五件事（机密、完整、可用、可控、可审查），且分四层（设备、数据、内容、行为）——<strong>技术只是其中最基础的一环</strong>。</p>
+<p><strong>留一个问题</strong>：既然技术只管一层，那完整的防护体系应该由哪几部分构成？</p>
+<p>下一节看安全体系的三根支柱。</p>
+<hr>
+<h2 id="sec6">第 6 节 安全体系的三根支柱</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：只上安全设备够不够？一个完整的安全体系由哪些部分构成？</p>
+</blockquote>
+<h3>一、买了设备就安全了吗</h3>
+<p>某单位按"等保要求"采购了防火墙、IDS、堡垒机、加密机，一年后仍发生数据泄露——原因是：没人定期看告警、没有应急流程、也没有安全责任人。</p>
+<p>这引出一个基本判断：<strong>安全是"技术 + 组织 + 管理"的组合，缺一不可</strong>。</p>
+<h3>二、三根支柱</h3>
+<p>信息安全系统的组成框架分为三部分：</p>
+<p><strong>1. 技术体系</strong>——由硬件与软件组成的安全機制集合，常见分类：</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>作用</th>
+<th>典型手段</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>物理安全</td>
+<td>保护机房与环境</td>
+<td>门禁、监控、UPS、防电磁泄漏</td>
+</tr>
+<tr>
+<td>网络安全</td>
+<td>保护网络通信</td>
+<td>防火墙、VPN、IDS/IPS、网络隔离</td>
+</tr>
+<tr>
+<td>主机安全</td>
+<td>保护服务器与终端</td>
+<td>加固基线、补丁、防病毒、HIDS</td>
+</tr>
+<tr>
+<td>应用安全</td>
+<td>保护业务应用</td>
+<td>身份认证、权限控制、输入校验、防注入</td>
+</tr>
+<tr>
+<td>数据安全</td>
+<td>保护数据本身</td>
+<td>加密、脱敏、备份、DLP</td>
+</tr>
+</tbody>
+</table>
+<p><strong>2. 组织机构体系</strong>——设立安全管理机构与岗位：安全领导小组、安全主管、系统管理员、安全管理员、审计员等。强调"三员分立"（系统管理员、安全管理员、审计员职责分离）的思想。</p>
+<p><strong>3. 管理体系</strong>——制度、规范、流程：安全策略、管理制度、操作规程、应急预案、培训与考核。</p>
+<p>三者的关系可以这样理解：<strong>技术解决"能不能防"，组织解决"谁来负责"，管理解决"按什么规矩做"</strong>。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"三员分立"要单独设一个审计员？如果由系统管理员兼任审计，会有什么问题？</p>
+</blockquote>
+<h3>三、为什么管理体系最容易被忽略</h3>
+<p>我们把管理体系单列，是因为它最"软"却最关键：</p>
+<ul>
+<li>没有制度，技术配置会随时间漂移（补丁不打、策略被改）；</li>
+<li>没有流程，事件发生时无人知道该找谁；</li>
+<li>没有培训，再好的技术也会被"弱口令 + 钓鱼邮件"绕过。</li>
+</ul>
+<p>这也是等保测评的重点：<strong>很多单位技术项满分，管理项不合格</strong>。</p>
+<h3>四、例题精解</h3>
+<p><strong>例 1（工程项目：补齐安全体系）</strong> 某单位已部署防火墙、WAF、堡垒机与数据库审计，但近一年发生两起内部人员违规导出数据事件。请从三根支柱分析缺口并给出整改方案。</p>
+<p><em>解答</em>：<br>
+- <strong>技术体系</strong>：缺数据层面的 DLP（防泄露）与导出行为阻断，仅有审计（事后）没有阻断（事中）；<br>
+- <strong>组织机构</strong>：未设数据安全责任人，导出审批无人把关；<br>
+- <strong>管理体系</strong>：没有数据分级分类制度、没有导出审批流程、没有违规追责条款。<br>
+- 整改：① 上线 DLP 与导出审批；② 明确数据 owner 与安全责任人；③ 制定分级分类与审批制度，纳入考核。</p>
+<p><em>点评</em>：答题的结构是"<strong>技术缺口 / 组织缺口 / 管理缺口 → 对应措施</strong>"。只写"加强管理"不给分，要写出具体制度。</p>
+<p><strong>例 2（工程判断：三员分立的必要性）</strong> 某单位规模小，由一名工程师同时担任系统管理员、安全管理员与审计员。请评价这一安排的合规性与风险。</p>
+<p><em>解答</em>：<br>
+- 不合规：违背三员分立原则，等保测评中属"管理项不合格"；<br>
+- 风险：该工程师可自行修改配置、关闭审计、再删除日志，<strong>任何越权行为都无法被发现</strong>（破坏可审查性）；<br>
+- 折中：小机构可由上级单位或第三方托管审计职能，实现职责分离。</p>
+<p><em>点评</em>：这题把"组织体系"与第 5 节的"可审查性"连起来了——<strong>审计权独立，是可审查性的组织保障</strong>。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为安全体系就是"一堆安全产品"。</strong><br>
+技术、组织、管理三部分缺一不可，且管理项往往是测评失分点。</p>
+<p><strong>误区二：认为防火墙属于应用安全。</strong><br>
+防火墙属网络安全；应用安全指身份认证、权限控制、输入校验等。</p>
+<p><strong>误区三：把审计员当作"技术岗"。</strong><br>
+审计员的核心价值是<strong>独立性</strong>，不是技术能力。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="2-6-1" data-type="single" data-explain="技术体系、组织机构体系、管理体系三部分。" data-source="软考口径" data-diag="A 漏读" data-kp="组成框架" data-answer="A"><div class="qhead"><span class="chip">2-6-1</span><span class="chip t">单选</span><span class="chip k">组成框架</span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">我们把信息安全系统的组成框架分为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 技术体系、组织机构体系、管理体系</button><button class="opt" data-k="B"><b>B.</b> 物理安全、网络安全、主机安全</button><button class="opt" data-k="C"><b>C.</b> 预防、检测、响应</button><button class="opt" data-k="D"><b>D.</b> 加密、认证、审计</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-6-2" data-type="single" data-explain="网络安全手段包括防火墙、VPN、IDS/IPS、网络隔离等。" data-source="软考口径" data-diag="A 漏读" data-kp="技术体系分类" data-answer="B"><div class="qhead"><span class="chip">2-6-2</span><span class="chip t">单选</span><span class="chip k">技术体系分类</span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">防火墙、VPN、IDS/IPS 属于技术体系中的：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 物理安全</button><button class="opt" data-k="B"><b>B.</b> 网络安全</button><button class="opt" data-k="C"><b>C.</b> 应用安全</button><button class="opt" data-k="D"><b>D.</b> 数据安全</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-6-3" data-type="single" data-explain="三员分立的核心是权限与职责分离，审计员独立以保证可审查性。" data-source="拓展" data-diag="B 补充" data-kp="三员分立" data-answer="A"><div class="qhead"><span class="chip">2-6-3</span><span class="chip t">单选</span><span class="chip k">三员分立</span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">"三员分立"中的三员通常指：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 系统管理员、安全管理员、审计员</button><button class="opt" data-k="B"><b>B.</b> 管理员、用户、访客</button><button class="opt" data-k="C"><b>C.</b> 开发、测试、运维</button><button class="opt" data-k="D"><b>D.</b> 领导、主管、员工</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-6-4" data-type="single" data-explain="管理体系的缺失会直接导致技术措施失效。" data-source="软考口径" data-diag="A 漏读" data-kp="管理体系" data-answer="B"><div class="qhead"><span class="chip">2-6-4</span><span class="chip t">单选</span><span class="chip k">管理体系</span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">关于管理体系的重要性，下列说法最准确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 管理体系只在大型单位需要</button><button class="opt" data-k="B"><b>B.</b> 缺管理制度会导致技术配置随时间漂移、事件响应无章可循</button><button class="opt" data-k="C"><b>C.</b> 管理体系可以完全用技术手段替代</button><button class="opt" data-k="D"><b>D.</b> 管理体系只影响测评得分，不影响实际安全</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-6-5" data-type="multi" data-explain="D 错：三员分立是安全与合规要求，不是效率手段。" data-source="拓展" data-diag="B 补充" data-kp="三支柱" data-answer="ABCE"><div class="qhead"><span class="chip">2-6-5</span><span class="chip t">不定项</span><span class="chip k">三支柱</span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">关于安全体系三根支柱，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 技术体系解决"能不能防"</button><button class="opt" data-k="B"><b>B.</b> 组织机构体系解决"谁来负责"</button><button class="opt" data-k="C"><b>C.</b> 管理体系解决"按什么规矩做"</button><button class="opt" data-k="D"><b>D.</b> 三员分立的主要目的是提高运维效率</button><button class="opt" data-k="E"><b>E.</b> 审计员的独立设置有助于保障可审查性</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-6-6" data-type="fill" data-explain="三部分：技术体系、组织机构体系、管理体系。" data-source="软考口径" data-diag="A 漏读" data-kp="组成框架" data-answer="技术|组织" data-answer-text="技术、组织机构"><div class="qhead"><span class="chip">2-6-6</span><span class="chip t">填空</span><span class="chip k">组成框架</span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">信息安全系统的组成框架由________体系、________体系和管理体系三部分构成。</div><div class="fillrow"><input class="fillinput" placeholder="两个体系，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：安全体系 = 技术 + 组织 + 管理；技术管边界，组织管责任，管理管规矩。</p>
+<p><strong>留一个问题</strong>：这三根支柱里，技术手段中最核心的那一项是什么？——几乎所有安全机制都建立在它之上。</p>
+<p>下一节讲密码技术。</p>
+<hr>
+<h2 id="sec7">第 7 节 密码技术：对称、非对称与密钥管理</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：加密凭什么可信？为什么既要对称密钥，又要非对称密钥？</p>
+</blockquote>
+<h3>一、一个"两难"问题</h3>
+<p>如果只用一种钥匙：发送方和接收方必须持有同一把密钥。问题来了——<strong>怎么把钥匙安全地交给对方？</strong> 派人送、打电话说、写邮件发，都有泄露风险。</p>
+<p>非对称加密解决的正是这个"钥匙怎么给"的问题：<strong>公钥可以公开，私钥自己留着</strong>。</p>
+<h3>二、对称加密：一把钥匙开一把锁</h3>
+<p>加密与解密用<strong>同一把密钥</strong>。的代表算法：</p>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DES</strong>（数据加密标准）</td>
+<td>56 位有效密钥，已不安全</td>
+</tr>
+<tr>
+<td><strong>IDEA</strong>（国际数据加密算法）</td>
+<td>128 位密钥，安全性较好</td>
+</tr>
+<tr>
+<td><strong>AES</strong>（高级加密标准）</td>
+<td>分组长度 128 位，密钥 128/192/256 位可选，目前主流</td>
+</tr>
+</tbody>
+</table>
+<p>优点：<strong>速度快、适合大数据量加密</strong>。缺点：<strong>密钥分发困难</strong>，且 n 个用户两两通信需要 n(n−1)/2 个密钥。</p>
+<h3>三、非对称加密：公钥加密，私钥解密</h3>
+<p>加密用<strong>公钥</strong>，解密用<strong>私钥</strong>；两把钥匙不能互相推导。代表算法是 <strong>RSA</strong>（Rivest、Shamir、Adleman）。</p>
+<p>优点：解决密钥分发问题——公钥可以随便公开。缺点：<strong>速度慢（约为对称加密的千分之一）</strong>，不适合加密大文件。</p>
+<h3>四、混合加密：工程上的标准答案</h3>
+<p>实际系统几乎都采用<strong>混合加密</strong>：</p>
+<ol>
+<li>用<strong>非对称加密</strong>保护"会话密钥"的分发；</li>
+<li>用<strong>对称加密</strong>（会话密钥）加密真正的数据。</li>
+</ol>
+<p>这也是 HTTPS 的做法：TLS 握手用 RSA/ECDHE 协商出对称密钥，之后用 AES 加密应用数据。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么不用非对称加密直接加密文件，省掉对称算法？提示：算一下 1GB 文件的加解密时间。</p>
+</blockquote>
+<h3>五、密钥管理：比算法更容易出事</h3>
+<p>密钥分配与管理有两个核心机制：</p>
+<p><strong>1. KDC（密钥分配中心）</strong>：由一个可信第三方集中生成并分发密钥。用户与 KDC 之间共享主密钥，会话密钥由 KDC 生成后用主密钥加密分发。</p>
+<p><strong>2. Diffie-Hellman 密钥交换</strong>：双方在不安全的信道上协商出共享密钥，而窃听者无法推出该密钥。注意它<strong>只用于密钥交换，不用于加密数据</strong>。</p>
+<p><strong>数字信封</strong>是混合加密的标准化封装：用对称密钥加密数据（数字信封），再用接收方公钥加密对称密钥，一起发送。</p>
+<h3>六、例题精解</h3>
+<p><strong>例 1（工程选型：传输方案）</strong> 某系统要在公网上传输 500MB 的备份文件，要求机密性，且双方事先没有共享密钥。请给出方案。</p>
+<p><em>解答</em>：<br>
+- 采用<strong>混合加密 + 数字信封</strong>：随机生成一次性对称密钥（如 AES-256）加密文件；用接收方公钥（RSA-2048）加密该对称密钥；把密文与"加密后的密钥"一起传输；<br>
+- 接收方用私钥解出对称密钥，再解文件。<br>
+- 不选纯 RSA：500MB 用非对称加密耗时不可接受；不选纯对称：双方无共享密钥，且密钥无法安全传递。</p>
+<p><em>点评</em>：这类题的答题结构是"<strong>用什么加密数据 + 用什么保护密钥 + 为什么不用另一种</strong>"。</p>
+<p><strong>例 2（工程计算：密钥数量）</strong> 某系统有 100 个用户需要两两进行保密通信。分别计算对称体制与非对称体制下需要的密钥数量。</p>
+<p><em>解答</em>：<br>
+- 对称体制：n(n−1)/2 = 100×99/2 = <strong>4950 个密钥</strong>；<br>
+- 非对称体制：每人一对公私钥，共 <strong>100 对（200 把钥匙）</strong>，公钥可公开。<br>
+- 结论：用户数增长时，对称体制的密钥管理成本是平方级增长，这是引入非对称体制的重要动因。</p>
+<p><em>点评</em>：这个对比是理解"为什么要非对称"的最直观方式——<strong>不是为了更安全，而是为了可管理</strong>。</p>
+<h3>七、常见误区</h3>
+<p><strong>误区一：认为非对称加密"更安全所以更好"。</strong><br>
+安全性来自密钥长度与算法，而非对称的代价是速度慢；工程上两者配合使用。</p>
+<p><strong>误区二：把 Diffie-Hellman 当成加密算法。</strong><br>
+它只做密钥协商，不加密数据。</p>
+<p><strong>误区三：认为公钥加密可以防篡改。</strong><br>
+公钥加密只保证机密性；防篡改要靠数字签名（下一节）。</p>
+<h3>八、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="2-7-1" data-type="single" data-explain="对称：DES、IDEA、AES；非对称：RSA、ECC、DSA。" data-source="软考口径" data-diag="A 漏读" data-kp="对称算法" data-answer="B"><div class="qhead"><span class="chip">2-7-1</span><span class="chip t">单选</span><span class="chip k">对称算法</span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">下列属于对称加密算法的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> RSA</button><button class="opt" data-k="B"><b>B.</b> AES</button><button class="opt" data-k="C"><b>C.</b> ECC</button><button class="opt" data-k="D"><b>D.</b> DSA</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-7-2" data-type="single" data-explain="加密用接收方公钥，解密用接收方私钥；签名反之。" data-source="软考口径" data-diag="A 漏读" data-kp="非对称加密方向" data-answer="B"><div class="qhead"><span class="chip">2-7-2</span><span class="chip t">单选</span><span class="chip k">非对称加密方向</span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">非对称加密体制中，用于加密数据的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 发送方私钥</button><button class="opt" data-k="B"><b>B.</b> 接收方公钥</button><button class="opt" data-k="C"><b>C.</b> 接收方私钥</button><button class="opt" data-k="D"><b>D.</b> 会话密钥</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-7-3" data-type="single" data-explain="非对称加密速度约为对称的千分之一，故只用它保护会话密钥。" data-source="拓展" data-diag="B 补充" data-kp="混合加密" data-answer="B"><div class="qhead"><span class="chip">2-7-3</span><span class="chip t">单选</span><span class="chip k">混合加密</span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">HTTPS 采用"混合加密"的主要原因是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 对称加密不安全</button><button class="opt" data-k="B"><b>B.</b> 非对称加密速度慢，不适合加密大量数据</button><button class="opt" data-k="C"><b>C.</b> 非对称加密无法保护密钥</button><button class="opt" data-k="D"><b>D.</b> 混合加密比单一种类更简单</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-7-4" data-type="single" data-explain="DH 只做密钥协商，不加密数据。" data-source="软考口径" data-diag="A 漏读" data-kp="DH 用途" data-answer="C"><div class="qhead"><span class="chip">2-7-4</span><span class="chip t">单选</span><span class="chip k">DH 用途</span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">Diffie-Hellman 算法的主要用途是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 加密大文件</button><button class="opt" data-k="B"><b>B.</b> 生成消息摘要</button><button class="opt" data-k="C"><b>C.</b> 在不安全信道上协商共享密钥</button><button class="opt" data-k="D"><b>D.</b> 数字签名</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-7-5" data-type="single" data-explain="n(n−1)/2 = 100×99/2 = 4950。非对称体制只需 100 对。" data-source="拓展" data-diag="D 计算" data-kp="密钥数量" data-answer="C"><div class="qhead"><span class="chip">2-7-5</span><span class="chip t">单选</span><span class="chip k">密钥数量</span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">100 个用户两两进行保密通信，采用对称密钥体制需要的密钥数量约为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 100</button><button class="opt" data-k="B"><b>B.</b> 200</button><button class="opt" data-k="C"><b>C.</b> 4950</button><button class="opt" data-k="D"><b>D.</b> 10000</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-7-6" data-type="multi" data-explain="E 错：非对称加密速度远慢于对称加密。" data-source="软考口径" data-diag="A 漏读" data-kp="密码技术综合" data-answer="ABCD"><div class="qhead"><span class="chip">2-7-6</span><span class="chip t">不定项</span><span class="chip k">密码技术综合</span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">关于密码技术，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> DES 已因密钥过短而不安全</button><button class="opt" data-k="B"><b>B.</b> AES 支持 128/192/256 位密钥</button><button class="opt" data-k="C"><b>C.</b> RSA 的安全性基于大整数分解难题</button><button class="opt" data-k="D"><b>D.</b> 数字信封用对称密钥加密数据、用接收方公钥加密对称密钥</button><button class="opt" data-k="E"><b>E.</b> 非对称加密的速度通常快于对称加密</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-7-7" data-type="fill" data-explain="对称用同一密钥；非对称加密用接收方公钥、解密用接收方私钥。" data-source="软考口径" data-diag="A 漏读" data-kp="加密方向" data-answer="同一/相同/一把|接收/对方" data-answer-text="同一把（相同）、接收方公钥"><div class="qhead"><span class="chip">2-7-7</span><span class="chip t">填空</span><span class="chip k">加密方向</span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">对称加密体制中，加密与解密使用________密钥；非对称体制中，加密使用________，解密使用私钥。</div><div class="fillrow"><input class="fillinput" placeholder="两处，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="2-7-8" data-type="fill" data-explain="KDC = Key Distribution Center。" data-source="软考口径" data-diag="A 漏读" data-kp="KDC" data-answer="kdc/密钥分配中心" data-answer-text="KDC"><div class="qhead"><span class="chip">2-7-8</span><span class="chip t">填空</span><span class="chip k">KDC</span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">密钥分配中心通常简称为________，其作用是由可信第三方集中生成并分发密钥。</div><div class="fillrow"><input class="fillinput" placeholder="填英文缩写" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>九、小结与衔接</h3>
+<p>本节回答：对称快但密钥难分发，非对称解决分发但慢，工程上用混合加密；密钥管理靠 KDC、DH 与数字信封。</p>
+<p><strong>留一个问题</strong>：加密解决"别人看不懂"，但如果对方<strong>改了你收到的内容</strong>呢？或者<strong>事后否认发过</strong>呢？</p>
+<p>下一节讲访问控制与数字签名。</p>
+<hr>
+<h2 id="sec8">第 8 节 访问控制与数字签名</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：谁能看什么数据？以及——如何证明"这条消息确实是你发的、且没有改过"？</p>
+</blockquote>
+<h3>一、两个不同的问题</h3>
+<p>访问控制回答"<strong>你能不能进这个门</strong>"；数字签名回答"<strong>这封信是不是你写的</strong>"。</p>
+<p>前者是授权问题，后者是<strong>身份与完整性</strong>问题。二者常被混在一起考。</p>
+<h3>二、访问控制的基本模型与三种策略</h3>
+<p>先看访问控制的<strong>基本定义</strong>：</p>
+<blockquote>
+<p>访问控制是指主体依据某些控制策略或权限对客体本身或资源进行的不同授权访问。</p>
+</blockquote>
+<p>它包含<strong>三个要素</strong>：<strong>主体（S）</strong>、<strong>客体（O）</strong>、<strong>控制策略</strong>。</p>
+<ul>
+<li><strong>主体</strong>：能对其他实体施加动作的主动实体，可以是用户、用户组，也可以是终端、进程；</li>
+<li><strong>客体</strong>：接受访问的被动实体，可以是信息、文件记录，也可以是硬件设施、通信终端；</li>
+<li><strong>控制策略</strong>：规定"谁能对什么做什么"的规则集合。</li>
+</ul>
+<p>具体的策略模型这里补充三种业界通用分类（诊断标签 B）：</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>全称</th>
+<th>授权主体</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DAC</strong></td>
+<td>自主访问控制</td>
+<td>资源拥有者自主决定</td>
+<td>灵活，但权限可被转授，难统一管控</td>
+</tr>
+<tr>
+<td><strong>MAC</strong></td>
+<td>强制访问控制</td>
+<td>系统按安全标记统一强制</td>
+<td>严格，适合高密级场景，管理成本高</td>
+</tr>
+<tr>
+<td><strong>RBAC</strong></td>
+<td>基于角色的访问控制</td>
+<td>通过角色间接授权</td>
+<td>兼顾灵活与可控，企业最常用</td>
+</tr>
+</tbody>
+</table>
+<p><strong>RBAC 的价值</strong>一句话概括：<strong>把"人—权限"的两两映射，改成"人—角色—权限"的两段映射</strong>。1000 个员工、20 类岗位，只需维护 20 个角色的权限。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么大型企业几乎都用 RBAC，而很少用 DAC？提示：员工轮岗时会发生什么。</p>
+</blockquote>
+<h3>三、数字签名：三个必须满足的条件</h3>
+<p>一个可用的数字签名方案，必须满足：</p>
+<ol>
+<li><strong>不可否认</strong>：发送方事后不能否认；</li>
+<li><strong>不可伪造</strong>：别人不能伪造其签名；</li>
+<li><strong>可验证</strong>：接收方可以验证签名真伪。</li>
+</ol>
+<h3>四、三种签名实现</h3>
+<p>常见的实现有三种：</p>
+<p><strong>1. 基于密钥的签名（对称体制）</strong>：需要一个可信第三方（仲裁者）参与，双方都信任它。缺点是仲裁者成为瓶颈与信任集中点。</p>
+<p><strong>2. 公开密钥签名</strong>：发送方用<strong>自己的私钥</strong>对消息签名，接收方用<strong>发送方的公钥</strong>验证。这正好与"公钥加密、私钥解密"反过来用：</p>
+<blockquote>
+<p>加密：用对方公钥加密 → 对方用私钥解密（保机密）<br>
+签名：用自己私钥加密（签名）→ 对方用自己公钥解密（验签，保证来源与完整性）</p>
+</blockquote>
+<p><strong>3. 基于消息摘要的签名</strong>：对长文件直接做非对称签名太慢，所以先用 <strong>Hash 函数</strong>算出摘要，再对摘要签名。这带来三个额外好处：签名与文件可分开保存、存储量小、可用于证明文件存在（不需要保存全文）。</p>
+<h3>五、Hash 函数的三个特性</h3>
+<p>数字签名依赖 Hash，Hash 必须满足：<strong>单向性</strong>（无法由摘要反推原文）、<strong>抗碰撞性</strong>（找不到两段不同内容有相同摘要）、<strong>雪崩效应</strong>（原文改一位，摘要大变）。</p>
+<h3>六、例题精解</h3>
+<p><strong>例 1（工程项目：设计一个防否认的合同签署流程）</strong> 某平台要支持在线签合同，要求：① 内容不可被第三方看到；② 签署方事后不能否认；③ 可验证文件未被篡改。请设计流程。</p>
+<p><em>解答</em>：<br>
+- ① <strong>机密性</strong>：用接收方公钥加密合同（或混合加密）；<br>
+- ② <strong>不可否认</strong>：签署方用自己的<strong>私钥对合同摘要签名</strong>；<br>
+- ③ <strong>完整性</strong>：接收方重新计算摘要，与用签署方公钥验签得到的摘要比对，一致则未被篡改；<br>
+- 实务补充：引入时间戳与 CA 证书，解决"签名时间"与"公钥归属"的争议。</p>
+<p><em>点评</em>：这道题把"加密"与"签名"的分工讲清楚了——<strong>加密用对方公钥，签名用自己私钥</strong>。方向搞反是最高频的错误。</p>
+<p><strong>例 2（工程选型：访问控制模型）</strong> 某医院有 3000 名员工、60 类岗位，规定"医生只能看自己科室患者病历，护士可看本病区，管理员可看审计日志"。请选择访问控制模型并说明理由。</p>
+<p><em>解答</em>：<br>
+- 选 <strong>RBAC</strong>。理由：岗位类别（60 类）稳定，人员流动频繁，用角色承载权限最经济；<br>
+- 同时叠加 <strong>MAC 的安全标记</strong>思想：病历按密级/科室打标记，实现"同角色跨科室也不能看"的强制约束；<br>
+- 不用纯 DAC：权限会被随意转授，无法满足合规要求。</p>
+<p><em>点评</em>：真实系统常是"RBAC 为主 + MAC 为辅"。答题时写出"主模型 + 补充机制"是加分项。</p>
+<h3>七、常见误区</h3>
+<p><strong>误区一：把加密与签名用反。</strong><br>
+加密用<strong>对方公钥</strong>，签名用<strong>自己私钥</strong>。写反了整道题都错。</p>
+<p><strong>误区二：认为数字签名能保证机密性。</strong><br>
+签名只保证来源真实与内容完整，不隐藏内容；要机密仍需加密。</p>
+<p><strong>误区三：认为 RBAC 就是"给用户分组"。</strong><br>
+RBAC 的核心是<strong>角色</strong>（岗位职责）而不是用户组，权限绑定在角色上，用户通过角色获得权限。</p>
+<p><strong>误区四：认为 Hash 可以加密。</strong><br>
+Hash 是单向的，不可逆，不能用于加密传输。</p>
+<h3>八、本节自测</h3>
+<blockquote>
+<p>共 9 题（6 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="2-8-1" data-type="single" data-explain="DAC = 自主访问控制，由资源拥有者自主决定权限。" data-source="拓展" data-diag="B 补充" data-kp="DAC" data-answer="A"><div class="qhead"><span class="chip">2-8-1</span><span class="chip t">单选</span><span class="chip k">DAC</span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">由资源拥有者自主决定访问权限的模型是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> DAC</button><button class="opt" data-k="B"><b>B.</b> MAC</button><button class="opt" data-k="C"><b>C.</b> RBAC</button><button class="opt" data-k="D"><b>D.</b> ABAC</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-8-2" data-type="single" data-explain="RBAC 通过角色承载权限，兼顾灵活与可控，适合人员多、岗位稳定的组织。" data-source="拓展" data-diag="B 补充" data-kp="RBAC" data-answer="C"><div class="qhead"><span class="chip">2-8-2</span><span class="chip t">单选</span><span class="chip k">RBAC</span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">大型企业最常用的访问控制模型是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> DAC</button><button class="opt" data-k="B"><b>B.</b> MAC</button><button class="opt" data-k="C"><b>C.</b> RBAC</button><button class="opt" data-k="D"><b>D.</b> 无访问控制</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-8-3" data-type="single" data-explain="签名用自己私钥，验证用自己公钥——与加密方向正好相反。" data-source="软考口径" data-diag="A 漏读" data-kp="签名用私钥" data-answer="B"><div class="qhead"><span class="chip">2-8-3</span><span class="chip t">单选</span><span class="chip k">签名用私钥</span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">数字签名中，发送方签名使用的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 自己的公钥</button><button class="opt" data-k="B"><b>B.</b> 自己的私钥</button><button class="opt" data-k="C"><b>C.</b> 接收方的公钥</button><button class="opt" data-k="D"><b>D.</b> 接收方的私钥</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-8-4" data-type="single" data-explain="用发送方公钥验证签名，能证明消息确由私钥持有者发出。" data-source="软考口径" data-diag="A 漏读" data-kp="验签用公钥" data-answer="A"><div class="qhead"><span class="chip">2-8-4</span><span class="chip t">单选</span><span class="chip k">验签用公钥</span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">接收方验证数字签名时使用的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 发送方公钥</button><button class="opt" data-k="B"><b>B.</b> 发送方私钥</button><button class="opt" data-k="C"><b>C.</b> 接收方公钥</button><button class="opt" data-k="D"><b>D.</b> 接收方私钥</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-8-5" data-type="single" data-explain="注意指出：对长文件直接签名效率太低，故与单向 Hash 函数结合。" data-source="软考口径" data-diag="A 漏读" data-kp="摘要签名" data-answer="B"><div class="qhead"><span class="chip">2-8-5</span><span class="chip t">单选</span><span class="chip k">摘要签名</span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">对长文件做数字签名时，通常先计算消息摘要再签名，主要原因是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 摘要更安全</button><button class="opt" data-k="B"><b>B.</b> 非对称加密速度慢，直接对长文件签名效率太低</button><button class="opt" data-k="C"><b>C.</b> 摘要可以加密</button><button class="opt" data-k="D"><b>D.</b> 摘要能隐藏文件内容</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-8-6" data-type="single" data-explain="Hash 单向不可逆、抗碰撞、雪崩效应；相同内容 Hash 值相同。" data-source="拓展" data-diag="B 补充" data-kp="Hash 特性" data-answer="B"><div class="qhead"><span class="chip">2-8-6</span><span class="chip t">单选</span><span class="chip k">Hash 特性</span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">下列关于 Hash 函数的说法，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> Hash 是可逆的，可还原原文</button><button class="opt" data-k="B"><b>B.</b> Hash 函数必须满足单向性、抗碰撞性与雪崩效应</button><button class="opt" data-k="C"><b>C.</b> 相同内容的 Hash 值一定不同</button><button class="opt" data-k="D"><b>D.</b> Hash 可用于加密文件传输</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-8-7" data-type="multi" data-explain="D 错：签名保证来源真实与完整性，不隐藏内容。" data-source="软考口径" data-diag="A 漏读" data-kp="访问控制与签名" data-answer="ABCE"><div class="qhead"><span class="chip">2-8-7</span><span class="chip t">不定项</span><span class="chip k">访问控制与签名</span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">关于访问控制与数字签名，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> DAC 灵活但权限可被转授</button><button class="opt" data-k="B"><b>B.</b> MAC 按安全标记强制控制，适合高密级场景</button><button class="opt" data-k="C"><b>C.</b> RBAC 通过角色间接授权，便于大规模管理</button><button class="opt" data-k="D"><b>D.</b> 数字签名可以保证消息的机密性</button><button class="opt" data-k="E"><b>E.</b> 基于对称密钥的签名需要可信第三方参与</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-8-8" data-type="fill" data-explain="RBAC = Role-Based Access Control。" data-source="拓展" data-diag="B 补充" data-kp="三种模型" data-answer="rbac/角色" data-answer-text="RBAC（基于角色的访问控制）"><div class="qhead"><span class="chip">2-8-8</span><span class="chip t">填空</span><span class="chip k">三种模型</span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">访问控制的三种主流模型是 DAC（自主访问控制）、MAC（强制访问控制）和________。</div><div class="fillrow"><input class="fillinput" placeholder="填模型名称或缩写" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="2-8-9" data-type="fill" data-explain="三条件：不可否认（发送方不能赖）、不可伪造（别人无法冒充）、可验证（接收方能验真伪）。" data-source="拓展" data-diag="B 补充" data-kp="签名三条件" data-answer="伪造|验证" data-answer-text="不可伪造、可验证"><div class="qhead"><span class="chip">2-8-9</span><span class="chip t">填空</span><span class="chip k">签名三条件</span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">数字签名应满足三个条件：不可否认、和。</div><div class="fillrow"><input class="fillinput" placeholder="两个条件，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>九、小结与衔接</h3>
+<p>本节回答：访问控制解决"能不能进"，用 DAC/MAC/RBAC 三种模型；数字签名解决"是不是你发的、有没有被改"，靠私钥签名、公钥验签 + Hash 摘要。</p>
+<p><strong>留一个问题</strong>：攻击者不会只走"正门"。他们有哪些常规套路？系统又该怎么防？</p>
+<p>下一节讲抗攻击技术。</p>
+<hr>
+<h2 id="sec9">第 9 节 抗攻击技术：攻击者的套路与防线</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：攻击者最常用的手段有哪些？每一类该怎么防？</p>
+</blockquote>
+<h3>一、先看攻击者的"成本账"</h3>
+<p>任何攻击都有成本：要买带宽、要花时间、要冒被追踪的风险。所以攻击者总是选"<strong>成本最低、收益最高</strong>"的路径——这解释了为什么弱口令、漏洞扫描、DDoS 长期占据攻击手段榜首。</p>
+<p>防护的思路也由此而来：<strong>抬高攻击成本</strong>（增大密钥空间、增加检测概率），而不是追求"绝对防住"。</p>
+<h3>二、密钥选择：安全的第一道门槛</h3>
+<p>从攻击者视角看密钥，有三个要点：</p>
+<ol>
+<li><strong>增大密钥空间</strong>。n 位密钥的空间是 2ⁿ。这里给了一组直观数字：8 位 ASCII 字符（256 个）在 4 字节密钥下只需 1.2 小时就能穷举，6 字节需要 8.9 年，8 字节需要 <strong>58 万年</strong>。</li>
+<li><strong>选择强钥</strong>。人为了好记常选"Klone"这类弱口令，正好方便攻击者测试。</li>
+<li><strong>密钥的随机性</strong>。会话密钥应由可靠随机源生成（物理噪声、离子辐射脉冲检测、气体放电等），或由安全的伪随机数发生器产生。</li>
+</ol>
+<h3>三、拒绝服务攻击：让系统"累死"</h3>
+<p><strong>DoS（Denial of Service）</strong> 的目标不是窃取数据，而是<strong>让系统不可用</strong>。</p>
+<p>这里给出两条基本思路：<br>
+1. 让服务器的<strong>缓冲区满</strong>，无法接收新请求；<br>
+2. 用 <strong>IP 欺骗</strong>迫使服务器把合法用户的连接复位。</p>
+<p>按攻击方式分四类：</p>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>消耗资源</td>
+<td>占网络连接、耗磁盘空间、耗 CPU 与内存</td>
+</tr>
+<tr>
+<td>破坏或更改配置信息</td>
+<td>改服务配置文件、启动文件，改变对外服务方式</td>
+</tr>
+<tr>
+<td>物理破坏或改变网络部件</td>
+<td>针对路由器、配线室、电源、冷却设备</td>
+</tr>
+<tr>
+<td>利用服务程序处理错误</td>
+<td>发送程序无法正确处理的包（如 LAND），使服务死循环</td>
+</tr>
+</tbody>
+</table>
+<p><strong>DDoS</strong> 是 DoS 的升级：攻击者先控制大量主机，再同时发起攻击。这里给出的<strong>三级控制结构</strong>是重点：</p>
+<blockquote>
+<p><strong>Client（客户端）</strong>——攻击者主机，发起与控制攻击 → <strong>Handler（主控端）</strong>——已入侵的主机，控制代理端 → <strong>Agent（代理端）</strong>——实际发起攻击的主机</p>
+</blockquote>
+<p>被 DDoS 时的典型现象：大量等待的 TCP 连接、大量非服务数据分组指向任意端口、源地址为假的包、网络拥塞、死机。</p>
+<p><strong>防御方法</strong>：数据包特征识别、防火墙监控敏感端口、限制半连接数、流量清洗与限速、与 ISP 协同。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么 DDoS 的"源地址为假"会让溯源非常困难？如果你要防御，能靠什么手段弥补？</p>
+</blockquote>
+<h3>四、欺骗攻击：冒充身份</h3>
+<p>常见的欺骗攻击有几类：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>原理</th>
+<th>防御要点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>IP 欺骗</strong></td>
+<td>伪造源 IP，冒充可信主机</td>
+<td>入口过滤（uRPF）、加密认证</td>
+</tr>
+<tr>
+<td><strong>ARP 欺骗</strong></td>
+<td>伪造 ARP 应答，把网关 MAC 指向攻击者</td>
+<td>静态 ARP 绑定、ARP 防护、VLAN 隔离</td>
+</tr>
+<tr>
+<td><strong>DNS 欺骗</strong></td>
+<td>污染 DNS 响应，把域名指向恶意 IP</td>
+<td>DNSSEC、可信 DNS、本地缓存校验</td>
+</tr>
+<tr>
+<td><strong>Web 欺骗</strong></td>
+<td>伪造页面/中间人，骗取凭据</td>
+<td>HTTPS + 证书校验、HSTS</td>
+</tr>
+</tbody>
+</table>
+<p>共同点是：<strong>攻击都发生在"身份与地址的绑定关系"上</strong>。所以防御的核心也是"验证绑定"——签名、证书、静态绑定。</p>
+<h3>五、端口扫描与漏洞扫描</h3>
+<p><strong>端口扫描</strong>用来探测目标开放了哪些服务，是攻击前的侦察步骤。常见技术：</p>
+<ul>
+<li><strong>全连接扫描（TCP connect）</strong>：完成三次握手，易被日志记录；</li>
+<li><strong>半连接扫描（SYN 扫描）</strong>：只发 SYN 不回 ACK，隐蔽性较好；</li>
+<li><strong>秘密扫描（FIN/Xmas/NULL）</strong>：利用某些系统对异常包的不响应来推断端口状态。</li>
+</ul>
+<p><strong>漏洞扫描</strong>则是用工具比对已知漏洞库，主动发现系统弱点——它是防守方最常用的自查手段，与攻击方的端口扫描是"同一技术的两面"。</p>
+<h3>六、堆栈加固：针对 DoS 的具体防线</h3>
+<p>针对拒绝服务攻击，堆栈加固的典型手段包括：</p>
+<ul>
+<li><strong>SYN Cookie</strong>：不立即分配资源，把状态编码进序列号，握手完成才建连接；</li>
+<li><strong>增大半连接队列 / 缩短超时</strong>：提高承受 SYN Flood 的能力；</li>
+<li><strong>限制单 IP 并发连接数</strong>；</li>
+<li><strong>关闭不必要的服务与端口</strong>，减少攻击面。</li>
+</ul>
+<blockquote>
+<p><strong>想一想 ②</strong>：SYN Cookie 为什么能缓解 SYN Flood？它牺牲了什么？</p>
+</blockquote>
+<h3>七、例题精解</h3>
+<p><strong>例 1（工程项目：被 DDoS 后的处置）</strong> 某电商在大促前 1 小时遭遇攻击：大量源地址随机的 SYN 包涌入，服务器半连接队列占满，正常用户无法访问。请给出处置与加固方案。</p>
+<p><em>解答</em>：<br>
+- <strong>应急</strong>：启用流量清洗（云清洗/ISP 联动）、限速与限连接数、临时封禁异常源段；<br>
+- <strong>加固</strong>：开启 SYN Cookie、缩短 SYN 超时、增大半连接队列、限制单 IP 并发；<br>
+- <strong>架构</strong>：入口做 CDN/高防 IP 隐藏源站、关键接口做限流与降级、准备弹性扩容；<br>
+- <strong>长期</strong>：建立监控告警与演练机制（对应第 6 节的管理体系）。</p>
+<p><em>点评</em>：这类题按"<strong>应急 → 加固 → 架构 → 管理</strong>"四层作答，比只写"买高防"完整得多。</p>
+<p><strong>例 2（工程判断：这是哪类攻击）</strong> 某公司内网用户访问网银时，页面正常但证书告警被忽略，随后账户被盗。排查发现网关的 MAC 地址被篡改。请判断攻击类型并说明防御。</p>
+<p><em>解答</em>：<br>
+- 属于 <strong>ARP 欺骗 + 中间人</strong>：攻击者伪造网关 ARP，把流量引到自己主机，再转发给真实网关（用户无感知），从而截获凭据；<br>
+- 证书告警正是中间人无法提供合法证书的信号，<strong>忽略告警是关键失误</strong>；<br>
+- 防御：交换机端口安全与 ARP 防护、静态 ARP 绑定、强制 HTTPS + HSTS、终端安全软件、网络分段。</p>
+<p><em>点评</em>：这道题同时考了"攻击识别"和"为什么证书告警不能忽略"——后者在网络安全的案例题里很常见。</p>
+<h3>八、常见误区</h3>
+<p><strong>误区一：认为 DDoS 只能靠"买带宽"防。</strong><br>
+分层防御（清洗、限速、SYN Cookie、架构冗余）比单纯堆带宽有效。</p>
+<p><strong>误区二：把端口扫描当成攻击行为本身。</strong><br>
+它是侦察，但同样应被检测与告警——扫描往往是攻击的前兆。</p>
+<p><strong>误区三：认为欺骗攻击只发生在公网。</strong><br>
+ARP 欺骗是典型的<strong>内网</strong>攻击，且危害极大。</p>
+<p><strong>误区四：忽略配置类漏洞。</strong><br>
+还有一类常被忽略：破坏或更改配置信息——配置错误本身就是攻击面。</p>
+<h3>九、本节自测</h3>
+<blockquote>
+<p>共 9 题（6 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="2-9-1" data-type="single" data-explain="Client 发起控制 → Handler 控制代理 → Agent 实施攻击。" data-source="软考口径" data-diag="A 漏读" data-kp="DDoS 三级结构" data-answer="C"><div class="qhead"><span class="chip">2-9-1</span><span class="chip t">单选</span><span class="chip k">DDoS 三级结构</span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">DDoS 攻击的三级控制结构中，实际发起攻击的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> Client</button><button class="opt" data-k="B"><b>B.</b> Handler</button><button class="opt" data-k="C"><b>C.</b> Agent</button><button class="opt" data-k="D"><b>D.</b> Server</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-9-2" data-type="single" data-explain="ARP 欺骗是典型内网中间人攻击，防御靠静态绑定、端口安全与 HTTPS。" data-source="软考口径" data-diag="A 漏读" data-kp="ARP 欺骗" data-answer="B"><div class="qhead"><span class="chip">2-9-2</span><span class="chip t">单选</span><span class="chip k">ARP 欺骗</span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">攻击者伪造网关 MAC 地址、把流量引到自己主机再转发，这种攻击属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 端口扫描</button><button class="opt" data-k="B"><b>B.</b> ARP 欺骗（中间人）</button><button class="opt" data-k="C"><b>C.</b> 缓冲区溢出</button><button class="opt" data-k="D"><b>D.</b> SQL 注入</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-9-3" data-type="single" data-explain="SYN Cookie 不立即分配资源，把状态编码进序列号，握手完成才建连接。" data-source="软考口径" data-diag="A 漏读" data-kp="SYN Cookie" data-answer="A"><div class="qhead"><span class="chip">2-9-3</span><span class="chip t">单选</span><span class="chip k">SYN Cookie</span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">用于缓解 SYN Flood 的典型技术是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> SYN Cookie</button><button class="opt" data-k="B"><b>B.</b> DNS 轮询</button><button class="opt" data-k="C"><b>C.</b> 数字签名</button><button class="opt" data-k="D"><b>D.</b> RAID</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-9-4" data-type="single" data-explain="半连接扫描只发 SYN，不完成握手，隐蔽性较好。" data-source="软考口径" data-diag="A 漏读" data-kp="端口扫描" data-answer="B"><div class="qhead"><span class="chip">2-9-4</span><span class="chip t">单选</span><span class="chip k">端口扫描</span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">只发送 SYN 而不完成三次握手的端口扫描方式称为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 全连接扫描</button><button class="opt" data-k="B"><b>B.</b> 半连接（SYN）扫描</button><button class="opt" data-k="C"><b>C.</b> 秘密扫描</button><button class="opt" data-k="D"><b>D.</b> 漏洞扫描</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-9-5" data-type="single" data-explain="给出直观对比：8 字节密钥需 58 万年才能穷举。" data-source="软考口径" data-diag="A 漏读" data-kp="密钥空间" data-answer="A"><div class="qhead"><span class="chip">2-9-5</span><span class="chip t">单选</span><span class="chip k">密钥空间</span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">关于密钥空间，下列说法正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> n 位密钥的空间为 2ⁿ，加长密钥可显著增加穷举难度</button><button class="opt" data-k="B"><b>B.</b> 密钥空间与密钥长度无关</button><button class="opt" data-k="C"><b>C.</b> 只要算法保密，密钥再短也安全</button><button class="opt" data-k="D"><b>D.</b> 弱密钥不影响安全性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-9-6" data-type="single" data-explain="DoS 四类方式：消耗资源、破坏配置、物理破坏、利用服务程序错误。伪造身份属欺骗攻击。" data-source="软考口径" data-diag="A 漏读" data-kp="DoS 思路" data-answer="D"><div class="qhead"><span class="chip">2-9-6</span><span class="chip t">单选</span><span class="chip k">DoS 思路</span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">下列不属于 DoS 攻击思路的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 使服务器缓冲区满，无法接收新请求</button><button class="opt" data-k="B"><b>B.</b> 使用 IP 欺骗迫使服务器复位合法连接</button><button class="opt" data-k="C"><b>C.</b> 物理破坏网络部件</button><button class="opt" data-k="D"><b>D.</b> 通过数字签名伪造身份</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-9-7" data-type="multi" data-explain="E 错：防火墙不能防御流量型 DoS，需清洗、限速、架构冗余等多层措施。" data-source="软考口径" data-diag="A 漏读" data-kp="抗攻击综合" data-answer="ABCD"><div class="qhead"><span class="chip">2-9-7</span><span class="chip t">不定项</span><span class="chip k">抗攻击综合</span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">关于抗攻击技术，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 欺骗攻击的共同点是攻击"身份与地址的绑定关系"</button><button class="opt" data-k="B"><b>B.</b> 端口扫描常被视为攻击前的侦察行为</button><button class="opt" data-k="C"><b>C.</b> 漏洞扫描是防守方自查的重要手段</button><button class="opt" data-k="D"><b>D.</b> DDoS 由于源地址可伪造，溯源非常困难</button><button class="opt" data-k="E"><b>E.</b> 只要部署了防火墙，就不会遭到 DoS 攻击</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-9-8" data-type="fill" data-explain="三级：Client、Handler、Agent。" data-source="软考口径" data-diag="A 漏读" data-kp="DDoS 结构" data-answer="handler/主控" data-answer-text="Handler（主控端）"><div class="qhead"><span class="chip">2-9-8</span><span class="chip t">填空</span><span class="chip k">DDoS 结构</span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">DDoS 的三级控制结构由 Client、________和 Agent 组成。</div><div class="fillrow"><input class="fillinput" placeholder="填英文名或中文名" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="2-9-9" data-type="fill" data-explain="三因素：密钥空间、强钥、随机性。" data-source="软考口径" data-diag="A 漏读" data-kp="密钥三因素" data-answer="随机" data-answer-text="随机性"><div class="qhead"><span class="chip">2-9-9</span><span class="chip t">填空</span><span class="chip k">密钥三因素</span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">密钥生成需考虑三方面因素：增大密钥空间、选择强钥和保证密钥的________。</div><div class="fillrow"><input class="fillinput" placeholder="填一个词" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>十、小结与衔接</h3>
+<p>本节回答：攻击围绕"可用性、身份、地址"做文章——DoS 打可用性、欺骗打身份、扫描找入口；防御要分层，从配置加固到架构冗余再到管理机制。</p>
+<p><strong>留一个问题</strong>：防线这么多，怎么判断"防到什么程度算够"？有没有统一的标准与评估方法？</p>
+<p>下一节讲保障体系与风险管理。</p>
+<hr>
+<h2 id="sec10">第 10 节 保障体系与风险管理：安全做到什么程度算够</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：安全投入是无底洞，凭什么说"已经达标"？风险到底怎么算？</p>
+</blockquote>
+<h3>一、"绝对安全"是个伪命题</h3>
+<p>理论上，把服务器关机、拔掉网线最安全——但没有可用性，安全也就失去意义。</p>
+<p>所以安全的本质不是"零风险"，而是<strong>把风险控制在可接受的水平</strong>。这需要一个标准（做到哪一级）和一个方法（怎么算风险）。</p>
+<h3>二、等级保护：五个级别</h3>
+<p>计算机信息系统安全保护等级分五个级别，这是高频考点：</p>
+<table>
+<thead>
+<tr>
+<th>级别</th>
+<th>名称</th>
+<th>对应 TCSEC</th>
+<th>关键特征</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第 1 级</td>
+<td>用户自主保护级</td>
+<td>C1</td>
+<td>自主访问控制，用户对自身资源负责</td>
+</tr>
+<tr>
+<td>第 2 级</td>
+<td>系统审计保护级</td>
+<td>C2</td>
+<td>增加审计、更细粒度的自主访问控制</td>
+</tr>
+<tr>
+<td>第 3 级</td>
+<td>安全标记保护级</td>
+<td>B1</td>
+<td>强制访问控制、安全标记</td>
+</tr>
+<tr>
+<td>第 4 级</td>
+<td>结构化保护级</td>
+<td>B2</td>
+<td>结构化设计、形式化模型、隐蔽信道分析</td>
+</tr>
+<tr>
+<td>第 5 级</td>
+<td>访问验证保护级</td>
+<td>B3</td>
+<td>访问验证、高可信设计与验证</td>
+</tr>
+</tbody>
+</table>
+<p>记忆要点：<strong>级别越高，控制越"强制"、验证越"形式化"</strong>。1–2 级靠"自主 + 审计"，3 级开始引入"强制标记"，4–5 级引入"结构化/形式化验证"。</p>
+<h3>三、风险管理：五个要素、五步计算</h3>
+<p>安全风险由三个要素决定：</p>
+<ul>
+<li><strong>信息资产</strong>（属性是<strong>资产价值</strong>）——值钱的程度；</li>
+<li><strong>威胁</strong>（属性是<strong>发生的可能性</strong>）——被攻击的概率；</li>
+<li><strong>脆弱性/弱点</strong>（属性是<strong>影响严重程度</strong>）——被打中后的损失。</li>
+</ul>
+<p>的风险计算五步：</p>
+<ol>
+<li>对信息资产进行识别，并<strong>对资产赋值</strong>；</li>
+<li>对威胁进行分析，并<strong>对威胁发生可能性赋值</strong>；</li>
+<li>识别信息资产的脆弱性，并<strong>对弱点严重程度赋值</strong>；</li>
+<li>根据威胁和脆弱性<strong>计算安全事件发生的可能性</strong>；</li>
+<li>结合资产重要性与事件可能性，<strong>计算风险值</strong>。</li>
+</ol>
+<p>一句话记：<strong>风险 = 资产价值 × 威胁可能性 × 弱点严重程度</strong>（以赋值 + 计算的方式表达，不要求精确乘式，但要体现三要素）。</p>
+<p>强调一个判断：<strong>弱点本身不会造成损失，只是条件；没有威胁发生时，单纯的弱点不构成风险</strong>。所以评估时既要看弱点，也要看威胁。</p>
+<h3>四、脆弱性评估的方法</h3>
+<p>这里列出：问卷调查、人员问询、工具扫描、手动检查、文档审查、渗透测试。</p>
+<p>并区分两个维度：<br>
+- <strong>技术</strong>：远程与本地扫描、人工抽查，覆盖物理层、网络层、系统层、应用层；<br>
+- <strong>管理</strong>：按 BS7799 等标准检查安全管理制度及执行情况。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"管理脆弱性"要靠文档审查和人员问询，而不是工具扫描？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例 1（工程项目：定级与整改）</strong> 某市级政务服务平台存储 200 万市民身份与社保信息，一旦被攻破将造成严重社会影响。请判断其等级保护级别并给出定级依据。</p>
+<p><em>解答</em>：<br>
+- 定为<strong>第 3 级（安全标记保护级）</strong>。依据：涉及大量公民个人信息、一旦泄露或破坏会对社会秩序与公共利益造成严重损害；<br>
+- 要求：强制访问控制与安全标记、审计、边界防护、入侵防范、数据完整性/保密性保护、集中管控；<br>
+- 落实：需通过等级测评，并按要求定期复测与整改。</p>
+<p><em>点评</em>：定级的关键看"<strong>受侵害客体 + 侵害程度</strong>"（公民/法人 → 社会秩序 → 国家安全），而不是信息系统规模。</p>
+<p><strong>例 2（工程计算：风险排序）</strong> 三个资产：A（客户数据库，价值 5，威胁可能性 4，弱点严重度 4）、B（内部论坛，价值 1，威胁可能性 3，弱点严重度 2）、C（财务系统，价值 4，威胁可能性 2，弱点严重度 5）。请按风险值排序并给出优先加固对象。</p>
+<p><em>解答</em>：<br>
+- 以"价值 × 可能性 × 严重度"估算：A = 5×4×4 = 80；B = 1×3×2 = 6；C = 4×2×5 = 40；<br>
+- 排序：A &gt; C &gt; B；<br>
+- 优先加固 <strong>A</strong>（风险最高），其次 C（严重度高，虽可能性低但一旦发生损失大）。</p>
+<p><em>点评</em>：注意 C 的"可能性低但严重度高"，属于典型的"低频高损"风险，不能因为概率低就忽略——<strong>风险排序不等于概率排序</strong>。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为级别越高越"安全好用"。</strong><br>
+级别是保护要求，越高意味着成本与管理负担越大，应按实际定级，不是越高越好。</p>
+<p><strong>误区二：把"弱点"直接等同于"风险"。</strong><br>
+没有威胁利用时，弱点只是隐患，不构成风险。</p>
+<p><strong>误区三：认为风险 = 概率。</strong><br>
+还要乘上资产价值与影响程度。低频高损事件往往比高频低损更危险。</p>
+<p><strong>误区四：认为等保只是"技术测评"。</strong><br>
+管理项（制度、人员、流程）同样在测评范围内，且常是失分点。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="2-10-1" data-type="single" data-explain="五个级别，从用户自主保护级到访问验证保护级。" data-source="软考口径" data-diag="A 漏读" data-kp="等级数量" data-answer="C"><div class="qhead"><span class="chip">2-10-1</span><span class="chip t">单选</span><span class="chip k">等级数量</span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">我国计算机信息系统安全保护等级共分为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 3 级</button><button class="opt" data-k="B"><b>B.</b> 4 级</button><button class="opt" data-k="C"><b>C.</b> 5 级</button><button class="opt" data-k="D"><b>D.</b> 6 级</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-10-2" data-type="single" data-explain="第 3 级开始引入强制访问控制与安全标记（对应 TCSEC B1）。" data-source="软考口径" data-diag="A 漏读" data-kp="第3级" data-answer="C"><div class="qhead"><span class="chip">2-10-2</span><span class="chip t">单选</span><span class="chip k">第3级</span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">引入"强制访问控制与安全标记"的是第几级？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 第 1 级 用户自主保护级</button><button class="opt" data-k="B"><b>B.</b> 第 2 级 系统审计保护级</button><button class="opt" data-k="C"><b>C.</b> 第 3 级 安全标记保护级</button><button class="opt" data-k="D"><b>D.</b> 第 5 级 访问验证保护级</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-10-3" data-type="single" data-explain="资产→价值；威胁→可能性；弱点→影响严重程度。" data-source="软考口径" data-diag="A 漏读" data-kp="威胁属性" data-answer="B"><div class="qhead"><span class="chip">2-10-3</span><span class="chip t">单选</span><span class="chip k">威胁属性</span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">风险计算模型中，威胁的属性是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 资产价值</button><button class="opt" data-k="B"><b>B.</b> 威胁发生的可能性</button><button class="opt" data-k="C"><b>C.</b> 弱点被利用后的影响严重程度</button><button class="opt" data-k="D"><b>D.</b> 安全事件造成的直接经济损失</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-10-4" data-type="single" data-explain="弱点本身不会造成损失，它只是一种条件或环境。" data-source="软考口径" data-diag="A 漏读" data-kp="弱点与风险" data-answer="B"><div class="qhead"><span class="chip">2-10-4</span><span class="chip t">单选</span><span class="chip k">弱点与风险</span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">关于弱点与风险的关系，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 有弱点就一定有风险</button><button class="opt" data-k="B"><b>B.</b> 弱点本身不会造成损失，需要威胁利用才构成风险</button><button class="opt" data-k="C"><b>C.</b> 没有弱点就没有威胁</button><button class="opt" data-k="D"><b>D.</b> 弱点评估只需技术扫描</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-10-5" data-type="single" data-explain="评估方法：问卷调查、人员问询、工具扫描、手动检查、文档审查、渗透测试。" data-source="软考口径" data-diag="A 漏读" data-kp="脆弱性评估" data-answer="D"><div class="qhead"><span class="chip">2-10-5</span><span class="chip t">单选</span><span class="chip k">脆弱性评估</span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">下列不属于脆弱性评估方法的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 问卷调查</button><button class="opt" data-k="B"><b>B.</b> 文档审查</button><button class="opt" data-k="C"><b>C.</b> 渗透测试</button><button class="opt" data-k="D"><b>D.</b> 数据备份</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-10-6" data-type="multi" data-explain="D 错：应按实际定级，级别越高成本与管理负担越大。" data-source="软考口径" data-diag="A 漏读" data-kp="等保与风险" data-answer="ABCE"><div class="qhead"><span class="chip">2-10-6</span><span class="chip t">不定项</span><span class="chip k">等保与风险</span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">关于等级保护与风险管理，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 第 1 级对应 TCSEC 的 C1 级</button><button class="opt" data-k="B"><b>B.</b> 第 2 级增加了审计功能</button><button class="opt" data-k="C"><b>C.</b> 风险由资产、威胁、脆弱性三要素共同决定</button><button class="opt" data-k="D"><b>D.</b> 等级越高越好，所有系统都应定为第 5 级</button><button class="opt" data-k="E"><b>E.</b> 管理脆弱性可通过文档审查与人员问询评估</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2-10-7" data-type="fill" data-explain="五步：资产识别赋值→威胁分析赋值→脆弱性识别赋值→计算可能性→计算风险值。" data-source="软考口径" data-diag="A 漏读" data-kp="风险计算" data-answer="赋值/价值" data-answer-text="对资产赋值"><div class="qhead"><span class="chip">2-10-7</span><span class="chip t">填空</span><span class="chip k">风险计算</span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">风险计算五步中，第一步是识别信息资产并________，第二步是分析威胁并对其发生可能性赋值。</div><div class="fillrow"><input class="fillinput" placeholder="填一个动作" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="2-10-8" data-type="fill" data-explain="五级：自主、审计、标记、结构化、访问验证。" data-source="软考口径" data-diag="A 漏读" data-kp="第5级" data-answer="访问验证" data-answer-text="访问验证"><div class="qhead"><span class="chip">2-10-8</span><span class="chip t">填空</span><span class="chip k">第5级</span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">等级保护第 5 级的名称是________保护级。</div><div class="fillrow"><input class="fillinput" placeholder="填一个词" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>九、小结与衔接</h3>
+<p>本节回答：安全要"定级 + 算风险"——定级解决"做到哪一档"，风险计算解决"先补哪一块"。三要素（资产、威胁、脆弱性）与五步计算是答题框架。</p>
+<hr>
+<h2 id="sec11">本章总复习</h2>
+<h3>一、全章知识网</h3>
+<pre><code>信息系统（第3章）
+   ├ 定义与要素：硬件/软件/网络 + 信息资源/用户/制度；五功能（输入存储处理输出控制）
+   ├ 发展：诺兰模型 6 阶段（初始→传播→控制→集成→数据管理→成熟）
+   ├ 生命周期：规划→分析→设计→实施→运行维护（逻辑模型 vs 物理模型）
+   ├ 开发方法：结构化 / 原型 / 面向对象（+BSP、CSF、BPR）
+   ├ 六类系统：TPS 记事实 · MIS 出报表 · DSS 辅助决策 · ES 复用经验 · OAS 多形态办公 · ERP 集成三流
+   └ 典型架构：电子政务 G2G/G2B/G2C/G2E；电子商务 B2B/B2C/C2C/O2O
+
+信息安全（第4章）
+   ├ 五要素：机密性、完整性、可用性、可控性、可审查性
+   ├ 四层面：设备（稳定/可靠/可用）、数据（秘密/完整/可用）、内容、行为
+   ├ 体系三支柱：技术 + 组织 + 管理（三员分立）
+   ├ 密码技术：对称（DES/IDEA/AES）· 非对称（RSA）· 混合 · KDC/DH/数字信封
+   ├ 访问控制：DAC / MAC / RBAC
+   ├ 数字签名：私钥签、公钥验；长文件签摘要
+   ├ 抗攻击：密钥三要素、DoS/DDoS（Client-Handler-Agent）、欺骗（IP/ARP/DNS/Web）、扫描、堆栈加固
+   └ 保障：等保 5 级；风险 = 资产 × 威胁 × 脆弱性
+</code></pre>
+<h3>二、必记的七组对照</h3>
+<table>
+<thead>
+<tr>
+<th>对照</th>
+<th>区分点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>逻辑模型 vs 物理模型</td>
+<td>分析阶段出逻辑，设计阶段出物理</td>
+</tr>
+<tr>
+<td>DSS vs ES</td>
+<td>数据+模型、辅助决策 vs 知识+推理、给出结论</td>
+</tr>
+<tr>
+<td>TPS vs ERP</td>
+<td>单一事务处理 vs 跨流程三流集成</td>
+</tr>
+<tr>
+<td>加密 vs 签名</td>
+<td>用对方公钥加密；用自己私钥签名</td>
+</tr>
+<tr>
+<td>DAC/MAC/RBAC</td>
+<td>自主决定 / 强制标记 / 角色授权</td>
+</tr>
+<tr>
+<td>对称 vs 非对称</td>
+<td>快、密钥难分发 vs 慢、解决分发</td>
+</tr>
+<tr>
+<td>弱点 vs 风险</td>
+<td>弱点是条件，需威胁利用才成风险</td>
+</tr>
+</tbody>
+</table>
+<h3>三、跨节综合自测（10 题）</h3>
+<div class="quiz" data-id="2综-1" data-type="single" data-explain="孤岛 + 投资失控是控制阶段的标志。" data-source="软考口径" data-diag="A 漏读" data-kp="诺兰模型" data-answer="C"><div class="qhead"><span class="chip">2综-1</span><span class="chip t">单选</span><span class="chip k">诺兰模型</span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">某企业各系统独立建设、数据不互通，IT 投入持续增长但效益不明，按诺兰模型处于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 初始阶段</button><button class="opt" data-k="B"><b>B.</b> 传播阶段</button><button class="opt" data-k="C"><b>C.</b> 控制阶段</button><button class="opt" data-k="D"><b>D.</b> 成熟阶段</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2综-2" data-type="single" data-explain="半结构化 + 数据与模型为资源 + 支持而非代替 → DSS。" data-source="软考口径" data-diag="A 漏读" data-kp="DSS 判定" data-answer="C"><div class="qhead"><span class="chip">2综-2</span><span class="chip t">单选</span><span class="chip k">DSS 判定</span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">某系统用于辅助信贷员综合财务数据与评分模型做出授信判断，最终仍由人拍板。该系统最可能是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> TPS</button><button class="opt" data-k="B"><b>B.</b> MIS</button><button class="opt" data-k="C"><b>C.</b> DSS</button><button class="opt" data-k="D"><b>D.</b> ES</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2综-3" data-type="single" data-explain="服务对象是企业 → G2B。" data-source="软考口径" data-diag="A 漏读" data-kp="G2B" data-answer="B"><div class="qhead"><span class="chip">2综-3</span><span class="chip t">单选</span><span class="chip k">G2B</span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">某政务平台的"企业开办"模块服务对象是企业，属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> G2G</button><button class="opt" data-k="B"><b>B.</b> G2B</button><button class="opt" data-k="C"><b>C.</b> G2C</button><button class="opt" data-k="D"><b>D.</b> G2E</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2综-4" data-type="single" data-explain="DNS 欺骗污染解析结果；防御靠 DNSSEC 与可信 DNS。" data-source="软考口径" data-diag="A 漏读" data-kp="DNS 欺骗" data-answer="B"><div class="qhead"><span class="chip">2综-4</span><span class="chip t">单选</span><span class="chip k">DNS 欺骗</span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">攻击者通过伪造域名解析结果，把用户引向钓鱼网站，这属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> ARP 欺骗</button><button class="opt" data-k="B"><b>B.</b> DNS 欺骗</button><button class="opt" data-k="C"><b>C.</b> 端口扫描</button><button class="opt" data-k="D"><b>D.</b> 缓冲区溢出</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2综-5" data-type="single" data-explain="人员多、岗位明确 → 角色承载权限最经济。" data-source="软考口径" data-diag="A 漏读" data-kp="RBAC" data-answer="C"><div class="qhead"><span class="chip">2综-5</span><span class="chip t">单选</span><span class="chip k">RBAC</span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">某系统需要向 1000 名员工授权，权限随岗位变动频繁调整，最合适的访问控制模型是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> DAC</button><button class="opt" data-k="B"><b>B.</b> MAC</button><button class="opt" data-k="C"><b>C.</b> RBAC</button><button class="opt" data-k="D"><b>D.</b> 不做控制</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2综-6" data-type="single" data-explain="安全五要素中任一被破坏都是安全事故。" data-source="软考口径" data-diag="A 漏读" data-kp="可用性" data-answer="B"><div class="qhead"><span class="chip">2综-6</span><span class="chip t">单选</span><span class="chip k">可用性</span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">关于数据安全与可用性的关系，下列说法正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 可用性只与硬件有关</button><button class="opt" data-k="B"><b>B.</b> 勒索病毒加密数据导致业务中断，破坏的是可用性</button><button class="opt" data-k="C"><b>C.</b> 只要数据没泄露就是安全的</button><button class="opt" data-k="D"><b>D.</b> 可用性与机密性不会冲突</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2综-7" data-type="single" data-explain="有设备无制度无责任人 → 缺组织体系与管理体系。" data-source="软考口径" data-diag="A 漏读" data-kp="三支柱" data-answer="B"><div class="qhead"><span class="chip">2综-7</span><span class="chip t">单选</span><span class="chip k">三支柱</span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">某单位仅有技术防护设备，但无安全制度、无责任人、无应急预案，从安全体系三支柱看缺失的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 技术体系</button><button class="opt" data-k="B"><b>B.</b> 组织体系与管理体系</button><button class="opt" data-k="C"><b>C.</b> 物理安全</button><button class="opt" data-k="D"><b>D.</b> 密码体系</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2综-8" data-type="multi" data-explain="D 错：签名保证来源真实与完整性，不提供机密性。" data-source="软考口径" data-diag="A 漏读" data-kp="跨章综合" data-answer="ABCE"><div class="qhead"><span class="chip">2综-8</span><span class="chip t">不定项</span><span class="chip k">跨章综合</span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">关于信息系统与信息安全，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 信息系统六要素中包含信息用户与规章制度</button><button class="opt" data-k="B"><b>B.</b> 原型法适用于需求不明确的项目</button><button class="opt" data-k="C"><b>C.</b> 信息安全的可审查性依赖日志与审计</button><button class="opt" data-k="D"><b>D.</b> 数字签名可同时保证机密性与完整性</button><button class="opt" data-k="E"><b>E.</b> 等级保护定级需考虑受侵害客体与侵害程度</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="2综-9" data-type="fill" data-explain="五要素顺序可换，但不能漏。" data-source="软考口径" data-diag="A 漏读" data-kp="五要素" data-answer="可控|审查" data-answer-text="可控性、可审查性"><div class="qhead"><span class="chip">2综-9</span><span class="chip t">填空</span><span class="chip k">五要素</span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">信息安全的五个基本要素是机密性、完整性、可用性、、。</div><div class="fillrow"><input class="fillinput" placeholder="两个要素，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="2综-10" data-type="fill" data-explain="资产→价值；威胁→可能性；脆弱性→影响严重程度。" data-source="软考口径" data-diag="A 漏读" data-kp="风险三要素" data-answer="脆弱/弱点|可能性" data-answer-text="脆弱性（弱点）、威胁发生的可能性"><div class="qhead"><span class="chip">2综-10</span><span class="chip t">填空</span><span class="chip k">风险三要素</span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">风险计算三要素为信息资产、威胁与________，其中威胁的属性是________。</div><div class="fillrow"><input class="fillinput" placeholder="两处，用顿号分隔" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>四、本章结语</h3>
+<p>第 3、4 章是"业务视角"与"安全视角"的一对：</p>
+<ul>
+<li>第 3 章告诉你<strong>系统有哪几类、怎么建</strong>——这是架构设计的业务前提；</li>
+<li>第 4 章告诉你<strong>数据怎么保护</strong>——这是架构设计的约束条件。</li>
+</ul>
+<p>两者在论文里都会以"非功能要求"的形式出现：任何架构方案，都要回答"支撑什么业务、满足什么安全等级"。</p>
+<p><strong>本章结束</strong>。下一步进入 K3（软件工程与可靠性）。那一块是案例题的主战场。</p>
+<div class="legend" style="margin-top:44px">标注说明：<b>软考口径</b>＝按官方用书表述给分；<b>拓展</b>＝考纲未展开的补充知识。详见 <a href="k00.html">K0 前言</a>。作答记录保存在本机浏览器。</div>
+<div class="toast" id="toast"></div>
+</div>
+<script>
+const KEY="book_K2信息系统与信息安全";
+let state=JSON.parse(localStorage.getItem(KEY)||"{}");
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function norm(s){return (s||"").toLowerCase().replace(/[\s，,、;；。.()（）]/g,"");}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1400);}
+function stats(){const qs=$$(".quiz");let done=0,ok=0;
+ qs.forEach(q=>{const st=state[q.dataset.id];if(st&&st.done){done++;if(st.ok)ok++;}});
+ return {done,total:qs.length,ok};}
+function paint(){const s=stats();const p=s.total?s.done/s.total*100:0;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";}
+function fillKeywords(q){return q.dataset.answer.split("|").map(g=>g.split("/"));}
+function fbHTML(q,ok,userText){
+ const diag=q.dataset.diag||"";const warm=diag.includes("补充")?"#a2540f":"#b42318";
+ const ans=q.dataset.answerText||q.dataset.answer;
+ return '<div class="res">'+(ok?"✔ 回答正确":"✘ 回答错误")+'</div>'
+  +'<div><b>正确答案：</b>'+ans+(userText?'　<span style="color:#6b7280">你的作答：'+userText+'</span>':'')+'</div>'
+  +'<details open><summary>展开解析</summary><div class="inner">'
+  +'<div>'+q.dataset.explain+'</div>'
+  +'<div class="row tags">来源：'+q.dataset.source+'　｜　诊断标签：<b style="color:'+warm+'">'+diag+'</b></div>'
+  +'</div></details>';
+}
+function judge(q,ok,userText){
+ const fb=$(".fb",q);fb.className="fb show "+(ok?"ok":"bad");
+ fb.innerHTML=fbHTML(q,ok,userText);
+ state[q.dataset.id]={done:true,ok:ok};save();paint();
+}
+$$(".quiz").forEach(q=>{
+ const type=q.dataset.type;const ans=q.dataset.answer;
+ const opts=$$(".opt",q);const fb=$(".fb",q);
+ const saved=state[q.dataset.id];
+ if(type==="single"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     opts.forEach(x=>x.disabled=true);
+     const ok=(o.dataset.k===ans);
+     o.classList.add(ok?"right":"wrong");
+     if(!ok){const c=opts.find(x=>x.dataset.k===ans);if(c)c.classList.add("right");}
+     judge(q,ok,o.dataset.k);
+   }));
+ }else if(type==="multi"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     if(o.disabled)return;
+     o.classList.toggle("sel");
+   }));
+   const btn=$(".check",q);
+   if(btn)btn.addEventListener("click",()=>{
+     const picked=opts.filter(o=>o.classList.contains("sel")).map(o=>o.dataset.k).sort().join("");
+     if(!picked){toast("先选择至少一个选项");return;}
+     opts.forEach(o=>{
+       o.disabled=true;o.classList.remove("sel");
+       const k=o.dataset.k;
+       if(ans.includes(k))o.classList.add("right");
+       else if(picked.includes(k))o.classList.add("wrong");
+     });
+     judge(q,picked===ans,picked);
+   });
+ }else{
+   const inp=$(".fillinput",q);const btn=$(".check",q);
+   const go=()=>{
+     const raw=inp.value;const v=norm(raw);
+     if(!v){toast("先填写答案");return;}
+     let ok=false;
+     if(q.dataset.numeric){
+       const m=raw.match(/-?\d+(?:\.\d+)?/);
+       const cands=q.dataset.numeric.split("|");
+       ok=!!m&&cands.some(x=>Math.abs(parseFloat(m[0])-parseFloat(x))<0.011);
+     }else{
+       ok=fillKeywords(q).every(g=>g.some(k=>v.includes(norm(k))));
+     }
+     inp.disabled=true;inp.style.borderColor=ok?"#7cc49b":"#e79a94";
+     if(btn)btn.disabled=true;
+     judge(q,ok,raw.trim());
+   };
+   if(btn)btn.addEventListener("click",go);
+   if(inp)inp.addEventListener("keydown",e=>{if(e.key==="Enter")go();});
+ }
+ if(saved&&saved.done){/* 恢复历史状态：仅标记，不覆盖作答 */}
+});
+window.addEventListener("scroll",()=>{
+ const h=document.documentElement;
+ const p=h.scrollTop/(h.scrollHeight-h.clientHeight||1)*100;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";
+});
+paint();
+</script>
+<div class="book-foot-nav"><div class="bf-box"><a href="k01.html">&larr; 上一章 K1 计算机系统基础</a><a class="bf-next" href="k03.html">下一章 K3 软件工程与可靠性 &rarr;</a></div><p class="bf-note">作答记录保存在本机浏览器，换设备或清除缓存不会保留。本章支持浏览器直接打印为 PDF。</p></div><script>
+(function(){
+  var el=document.getElementById("book-nav-progress");
+  function refresh(){
+    try{
+      var st=JSON.parse(localStorage.getItem("book_K2信息系统与信息安全")||"{}"),done=0;
+      Object.keys(st).forEach(function(k){if(st[k]&&st[k].done)done++;});
+      if(el)el.textContent=done+" / 91 题";
+    }catch(e){}
+  }
+  refresh();setInterval(refresh,1000);
+})();
+</script></body></html>

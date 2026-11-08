@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K0 前言</title>
+<style>
+:root{--bg:#fbfaf7;--card:#fff;--ink:#1f2328;--sub:#6b7280;--line:#e6e3dd;--accent:#1f4e79;--ok:#0f7b4f;--bad:#b42318;--chip:#eef3f8;--warm:#fdf6ec}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:17px/1.9 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",serif}
+#bar{position:fixed;top:0;left:0;height:3px;background:var(--accent);width:0;z-index:99}
+.wrap{max-width:760px;margin:0 auto;padding:56px 20px 100px}
+h1{font-size:27px;line-height:1.4;letter-spacing:.5px;margin:0 0 10px}
+h2{font-size:21px;margin:52px 0 14px;padding-top:14px;border-top:2px solid var(--line);letter-spacing:.5px}
+h2:first-of-type{border-top:none}
+h3{font-size:17.5px;margin:30px 0 10px;color:#2b3a4a}
+h5{font-size:15px;margin:26px 0 8px;color:var(--sub);font-weight:600}
+p{margin:10px 0}
+blockquote{margin:16px 0;padding:12px 16px;background:var(--warm);border-left:3px solid #e0b984;border-radius:0 8px 8px 0;font-size:16px}
+blockquote p{margin:4px 0}
+strong{color:#12324f}
+hr{border:none;border-top:1px dashed var(--line);margin:26px 0}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px;background:#fff}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f3f1ec;font-weight:600}
+code{background:#f3f1ec;padding:1px 5px;border-radius:4px;font-size:14px}
+pre{background:#f7f5f1;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto}
+ul,ol{margin:10px 0;padding-left:22px}
+li{margin:4px 0}
+.math{font-family:"Cambria Math",Cambria,Georgia,"Times New Roman",serif;font-size:1.03em}
+.mathblock{display:block;text-align:center;margin:16px 0;overflow-x:auto;padding:2px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:-0.55em;text-align:center;margin:0 .3em}
+.frac .n{border-bottom:1px solid currentColor;padding:0 .3em;line-height:1.3}
+.frac .d{padding:0 .3em;line-height:1.4}
+sub,sup{font-size:.72em;line-height:0}
+.toast{position:fixed;right:18px;bottom:18px;background:#1f2937;color:#fff;padding:9px 14px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+
+/* 题卡 */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:18px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.qhead{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.chip{background:var(--chip);color:#33475b;border-radius:999px;padding:1px 9px;font-size:12px}
+.chip.t{background:#eaf4ec;color:#0f7b4f}
+.chip.k{background:#f4f0fa;color:#5b3f8f;font-size:11.5px}
+a.back{margin-left:auto;font-size:12px;color:var(--sub);text-decoration:none;border-bottom:1px dashed #c9c4ba}
+a.back:hover{color:var(--accent);border-color:var(--accent)}
+.qstem{font-weight:600;margin:4px 0 12px;font-size:16px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:15.5px;line-height:1.7;
+ background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 13px;cursor:pointer;transition:.15s}
+.opt:hover{border-color:#b9c6d6;background:#f8fafc}
+.opt b{color:var(--accent);margin-right:2px}
+.opt.sel{border-color:var(--accent);background:#eef4fa}
+.opt.right{border-color:#7cc49b;background:#effaf3}
+.opt.wrong{border-color:#e79a94;background:#fdf1f0}
+.opt:disabled{cursor:default}
+.fillrow{display:flex;gap:10px;margin-top:12px;align-items:center}
+.fillinput{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:15.5px;background:#fff}
+.btn{font:inherit;font-size:14px;padding:7px 16px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer}
+.btn.check{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fb{display:none;margin-top:14px;font-size:15px;line-height:1.8}
+.fb.show{display:block}
+.fb .res{font-weight:700;margin-bottom:6px;font-size:15.5px}
+.fb.ok .res{color:var(--ok)}
+.fb.bad .res{color:var(--bad)}
+.fb details{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:#fcfbf9;padding:0 12px}
+.fb summary{cursor:pointer;padding:9px 0;font-weight:600;color:var(--accent);outline:none}
+.fb .inner{padding:2px 0 12px;border-top:1px dashed var(--line)}
+.fb .row{color:var(--sub);font-size:13px;margin-top:8px}
+.fb .tags b{color:#a2540f}
+.legend{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:20px 0;font-size:14.5px}
+.legend b{color:var(--accent)}
+@media print{
+ #bar,.toast{display:none}
+ .quiz{break-inside:avoid}
+ body{background:#fff;font-size:12pt}
+}
+@media (max-width:600px){
+ body{font-size:16px;line-height:1.85}
+ .wrap{padding:40px 14px 80px}
+ h1{font-size:23px}
+ table{font-size:13px}
+}
+</style>
+<style id="book-nav-css">
+#book-nav{position:sticky;top:0;z-index:100;background:rgba(251,250,247,.96);backdrop-filter:blur(8px);border-bottom:1px solid #e6e3dd;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+#bar{z-index:101!important}
+#book-nav .bn-in{max-width:1060px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+#book-nav a{color:#1f4e79;text-decoration:none;white-space:nowrap}
+#book-nav a:hover{text-decoration:underline}
+#book-nav .bn-home{font-weight:700}
+#book-nav .bn-cur{color:#1f2328;font-weight:600;flex:1;min-width:180px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#book-nav .bn-step{background:#fff;border:1px solid #e6e3dd;border-radius:999px;padding:3px 11px;font-size:13px}
+#book-nav .bn-step.disabled{opacity:.38;pointer-events:none}
+#book-nav .bn-prog{color:#6b7280;font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.book-foot-nav{max-width:760px;margin:0 auto;padding:0 20px 80px;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.book-foot-nav .bf-box{border-top:2px solid #e6e3dd;padding-top:22px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}
+.book-foot-nav a{color:#1f4e79;text-decoration:none}
+.book-foot-nav a:hover{text-decoration:underline}
+.book-foot-nav .bf-next{background:#1f4e79;color:#fff!important;border-radius:10px;padding:9px 18px;font-weight:600}
+.book-foot-nav .bf-next:hover{text-decoration:none;background:#163c5e}
+.book-foot-nav .bf-note{color:#6b7280;font-size:13px;margin-top:14px}
+@media(max-width:600px){#book-nav .bn-cur{order:3;flex-basis:100%;text-align:left}#book-nav .bn-prog{display:none}}
+@media print{#book-nav,.book-foot-nav{display:none}#bar{z-index:0!important}}
+</style>
+</head><body><nav id="book-nav"><div class="bn-in"><a class="bn-home" href="index.html">&larr; 全书目录</a><span class="bn-step disabled">&larr; K0</span><span class="bn-cur">K0 前言</span><a class="bn-step" href="k01.html" title="计算机系统基础">K1 &rarr;</a><span class="bn-prog">全书总说明</span></div></nav>
+<div id="bar"></div>
+<div class="wrap">
+<h1>K0 前言</h1>
+<blockquote>
+<p>全书总说明。正式进入各章之前，先花五分钟读完这一页。</p>
+</blockquote>
+<hr>
+<h2 id="sec1">一、这是一套什么书</h2>
+<p>这不是对现成读物的缩写或导读，而是<strong>按考点重新组织的备考用书</strong>：把官方考纲涉及的知识点组织成 11 章，每一章围绕一条主线讲透，读完不必再回头翻其它资料。</p>
+<p>这样组织的理由只有一个：<strong>按原来的章节顺序学，知识点是散的</strong>。同一件事常常横跨好几章（比如性能优化涉及存储层次、操作系统调度、网络传输、Amdahl 定律），照原顺序读，学到后面忘了前面。</p>
+<p>于是每一章都按"<strong>问题 → 原理 → 计算 → 误区 → 自测</strong>"这条链路重新串过：先给一个具体场景，再引出概念，最后落到"考试怎么考、工程上怎么权衡"。</p>
+<h2 id="sec2">二、写给谁</h2>
+<ul>
+<li>准备系统架构设计师（高级）考试，需要一套能从头读到尾的材料；</li>
+<li>已经工作，没时间啃大部头，希望每次只读一个主题；</li>
+<li>更关心"为什么这么设计"，而不只是"标准答案是什么"。</li>
+</ul>
+<p>不假设你有很深的计算机基础，但假设你愿意在"想一想"处停三十秒。</p>
+<h2 id="sec3">三、全书结构</h2>
+<table>
+<thead>
+<tr>
+<th>章</th>
+<th>主题</th>
+<th>对应考纲范围</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>K0</td>
+<td>前言（本页）</td>
+<td>—</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>K1</td>
+<td>计算机系统基础</td>
+<td>硬件、操作系统、数据库、网络、语言、多媒体、系统工程、性能</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>K2</td>
+<td>信息系统与信息安全</td>
+<td>信息系统类型与建设、信息安全技术</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>K3</td>
+<td>软件工程与可靠性</td>
+<td>过程模型、需求工程、分析与设计、测试、项目管理、可靠性、MDA、可维护性技术、AI 测试</td>
+<td>✅ 13 节 / 107 题</td>
+</tr>
+<tr>
+<td>K4</td>
+<td>数据库设计</td>
+<td>数据模型、三级模式、关系运算、范式、设计过程、NoSQL、向量数据库、多模数据库</td>
+<td>✅ 9 节 / 70 题</td>
+</tr>
+<tr>
+<td>K5</td>
+<td>架构基础与架构风格</td>
+<td>架构定义与视图、五大类风格、分层与 MVC、ABSD、复用与 DSSA、EDA、六边形架构</td>
+<td>✅ 11 节 / 87 题</td>
+</tr>
+<tr>
+<td>K6</td>
+<td>质量属性与架构评估</td>
+<td>质量属性与场景、SAAM/ATAM/CBAM、高并发手段、性能测试、负载均衡、秒杀、高并发六方面</td>
+<td>✅ 13 节 / 96 题</td>
+</tr>
+<tr>
+<td>K7</td>
+<td>演化与维护</td>
+<td>演化四维度与四时期、18 条原则、演化评估、网站十阶段、架构维护、DevOps、AIOps</td>
+<td>✅ 10 节 / 69 题</td>
+</tr>
+<tr>
+<td>K8</td>
+<td>信息系统架构</td>
+<td>物理/逻辑结构、四种架构模型、四视角框架、ADM、层次式架构三层</td>
+<td>✅ 6 节 / 47 题</td>
+</tr>
+<tr>
+<td>K9</td>
+<td>云原生与 SOA</td>
+<td>SOA 与协议、云原生七原则与模式、容器/微服务/Serverless/网格、分布式事务、可观测、云原生数据库、企业集成</td>
+<td>✅ 10 节 / 77 题</td>
+</tr>
+<tr>
+<td>K10</td>
+<td>嵌入式、通信与安全架构</td>
+<td>嵌入式两种模式、实时设计、通信网络、安全模型与 WPDRRC</td>
+<td>✅ 6 节 / 42 题</td>
+</tr>
+<tr>
+<td>K11</td>
+<td>大数据与未来技术</td>
+<td>CPS、AI、机器人、边缘计算、数字孪生、大数据栈、Lambda/Kappa、RAG、幻觉治理、数据湖</td>
+<td>✅ 9 节 / 58 题</td>
+</tr>
+</tbody>
+</table>
+<p>各章可单独阅读，但建议按顺序：前四章是后七章的地基。</p>
+<h2 id="sec4">四、每一章的固定体例</h2>
+<p>每节都按同样的七段组织：</p>
+<table>
+<thead>
+<tr>
+<th>段</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>本节要解决的问题</strong></td>
+<td>一句话锁定目标，读完能自查有没有解决</td>
+</tr>
+<tr>
+<td>问题引入</td>
+<td>用具体现象开场，不先给定义</td>
+</tr>
+<tr>
+<td>概念建立</td>
+<td>类比先行，再给严谨定义</td>
+</tr>
+<tr>
+<td>分层展开</td>
+<td>中途穿插 2–3 个"想一想"，当场停顿</td>
+</tr>
+<tr>
+<td>例题精解</td>
+<td>先讲思路再写算式；工程题按"约束 → 方案 → 排除理由"展开</td>
+</tr>
+<tr>
+<td>常见误区</td>
+<td>错在哪、为什么会这么想</td>
+</tr>
+<tr>
+<td>本节自测 + 小结</td>
+<td>题目覆盖本节全部考点，末尾收束并留下一个问题</td>
+</tr>
+</tbody>
+</table>
+<p>章末另有固定收束——<strong>每一章都以「本章总复习」结束</strong>，四小节依次是：</p>
+<table>
+<thead>
+<tr>
+<th>小节</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>一、这一章的主线</td>
+<td>用一段话把全章串成一条线，回答"为什么是这几节、按什么顺序"</td>
+</tr>
+<tr>
+<td>二、必须能说出的判断</td>
+<td>五到六条可直接用于答题的结论，是这一章最该记住的部分</td>
+</tr>
+<tr>
+<td>三、跨节综合自测</td>
+<td>8 道跨节题，只靠单节知识答不出，用来检验"这一章是否真的串起来了"</td>
+</tr>
+<tr>
+<td>四、与论文、案例的接口</td>
+<td>说明这一章的内容在考试中会以什么形式出现</td>
+</tr>
+<tr>
+<td>五、下一步</td>
+<td>收束本章并指明下一章的衔接</td>
+</tr>
+</tbody>
+</table>
+<p>这样安排的用意是：<strong>学完一节能自查，学完一章能回看</strong>。只按节学，容易记住碎片；章末总复习负责把碎片连成一条可复述的线。</p>
+<h2 id="sec5">五、怎么用</h2>
+<ol>
+<li><strong>读</strong>：先看"本节要解决的问题"，读正文时遇到"想一想"停 30 秒（答案在下一段里）。</li>
+<li><strong>做</strong>：每节读完立刻做自测。做完一题马上能看到对错与解析，不必攒到最后。</li>
+<li><strong>修</strong>：错题看诊断标签，按标签决定动作。</li>
+</ol>
+<h3>四个诊断标签</h3>
+<table>
+<thead>
+<tr>
+<th>标签</th>
+<th>含义</th>
+<th>应对</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A 漏读</strong></td>
+<td>书里有，我没注意到</td>
+<td>回看该段</td>
+</tr>
+<tr>
+<td><strong>B 补充</strong></td>
+<td>属于拓展知识，不是漏读</td>
+<td>记住结论即可</td>
+</tr>
+<tr>
+<td><strong>C 晦涩</strong></td>
+<td>原文表述绕或有歧义</td>
+<td>看本节解释，理解优先</td>
+</tr>
+<tr>
+<td><strong>D 计算</strong></td>
+<td>会原理但算错</td>
+<td>重做同类题，检查单位与代入</td>
+</tr>
+</tbody>
+</table>
+<h3>两种来源标注</h3>
+<table>
+<thead>
+<tr>
+<th>标注</th>
+<th>含义</th>
+<th>你该怎么做</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>软考口径</strong></td>
+<td>按官方考试用书的表述给分</td>
+<td>必须按这个记，别用网上说法</td>
+</tr>
+<tr>
+<td><strong>拓展</strong></td>
+<td>考纲未要求、正文也未展开，属补充知识</td>
+<td>记住结论即可</td>
+</tr>
+</tbody>
+</table>
+<p>这个区分有实际用处。软考按官方用书判分，而网上资料常与之冲突：</p>
+<ul>
+<li>信息系统生命周期，网上普遍讲五段，官方口径是<strong>四段</strong>；</li>
+<li>信息安全五要素，网上常写"不可否认性"，官方是<strong>可审查性</strong>；</li>
+<li>电子政务，网上讲 G2E，官方是<strong>五个领域</strong>（含 B2G、C2G）。</li>
+</ul>
+<p>只读本书时，这类地方只能靠标注提醒，否则容易用"常识"答错。</p>
+<h2 id="sec6">六、题量是怎么定的</h2>
+<p>不设固定题数，按<strong>考点数量</strong>决定：先把一节切成 8–15 个可考点，再按规则出题。</p>
+<ul>
+<li>每个考点至少 1 题；</li>
+<li>计算类考点正反各 1 题；</li>
+<li>每个易混对至少 1 道不定项；</li>
+<li>拓展知识点单独出题，标注为"拓展"，让你知道自己缺的是课外知识。</li>
+</ul>
+<p>所以有的节 5 题，有的节 15 题——<strong>题量反映的是这一节的考点密度，不是篇幅</strong>。</p>
+<p><strong>章末跨节综合题另有一条硬规则：读懂正确答案所需的知识，必须在本章或之前学过。</strong></p>
+<p>注意限定语——看的是<strong>正确答案</strong>，不是整道题。干扰项可以出现后面章节的概念，因为你只需要排除它，不需要理解它；但如果正确答案本身要靠后文才能理解，那就不合格。</p>
+<p>也就是说，K4 的综合题不能要求你懂 K11 的内容——否则按顺序读到那里就会卡住。反过来，后面的章可以随意综合前面的章：K9 的题用上 K4 的数据库知识、K11 的题用上 K6 的质量属性，都是合理的，因为那时候你已经学过了。</p>
+<p>这条规则的理由很简单：<strong>综合题是用来"回看"的，不是用来"预习"的。</strong></p>
+<hr>
+<div style="text-align:center;color:#6b7280;margin-top:40px">从这里开始，按顺序读下去即可。每章学完，回到该章末尾的「本章总复习」过一遍再往下走。</div>
+<div class="legend" style="margin-top:44px">标注说明：<b>软考口径</b>＝按官方用书表述给分；<b>拓展</b>＝考纲未展开的补充知识。详见 <a href="k00.html">K0 前言</a>。作答记录保存在本机浏览器。</div>
+<div class="toast" id="toast"></div>
+</div>
+<script>
+const KEY="book_K0前言";
+let state=JSON.parse(localStorage.getItem(KEY)||"{}");
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function norm(s){return (s||"").toLowerCase().replace(/[\s，,、;；。.()（）]/g,"");}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1400);}
+function stats(){const qs=$$(".quiz");let done=0,ok=0;
+ qs.forEach(q=>{const st=state[q.dataset.id];if(st&&st.done){done++;if(st.ok)ok++;}});
+ return {done,total:qs.length,ok};}
+function paint(){const s=stats();const p=s.total?s.done/s.total*100:0;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";}
+function fillKeywords(q){return q.dataset.answer.split("|").map(g=>g.split("/"));}
+function fbHTML(q,ok,userText){
+ const diag=q.dataset.diag||"";const warm=diag.includes("补充")?"#a2540f":"#b42318";
+ const ans=q.dataset.answerText||q.dataset.answer;
+ return '<div class="res">'+(ok?"✔ 回答正确":"✘ 回答错误")+'</div>'
+  +'<div><b>正确答案：</b>'+ans+(userText?'　<span style="color:#6b7280">你的作答：'+userText+'</span>':'')+'</div>'
+  +'<details open><summary>展开解析</summary><div class="inner">'
+  +'<div>'+q.dataset.explain+'</div>'
+  +'<div class="row tags">来源：'+q.dataset.source+'　｜　诊断标签：<b style="color:'+warm+'">'+diag+'</b></div>'
+  +'</div></details>';
+}
+function judge(q,ok,userText){
+ const fb=$(".fb",q);fb.className="fb show "+(ok?"ok":"bad");
+ fb.innerHTML=fbHTML(q,ok,userText);
+ state[q.dataset.id]={done:true,ok:ok};save();paint();
+}
+$$(".quiz").forEach(q=>{
+ const type=q.dataset.type;const ans=q.dataset.answer;
+ const opts=$$(".opt",q);const fb=$(".fb",q);
+ const saved=state[q.dataset.id];
+ if(type==="single"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     opts.forEach(x=>x.disabled=true);
+     const ok=(o.dataset.k===ans);
+     o.classList.add(ok?"right":"wrong");
+     if(!ok){const c=opts.find(x=>x.dataset.k===ans);if(c)c.classList.add("right");}
+     judge(q,ok,o.dataset.k);
+   }));
+ }else if(type==="multi"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     if(o.disabled)return;
+     o.classList.toggle("sel");
+   }));
+   const btn=$(".check",q);
+   if(btn)btn.addEventListener("click",()=>{
+     const picked=opts.filter(o=>o.classList.contains("sel")).map(o=>o.dataset.k).sort().join("");
+     if(!picked){toast("先选择至少一个选项");return;}
+     opts.forEach(o=>{
+       o.disabled=true;o.classList.remove("sel");
+       const k=o.dataset.k;
+       if(ans.includes(k))o.classList.add("right");
+       else if(picked.includes(k))o.classList.add("wrong");
+     });
+     judge(q,picked===ans,picked);
+   });
+ }else{
+   const inp=$(".fillinput",q);const btn=$(".check",q);
+   const go=()=>{
+     const raw=inp.value;const v=norm(raw);
+     if(!v){toast("先填写答案");return;}
+     let ok=false;
+     if(q.dataset.numeric){
+       const m=raw.match(/-?\d+(?:\.\d+)?/);
+       const cands=q.dataset.numeric.split("|");
+       ok=!!m&&cands.some(x=>Math.abs(parseFloat(m[0])-parseFloat(x))<0.011);
+     }else{
+       ok=fillKeywords(q).every(g=>g.some(k=>v.includes(norm(k))));
+     }
+     inp.disabled=true;inp.style.borderColor=ok?"#7cc49b":"#e79a94";
+     if(btn)btn.disabled=true;
+     judge(q,ok,raw.trim());
+   };
+   if(btn)btn.addEventListener("click",go);
+   if(inp)inp.addEventListener("keydown",e=>{if(e.key==="Enter")go();});
+ }
+ if(saved&&saved.done){/* 恢复历史状态：仅标记，不覆盖作答 */}
+});
+window.addEventListener("scroll",()=>{
+ const h=document.documentElement;
+ const p=h.scrollTop/(h.scrollHeight-h.clientHeight||1)*100;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";
+});
+paint();
+</script>
+<div class="book-foot-nav"><div class="bf-box"><a href="index.html">&larr; 返回全书目录</a><a class="bf-next" href="k01.html">下一章 K1 计算机系统基础 &rarr;</a></div><p class="bf-note">作答记录保存在本机浏览器，换设备或清除缓存不会保留。本章支持浏览器直接打印为 PDF。</p></div></body></html>

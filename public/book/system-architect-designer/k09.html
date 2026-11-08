@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K9 云原生与SOA</title>
+<style>
+:root{--bg:#fbfaf7;--card:#fff;--ink:#1f2328;--sub:#6b7280;--line:#e6e3dd;--accent:#1f4e79;--ok:#0f7b4f;--bad:#b42318;--chip:#eef3f8;--warm:#fdf6ec}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:17px/1.9 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",serif}
+#bar{position:fixed;top:0;left:0;height:3px;background:var(--accent);width:0;z-index:99}
+.wrap{max-width:760px;margin:0 auto;padding:56px 20px 100px}
+h1{font-size:27px;line-height:1.4;letter-spacing:.5px;margin:0 0 10px}
+h2{font-size:21px;margin:52px 0 14px;padding-top:14px;border-top:2px solid var(--line);letter-spacing:.5px}
+h2:first-of-type{border-top:none}
+h3{font-size:17.5px;margin:30px 0 10px;color:#2b3a4a}
+h5{font-size:15px;margin:26px 0 8px;color:var(--sub);font-weight:600}
+p{margin:10px 0}
+blockquote{margin:16px 0;padding:12px 16px;background:var(--warm);border-left:3px solid #e0b984;border-radius:0 8px 8px 0;font-size:16px}
+blockquote p{margin:4px 0}
+strong{color:#12324f}
+hr{border:none;border-top:1px dashed var(--line);margin:26px 0}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px;background:#fff}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f3f1ec;font-weight:600}
+code{background:#f3f1ec;padding:1px 5px;border-radius:4px;font-size:14px}
+pre{background:#f7f5f1;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto}
+ul,ol{margin:10px 0;padding-left:22px}
+li{margin:4px 0}
+.math{font-family:"Cambria Math",Cambria,Georgia,"Times New Roman",serif;font-size:1.03em}
+.mathblock{display:block;text-align:center;margin:16px 0;overflow-x:auto;padding:2px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:-0.55em;text-align:center;margin:0 .3em}
+.frac .n{border-bottom:1px solid currentColor;padding:0 .3em;line-height:1.3}
+.frac .d{padding:0 .3em;line-height:1.4}
+sub,sup{font-size:.72em;line-height:0}
+.toast{position:fixed;right:18px;bottom:18px;background:#1f2937;color:#fff;padding:9px 14px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+
+/* 题卡 */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:18px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.qhead{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.chip{background:var(--chip);color:#33475b;border-radius:999px;padding:1px 9px;font-size:12px}
+.chip.t{background:#eaf4ec;color:#0f7b4f}
+.chip.k{background:#f4f0fa;color:#5b3f8f;font-size:11.5px}
+a.back{margin-left:auto;font-size:12px;color:var(--sub);text-decoration:none;border-bottom:1px dashed #c9c4ba}
+a.back:hover{color:var(--accent);border-color:var(--accent)}
+.qstem{font-weight:600;margin:4px 0 12px;font-size:16px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:15.5px;line-height:1.7;
+ background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 13px;cursor:pointer;transition:.15s}
+.opt:hover{border-color:#b9c6d6;background:#f8fafc}
+.opt b{color:var(--accent);margin-right:2px}
+.opt.sel{border-color:var(--accent);background:#eef4fa}
+.opt.right{border-color:#7cc49b;background:#effaf3}
+.opt.wrong{border-color:#e79a94;background:#fdf1f0}
+.opt:disabled{cursor:default}
+.fillrow{display:flex;gap:10px;margin-top:12px;align-items:center}
+.fillinput{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:15.5px;background:#fff}
+.btn{font:inherit;font-size:14px;padding:7px 16px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer}
+.btn.check{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fb{display:none;margin-top:14px;font-size:15px;line-height:1.8}
+.fb.show{display:block}
+.fb .res{font-weight:700;margin-bottom:6px;font-size:15.5px}
+.fb.ok .res{color:var(--ok)}
+.fb.bad .res{color:var(--bad)}
+.fb details{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:#fcfbf9;padding:0 12px}
+.fb summary{cursor:pointer;padding:9px 0;font-weight:600;color:var(--accent);outline:none}
+.fb .inner{padding:2px 0 12px;border-top:1px dashed var(--line)}
+.fb .row{color:var(--sub);font-size:13px;margin-top:8px}
+.fb .tags b{color:#a2540f}
+.legend{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:20px 0;font-size:14.5px}
+.legend b{color:var(--accent)}
+@media print{
+ #bar,.toast{display:none}
+ .quiz{break-inside:avoid}
+ body{background:#fff;font-size:12pt}
+}
+@media (max-width:600px){
+ body{font-size:16px;line-height:1.85}
+ .wrap{padding:40px 14px 80px}
+ h1{font-size:23px}
+ table{font-size:13px}
+}
+</style>
+<style id="book-nav-css">
+#book-nav{position:sticky;top:0;z-index:100;background:rgba(251,250,247,.96);backdrop-filter:blur(8px);border-bottom:1px solid #e6e3dd;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+#bar{z-index:101!important}
+#book-nav .bn-in{max-width:1060px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+#book-nav a{color:#1f4e79;text-decoration:none;white-space:nowrap}
+#book-nav a:hover{text-decoration:underline}
+#book-nav .bn-home{font-weight:700}
+#book-nav .bn-cur{color:#1f2328;font-weight:600;flex:1;min-width:180px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#book-nav .bn-step{background:#fff;border:1px solid #e6e3dd;border-radius:999px;padding:3px 11px;font-size:13px}
+#book-nav .bn-step.disabled{opacity:.38;pointer-events:none}
+#book-nav .bn-prog{color:#6b7280;font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.book-foot-nav{max-width:760px;margin:0 auto;padding:0 20px 80px;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.book-foot-nav .bf-box{border-top:2px solid #e6e3dd;padding-top:22px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}
+.book-foot-nav a{color:#1f4e79;text-decoration:none}
+.book-foot-nav a:hover{text-decoration:underline}
+.book-foot-nav .bf-next{background:#1f4e79;color:#fff!important;border-radius:10px;padding:9px 18px;font-weight:600}
+.book-foot-nav .bf-next:hover{text-decoration:none;background:#163c5e}
+.book-foot-nav .bf-note{color:#6b7280;font-size:13px;margin-top:14px}
+@media(max-width:600px){#book-nav .bn-cur{order:3;flex-basis:100%;text-align:left}#book-nav .bn-prog{display:none}}
+@media print{#book-nav,.book-foot-nav{display:none}#bar{z-index:0!important}}
+</style>
+</head><body><nav id="book-nav"><div class="bn-in"><a class="bn-home" href="index.html">&larr; 全书目录</a><a class="bn-step" href="k08.html" title="信息系统架构">&larr; K8</a><span class="bn-cur">K9 · 云原生与 SOA</span><a class="bn-step" href="k10.html" title="嵌入式、通信与安全架构">K10 &rarr;</a><span class="bn-prog" id="book-nav-progress">0 / 77 题</span></div></nav>
+<div id="bar"></div>
+<div class="wrap">
+<h1>K9 云原生与 SOA</h1>
+<blockquote>
+<p><strong>本章内容</strong>：SOA 与协议规范 · SOA 设计标准 · 云原生定义与七原则 · 架构模式与反模式 · 关键技术（容器、微服务、Serverless、服务网格） · 分布式事务 · 可观测性 · 云原生数据库 · 企业集成服务<br>
+<strong>考纲位置</strong>：上午题高频（协议对应、云原生原则），案例题常考"服务拆分与云原生改造"，论文命中率极高</p>
+</blockquote>
+<p>本章围绕"<strong>把系统拆成服务、让服务跑在云上</strong>"这一主题展开，共 10 节：</p>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+<th>回答的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>SOA 的概念与价值</td>
+<td>服务化到底改变了什么</td>
+</tr>
+<tr>
+<td>2</td>
+<td>SOA 参考架构与协议</td>
+<td>UDDI、WSDL、SOAP、REST 各管什么</td>
+</tr>
+<tr>
+<td>3</td>
+<td>SOA 设计标准与作用</td>
+<td>服务要满足哪些标准才算合格</td>
+</tr>
+<tr>
+<td>4</td>
+<td>云原生的定义与原则</td>
+<td>云原生与"上云"的区别在哪</td>
+</tr>
+<tr>
+<td>5</td>
+<td>云原生架构模式与反模式</td>
+<td>哪些做法是云原生，哪些是伪云原生</td>
+</tr>
+<tr>
+<td>6</td>
+<td>云原生关键技术</td>
+<td>容器、微服务、Serverless、服务网格</td>
+</tr>
+<tr>
+<td>7</td>
+<td>分布式事务</td>
+<td>跨服务写入怎么保证一致</td>
+</tr>
+<tr>
+<td>8</td>
+<td>可观测性</td>
+<td>日志、链路、指标各回答什么</td>
+</tr>
+<tr>
+<td>9</td>
+<td>云原生数据库</td>
+<td>数据库上云与云原生差在哪</td>
+</tr>
+<tr>
+<td>10</td>
+<td>以服务为中心的企业集成</td>
+<td>多源异构数据怎么统一访问</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="sec1">第 1 节 SOA 的概念与价值</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：SOA 与"分层架构"的根本区别是什么？服务为什么必须是"粗粒度、松耦合"？</p>
+</blockquote>
+<h3>一、从"分层"到"服务"</h3>
+<p>分层架构按<strong>技术职责</strong>切（表现、业务、数据），SOA 按<strong>业务能力</strong>切（下单、支付、库存）。</p>
+<p>这个转变带来三个后果：</p>
+<ul>
+<li><strong>边界与业务对齐</strong>：一个服务对应一项完整业务能力，而不是一段技术逻辑；</li>
+<li><strong>可复用</strong>：同一能力可被多个系统调用；</li>
+<li><strong>独立演进</strong>：服务的内部实现可以替换，只要接口不变。</li>
+</ul>
+<h3>二、服务的特征</h3>
+<table>
+<thead>
+<tr>
+<th>特征</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>粗粒度</strong></td>
+<td>一次服务调用完成一件业务事，而不是一个数据库操作</td>
+</tr>
+<tr>
+<td><strong>松耦合</strong></td>
+<td>服务之间只依赖接口契约，不依赖实现</td>
+</tr>
+<tr>
+<td><strong>可复用</strong></td>
+<td>服务被设计为可被多处使用</td>
+</tr>
+<tr>
+<td><strong>标准化接口</strong></td>
+<td>用标准协议与数据格式描述与调用</td>
+</tr>
+<tr>
+<td><strong>自治</strong></td>
+<td>服务能独立部署、独立运行</td>
+</tr>
+</tbody>
+</table>
+<p><strong>"粗粒度"最容易被误解</strong>：把每个数据库操作都包成一个服务，是最典型的反模式——调用次数爆炸、性能极差。</p>
+<h3>三、SOA 的价值</h3>
+<ul>
+<li><strong>复用</strong>：避免重复建设（K8 的"共享能力"）；</li>
+<li><strong>集成</strong>：异构系统通过标准接口互通；</li>
+<li><strong>敏捷</strong>：业务变化时只改相关服务；</li>
+<li><strong>可组合</strong>：把服务编排成新的业务流程。</li>
+</ul>
+<blockquote>
+<p><strong>想一想 ①</strong>：SOA 与面向对象有什么区别？两者都讲"封装"，为什么还要服务化？</p>
+</blockquote>
+<h3>四、SOA 的微服务化发展</h3>
+<p>SOA 早期依赖<strong>集中式 ESB</strong>（重总线、重治理），实践中暴露出两个问题：总线成为瓶颈与单点、服务粒度偏大难以独立交付。</p>
+<p>微服务是 SOA 的<strong>轻量化演进</strong>：去中心化治理、按业务域细粒度拆分、每个服务独立部署与数据存储。</p>
+<p>一句话：<strong>微服务不是否定 SOA，而是把"重总线"换成"轻契约 + 自动化"</strong>。</p>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：服务粒度判断）</strong> 某团队把"订单"拆成 12 个服务：创建订单、校验库存、扣减库存、生成流水、发通知、写日志……每个对应一次数据库操作。请评价这次拆分。</p>
+<p><em>解答</em>：<br>
+- <strong>粒度错误</strong>：按数据库操作拆分，导致一次下单要走 8—10 次远程调用，延迟与失败率飙升；<br>
+- <strong>正确的做法</strong>：按业务能力拆——「订单服务」负责订单生命周期，「库存服务」负责库存，「通知服务」只管通知；单次下单由订单服务编排 2—3 次调用；<br>
+- 日志、流水这类<strong>技术性动作</strong>不应成为独立服务，可用切面或消息异步处理。</p>
+<p><em>点评</em>：判断粒度的标准是"<strong>一次调用是否完成一件业务事</strong>"，而不是"是否对应一张表"。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="9-1-1" data-type="single" data-explain="分层按技术切，SOA 按业务能力切。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-1-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">SOA 与分层架构的根本区别是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> SOA 按技术职责切分</button><button class="opt" data-k="B"><b>B.</b> SOA 按业务能力切分</button><button class="opt" data-k="C"><b>C.</b> SOA 不需要接口</button><button class="opt" data-k="D"><b>D.</b> SOA 只能用于 Web</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-1-2" data-type="single" data-explain="粗粒度避免调用爆炸。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-1-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">"一次服务调用完成一件业务事"体现的服务特征是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 细粒度</button><button class="opt" data-k="B"><b>B.</b> 粗粒度</button><button class="opt" data-k="C"><b>C.</b> 紧耦合</button><button class="opt" data-k="D"><b>D.</b> 无状态</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-1-3" data-type="single" data-explain="这是最典型的粒度反模式。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-1-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">把每个数据库操作都封装成一个服务，最主要的问题是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 服务太少</button><button class="opt" data-k="B"><b>B.</b> 调用次数爆炸、性能极差</button><button class="opt" data-k="C"><b>C.</b> 无法复用</button><button class="opt" data-k="D"><b>D.</b> 不能部署</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-1-4" data-type="single" data-explain="去中心化治理 + 细粒度 + 独立数据。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-1-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">微服务与 SOA 的关系是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 完全对立</button><button class="opt" data-k="B"><b>B.</b> 微服务是 SOA 的轻量化演进</button><button class="opt" data-k="C"><b>C.</b> 微服务早于 SOA</button><button class="opt" data-k="D"><b>D.</b> 二者是同义词</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-1-5" data-type="multi" data-explain="D 错：过度拆分导致调用爆炸。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">9-1-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">关于 SOA，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 服务应粗粒度、松耦合、可复用</button><button class="opt" data-k="B"><b>B.</b> 服务通过标准接口交互</button><button class="opt" data-k="C"><b>C.</b> 服务应能独立部署与运行</button><button class="opt" data-k="D"><b>D.</b> 服务越多越好</button><button class="opt" data-k="E"><b>E.</b> 服务化能提升复用与集成能力</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-1-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="自治/独立" data-answer-text="自治"><div class="qhead"><span class="chip">9-1-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">SOA 中服务的典型特征包括粗粒度、松耦合、可复用、标准接口与______。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：SOA 按业务能力切分、服务粗粒度松耦合，微服务是其轻量化演进。</p>
+<p><strong>留一个问题</strong>：服务之间怎么"找到彼此"、怎么"描述自己"？这需要一套协议。</p>
+<p>下一节讲参考架构与规范。</p>
+<hr>
+<h2 id="sec2">第 2 节 SOA 参考架构与协议规范</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：UDDI、WSDL、SOAP、REST 各自解决什么问题？它们在一个调用链里怎么配合？</p>
+</blockquote>
+<h3>一、一次服务调用的完整链条</h3>
+<pre><code>服务提供者 --发布--&gt; 服务注册中心（UDDI）
+服务消费者 --查找--&gt; 服务注册中心
+服务消费者 --绑定/调用--&gt; 服务提供者（用 SOAP/REST，按 WSDL 描述）
+</code></pre>
+<p>四个规范刚好对应四件事：</p>
+<table>
+<thead>
+<tr>
+<th>规范</th>
+<th>解决什么</th>
+<th>一句话</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>UDDI</strong></td>
+<td>服务注册与发现</td>
+<td>"服务目录"</td>
+</tr>
+<tr>
+<td><strong>WSDL</strong></td>
+<td>服务描述</td>
+<td>"服务说明书"</td>
+</tr>
+<tr>
+<td><strong>SOAP</strong></td>
+<td>消息协议</td>
+<td>"信封式传输"</td>
+</tr>
+<tr>
+<td><strong>REST</strong></td>
+<td>资源风格</td>
+<td>"用 HTTP 动词操作资源"</td>
+</tr>
+</tbody>
+</table>
+<h3>二、逐个看</h3>
+<p><strong>UDDI（Universal Description, Discovery and Integration）</strong>：统一描述、发现与集成。提供服务注册表，供提供者发布、消费者查找。是 SOA 的"黄页"。</p>
+<p><strong>WSDL（Web Services Description Language）</strong>：用 XML 描述服务的接口、操作、消息格式与访问地址，让调用方知道"怎么调"。</p>
+<p><strong>SOAP（Simple Object Access Protocol）</strong>：基于 XML 的消息协议，有严格的信封（Envelope）、头（Header）与体（Body）结构，可承载在 HTTP 之上。特点是<strong>规范严谨、可扩展</strong>，但<strong>消息冗长、解析开销大</strong>。</p>
+<p><strong>REST（Representational State Transfer）</strong>：一种<strong>架构风格</strong>而非协议，用 URI 标识资源、用 HTTP 方法（GET/POST/PUT/DELETE）表达操作，通常用 JSON。特点是<strong>轻量、易用、可缓存</strong>，但缺少 SOAP 那样的强类型契约与安全扩展。</p>
+<h3>三、ESB 在参考架构中的位置</h3>
+<p>服务提供者与消费者之间常有一个 <strong>ESB（企业服务总线）</strong>：负责路由、协议转换、数据映射、安全与监控。</p>
+<p>优点是接入标准化、治理集中；缺点是<strong>可能成为单点与瓶颈</strong>，且配置复杂——这正是微服务"去中心化"要解决的问题。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：什么场景下应该用 SOAP，什么场景下 REST 更合适？给出两个判断依据。</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程判断：协议选型）</strong> 某银行要对接一个历史遗留的第三方系统，对方只提供 WSDL，要求强类型、事务与安全扩展；同时要给移动端提供查询接口。请分别选型。</p>
+<p><em>解答</em>：<br>
+- 对<strong>遗留第三方</strong>：用 <strong>SOAP + WSDL</strong>，因为对方契约已定、需要强类型与 WS-Security 等扩展；<br>
+- 对<strong>移动端</strong>：用 <strong>REST/JSON</strong>，轻量、易缓存、对带宽友好；<br>
+- 服务注册可用 UDDI/注册中心，内部再通过 ESB 或 API 网关做协议转换。</p>
+<p><em>点评</em>：协议选型看三点——<strong>对方契约、性能与带宽约束、安全扩展需求</strong>。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为 REST 是协议。</strong><br>
+它是一套架构风格与约束。</p>
+<p><strong>误区二：认为 SOAP 已淘汰。</strong><br>
+在金融、电信等强契约场景仍广泛使用。</p>
+<p><strong>误区三：把 UDDI 当成"服务实现"。</strong><br>
+它只是注册与发现机制。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="9-2-1" data-type="single" data-explain="UDDI 是“服务黄页”。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-2-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">SOA 中用于服务注册与发现的规范是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> WSDL</button><button class="opt" data-k="B"><b>B.</b> UDDI</button><button class="opt" data-k="C"><b>C.</b> SOAP</button><button class="opt" data-k="D"><b>D.</b> REST</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-2-2" data-type="single" data-explain="WSDL 是“服务说明书”。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-2-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">用 XML 描述服务接口、操作与访问地址的规范是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> UDDI</button><button class="opt" data-k="B"><b>B.</b> WSDL</button><button class="opt" data-k="C"><b>C.</b> SOAP</button><button class="opt" data-k="D"><b>D.</b> HTTP</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-2-3" data-type="single" data-explain="SOAP 规范严谨但消息冗长。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-2-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">基于 XML、有严格信封结构的消息协议是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> REST</button><button class="opt" data-k="B"><b>B.</b> SOAP</button><button class="opt" data-k="C"><b>C.</b> UDDI</button><button class="opt" data-k="D"><b>D.</b> WSDL</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-2-4" data-type="single" data-explain="REST 是风格而非协议。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-2-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">用 URI 标识资源、用 HTTP 方法表达操作的架构风格是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> SOAP</button><button class="opt" data-k="B"><b>B.</b> REST</button><button class="opt" data-k="C"><b>C.</b> WSDL</button><button class="opt" data-k="D"><b>D.</b> ESB</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-2-5" data-type="multi" data-explain="E 错：REST 是一组架构约束。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">9-2-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">关于 SOA 协议与规范，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> UDDI 提供服务注册与发现</button><button class="opt" data-k="B"><b>B.</b> WSDL 描述服务接口</button><button class="opt" data-k="C"><b>C.</b> SOAP 消息冗长、解析开销大</button><button class="opt" data-k="D"><b>D.</b> REST 轻量、易缓存，但缺少强类型契约</button><button class="opt" data-k="E"><b>E.</b> REST 是 W3C 定义的正式协议</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-2-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="wsdl|rest" data-answer-text="WSDL、REST"><div class="qhead"><span class="chip">9-2-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">SOA 中四个关键规范是 UDDI、、SOAP 和。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="9-2-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="企业服务总线/服务总线" data-answer-text="企业服务总线"><div class="qhead"><span class="chip">9-2-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">ESB 的中文名称是________，它在服务之间承担路由与协议转换。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：UDDI 管发现、WSDL 管描述、SOAP/REST 管调用，ESB 管路由与转换。</p>
+<p><strong>留一个问题</strong>：一个服务要"合格"，除了能调通，还要满足哪些标准？</p>
+<p>下一节讲 SOA 设计标准。</p>
+<hr>
+<h2 id="sec3">第 3 节 SOA 设计标准与作用</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：什么样的服务算"设计合格"？SOA 给组织带来的作用是什么？</p>
+</blockquote>
+<h3>一、四条设计标准</h3>
+<table>
+<thead>
+<tr>
+<th>标准</th>
+<th>要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>文档标准化</strong></td>
+<td>服务接口、数据格式、调用说明有统一文档规范</td>
+</tr>
+<tr>
+<td><strong>通信协议标准</strong></td>
+<td>统一使用标准协议（SOAP/REST/消息），避免私有协议</td>
+</tr>
+<tr>
+<td><strong>应用程序统一登记与集成</strong></td>
+<td>服务统一注册、可被发现、可被编排</td>
+</tr>
+<tr>
+<td><strong>服务质量（QoS）</strong></td>
+<td>明确可用性、性能、安全等级并度量</td>
+</tr>
+</tbody>
+</table>
+<p><strong>QoS 最容易被忽略</strong>：没有服务等级约定的"服务"只是接口，不是资产。QoS 通常包括响应时间、可用性、限流阈值、鉴权方式与 SLA。</p>
+<h3>二、SOA 的作用</h3>
+<ul>
+<li><strong>提升复用</strong>：能力沉淀为服务，多处调用；</li>
+<li><strong>降低集成成本</strong>：标准接口替代点对点；</li>
+<li><strong>提高敏捷性</strong>：业务流程可编排，变化响应更快；</li>
+<li><strong>支撑外包与多团队协作</strong>：契约清晰，边界明确。</li>
+</ul>
+<h3>三、SOA 落地的三个前提</h3>
+<ol>
+<li><strong>服务目录与治理</strong>：没有注册与治理，服务会变成新的"接口烟囱"；</li>
+<li><strong>数据一致性策略</strong>：跨服务事务必须提前设计（补偿、Saga、最终一致）；</li>
+<li><strong>组织配套</strong>：服务归属、版本管理、SLA 责任要落到团队。</li>
+</ol>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"服务治理"比"服务拆分"更难？如果只拆不管，会发生什么？</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：服务治理缺失的后果）</strong> 某公司两年内建了 300 个服务，如今没人说得清哪个服务在用、哪个版本是生产版本，重复服务大量存在。请给出治理方案。</p>
+<p><em>解答</em>：<br>
+- <strong>服务目录</strong>：统一注册，登记服务名、负责人、版本、依赖、SLA；<br>
+- <strong>生命周期管理</strong>：上线、变更、下线全流程受控，下线前做调用方确认；<br>
+- <strong>重复识别</strong>：按业务能力归并重复服务，建立"能力地图"；<br>
+- <strong>QoS 与度量</strong>：为每个服务定义 SLA 并监控；<br>
+- <strong>组织</strong>：明确服务 owner，纳入考核。</p>
+<p><em>点评</em>：这是"只拆不管"的典型后果，答题骨架是"<strong>目录—生命周期—归并—度量—组织</strong>"。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为服务拆分完成就实现了 SOA。</strong><br>
+没有治理与 QoS，服务化只会增加复杂度。</p>
+<p><strong>误区二：忽视 QoS。</strong><br>
+没有等级约定的服务无法被依赖。</p>
+<p><strong>误区三：认为文档标准化只是"写文档"。</strong><br>
+它要求接口契约可被机器解析与校验（如 OpenAPI、WSDL）。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="9-3-1" data-type="single" data-explain="行数不是标准。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">9-3-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">下列不属于 SOA 设计标准的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 文档标准化</button><button class="opt" data-k="B"><b>B.</b> 通信协议标准</button><button class="opt" data-k="C"><b>C.</b> 应用程序统一登记与集成</button><button class="opt" data-k="D"><b>D.</b> 代码行数标准化</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-3-2" data-type="single" data-explain="QoS=服务质量。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-3-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">明确服务的可用性、性能、安全等级并度量的标准是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 文档标准化</button><button class="opt" data-k="B"><b>B.</b> QoS</button><button class="opt" data-k="C"><b>C.</b> 通信协议标准</button><button class="opt" data-k="D"><b>D.</b> 统一登记</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-3-3" data-type="single" data-explain="分布式复杂度不会消失，只会转移。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">9-3-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">SOA 的主要作用不包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 提升复用</button><button class="opt" data-k="B"><b>B.</b> 降低集成成本</button><button class="opt" data-k="C"><b>C.</b> 提高敏捷性</button><button class="opt" data-k="D"><b>D.</b> 消除所有分布式复杂度</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-3-4" data-type="single" data-explain="缺治理的服务会变成接口烟囱。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-3-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">"只拆不管"最可能导致的后果是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 服务自动优化</button><button class="opt" data-k="B"><b>B.</b> 出现大量重复服务、无人说得清生产版本</button><button class="opt" data-k="C"><b>C.</b> 系统自动高可用</button><button class="opt" data-k="D"><b>D.</b> 开发效率必然提升</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-3-5" data-type="multi" data-explain="E 错：上线、变更、下线都要管。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">9-3-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">关于 SOA 设计标准与治理，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 接口与数据格式应有统一文档规范</button><button class="opt" data-k="B"><b>B.</b> QoS 应包含响应时间、可用性、限流与鉴权</button><button class="opt" data-k="C"><b>C.</b> 服务应统一注册、可被发现</button><button class="opt" data-k="D"><b>D.</b> 服务治理比服务拆分更难</button><button class="opt" data-k="E"><b>E.</b> 服务拆分完成后不需要生命周期管理</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-3-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="qos/服务质量" data-answer-text="QoS（服务质量）"><div class="qhead"><span class="chip">9-3-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">SOA 设计标准包括文档标准化、通信协议标准、应用程序统一登记与集成以及________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：服务要合格，必须有文档、协议、注册与 QoS 四条标准，并配套治理与生命周期管理。</p>
+<p><strong>留一个问题</strong>：SOA 解决"怎么拆"，可系统要跑在云上、要弹性伸缩，还得回答"怎么建"。</p>
+<p>下三节讲云原生。</p>
+<hr>
+<h2 id="sec4">第 4 节 云原生的定义与原则</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：把系统搬到云上就是云原生吗？云原生有哪七条原则？</p>
+</blockquote>
+<h3>一、云原生不是"上云"</h3>
+<p><strong>上云</strong>只是把虚拟机搬到云上，架构不变；<strong>云原生</strong>是一套<strong>架构原则与设计模式的集合</strong>，目标是充分利用云的弹性、自动化与分布式能力。</p>
+<p>一句话区别：<strong>上云是搬家，云原生是按云的方式重新设计</strong>。</p>
+<h3>二、云原生架构的定义</h3>
+<p>从技术角度，云原生架构是基于云原生技术的一组<strong>架构原则和设计模式</strong>的集合，旨在把应用的<strong>开发、部署、运维</strong>全过程都建立在云的能力之上。</p>
+<h3>三、七条原则（必背）</h3>
+<table>
+<thead>
+<tr>
+<th>原则</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>服务化</strong></td>
+<td>按业务能力拆成服务，接口标准化</td>
+</tr>
+<tr>
+<td><strong>弹性</strong></td>
+<td>按负载自动伸缩，容量与业务解耦</td>
+</tr>
+<tr>
+<td><strong>可观测</strong></td>
+<td>日志、指标、链路追踪三件套</td>
+</tr>
+<tr>
+<td><strong>韧性</strong></td>
+<td>故障可隔离、可降级、可自愈</td>
+</tr>
+<tr>
+<td><strong>所有过程自动化</strong></td>
+<td>CI/CD、基础设施即代码</td>
+</tr>
+<tr>
+<td><strong>零信任</strong></td>
+<td>不默认内网可信，处处认证授权</td>
+</tr>
+<tr>
+<td><strong>架构持续演进</strong></td>
+<td>架构随业务与技术持续调整</td>
+</tr>
+</tbody>
+</table>
+<p>记忆线索：<strong>拆开（服务化）→ 能伸（弹性）→ 看得见（可观测）→ 打不垮（韧性）→ 自动化 → 不轻信（零信任）→ 一直在变（演进）</strong>。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"零信任"会成为云原生原则？传统"内网可信"的假设在云上为什么失效？</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：云原生改造目标）</strong> 某系统已迁到云上虚拟机，但仍需手工部署、高峰期靠人扩容、故障靠人肉排查。请对照七条原则指出差距。</p>
+<p><em>解答</em>：<br>
+- <strong>服务化</strong>：单体未拆，无法局部扩容（差距）；<br>
+- <strong>弹性</strong>：人工扩容，未实现按负载自动伸缩（差距）；<br>
+- <strong>可观测</strong>：靠人肉排查，缺指标与链路追踪（差距）；<br>
+- <strong>韧性</strong>：无降级与自愈机制（差距）；<br>
+- <strong>自动化</strong>：手工部署，缺 CI/CD 与基础设施即代码（差距）；<br>
+- <strong>零信任</strong>：内网直连数据库，缺服务间认证（差距）；<br>
+- <strong>持续演进</strong>：无架构演进机制。</p>
+<p><em>点评</em>：七条原则正好可以当"云原生成熟度检查单"用——逐条对照打分，比笼统说"要云原生"有效。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为上云就等于云原生。</strong><br>
+架构不变，弹性与自动化都不会自动出现。</p>
+<p><strong>误区二：认为弹性就是"能加机器"。</strong><br>
+真正的弹性是<strong>自动、按需、可回收</strong>。</p>
+<p><strong>误区三：把可观测等同于"打日志"。</strong><br>
+还需要指标与分布式链路追踪。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="9-4-1" data-type="single" data-explain="上云是搬家，云原生是重设计。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-4-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">云原生与"上云"的根本区别是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 是否使用虚拟机</button><button class="opt" data-k="B"><b>B.</b> 是否按云的方式重新设计架构</button><button class="opt" data-k="C"><b>C.</b> 是否使用公有云</button><button class="opt" data-k="D"><b>D.</b> 是否使用容器</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-4-2" data-type="single" data-explain="弹性的关键是自动、按需、可回收。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-4-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">按负载自动伸缩、容量与业务解耦的原则是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 服务化</button><button class="opt" data-k="B"><b>B.</b> 弹性</button><button class="opt" data-k="C"><b>C.</b> 韧性</button><button class="opt" data-k="D"><b>D.</b> 零信任</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-4-3" data-type="single" data-explain="云上边界消失，内网可信假设失效。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-4-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">"不默认内网可信、处处认证授权"属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 可观测原则</button><button class="opt" data-k="B"><b>B.</b> 零信任原则</button><button class="opt" data-k="C"><b>C.</b> 自动化原则</button><button class="opt" data-k="D"><b>D.</b> 演进原则</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-4-4" data-type="single" data-explain="只打日志不够。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">9-4-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">可观测性通常包含的三件套是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 日志、指标、链路追踪</button><button class="opt" data-k="B"><b>B.</b> 数据库、缓存、消息队列</button><button class="opt" data-k="C"><b>C.</b> 容器、编排、服务网格</button><button class="opt" data-k="D"><b>D.</b> 需求、设计、测试</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-4-5" data-type="multi" data-explain="E 错：Serverless 只适用于特定场景。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">9-4-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">关于云原生七原则，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 服务化强调按业务能力拆分与标准接口</button><button class="opt" data-k="B"><b>B.</b> 韧性指故障可隔离、可降级、可自愈</button><button class="opt" data-k="C"><b>C.</b> 所有过程自动化包括 CI/CD 与基础设施即代码</button><button class="opt" data-k="D"><b>D.</b> 架构持续演进是七原则之一</button><button class="opt" data-k="E"><b>E.</b> 云原生要求所有系统必须使用 Serverless</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-4-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="零信任" data-answer-text="零信任"><div class="qhead"><span class="chip">9-4-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">云原生七原则为服务化、弹性、可观测、韧性、所有过程自动化、________和架构持续演进。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：云原生是"按云的方式重新设计"，七条原则可当作成熟度检查单。</p>
+<p><strong>留一个问题</strong>：具体落地时，有哪些被验证过的架构模式？又有哪些看起来像、其实是坑的做法？</p>
+<p>下一节讲模式与反模式。</p>
+<hr>
+<h2 id="sec5">第 5 节 云原生架构模式与反模式</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：哪些架构模式是云原生的标准动作？哪些做法看似云原生、实则反模式？</p>
+</blockquote>
+<h3>一、主要架构模式</h3>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>做法</th>
+<th>解决的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>服务化架构</strong></td>
+<td>按业务域拆服务，接口标准化</td>
+<td>独立交付与弹性伸缩</td>
+</tr>
+<tr>
+<td><strong>Mesh 化架构</strong></td>
+<td>把通信、安全、可观测下沉到服务网格</td>
+<td>业务代码与治理解耦</td>
+</tr>
+<tr>
+<td><strong>Serverless</strong></td>
+<td>无需管理服务器，按调用计费</td>
+<td>极致弹性与运维简化</td>
+</tr>
+<tr>
+<td><strong>存储计算分离</strong></td>
+<td>计算无状态、状态外置到存储</td>
+<td>计算可弹性伸缩</td>
+</tr>
+<tr>
+<td><strong>分布式事务模式</strong></td>
+<td>Saga、TCC、消息最终一致</td>
+<td>跨服务数据一致性</td>
+</tr>
+<tr>
+<td><strong>可观测架构</strong></td>
+<td>日志、指标、追踪统一采集</td>
+<td>故障定位与容量分析</td>
+</tr>
+<tr>
+<td><strong>事件驱动架构</strong></td>
+<td>通过事件解耦生产者与消费者</td>
+<td>削峰、异步、扩展</td>
+</tr>
+</tbody>
+</table>
+<p>其中<strong>存储计算分离</strong>是弹性伸缩的前提：如果计算节点上有本地状态，就无法随意扩缩容。</p>
+<h3>二、三个典型反模式</h3>
+<table>
+<thead>
+<tr>
+<th>反模式</th>
+<th>症状</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>庞大的单体应用</strong></td>
+<td>一个应用包揽全部功能，无法局部扩容与独立交付</td>
+</tr>
+<tr>
+<td><strong>单体"硬拆"为微服务</strong></td>
+<td>只按代码结构切分，未按业务域，导致跨服务调用爆炸、事务混乱</td>
+</tr>
+<tr>
+<td><strong>缺乏自动化能力的微服务</strong></td>
+<td>服务拆了，但部署、测试、监控全靠手工，复杂度徒增</td>
+</tr>
+</tbody>
+</table>
+<p>第三个尤其常见：<strong>微服务的收益来自自动化，没有自动化的微服务是负债</strong>。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"硬拆"比"不拆"更糟？举一个具体后果。</p>
+</blockquote>
+<h3>三、模式选择的判据</h3>
+<ul>
+<li>业务复杂度高、团队多 → 服务化 + 事件驱动；</li>
+<li>流量波峰波谷明显 → 弹性 + Serverless；</li>
+<li>有状态计算多 → 先做存储计算分离；</li>
+<li>遗留系统多 → Mesh 化（把治理下沉，少改业务代码）。</li>
+</ul>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：识别反模式）</strong> 某团队把单体按"controller / service / dao"三个包拆成三个微服务，共用同一个数据库，部署靠手工脚本，监控只看到机器 CPU。请指出问题。</p>
+<p><em>解答</em>：<br>
+- <strong>硬拆</strong>：按技术分层而非业务域拆分，一个业务请求要跨三个服务，调用链与事务复杂度飙升；<br>
+- <strong>共享数据库</strong>：破坏服务自治，等于"分布式单体"；<br>
+- <strong>缺自动化</strong>：手工部署无法支撑多服务发布，违背"所有过程自动化"原则；<br>
+- <strong>可观测不足</strong>：只看机器指标，看不到服务与链路。<br>
+- 改进：按业务域重划边界、每服务独立数据、建 CI/CD、上指标与链路追踪。</p>
+<p><em>点评</em>：这题四个问题正好对应三条反模式 + 一条原则，可作为反模式的识别模板。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为微服务就是云原生。</strong><br>
+没有弹性、自动化、可观测，只是"分布式单体"。</p>
+<p><strong>误区二：认为共享数据库"省事"。</strong><br>
+它让服务无法独立演进，是最常见的隐性反模式。</p>
+<p><strong>误区三：认为 Serverless 适用于所有场景。</strong><br>
+冷启动、执行时长、状态管理都有约束。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="9-5-1" data-type="single" data-explain="治理下沉，业务代码不感知。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-5-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">把通信、安全、可观测能力下沉到服务网格的模式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 服务化架构</button><button class="opt" data-k="B"><b>B.</b> Mesh 化架构</button><button class="opt" data-k="C"><b>C.</b> Serverless</button><button class="opt" data-k="D"><b>D.</b> 事件驱动</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-5-2" data-type="single" data-explain="这是弹性伸缩的前提。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">9-5-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">计算无状态、状态外置到存储的模式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 存储计算分离</button><button class="opt" data-k="B"><b>B.</b> 分布式事务</button><button class="opt" data-k="C"><b>C.</b> Mesh 化</button><button class="opt" data-k="D"><b>D.</b> 可观测架构</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-5-3" data-type="single" data-explain="硬拆是典型反模式。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">9-5-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">下列属于云原生反模式的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 服务化架构</button><button class="opt" data-k="B"><b>B.</b> 存储计算分离</button><button class="opt" data-k="C"><b>C.</b> 单体应用"硬拆"为微服务</button><button class="opt" data-k="D"><b>D.</b> 事件驱动架构</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-5-4" data-type="single" data-explain="自动化是微服务收益的来源。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-5-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">"缺乏自动化能力的微服务"之所以是反模式，主要因为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 服务太少</button><button class="opt" data-k="B"><b>B.</b> 微服务的收益来自自动化，缺自动化只剩复杂度</button><button class="opt" data-k="C"><b>C.</b> 不能用容器</button><button class="opt" data-k="D"><b>D.</b> 无法监控</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-5-5" data-type="multi" data-explain="E 错：弹性需要编排与自动化支撑。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">9-5-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">关于云原生架构模式，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 服务化架构按业务域拆服务</button><button class="opt" data-k="B"><b>B.</b> 存储计算分离是弹性伸缩的前提</button><button class="opt" data-k="C"><b>C.</b> 分布式事务可用 Saga、TCC、消息最终一致实现</button><button class="opt" data-k="D"><b>D.</b> 事件驱动可解耦生产者与消费者</button><button class="opt" data-k="E"><b>E.</b> 只要拆了微服务就自动具备弹性</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-5-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="自动化" data-answer-text="自动化"><div class="qhead"><span class="chip">9-5-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">云原生典型反模式包括庞大的单体应用、单体应用"硬拆"为微服务和缺乏________能力的微服务。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="9-5-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="mesh" data-answer-text="Mesh"><div class="qhead"><span class="chip">9-5-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">把治理能力下沉到基础设施层、业务代码只关注业务的模式称为________化架构。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：云原生有七类标准模式，最危险的是"硬拆 + 共享库 + 无自动化"这组反模式。</p>
+<p><strong>留一个问题</strong>：这些模式靠什么技术支撑？</p>
+<p>下一节讲四类关键技术。</p>
+<hr>
+<h2 id="sec6">第 6 节 云原生关键技术</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：容器、微服务、Serverless、服务网格分别解决什么问题？它们如何组合？</p>
+</blockquote>
+<h3>一、四类技术各管一段</h3>
+<table>
+<thead>
+<tr>
+<th>技术</th>
+<th>解决什么</th>
+<th>关键点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>容器</strong></td>
+<td>一致的运行环境与打包</td>
+<td>镜像、隔离、轻量；K8s 负责编排</td>
+</tr>
+<tr>
+<td><strong>微服务</strong></td>
+<td>业务拆分与独立交付</td>
+<td>服务注册发现、配置、熔断限流</td>
+</tr>
+<tr>
+<td><strong>Serverless</strong></td>
+<td>极致弹性与免运维</td>
+<td>事件触发、按量计费、冷启动</td>
+</tr>
+<tr>
+<td><strong>服务网格</strong></td>
+<td>通信治理下沉</td>
+<td>数据平面（Sidecar）+ 控制平面</td>
+</tr>
+</tbody>
+</table>
+<h3>二、容器与编排</h3>
+<p><strong>容器</strong>把应用与依赖打包成镜像，保证"开发环境能跑、生产也能跑"。相比虚拟机，容器<strong>更轻、启动更快、密度更高</strong>。</p>
+<p><strong>Kubernetes（K8s）</strong> 是容器编排的事实标准，核心能力：调度、自愈（重启/替换）、滚动更新、服务发现、配置与密钥管理、水平扩缩容。</p>
+<p>一句话：<strong>容器解决"怎么打包"，K8s 解决"怎么调度与自愈"</strong>。</p>
+<h3>三、微服务与治理</h3>
+<p>微服务的关键不在"拆"，而在<strong>治理</strong>：</p>
+<ul>
+<li><strong>服务注册与发现</strong>：实例变化时调用方自动感知；</li>
+<li><strong>配置中心</strong>：配置与代码分离、可动态刷新；</li>
+<li><strong>熔断与限流</strong>：防止故障扩散（雪崩）；</li>
+<li><strong>网关</strong>：统一入口、鉴权、路由。</li>
+</ul>
+<h3>四、Serverless</h3>
+<p><strong>Serverless（无服务器）</strong> 让开发者不感知服务器：代码以函数为单位部署，事件触发执行，按调用次数与时长计费。</p>
+<p>优点：极致弹性、零运维、成本按需。<br>
+约束：<strong>冷启动延迟</strong>、执行时长上限、状态需外置、调试与可观测较难。</p>
+<p><strong>Serverless 的组成</strong></p>
+<p>Serverless 不是"没有服务器"，而是把服务器运维从开发者视野里移走。它由两块拼成：</p>
+<table>
+<thead>
+<tr>
+<th>组成</th>
+<th>含义</th>
+<th>典型形态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>BaaS</strong>（后端即服务）</td>
+<td>把存储、数据库、消息、鉴权、AI 等后端能力做成<strong>全托管的云服务 API</strong>，直接调用</td>
+<td>对象存储、托管数据库、消息队列、身份服务</td>
+</tr>
+<tr>
+<td><strong>FaaS</strong>（函数即服务）</td>
+<td>把应用逻辑拆成<strong>函数</strong>，由<strong>事件触发</strong>执行，平台负责伸缩与计费</td>
+<td>上传文件触发转码、定时任务、API 后端</td>
+</tr>
+</tbody>
+</table>
+<p><strong>FaaS 是 Serverless 中最具代表性的形态</strong>：函数不常驻、按事件唤起、执行完即释放，因此计费按"调用次数 + 执行时长"。</p>
+<p><strong>四个特征</strong>：</p>
+<ol>
+<li><strong>全托管</strong>：只写代码，不碰服务器、网络、高可用；</li>
+<li><strong>通用性</strong>：结合 BaaS 的 API 能力，能支撑云上大多数应用类型；</li>
+<li><strong>自动弹性</strong>：无需提前做容量规划，按请求量自动扩缩；</li>
+<li><strong>按量计费</strong>：不为闲置资源付费。</li>
+</ol>
+<p>这四个特征正好对应"降本增效、弹性伸缩"——<strong>BaaS 提供能力、FaaS 提供算力、事件把两者串起来</strong>。</p>
+<h3>五、服务网格</h3>
+<p><strong>服务网格（Service Mesh）</strong> 把服务间通信的<strong>流量管理、安全、可观测</strong>能力从业务代码中抽出来，交给 Sidecar 代理。</p>
+<p>结构：</p>
+<ul>
+<li><strong>数据平面</strong>：一组 Sidecar 代理，拦截服务间流量；</li>
+<li><strong>控制平面</strong>：下发路由、策略、证书。</li>
+</ul>
+<p>价值：业务代码不感知治理逻辑，多语言统一治理；代价：多一跳网络、运维复杂度上升。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：已经用了微服务框架（如 Spring Cloud），还需要服务网格吗？判断依据是什么？</p>
+</blockquote>
+<h3>六、例题精解</h3>
+<p><strong>例（工程项目：技术选型组合）</strong> 某系统要做云原生改造，要求：多语言服务共存、需要灰度与熔断、部分任务型接口流量稀疏、要能自动扩缩容。请给出技术组合。</p>
+<p><em>解答</em>：<br>
+- <strong>容器 + K8s</strong> 提供打包与编排、自愈与自动扩缩容（HPA）；<br>
+- <strong>服务网格</strong>统一处理多语言服务的灰度、熔断、mTLS，避免每种语言各写一套治理；<br>
+- <strong>Serverless</strong> 承接流量稀疏的任务型接口（如定时对账、图片转码），按量计费更划算；<br>
+- <strong>可观测</strong>：统一日志、指标、链路追踪。</p>
+<p><em>点评</em>：选型的逻辑是"<strong>按流量特征与团队能力分工</strong>"，不是把所有新技术都堆上。</p>
+<h3>七、常见误区</h3>
+<p><strong>误区一：认为容器等于虚拟机。</strong><br>
+容器共享内核、更轻量，隔离性弱于虚拟机。</p>
+<p><strong>误区二：认为 Serverless 没有服务器。</strong><br>
+只是开发者不感知，底层仍有服务器。</p>
+<p><strong>误区三：认为服务网格必须上。</strong><br>
+小规模、单一语言团队用框架方案更简单。</p>
+<h3>八、本节自测</h3>
+<blockquote>
+<p>共 11 题（7 单选 + 2 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="9-6-1" data-type="single" data-explain="Docker 管打包，K8s 管编排。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-6-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">负责容器调度、自愈与滚动更新的技术是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> Docker</button><button class="opt" data-k="B"><b>B.</b> Kubernetes</button><button class="opt" data-k="C"><b>C.</b> Serverless</button><button class="opt" data-k="D"><b>D.</b> ESB</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-6-2" data-type="single" data-explain="代价是冷启动与时长限制。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">9-6-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">让开发者不感知服务器、按调用计费的技术是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 容器</button><button class="opt" data-k="B"><b>B.</b> 微服务</button><button class="opt" data-k="C"><b>C.</b> Serverless</button><button class="opt" data-k="D"><b>D.</b> 服务网格</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-6-3" data-type="single" data-explain="控制平面负责下发策略。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-6-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">服务网格中拦截服务间流量、执行策略的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 控制平面</button><button class="opt" data-k="B"><b>B.</b> 数据平面（Sidecar）</button><button class="opt" data-k="C"><b>C.</b> 注册中心</button><button class="opt" data-k="D"><b>D.</b> 配置中心</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-6-4" data-type="single" data-explain="容器共享内核，隔离性弱于虚拟机。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-6-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">容器相比虚拟机的主要优势是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 隔离性更强</button><button class="opt" data-k="B"><b>B.</b> 更轻量、启动更快、密度更高</button><button class="opt" data-k="C"><b>C.</b> 不需要操作系统</button><button class="opt" data-k="D"><b>D.</b> 不需要镜像</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-6-5" data-type="multi" data-explain="E 错：小规模单一语言团队用框架更简单。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">9-6-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">关于云原生关键技术，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 容器解决打包与环境一致，K8s 解决调度与自愈</button><button class="opt" data-k="B"><b>B.</b> Serverless 存在冷启动延迟与执行时长限制</button><button class="opt" data-k="C"><b>C.</b> 服务网格把通信治理从业务代码中下沉</button><button class="opt" data-k="D"><b>D.</b> 微服务的难点在治理而不在拆分</button><button class="opt" data-k="E"><b>E.</b> 服务网格一定优于微服务框架</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-6-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="控制|sidecar/边车" data-answer-text="控制、Sidecar"><div class="qhead"><span class="chip">9-6-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">服务网格由数据平面与________平面组成，前者通常由________代理构成。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="9-6-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="熔断" data-answer-text="熔断"><div class="qhead"><span class="chip">9-6-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">微服务治理的关键能力包括服务注册与发现、配置中心、网关以及________与限流。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="9-6-8" data-type="single" data-explain="BaaS = 后端即服务。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-6-8</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">Serverless 中把存储、数据库、消息、鉴权等后端能力做成全托管 API 的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> FaaS</button><button class="opt" data-k="B"><b>B.</b> BaaS</button><button class="opt" data-k="C"><b>C.</b> IaaS</button><button class="opt" data-k="D"><b>D.</b> PaaS</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-6-9" data-type="single" data-explain="函数按事件触发、执行完即释放。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">9-6-9</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">Serverless 中最具代表性的产品形态是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 函数计算 FaaS</button><button class="opt" data-k="B"><b>B.</b> 虚拟机</button><button class="opt" data-k="C"><b>C.</b> 容器编排</button><button class="opt" data-k="D"><b>D.</b> 负载均衡</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-6-10" data-type="single" data-explain="不常驻，所以按量计费。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-6-10</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">FaaS 的计费方式通常是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 按包月</button><button class="opt" data-k="B"><b>B.</b> 按调用次数与执行时长</button><button class="opt" data-k="C"><b>C.</b> 按 CPU 核数</button><button class="opt" data-k="D"><b>D.</b> 按存储容量</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-6-11" data-type="multi" data-explain="D 错：服务器仍在，只是开发者不感知。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">9-6-11</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">关于 Serverless 的组成与特征，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> BaaS 提供后端能力 API，FaaS 提供按需算力</button><button class="opt" data-k="B"><b>B.</b> 四特征是全托管、通用性、自动弹性、按量计费</button><button class="opt" data-k="C"><b>C.</b> FaaS 通常由事件触发执行</button><button class="opt" data-k="D"><b>D.</b> Serverless 意味着完全没有服务器</button><button class="opt" data-k="E"><b>E.</b> 结合 BaaS 的 API 能力可支撑多种应用类型</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<h3>九、小结与衔接</h3>
+<p>本节回答：容器管打包、K8s 管编排、微服务管拆分与治理、Serverless 管极致弹性、网格管通信下沉，按流量特征组合使用。</p>
+<hr>
+<h2 id="sec7">第 7 节 分布式事务</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：服务各自持有私有数据源后，"一笔业务跨多个服务"怎么保证要么全成、要么全败？</p>
+</blockquote>
+<h3>一、为什么突然需要分布式事务</h3>
+<p>单体架构里，一次业务写多张表，靠<strong>本地事务</strong>就解决了。微服务提倡<strong>每个服务使用私有数据源</strong>，于是一个大颗粒度业务要访问多个服务——<strong>跨库写入无法用本地事务保证</strong>，数据就可能不一致。</p>
+<p>这就是分布式事务要解决的问题。注意它不是"技术炫技"，而是<strong>拆服务带来的必然代价</strong>。</p>
+<h3>二、五种主流模式</h3>
+<p>五种主流模式，各自的取舍很明确：</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>做法</th>
+<th>优点</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>XA（两阶段提交）</strong></td>
+<td>协调者先问所有参与者"能否提交"，再统一提交</td>
+<td>一致性很强、标准成熟</td>
+<td><strong>性能差</strong>，协调者阻塞、锁持有时间长</td>
+</tr>
+<tr>
+<td><strong>消息最终一致（BASE）</strong></td>
+<td>本地事务 + 消息，下游异步消费</td>
+<td>性能很高、解耦</td>
+<td><strong>通用性有限</strong>，只适合可异步的场景</td>
+</tr>
+<tr>
+<td><strong>TCC（Try-Confirm-Cancel）</strong></td>
+<td>业务层实现三阶段：预留、确认、取消</td>
+<td>隔离性可控、较高效</td>
+<td><strong>对业务侵入性非常强</strong>，开发维护成本高</td>
+</tr>
+<tr>
+<td><strong>SAGA</strong></td>
+<td>每个正向事务配一个<strong>补偿事务</strong>，失败则逆序补偿</td>
+<td>无 Try 阶段，长事务友好</td>
+<td>与 TCC 类似，<strong>开发维护成本高</strong>，无隔离性</td>
+</tr>
+<tr>
+<td><strong>SEATA AT</strong></td>
+<td>框架自动记录数据快照，失败时自动回滚</td>
+<td><strong>高性能、几乎无代码改造</strong></td>
+<td>有<strong>使用场景限制</strong>（依赖 SQL 解析与全局锁）</td>
+</tr>
+</tbody>
+</table>
+<h3>三、怎么选</h3>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>强一致、低频、可接受延迟（转账、账务）</td>
+<td>XA 或 TCC</td>
+</tr>
+<tr>
+<td>可异步、允许秒级延迟（发券、积分、通知）</td>
+<td>消息最终一致</td>
+</tr>
+<tr>
+<td>长事务、跨多个服务、步骤可补偿（订单履约）</td>
+<td>SAGA</td>
+</tr>
+<tr>
+<td>已有大量存量 SQL、想少改代码</td>
+<td>SEATA AT</td>
+</tr>
+<tr>
+<td>强一致且高并发</td>
+<td>重新设计边界，尽量<strong>避免跨服务事务</strong></td>
+</tr>
+</tbody>
+</table>
+<p>最后一行才是真正的架构答案：<strong>最好的分布式事务，是不产生分布式事务</strong>——通过业务边界划分把强一致需求收进同一个服务。</p>
+<h3>四、三个必须配套的机制</h3>
+<p>无论选哪种模式，都要配套：</p>
+<ol>
+<li><strong>幂等</strong>：补偿、重试、消息重复投递都会导致重复执行；</li>
+<li><strong>空回滚与悬挂</strong>：TCC 的 Cancel 可能先于 Try 到达（空回滚），也可能 Try 在 Cancel 之后才到（悬挂），需要事务状态表控制；</li>
+<li><strong>对账与告警</strong>：最终一致必须有兜底核对，否则不一致会长期沉默。</li>
+</ol>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么 TCC 的 Cancel 必须"幂等且能空回滚"？如果做不到，会出现什么故障？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：选型）</strong> 某电商有三个跨服务场景：① 下单扣库存并生成订单，要求不超卖、可接受 1 秒延迟；② 支付成功后给用户加积分、发通知，允许分钟级延迟；③ 跨行转账，要求强一致。请分别选型。</p>
+<p><em>解答</em>：<br>
+- ① 用 <strong>TCC 或 SAGA</strong>：库存要预留（Try 冻结库存），失败要释放；若业务简单可用"本地消息表 + 库存服务内扣减"；<br>
+- ② 用<strong>消息最终一致</strong>：积分与通知可异步，失败重试 + 对账；<br>
+- ③ 用 <strong>XA 或 TCC</strong>：金融转账要求强一致，且通常频率可控、可接受延迟。</p>
+<p><em>点评</em>：选型三步——<strong>先看一致性要求，再看能否异步，最后看业务改造成本</strong>。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为"最终一致"等于"不可靠"。</strong><br>
+它是明确的设计选择，配合幂等、重试与对账可满足大量业务。</p>
+<p><strong>误区二：把 TCC 当成"两阶段提交"。</strong><br>
+TCC 是<strong>业务层</strong>的三阶段（预留/确认/取消），XA 是<strong>资源层</strong>的两阶段，隔离性与侵入性完全不同。</p>
+<p><strong>误区三：选完模式就不管了。</strong><br>
+空回滚、悬挂、幂等不处理，模式选得再对也会出错。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="9-7-1" data-type="single" data-explain="XA 锁持有时间长、协调者阻塞。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-7-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">一致性很强但性能差的分布式事务模式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 消息最终一致</button><button class="opt" data-k="B"><b>B.</b> XA（两阶段提交）</button><button class="opt" data-k="C"><b>C.</b> SAGA</button><button class="opt" data-k="D"><b>D.</b> SEATA AT</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-7-2" data-type="single" data-explain="TCC 由应用层控制事务。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-7-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">对业务侵入性非常强、需要业务实现 Try/Confirm/Cancel 三阶段的模式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> XA</button><button class="opt" data-k="B"><b>B.</b> TCC</button><button class="opt" data-k="C"><b>C.</b> 消息最终一致</button><button class="opt" data-k="D"><b>D.</b> SEATA AT</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-7-3" data-type="single" data-explain="补偿是逆向操作。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-7-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">每个正向事务都对应一个补偿事务、没有 Try 阶段的模式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> TCC</button><button class="opt" data-k="B"><b>B.</b> SAGA</button><button class="opt" data-k="C"><b>C.</b> XA</button><button class="opt" data-k="D"><b>D.</b> 本地消息表</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-7-4" data-type="single" data-explain="AT 依赖 SQL 解析与全局锁。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">9-7-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">高性能、几乎无代码改造、但存在使用场景限制的模式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> XA</button><button class="opt" data-k="B"><b>B.</b> TCC</button><button class="opt" data-k="C"><b>C.</b> SAGA</button><button class="opt" data-k="D"><b>D.</b> SEATA AT</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-7-5" data-type="multi" data-explain="D 错：SAGA 无隔离性，需业务补偿。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">9-7-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">关于分布式事务，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 微服务私有数据源使跨服务事务成为必然问题</button><button class="opt" data-k="B"><b>B.</b> 消息最终一致性能高，但通用性有限</button><button class="opt" data-k="C"><b>C.</b> TCC 的隔离性可控，但对业务侵入强</button><button class="opt" data-k="D"><b>D.</b> SAGA 具备强隔离性</button><button class="opt" data-k="E"><b>E.</b> 最好的方案有时是通过划分边界避免分布式事务</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-7-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="confirm|cancel" data-answer-text="Confirm、Cancel"><div class="qhead"><span class="chip">9-7-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">TCC 的三个阶段是 Try、和。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：分布式事务五种模式各有取舍，选型看一致性要求、能否异步与改造成本；并需配套幂等、空回滚与对账。</p>
+<p><strong>留一个问题</strong>：这套机制跑起来以后，怎么知道它"健康"？出问题怎么定位？</p>
+<p>下一节讲可观测性。</p>
+<hr>
+<h2 id="sec8">第 8 节 可观测性</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：日志、链路、指标各自回答什么问题？为什么三样缺一不可？</p>
+</blockquote>
+<h3>一、可观测不是"多打日志"</h3>
+<p>一个常见误解：日志打得越多越"可观测"。实际上可观测要回答的是<strong>具体问题</strong>：</p>
+<ul>
+<li>这个接口为什么慢了？（链路）</li>
+<li>错误率什么时候开始上升、影响多少用户？（指标）</li>
+<li>这次请求到底走到哪一步失败的？（日志 + 链路）</li>
+</ul>
+<p>三类工具缺一不可，因为<strong>它们回答的问题不同</strong>。</p>
+<h3>二、三件套</h3>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>提供什么</th>
+<th>由谁产生</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Logging（日志）</strong></td>
+<td>多个级别的详细信息跟踪：verbose / debug / warning / error / fatal</td>
+<td><strong>应用开发者主动提供</strong></td>
+<td>定位具体错误、审计</td>
+</tr>
+<tr>
+<td><strong>Tracing（链路追踪）</strong></td>
+<td>一个请求从前端到后端的<strong>完整调用链路</strong></td>
+<td>框架/SDK 自动埋点</td>
+<td>分布式场景定位慢点</td>
+</tr>
+<tr>
+<td><strong>Metrics（指标）</strong></td>
+<td>可聚合的数值时间序列</td>
+<td>采集器/暴露端点</td>
+<td>容量、告警、趋势</td>
+</tr>
+</tbody>
+</table>
+<p>三者的定位很清楚：<strong>Logging 由开发者主动提供</strong>，Tracing 对<strong>分布式场景尤其有用</strong>，Metrics 提供可聚合的量化视图。</p>
+<h3>三、为什么分布式场景离不开 Tracing</h3>
+<p>单体时代，一次请求的调用栈就在一个进程里，日志里有 traceId 就能串起来。</p>
+<p>微服务下，一次请求会穿过网关、多个服务、数据库、消息队列。没有链路追踪，你只知道"慢"，不知道<strong>慢在哪一跳</strong>。</p>
+<p>链路追踪的关键是<strong>统一的 traceId 贯穿全链路</strong>，以及 span 记录每一跳的开始时间、耗时与状态。</p>
+<h3>四、指标要选对</h3>
+<p>指标的价值在于<strong>可聚合、可告警</strong>。常见四类：</p>
+<ul>
+<li><strong>计数（Counter）</strong>：请求数、错误数；</li>
+<li><strong>计量（Gauge）</strong>：在线连接数、队列深度；</li>
+<li><strong>分布（Histogram/Summary）</strong>：响应时间分位数（P50/P95/P99）；</li>
+<li><strong>速率</strong>：QPS。</li>
+</ul>
+<p><strong>分位数比平均值有用</strong>：平均 100ms 可能掩盖了 1% 用户 5 秒的体验。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：如果只能保留一个指标来判断"服务是否健康"，你选平均响应时间还是 P99？为什么？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：定位慢请求）</strong> 某系统高峰期出现"偶尔下单很慢"，平均响应正常，用户投诉集中在少数人。请说明如何用可观测三件套定位。</p>
+<p>*解答**：<br>
+- <strong>指标</strong>：看下单接口的 <strong>P99/P999</strong> 而非平均值，确认长尾存在；按时间与实例维度下钻，判断是全局还是个别实例；<br>
+- <strong>链路</strong>：抽取 P99 的慢请求 traceId，看 span 耗时分布，定位是数据库、下游服务还是消息队列；<br>
+- <strong>日志</strong>：用 traceId 拉取该请求全链路日志，查看是否有重试、超时、GC 或慢 SQL；<br>
+- <strong>闭环</strong>：定位后加对应指标与告警，形成"发现—定位—验证"的常态能力。</p>
+<p><em>点评</em>：这题的层次感在于"<strong>指标发现异常 → 链路定位位置 → 日志确认原因</strong>"，三步顺序不能乱。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：只做 Metrics 不做 Tracing。</strong><br>
+知道"慢"但不知道"慢在哪"，排查成本极高。</p>
+<p><strong>误区二：日志级别全开、不设采样。</strong><br>
+成本爆炸且淹没关键信息，生产应分级 + 采样。</p>
+<p><strong>误区三：只看平均值。</strong><br>
+长尾问题会被平均值掩盖。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 5 题（3 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="9-8-1" data-type="single" data-explain="分布式场景定位慢点靠链路。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-8-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">提供一个请求从前端到后端完整调用链路的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> Logging</button><button class="opt" data-k="B"><b>B.</b> Tracing</button><button class="opt" data-k="C"><b>C.</b> Metrics</button><button class="opt" data-k="D"><b>D.</b> 告警</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-8-2" data-type="single" data-explain="日志由开发者主动埋。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">9-8-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">由应用开发者主动提供、含 verbose/error 等多级别信息的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> Logging</button><button class="opt" data-k="B"><b>B.</b> Tracing</button><button class="opt" data-k="C"><b>C.</b> Metrics</button><button class="opt" data-k="D"><b>D.</b> Dashboard</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-8-3" data-type="single" data-explain="平均值会掩盖长尾。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-8-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">更能反映长尾用户真实体验的指标是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 平均响应时间</button><button class="opt" data-k="B"><b>B.</b> P99 响应时间</button><button class="opt" data-k="C"><b>C.</b> 总请求数</button><button class="opt" data-k="D"><b>D.</b> 平均并发数</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-8-4" data-type="multi" data-explain="D 错：日志要分级与采样，否则淹没信息。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">9-8-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">关于可观测性，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 三件套是 Logging、Tracing、Metrics</button><button class="opt" data-k="B"><b>B.</b> Tracing 对分布式场景尤其有用</button><button class="opt" data-k="C"><b>C.</b> Metrics 可聚合、适合告警</button><button class="opt" data-k="D"><b>D.</b> 日志越多越可观测</button><button class="opt" data-k="E"><b>E.</b> 只看平均值容易掩盖长尾问题</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-8-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="metrics/指标" data-answer-text="Metrics"><div class="qhead"><span class="chip">9-8-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">可观测三件套是 Logging、Tracing 和________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：日志回答"发生了什么"、链路回答"慢在哪一跳"、指标回答"多严重、何时开始"，三者配合才能定位。</p>
+<p><strong>留一个问题</strong>：把数据库也搬到云上、做成云原生形态，会带来什么不同？</p>
+<p>下一节讲云原生数据库。</p>
+<hr>
+<h2 id="sec9">第 9 节 云原生数据库</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：传统数据库上云与"云原生数据库"差在哪？它的四大优势具体指什么？</p>
+</blockquote>
+<h3>一、传统数据库上云的困境</h3>
+<p>把 Oracle 从自建机房搬到云上虚拟机，问题并没有解决：</p>
+<ul>
+<li><strong>存储与计算耦合</strong>：扩容只能整体升配，不能只扩存储或只扩计算；</li>
+<li><strong>扩展能力受限</strong>：单机上限决定业务上限；</li>
+<li><strong>运维成本高</strong>：备份、升级、故障切换依赖人工；</li>
+<li><strong>故障恢复慢</strong>：主备切换往往需要分钟级。</li>
+</ul>
+<p>这些痛点的根源是<strong>架构按"单机"设计</strong>，上云只是换了物理位置。</p>
+<h3>二、云原生数据库的四个特征</h3>
+<table>
+<thead>
+<tr>
+<th>特征</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>存储计算分离</strong></td>
+<td>计算节点无状态、存储独立扩展，可按需分别伸缩</td>
+</tr>
+<tr>
+<td><strong>弹性伸缩</strong></td>
+<td>秒级/分钟级增减计算节点，按负载自动调整</td>
+</tr>
+<tr>
+<td><strong>故障自愈</strong></td>
+<td>节点故障自动摘除与重建，数据由存储层保证持久</td>
+</tr>
+<tr>
+<td><strong>全链路可观测</strong></td>
+<td>内置监控、慢查询、链路与容量分析</td>
+</tr>
+</tbody>
+</table>
+<p><strong>存储计算分离是其余三点的基础</strong>：计算节点无状态，才能随时增删；存储独立，才能保证数据不随计算节点丢失。</p>
+<h3>三、OLTP 与 OLAP 拆分</h3>
+<p>一个关键做法：<strong>把在线交易与离线分析拆到两类数据库</strong>。</p>
+<ul>
+<li><strong>OLTP 型</strong>：服务在线交易，强调低延迟、高并发、强一致；</li>
+<li><strong>OLAP 型</strong>：服务报表与分析，强调大扫描、列式存储、聚合性能。</li>
+</ul>
+<p>传统做法用一套 Oracle 同时承担两类负载，结果互相拖累——这正是"混合负载"的典型问题。</p>
+<h3>四、选型与落地难点</h3>
+<table>
+<thead>
+<tr>
+<th>难点</th>
+<th>应对</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>兼容性（SQL 方言、存储过程）</td>
+<td>提前做兼容性评估，优先改造强依赖特性</td>
+</tr>
+<tr>
+<td>迁移风险</td>
+<td>双写/双跑、数据校验、灰度切流</td>
+</tr>
+<tr>
+<td>事务与一致性</td>
+<td>明确拆分边界，减少跨库事务（见第 7 节）</td>
+</tr>
+<tr>
+<td>成本</td>
+<td>按实际负载评估，避免为峰值长期付费</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"存储计算分离"能让弹性伸缩变得可行？如果计算节点带本地状态，扩容会有什么问题？</p>
+</blockquote>
+<p><strong>实施效果怎么衡量</strong></p>
+<p>云原生数据库改造完，效果要能用数字说话，通常从四个维度对比改造前后：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>指标</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>性能</strong></td>
+<td>交易 P95 延迟、报表查询耗时、峰值 TPS</td>
+</tr>
+<tr>
+<td><strong>可用性</strong></td>
+<td>故障切换时间、年度不可用时长、数据零丢失达成情况</td>
+</tr>
+<tr>
+<td><strong>成本</strong></td>
+<td>单笔交易数据库成本、存储与计算资源利用率、闲置资源占比</td>
+</tr>
+<tr>
+<td><strong>运维效率</strong></td>
+<td>扩容耗时（天→分钟）、备份恢复时长、人工干预次数</td>
+</tr>
+</tbody>
+</table>
+<p><strong>最容易被忽略的是"扩容耗时"</strong>：传统数据库扩容要采购、停机、迁移，常以周计；云原生数据库可到分钟级——这个前后对比最能体现架构价值。</p>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：迁移方案）</strong> 某企业核心系统跑在 Oracle 上，报表查询经常影响交易性能。请给出基于云原生数据库的改造方案。</p>
+<p>*解答**：<br>
+- <strong>拆分负载</strong>：交易库迁到 <strong>OLTP 型云原生数据库</strong>（存算分离、弹性伸缩）；报表迁到 <strong>OLAP 型</strong>（列式、大扫描优化）；<br>
+- <strong>数据同步</strong>：通过 CDC/日志订阅把交易数据同步到分析库，避免直接查生产库；<br>
+- <strong>弹性</strong>：交易库按大促负载预扩 + 自动伸缩，分析库按批处理时段扩缩；<br>
+- <strong>高可用</strong>：依赖存储层多副本与自动故障转移，替代人工主备切换；<br>
+- <strong>迁移路径</strong>：先迁报表（风险低、见效快），再迁交易（灰度切流 + 双跑校验）。</p>
+<p><em>点评</em>：这类题的得分点在"<strong>先拆负载、再谈迁移</strong>"，以及"先易后难的迁移顺序"。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为数据库上了云就是云原生数据库。</strong><br>
+关键看是否存算分离、能否弹性与自愈。</p>
+<p><strong>误区二：认为存算分离一定更快。</strong><br>
+它牺牲了一部分本地 IO 优势，换的是弹性与运维简化。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 2 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="9-9-1" data-type="single" data-explain="上云只是换物理位置，架构没变。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-9-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">云原生数据库区别于"数据库上云"的核心是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 部署在云上</button><button class="opt" data-k="B"><b>B.</b> 存储计算分离、弹性伸缩与自愈</button><button class="opt" data-k="C"><b>C.</b> 使用开源软件</button><button class="opt" data-k="D"><b>D.</b> 数据量更大</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-9-2" data-type="single" data-explain="OLAP 面向大扫描聚合。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">9-9-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">为在线交易提供低延迟、高并发、强一致能力的数据库类型是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> OLTP 型</button><button class="opt" data-k="B"><b>B.</b> OLAP 型</button><button class="opt" data-k="C"><b>C.</b> 数据湖</button><button class="opt" data-k="D"><b>D.</b> 图数据库</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-9-3" data-type="single" data-explain="一套库同时扛两类负载会互相拖累。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-9-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">把交易与分析负载拆到两类数据库，主要解决：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 存储成本</button><button class="opt" data-k="B"><b>B.</b> 混合负载互相拖累</button><button class="opt" data-k="C"><b>C.</b> 网络延迟</button><button class="opt" data-k="D"><b>D.</b> 代码复杂度</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-9-4" data-type="multi" data-explain="D 错：它牺牲部分本地 IO 换弹性。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">9-9-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">关于云原生数据库，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 存储计算分离是弹性伸缩的基础</button><button class="opt" data-k="B"><b>B.</b> 计算节点无状态才能随时增删</button><button class="opt" data-k="C"><b>C.</b> 故障自愈依赖自动摘除与重建</button><button class="opt" data-k="D"><b>D.</b> 存算分离必然让所有场景都变快</button><button class="opt" data-k="E"><b>E.</b> OLAP 型更适合大扫描与聚合</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-9-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="可观测" data-answer-text="可观测"><div class="qhead"><span class="chip">9-9-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">云原生数据库的四个典型特征是存储计算分离、弹性伸缩、故障自愈和全链路________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="9-9-6" data-type="single" data-explain="扩容耗时最能体现弹性价值。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-9-6</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">衡量云原生数据库改造成效时，最能体现架构价值的前后对比指标是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 代码行数</button><button class="opt" data-k="B"><b>B.</b> 扩容耗时（从周到分钟）</button><button class="opt" data-k="C"><b>C.</b> 文档页数</button><button class="opt" data-k="D"><b>D.</b> 开发人数</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-9-7" data-type="multi" data-explain="E 不是效果口径。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">9-9-7</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">云原生数据库改造的效果通常从哪些维度衡量：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 性能（P95 延迟、TPS）</button><button class="opt" data-k="B"><b>B.</b> 可用性（切换时间、不可用时长）</button><button class="opt" data-k="C"><b>C.</b> 成本（单笔交易成本、资源利用率）</button><button class="opt" data-k="D"><b>D.</b> 运维效率（扩容与恢复耗时）</button><button class="opt" data-k="E"><b>E.</b> 代码行数</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：云原生数据库靠存算分离实现弹性与自愈，实践中常把 OLTP 与 OLAP 拆开承担不同负载。</p>
+<p><strong>留一个问题</strong>：企业内部几十个异构系统要打通，"以服务为中心的集成"提供了哪些标准服务？</p>
+<p>下一节讲企业集成三服务。</p>
+<hr>
+<h2 id="sec10">第 10 节 以服务为中心的企业集成</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：企业数据"分布 + 异构"造成访问障碍，标准化的集成服务怎么解决？</p>
+</blockquote>
+<h3>一、障碍在哪</h3>
+<p>企业数据的<strong>分布性</strong>（数据散在多个系统）与<strong>异构性</strong>（格式、模型、DBMS 不同），是"方便访问企业数据"的主要障碍。</p>
+<p>数据集成与聚合技术因此诞生，目标是：<strong>对分布式数据与异构数据提供透明访问</strong>。</p>
+<h3>二、三种标准集成服务</h3>
+<p>以服务为中心的企业集成，通过<strong>信息服务</strong>提供集成数据的能力，主要包括：</p>
+<table>
+<thead>
+<tr>
+<th>服务</th>
+<th>作用</th>
+<th>关键点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>联邦服务（Federation）</strong></td>
+<td>把各种类型的数据<strong>聚合</strong>起来统一访问</td>
+<td>支持关系型与非关系型（XML、文本、内容）；<strong>各数据仍按自身方式管理</strong></td>
+</tr>
+<tr>
+<td><strong>复制服务（Replication）</strong></td>
+<td>提供远程数据的<strong>本地访问</strong></td>
+<td>通过实时复制与数据转换，在本地维护副本；本地与源可技术独立</td>
+</tr>
+<tr>
+<td><strong>转换服务（Transformation）</strong></td>
+<td><strong>格式转换</strong></td>
+<td>源格式 → 目标格式，可批量也可实时</td>
+</tr>
+</tbody>
+</table>
+<p>三者的分工可以这样记：<strong>联邦是"看得见"（不搬数据）、复制是"搬过来"（本地副本）、转换是"换格式"（模型映射）</strong>。</p>
+<p><strong>异构的五个体现</strong></p>
+<p>"异构"不是一个笼统的词，落到工程上至少有五个方面：</p>
+<table>
+<thead>
+<tr>
+<th>体现</th>
+<th>说明</th>
+<th>集成时的对策</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>数据格式</strong></td>
+<td>XML、JSON、CSV、EDI、二进制</td>
+<td>转换服务做格式映射</td>
+</tr>
+<tr>
+<td><strong>数据模型</strong></td>
+<td>关系表、文档、图、键值</td>
+<td>统一模型层或联邦查询</td>
+</tr>
+<tr>
+<td><strong>传输协议</strong></td>
+<td>HTTP、MQ、文件、专有协议、RosettaNet/AS1/AS2</td>
+<td>协议适配与网关</td>
+</tr>
+<tr>
+<td><strong>编码与语义</strong></td>
+<td>字段编码规则不同、同名不同义、单位不一致</td>
+<td>主数据与字典映射</td>
+</tr>
+<tr>
+<td><strong>DBMS 与访问方式</strong></td>
+<td>不同厂商、不同 SQL 方言、不同驱动</td>
+<td>通用接口（ODBC/JDBC）或数据服务</td>
+</tr>
+</tbody>
+</table>
+<p>教材在讲伙伴集成时点得很准：<strong>"因为业务伙伴系统的异构性，伙伴服务需要支持多种传输协议和数据格式"</strong>——协议与格式是异构最外显的两层，模型与语义是更深的两层。</p>
+<h3>三、与 ESB 的关系</h3>
+<ul>
+<li><strong>ESB</strong> 解决"消息怎么路由、协议怎么转换"；</li>
+<li><strong>三种集成服务</strong>解决"数据怎么被统一访问、复制与转换"。</li>
+</ul>
+<p>二者常配合：ESB 负责传输与路由，集成服务负责语义与格式。SOA 的设计标准里也包含"应用程序统一登记与集成"。</p>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：多源异构数据集成）</strong> 某集团要整合 ERP、CRM 与自建系统：ERP 数据不能动（只读）、CRM 要提供实时查询、自建系统的编码规则与集团标准不一致。请分别选用哪种集成服务。</p>
+<p>*解答**：<br>
+- <strong>ERP（只读、不能动）</strong> → <strong>联邦服务</strong>：不搬数据，只做聚合访问；<br>
+- <strong>CRM（需本地实时查询、降低对源系统压力）</strong> → <strong>复制服务</strong>：实时复制到本地，查询走副本；<br>
+- <strong>自建系统（编码/格式不一致）</strong> → <strong>转换服务</strong>：做模型映射与格式转换后接入。</p>
+<p><em>点评</em>：判断依据是"<strong>能否搬数据、是否要低延迟、是否只是格式差异</strong>"。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为集成就是"抽数到数据仓库"。</strong><br>
+联邦服务不搬数据，是"虚拟集成"。</p>
+<p><strong>误区二：认为复制服务只做备份。</strong><br>
+它的目的是<strong>本地访问性能</strong>与解耦，不只是容灾。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 2 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="9-10-1" data-type="single" data-explain="联邦=虚拟集成。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">9-10-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">不搬数据、把多种类型数据聚合统一访问的服务是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 联邦服务</button><button class="opt" data-k="B"><b>B.</b> 复制服务</button><button class="opt" data-k="C"><b>C.</b> 转换服务</button><button class="opt" data-k="D"><b>D.</b> 消息服务</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-10-2" data-type="single" data-explain="复制服务为本地访问性能服务。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-10-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">通过实时复制在本地维护副本、提供本地访问能力的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 联邦服务</button><button class="opt" data-k="B"><b>B.</b> 复制服务</button><button class="opt" data-k="C"><b>C.</b> 转换服务</button><button class="opt" data-k="D"><b>D.</b> 路由服务</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-10-3" data-type="single" data-explain="分布 + 异构是根本障碍。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9-10-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">企业数据集成的主要障碍是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数据量太小</button><button class="opt" data-k="B"><b>B.</b> 数据的分布性与异构性</button><button class="opt" data-k="C"><b>C.</b> 缺少数据库</button><button class="opt" data-k="D"><b>D.</b> 网络带宽过大</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-10-4" data-type="multi" data-explain="D 错：联邦不搬数据。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">9-10-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">关于企业集成服务，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 联邦服务支持关系型与非关系型数据</button><button class="opt" data-k="B"><b>B.</b> 复制服务可在本地维护数据副本</button><button class="opt" data-k="C"><b>C.</b> 转换服务负责源格式到目标格式的转换</button><button class="opt" data-k="D"><b>D.</b> 联邦服务会把数据全部搬到本地</button><button class="opt" data-k="E"><b>E.</b> ESB 负责路由与协议转换，集成服务负责语义与格式</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-10-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="复制|转换" data-answer-text="复制、转换"><div class="qhead"><span class="chip">9-10-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">企业集成的三种标准信息服务是联邦服务、________服务和________服务。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="9-10-6" data-type="single" data-explain="格式与协议最先暴露。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">9-10-6</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">异构数据集成中，最外显的两层异构是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数据格式与传输协议</button><button class="opt" data-k="B"><b>B.</b> CPU 与内存</button><button class="opt" data-k="C"><b>C.</b> 代码风格与注释</button><button class="opt" data-k="D"><b>D.</b> 版本号与许可证</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-10-7" data-type="single" data-explain="语义异构最难，需主数据与字典映射。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="C"><div class="qhead"><span class="chip">9-10-7</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">同名字段含义不同、单位不一致，属于哪类异构：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数据格式</button><button class="opt" data-k="B"><b>B.</b> 数据模型</button><button class="opt" data-k="C"><b>C.</b> 编码与语义</button><button class="opt" data-k="D"><b>D.</b> DBMS</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9-10-8" data-type="multi" data-explain="E 错：DBMS 差异本身就是异构来源。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">9-10-8</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">异构数据的常见体现包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数据格式差异</button><button class="opt" data-k="B"><b>B.</b> 数据模型差异</button><button class="opt" data-k="C"><b>C.</b> 传输协议差异</button><button class="opt" data-k="D"><b>D.</b> 编码与语义差异</button><button class="opt" data-k="E"><b>E.</b> 所有系统都使用同一 DBMS</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：面对分布与异构，联邦负责聚合访问、复制负责本地副本、转换负责格式映射，三者共同提供透明访问。</p>
+<h2 id="sec11">本章总复习</h2>
+<h3>一、这一章的主线</h3>
+<p>这一章回答的是"把系统拆成服务、让服务跑在云上"。十节分两条线：前四节讲 SOA——服务特征、参考架构与四类协议、设计标准与治理、云原生七原则；后六节讲落地——架构模式与反模式、容器/微服务/Serverless/网格、分布式事务、可观测性、云原生数据库、企业集成三服务。</p>
+<h3>二、必须能说出的判断</h3>
+<ul>
+<li><strong>服务的粒度标准是"一次调用完成一件业务事"</strong>，不是"一张表一个服务"；</li>
+<li><strong>UDDI 管发现、WSDL 管描述、SOAP/REST 管调用</strong>，四者位置不能混；</li>
+<li><strong>云原生七原则可当成熟度检查单</strong>：服务化、弹性、可观测、韧性、自动化、零信任、持续演进；</li>
+<li><strong>分布式事务五模式各有取舍</strong>，最好的方案常常是"通过划分边界避免分布式事务"；</li>
+<li><strong>可观测三件套分工明确</strong>：日志回答"发生了什么"，链路回答"慢在哪一跳"，指标回答"多严重"。</li>
+</ul>
+<h3>三、跨节综合自测（8 题）</h3>
+<div class="quiz" data-id="9综-1" data-type="single" data-explain="粒度标准是「一次调用完成一件业务事」。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9综-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">把每个数据库操作都封装成一个服务，最主要的问题是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 服务太少</button><button class="opt" data-k="B"><b>B.</b> 调用次数爆炸、延迟与失败率上升</button><button class="opt" data-k="C"><b>C.</b> 无法复用</button><button class="opt" data-k="D"><b>D.</b> 不能部署</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9综-2" data-type="single" data-explain="UDDI 是服务目录。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9综-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">服务注册与发现对应下列哪个规范：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> WSDL</button><button class="opt" data-k="B"><b>B.</b> UDDI</button><button class="opt" data-k="C"><b>C.</b> SOAP</button><button class="opt" data-k="D"><b>D.</b> REST</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9综-3" data-type="multi" data-explain="E 错：Serverless 只适用特定场景。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">9综-3</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">云原生七原则包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 服务化</button><button class="opt" data-k="B"><b>B.</b> 弹性与可观测</button><button class="opt" data-k="C"><b>C.</b> 韧性与零信任</button><button class="opt" data-k="D"><b>D.</b> 所有过程自动化</button><button class="opt" data-k="E"><b>E.</b> 所有系统必须使用 Serverless</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9综-4" data-type="single" data-explain="AT 依赖 SQL 解析与全局锁。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">9综-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">几乎无代码改造、可自动回滚、但有场景限制的分布式事务模式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> XA</button><button class="opt" data-k="B"><b>B.</b> TCC</button><button class="opt" data-k="C"><b>C.</b> SAGA</button><button class="opt" data-k="D"><b>D.</b> SEATA AT</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9综-5" data-type="single" data-explain="链路追踪负责定位位置。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9综-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">线上出现「偶尔下单很慢」，定位「慢在哪一跳」应优先看：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 日志</button><button class="opt" data-k="B"><b>B.</b> 链路追踪</button><button class="opt" data-k="C"><b>C.</b> 指标总量</button><button class="opt" data-k="D"><b>D.</b> 配置中心</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9综-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="confirm|cancel" data-answer-text="Confirm、Cancel"><div class="qhead"><span class="chip">9综-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">TCC 三阶段是 Try、和。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="9综-7" data-type="single" data-explain="BaaS 供能力，FaaS 供算力。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">9综-7</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">Serverless 中提供全托管后端能力 API 的部分是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> FaaS</button><button class="opt" data-k="B"><b>B.</b> BaaS</button><button class="opt" data-k="C"><b>C.</b> IaaS</button><button class="opt" data-k="D"><b>D.</b> CaaS</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="9综-8" data-type="multi" data-explain="D 是推荐模式；E 破坏服务自治。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">9综-8</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec11">↑ 回到本节开头</a></div><div class="qstem">下列属于云原生反模式的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 庞大的单体应用</button><button class="opt" data-k="B"><b>B.</b> 把单体按技术分层「硬拆」为微服务</button><button class="opt" data-k="C"><b>C.</b> 缺乏自动化能力的微服务</button><button class="opt" data-k="D"><b>D.</b> 存储计算分离</button><button class="opt" data-k="E"><b>E.</b> 服务间共享同一个数据库</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<h3>四、与论文、案例的接口</h3>
+<p>近三年论文的高频区（云原生改造、服务拆分、Serverless、秒杀下的稳定性）；案例题常考"服务怎么拆、拆完怎么治"。</p>
+<h3>五、下一步</h3>
+<p><strong>本章结束</strong>。下一步进入 K10（嵌入式、通信与安全架构）。</p>
+<div class="legend" style="margin-top:44px">标注说明：<b>软考口径</b>＝按官方用书表述给分；<b>拓展</b>＝考纲未展开的补充知识。详见 <a href="k00.html">K0 前言</a>。作答记录保存在本机浏览器。</div>
+<div class="toast" id="toast"></div>
+</div>
+<script>
+const KEY="book_K9云原生与SOA";
+let state=JSON.parse(localStorage.getItem(KEY)||"{}");
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function norm(s){return (s||"").toLowerCase().replace(/[\s，,、;；。.()（）]/g,"");}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1400);}
+function stats(){const qs=$$(".quiz");let done=0,ok=0;
+ qs.forEach(q=>{const st=state[q.dataset.id];if(st&&st.done){done++;if(st.ok)ok++;}});
+ return {done,total:qs.length,ok};}
+function paint(){const s=stats();const p=s.total?s.done/s.total*100:0;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";}
+function fillKeywords(q){return q.dataset.answer.split("|").map(g=>g.split("/"));}
+function fbHTML(q,ok,userText){
+ const diag=q.dataset.diag||"";const warm=diag.includes("补充")?"#a2540f":"#b42318";
+ const ans=q.dataset.answerText||q.dataset.answer;
+ return '<div class="res">'+(ok?"✔ 回答正确":"✘ 回答错误")+'</div>'
+  +'<div><b>正确答案：</b>'+ans+(userText?'　<span style="color:#6b7280">你的作答：'+userText+'</span>':'')+'</div>'
+  +'<details open><summary>展开解析</summary><div class="inner">'
+  +'<div>'+q.dataset.explain+'</div>'
+  +'<div class="row tags">来源：'+q.dataset.source+'　｜　诊断标签：<b style="color:'+warm+'">'+diag+'</b></div>'
+  +'</div></details>';
+}
+function judge(q,ok,userText){
+ const fb=$(".fb",q);fb.className="fb show "+(ok?"ok":"bad");
+ fb.innerHTML=fbHTML(q,ok,userText);
+ state[q.dataset.id]={done:true,ok:ok};save();paint();
+}
+$$(".quiz").forEach(q=>{
+ const type=q.dataset.type;const ans=q.dataset.answer;
+ const opts=$$(".opt",q);const fb=$(".fb",q);
+ const saved=state[q.dataset.id];
+ if(type==="single"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     opts.forEach(x=>x.disabled=true);
+     const ok=(o.dataset.k===ans);
+     o.classList.add(ok?"right":"wrong");
+     if(!ok){const c=opts.find(x=>x.dataset.k===ans);if(c)c.classList.add("right");}
+     judge(q,ok,o.dataset.k);
+   }));
+ }else if(type==="multi"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     if(o.disabled)return;
+     o.classList.toggle("sel");
+   }));
+   const btn=$(".check",q);
+   if(btn)btn.addEventListener("click",()=>{
+     const picked=opts.filter(o=>o.classList.contains("sel")).map(o=>o.dataset.k).sort().join("");
+     if(!picked){toast("先选择至少一个选项");return;}
+     opts.forEach(o=>{
+       o.disabled=true;o.classList.remove("sel");
+       const k=o.dataset.k;
+       if(ans.includes(k))o.classList.add("right");
+       else if(picked.includes(k))o.classList.add("wrong");
+     });
+     judge(q,picked===ans,picked);
+   });
+ }else{
+   const inp=$(".fillinput",q);const btn=$(".check",q);
+   const go=()=>{
+     const raw=inp.value;const v=norm(raw);
+     if(!v){toast("先填写答案");return;}
+     let ok=false;
+     if(q.dataset.numeric){
+       const m=raw.match(/-?\d+(?:\.\d+)?/);
+       const cands=q.dataset.numeric.split("|");
+       ok=!!m&&cands.some(x=>Math.abs(parseFloat(m[0])-parseFloat(x))<0.011);
+     }else{
+       ok=fillKeywords(q).every(g=>g.some(k=>v.includes(norm(k))));
+     }
+     inp.disabled=true;inp.style.borderColor=ok?"#7cc49b":"#e79a94";
+     if(btn)btn.disabled=true;
+     judge(q,ok,raw.trim());
+   };
+   if(btn)btn.addEventListener("click",go);
+   if(inp)inp.addEventListener("keydown",e=>{if(e.key==="Enter")go();});
+ }
+ if(saved&&saved.done){/* 恢复历史状态：仅标记，不覆盖作答 */}
+});
+window.addEventListener("scroll",()=>{
+ const h=document.documentElement;
+ const p=h.scrollTop/(h.scrollHeight-h.clientHeight||1)*100;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";
+});
+paint();
+</script>
+<div class="book-foot-nav"><div class="bf-box"><a href="k08.html">&larr; 上一章 K8 信息系统架构</a><a class="bf-next" href="k10.html">下一章 K10 嵌入式、通信与安全架构 &rarr;</a></div><p class="bf-note">作答记录保存在本机浏览器，换设备或清除缓存不会保留。本章支持浏览器直接打印为 PDF。</p></div><script>
+(function(){
+  var el=document.getElementById("book-nav-progress");
+  function refresh(){
+    try{
+      var st=JSON.parse(localStorage.getItem("book_K9云原生与SOA")||"{}"),done=0;
+      Object.keys(st).forEach(function(k){if(st[k]&&st[k].done)done++;});
+      if(el)el.textContent=done+" / 77 题";
+    }catch(e){}
+  }
+  refresh();setInterval(refresh,1000);
+})();
+</script></body></html>

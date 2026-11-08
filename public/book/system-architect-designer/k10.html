@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K10 嵌入式通信与安全架构</title>
+<style>
+:root{--bg:#fbfaf7;--card:#fff;--ink:#1f2328;--sub:#6b7280;--line:#e6e3dd;--accent:#1f4e79;--ok:#0f7b4f;--bad:#b42318;--chip:#eef3f8;--warm:#fdf6ec}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:17px/1.9 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",serif}
+#bar{position:fixed;top:0;left:0;height:3px;background:var(--accent);width:0;z-index:99}
+.wrap{max-width:760px;margin:0 auto;padding:56px 20px 100px}
+h1{font-size:27px;line-height:1.4;letter-spacing:.5px;margin:0 0 10px}
+h2{font-size:21px;margin:52px 0 14px;padding-top:14px;border-top:2px solid var(--line);letter-spacing:.5px}
+h2:first-of-type{border-top:none}
+h3{font-size:17.5px;margin:30px 0 10px;color:#2b3a4a}
+h5{font-size:15px;margin:26px 0 8px;color:var(--sub);font-weight:600}
+p{margin:10px 0}
+blockquote{margin:16px 0;padding:12px 16px;background:var(--warm);border-left:3px solid #e0b984;border-radius:0 8px 8px 0;font-size:16px}
+blockquote p{margin:4px 0}
+strong{color:#12324f}
+hr{border:none;border-top:1px dashed var(--line);margin:26px 0}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px;background:#fff}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f3f1ec;font-weight:600}
+code{background:#f3f1ec;padding:1px 5px;border-radius:4px;font-size:14px}
+pre{background:#f7f5f1;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto}
+ul,ol{margin:10px 0;padding-left:22px}
+li{margin:4px 0}
+.math{font-family:"Cambria Math",Cambria,Georgia,"Times New Roman",serif;font-size:1.03em}
+.mathblock{display:block;text-align:center;margin:16px 0;overflow-x:auto;padding:2px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:-0.55em;text-align:center;margin:0 .3em}
+.frac .n{border-bottom:1px solid currentColor;padding:0 .3em;line-height:1.3}
+.frac .d{padding:0 .3em;line-height:1.4}
+sub,sup{font-size:.72em;line-height:0}
+.toast{position:fixed;right:18px;bottom:18px;background:#1f2937;color:#fff;padding:9px 14px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+
+/* 题卡 */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:18px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.qhead{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.chip{background:var(--chip);color:#33475b;border-radius:999px;padding:1px 9px;font-size:12px}
+.chip.t{background:#eaf4ec;color:#0f7b4f}
+.chip.k{background:#f4f0fa;color:#5b3f8f;font-size:11.5px}
+a.back{margin-left:auto;font-size:12px;color:var(--sub);text-decoration:none;border-bottom:1px dashed #c9c4ba}
+a.back:hover{color:var(--accent);border-color:var(--accent)}
+.qstem{font-weight:600;margin:4px 0 12px;font-size:16px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:15.5px;line-height:1.7;
+ background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 13px;cursor:pointer;transition:.15s}
+.opt:hover{border-color:#b9c6d6;background:#f8fafc}
+.opt b{color:var(--accent);margin-right:2px}
+.opt.sel{border-color:var(--accent);background:#eef4fa}
+.opt.right{border-color:#7cc49b;background:#effaf3}
+.opt.wrong{border-color:#e79a94;background:#fdf1f0}
+.opt:disabled{cursor:default}
+.fillrow{display:flex;gap:10px;margin-top:12px;align-items:center}
+.fillinput{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:15.5px;background:#fff}
+.btn{font:inherit;font-size:14px;padding:7px 16px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer}
+.btn.check{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fb{display:none;margin-top:14px;font-size:15px;line-height:1.8}
+.fb.show{display:block}
+.fb .res{font-weight:700;margin-bottom:6px;font-size:15.5px}
+.fb.ok .res{color:var(--ok)}
+.fb.bad .res{color:var(--bad)}
+.fb details{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:#fcfbf9;padding:0 12px}
+.fb summary{cursor:pointer;padding:9px 0;font-weight:600;color:var(--accent);outline:none}
+.fb .inner{padding:2px 0 12px;border-top:1px dashed var(--line)}
+.fb .row{color:var(--sub);font-size:13px;margin-top:8px}
+.fb .tags b{color:#a2540f}
+.legend{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:20px 0;font-size:14.5px}
+.legend b{color:var(--accent)}
+@media print{
+ #bar,.toast{display:none}
+ .quiz{break-inside:avoid}
+ body{background:#fff;font-size:12pt}
+}
+@media (max-width:600px){
+ body{font-size:16px;line-height:1.85}
+ .wrap{padding:40px 14px 80px}
+ h1{font-size:23px}
+ table{font-size:13px}
+}
+</style>
+<style id="book-nav-css">
+#book-nav{position:sticky;top:0;z-index:100;background:rgba(251,250,247,.96);backdrop-filter:blur(8px);border-bottom:1px solid #e6e3dd;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+#bar{z-index:101!important}
+#book-nav .bn-in{max-width:1060px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+#book-nav a{color:#1f4e79;text-decoration:none;white-space:nowrap}
+#book-nav a:hover{text-decoration:underline}
+#book-nav .bn-home{font-weight:700}
+#book-nav .bn-cur{color:#1f2328;font-weight:600;flex:1;min-width:180px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#book-nav .bn-step{background:#fff;border:1px solid #e6e3dd;border-radius:999px;padding:3px 11px;font-size:13px}
+#book-nav .bn-step.disabled{opacity:.38;pointer-events:none}
+#book-nav .bn-prog{color:#6b7280;font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.book-foot-nav{max-width:760px;margin:0 auto;padding:0 20px 80px;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.book-foot-nav .bf-box{border-top:2px solid #e6e3dd;padding-top:22px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}
+.book-foot-nav a{color:#1f4e79;text-decoration:none}
+.book-foot-nav a:hover{text-decoration:underline}
+.book-foot-nav .bf-next{background:#1f4e79;color:#fff!important;border-radius:10px;padding:9px 18px;font-weight:600}
+.book-foot-nav .bf-next:hover{text-decoration:none;background:#163c5e}
+.book-foot-nav .bf-note{color:#6b7280;font-size:13px;margin-top:14px}
+@media(max-width:600px){#book-nav .bn-cur{order:3;flex-basis:100%;text-align:left}#book-nav .bn-prog{display:none}}
+@media print{#book-nav,.book-foot-nav{display:none}#bar{z-index:0!important}}
+</style>
+</head><body><nav id="book-nav"><div class="bn-in"><a class="bn-home" href="index.html">&larr; 全书目录</a><a class="bn-step" href="k09.html" title="云原生与 SOA">&larr; K9</a><span class="bn-cur">K10 · 嵌入式、通信与安全架构</span><a class="bn-step" href="k11.html" title="大数据与未来技术">K11 &rarr;</a><span class="bn-prog" id="book-nav-progress">0 / 42 题</span></div></nav>
+<div id="bar"></div>
+<div class="wrap">
+<h1>K10 嵌入式、通信与安全架构</h1>
+<blockquote>
+<p><strong>本章内容</strong>：嵌入式软件架构与两种模式 · 嵌入式 OS/数据库/中间件 · 嵌入式架构设计方法 · 通信网络架构 · 网络构建关键技术 · 安全架构与安全模型 · WPDRRC<br>
+<strong>考纲位置</strong>：上午题常考"模式/模型名称"与"层/协议对应"，案例题考嵌入式或安全方案，论文偶有涉及</p>
+</blockquote>
+<p>本章围绕"<strong>资源受限与安全受攻的两种极端场景下，架构怎么取舍</strong>"这一主题展开，共 6 节：</p>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+<th>回答的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>嵌入式软件架构与两种模式</td>
+<td>层次化与递归模式差在哪</td>
+</tr>
+<tr>
+<td>2</td>
+<td>嵌入式支撑软件</td>
+<td>OS、数据库、中间件各有什么特殊要求</td>
+</tr>
+<tr>
+<td>3</td>
+<td>嵌入式架构设计方法</td>
+<td>属性驱动与实时系统怎么设计</td>
+</tr>
+<tr>
+<td>4</td>
+<td>通信网络架构</td>
+<td>局域网、广域网、移动网、存储网、SDN</td>
+</tr>
+<tr>
+<td>5</td>
+<td>网络构建关键技术</td>
+<td>高可用、IPv6、SDN、安全、绿色</td>
+</tr>
+<tr>
+<td>6</td>
+<td>安全架构与安全模型</td>
+<td>五种经典安全模型与 WPDRRC</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="sec1">第 1 节 嵌入式软件架构与两种模式</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：大多数嵌入式系统具备实时特征，这种系统的典型架构有哪两种？区别在哪？</p>
+</blockquote>
+<h3>一、嵌入式架构的特殊约束</h3>
+<p>嵌入式系统的架构决策受四重约束：</p>
+<ul>
+<li><strong>资源受限</strong>：内存小、算力弱、功耗敏感；</li>
+<li><strong>实时性</strong>：必须在截止时间内响应；</li>
+<li><strong>可靠性</strong>：长期无人值守运行；</li>
+<li><strong>硬件耦合</strong>：与传感器、执行器、总线紧密绑定。</li>
+</ul>
+<p>因此它的架构设计重点不是"扩展性"，而是<strong>确定性、可预测性与资源效率</strong>。</p>
+<h3>二、两种典型架构模式</h3>
+<p>对具备实时特征的嵌入式系统，典型架构可概括为两种：</p>
+<p><strong>1. 层次化模式架构</strong></p>
+<p>把系统按抽象层次组织：硬件层 → 驱动/抽象层（HAL/BSP） → OS 层 → 中间件层 → 应用层。每层为上层提供服务、只依赖下层接口。</p>
+<p>优点是<strong>可移植、易分层验证</strong>；缺点是<strong>层层调用带来开销与时延</strong>，在强实时场景需要精简层数。</p>
+<p><strong>2. 递归模式架构</strong></p>
+<p>系统由<strong>可递归组合的构件</strong>构成：一个构件既可以是最小执行单元，也可以由若干同构构件组合而成（类似"组件套组件"）。</p>
+<p>它适合<strong>任务可分解、结构同构</strong>的场景（如信号处理链、分布式控制节点），优点是<strong>扩展灵活、可动态重构</strong>；缺点是<strong>调度与资源管理复杂</strong>。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么强实时系统常倾向"薄层"甚至"无 OS"？层次化模式的代价体现在哪里？</p>
+</blockquote>
+<h3>三、两种模式的对比</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>层次化模式</th>
+<th>递归模式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>组织方式</td>
+<td>按抽象分层</td>
+<td>按同构建件递归组合</td>
+</tr>
+<tr>
+<td>优势</td>
+<td>可移植、易验证</td>
+<td>灵活、可重构、易扩展</td>
+</tr>
+<tr>
+<td>代价</td>
+<td>层间调用开销</td>
+<td>调度与资源管理复杂</td>
+</tr>
+<tr>
+<td>适用</td>
+<td>硬件差异大、需移植</td>
+<td>任务结构同构、需动态调整</td>
+</tr>
+</tbody>
+</table>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：模式选择）</strong> 某工业控制器要在多种 MCU 上运行，且未来可能更换硬件平台；另一类是雷达信号处理链，由多级相同的滤波单元串联。请分别选择架构模式。</p>
+<p><em>解答</em>：<br>
+- 工业控制器：选<strong>层次化模式</strong>，用 HAL/BSP 隔离硬件，换 MCU 只改板级支撑包；<br>
+- 雷达信号链：选<strong>递归模式</strong>，各级滤波单元同构，可按需增减级数、动态重组。</p>
+<p>*点评<strong>：选型依据是"</strong>变化点在哪**"——硬件变化选分层，结构/规模变化选递归。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为嵌入式系统一定要有操作系统。</strong><br>
+简单设备用前后台轮询更省资源。</p>
+<p><strong>误区二：认为分层越多越好。</strong><br>
+强实时场景层数要精简。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 5 题（3 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="10-1-1" data-type="single" data-explain="两种模式是嵌入式架构的经典提法。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10-1-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">具备实时特征的嵌入式系统，其典型架构可概括为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 分层模式与微服务模式</button><button class="opt" data-k="B"><b>B.</b> 层次化模式与递归模式</button><button class="opt" data-k="C"><b>C.</b> C/S 模式与 B/S 模式</button><button class="opt" data-k="D"><b>D.</b> 事件驱动与管道模式</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-1-2" data-type="single" data-explain="分层换平台只改 BSP。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10-1-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">通过 HAL/BSP 隔离硬件、便于更换平台的架构模式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 递归模式</button><button class="opt" data-k="B"><b>B.</b> 层次化模式</button><button class="opt" data-k="C"><b>C.</b> 黑板模式</button><button class="opt" data-k="D"><b>D.</b> 微内核模式</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-1-3" data-type="single" data-explain="适合信号链、分布式节点。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10-1-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">由可递归组合的同构建件构成、便于动态重构的模式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 层次化模式</button><button class="opt" data-k="B"><b>B.</b> 递归模式</button><button class="opt" data-k="C"><b>C.</b> 分层模式</button><button class="opt" data-k="D"><b>D.</b> 仓库模式</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-1-4" data-type="multi" data-explain="D 错：简单设备可用前后台轮询。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">10-1-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">关于嵌入式软件架构，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 资源受限、实时性、可靠性与硬件耦合是主要约束</button><button class="opt" data-k="B"><b>B.</b> 层次化模式便于移植但层间调用有开销</button><button class="opt" data-k="C"><b>C.</b> 递归模式适合任务结构同构的场景</button><button class="opt" data-k="D"><b>D.</b> 嵌入式系统必须有操作系统</button><button class="opt" data-k="E"><b>E.</b> 强实时系统需要精简层数</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-1-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="层次|递归" data-answer-text="层次化、递归"><div class="qhead"><span class="chip">10-1-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">嵌入式系统两种典型架构模式是________模式架构和________模式架构。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：嵌入式架构受资源与实时约束，层次化求可移植、递归求可重组。</p>
+<p><strong>留一个问题</strong>：这些架构靠什么支撑软件实现？嵌入式的 OS、数据库与中间件有何特殊要求？</p>
+<p>下一节展开。</p>
+<hr>
+<h2 id="sec2">第 2 节 嵌入式支撑软件</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：嵌入式 OS、数据库、中间件与通用产品相比，关键差异在哪？</p>
+</blockquote>
+<h3>一、嵌入式操作系统</h3>
+<p>关键要求：<strong>微型化、可定制、实时性、可靠性、易移植性</strong>（与 K1 第 8 节呼应）。</p>
+<p>架构上常见两种形态：</p>
+<ul>
+<li><strong>宏内核</strong>：功能集中在内核，性能好但内核庞大；</li>
+<li><strong>微内核</strong>：只保留最基本服务（调度、IPC、内存），其他以服务形式运行，可靠性与可裁剪性好，代价是 IPC 开销。</li>
+</ul>
+<p>实时性保障靠：优先级抢占调度、中断延迟最小化、避免优先级反转（优先级继承/天花板）。</p>
+<h3>二、嵌入式数据库</h3>
+<p>特点是<strong>小 footprint、嵌入式运行、与应用程序同进程</strong>。</p>
+<p>常见类型：内存数据库、文件型数据库、键值型嵌入式库。设计要点是<strong>事务精简、索引轻量、掉电安全</strong>（如 WAL 日志）。</p>
+<h3>三、嵌入式中间件</h3>
+<p>作用是屏蔽硬件与 OS 差异，提供统一通信与组件模型。常见形态：通信中间件（如 DDS、CANopen 协议栈）、图形中间件、Java 类运行环境。</p>
+<h3>四、嵌入式软件开发环境</h3>
+<p>交叉编译、仿真调试、目标机加载、实时跟踪（JTAG/ETM）是标配。开发环境的关键能力是<strong>"宿主机—目标机"分离</strong>下的可调试性。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么嵌入式开发强调交叉编译与仿真？直接在目标板上编译调试不行吗？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例（工程判断：内核形态选择）</strong> 某车载控制器要求极高可靠性与可裁剪性，硬件资源尚可；另一款低成本传感器节点资源极紧。请分别选择内核形态。</p>
+<p><em>解答</em>：<br>
+- 车载控制器：选<strong>微内核</strong>，核心服务最小化，驱动与文件系统作为用户态服务，单个服务崩溃不影响内核，便于按车型裁剪；<br>
+- 低成本节点：选<strong>宏内核或 RTOS 精简内核</strong>，去掉不必要的服务，减少 IPC 开销与内存占用。</p>
+<p>*点评<strong>：判断依据是"</strong>可靠性与可裁剪性 vs 资源与开销**"的权衡。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 5 题（3 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="10-2-1" data-type="single" data-explain="微内核可靠但 IPC 有开销。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10-2-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">只保留调度、IPC、内存等最基本服务，其他以服务形式运行的内核是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 宏内核</button><button class="opt" data-k="B"><b>B.</b> 微内核</button><button class="opt" data-k="C"><b>C.</b> 单体内核</button><button class="opt" data-k="D"><b>D.</b> 混合内核</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-2-2" data-type="single" data-explain="嵌入式库求轻与掉电安全。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10-2-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">嵌入式数据库的典型特点是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 大容量、多用户</button><button class="opt" data-k="B"><b>B.</b> 小 footprint、与应用程序同进程运行</button><button class="opt" data-k="C"><b>C.</b> 必须独立部署在服务器</button><button class="opt" data-k="D"><b>D.</b> 不需要事务</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-2-3" data-type="single" data-explain="目标机资源不足，需在宿主机编译调试。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">10-2-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">嵌入式开发中"宿主机—目标机"分离带来的关键需求是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 交叉编译与仿真调试</button><button class="opt" data-k="B"><b>B.</b> 大数据分析</button><button class="opt" data-k="C"><b>C.</b> 容器编排</button><button class="opt" data-k="D"><b>D.</b> 服务网格</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-2-4" data-type="multi" data-explain="E 错：交叉编译是标配。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">10-2-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">关于嵌入式支撑软件，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 嵌入式 OS 要求微型化、可定制、实时、可靠、易移植</button><button class="opt" data-k="B"><b>B.</b> 微内核可靠性好但 IPC 开销较大</button><button class="opt" data-k="C"><b>C.</b> 实时性可用优先级抢占调度与优先级继承保障</button><button class="opt" data-k="D"><b>D.</b> 嵌入式中间件用于屏蔽硬件与 OS 差异</button><button class="opt" data-k="E"><b>E.</b> 嵌入式系统不需要交叉编译</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-2-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="微" data-answer-text="微"><div class="qhead"><span class="chip">10-2-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">嵌入式操作系统按内核形态可分为宏内核与________内核。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：嵌入式 OS 求小而确定，数据库求轻与掉电安全，中间件求屏蔽差异，开发环境求可调试。</p>
+<p><strong>留一个问题</strong>：这类系统怎么"设计"出来？有专门的方法吗？</p>
+<p>下一节讲设计方法。</p>
+<hr>
+<h2 id="sec3">第 3 节 嵌入式架构设计方法</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：ABSD、属性驱动设计、实时系统设计三种方法，各自解决嵌入式设计的什么难题？</p>
+</blockquote>
+<h3>一、ABSD 在嵌入式中的应用</h3>
+<p><strong>ABSD（基于架构的软件设计）</strong> 强调自顶向下、递归细化，用<strong>质量场景</strong>驱动。</p>
+<p>在嵌入式场景的适配点：</p>
+<ul>
+<li>质量场景换成<strong>时序场景</strong>（如"中断响应 ≤ 50μs"）与<strong>资源场景</strong>（如"RAM 占用 ≤ 64KB"）；</li>
+<li>架构复审重点检查<strong>最坏情况执行时间（WCET）</strong> 与资源预算。</li>
+</ul>
+<h3>二、属性驱动的软件设计（ADD）</h3>
+<p><strong>ADD（Attribute-Driven Design）</strong> 的步骤是：<strong>选模块 → 细化 → 选战术 → 验证场景</strong>，循环迭代。</p>
+<p>嵌入式中的战术选择很具体：为满足时序，选"中断优先 + 静态调度"；为满足资源，选"静态内存分配 + 无动态申请"。</p>
+<h3>三、实时系统设计方法</h3>
+<p>核心是<strong>可调度性分析</strong>：</p>
+<ul>
+<li><strong>RMS（速率单调）</strong>：周期越短优先级越高，可用 Liu &amp; Layland 判据（K1 第 8 节）；</li>
+<li><strong>EDF（最早截止优先）</strong>：动态优先级，利用率更高但实现复杂；</li>
+<li><strong>时间触发（TT）</strong>：按时间表调度，确定性最强，适合安全攸关系统。</li>
+</ul>
+<p>设计要点还包括：中断处理尽量短、避免优先级反转、共享资源用优先级天花板协议。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么安全攸关系统偏爱"时间触发"而不是"事件触发"？</p>
+</blockquote>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：实时架构设计）</strong> 某电机控制器有 3 个周期任务：电流环（1ms）、速度环（5ms）、通信（20ms）。要求最坏响应可预测。请给出设计要点。</p>
+<p><em>解答</em>：<br>
+- 采用 <strong>RMS 静态优先级</strong>：周期越短优先级越高（电流环 &gt; 速度环 &gt; 通信）；<br>
+- 用 <strong>Liu &amp; Layland 判据或响应时间分析</strong>验证可调度性；<br>
+- 中断服务程序尽量短，重活放到任务里；<br>
+- 共享数据用<strong>优先级天花板协议</strong>避免优先级反转；<br>
+- 采用<strong>静态内存分配</strong>，避免运行时动态申请导致抖动。</p>
+<p>*点评<strong>：嵌入式实时设计的答题要点是"</strong>优先级策略 + 可调度性验证 + 抖动控制**"。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为实时就是"跑得快"。</strong><br>
+实时是"最坏情况可预测"。</p>
+<p><strong>误区二：认为动态内存分配"更方便"。</strong><br>
+在实时系统中会引入不可预测的延迟。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 5 题（3 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="10-3-1" data-type="single" data-explain="时序与资源是嵌入式的主要约束。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10-3-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">嵌入式场景适配 ABSD 时，质量场景通常换成：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 用户体验场景</button><button class="opt" data-k="B"><b>B.</b> 时序场景与资源场景</button><button class="opt" data-k="C"><b>C.</b> 安全场景</button><button class="opt" data-k="D"><b>D.</b> 成本场景</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-3-2" data-type="single" data-explain="RMS 是静态优先级。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10-3-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">周期越短优先级越高的静态调度算法是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> EDF</button><button class="opt" data-k="B"><b>B.</b> RMS</button><button class="opt" data-k="C"><b>C.</b> FIFO</button><button class="opt" data-k="D"><b>D.</b> 时间片轮转</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-3-3" data-type="single" data-explain="时间触发可预先推演最坏情况。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10-3-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">确定性最强、按时间表调度、适合安全攸关系统的方式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 事件触发</button><button class="opt" data-k="B"><b>B.</b> 时间触发</button><button class="opt" data-k="C"><b>C.</b> 优先级抢占</button><button class="opt" data-k="D"><b>D.</b> 轮询</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-3-4" data-type="multi" data-explain="D 错：动态分配会引入不可预测延迟。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">10-3-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">关于嵌入式架构设计方法，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> ABSD 在嵌入式中的复审重点是 WCET 与资源预算</button><button class="opt" data-k="B"><b>B.</b> ADD 的步骤包括选模块、细化、选战术、验证场景</button><button class="opt" data-k="C"><b>C.</b> RMS 是静态优先级调度，EDF 是动态优先级</button><button class="opt" data-k="D"><b>D.</b> 实时系统应尽量使用动态内存分配</button><button class="opt" data-k="E"><b>E.</b> 优先级反转可用优先级继承或天花板协议缓解</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-3-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="liu/速率单调/rms" data-answer-text="Liu &amp; Layland（速率单调）"><div class="qhead"><span class="chip">10-3-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">实时系统可调度性分析中，可用________判据或响应时间分析验证。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：嵌入式设计用 ABSD 定结构、ADD 选战术、实时调度分析保确定性。</p>
+<p><strong>留一个问题</strong>：单个设备之外，设备之间的通信网络怎么架构？</p>
+<p>下一节讲通信网络。</p>
+<hr>
+<h2 id="sec4">第 4 节 通信网络架构</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：局域网、广域网、移动通信网、存储网络与 SDN，各自解决什么范围的连接问题？</p>
+</blockquote>
+<h3>一、按覆盖范围分的几类网络</h3>
+<table>
+<thead>
+<tr>
+<th>网络</th>
+<th>范围</th>
+<th>关键点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>局域网（LAN）</strong></td>
+<td>建筑/园区</td>
+<td>以太网、交换、VLAN、高带宽低时延</td>
+</tr>
+<tr>
+<td><strong>广域网（WAN）</strong></td>
+<td>城市/国家</td>
+<td>专线、MPLS、SD-WAN、跨域互联</td>
+</tr>
+<tr>
+<td><strong>移动通信网</strong></td>
+<td>广域无线</td>
+<td>蜂窝架构、核心网、5G 切片</td>
+</tr>
+<tr>
+<td><strong>存储网络</strong></td>
+<td>数据中心内</td>
+<td>FC、iSCSI、NVMe-oF，强调吞吐与低时延</td>
+</tr>
+<tr>
+<td><strong>SDN</strong></td>
+<td>控制与转发分离</td>
+<td>集中控制、可编程</td>
+</tr>
+</tbody>
+</table>
+<h3>二、几处必须理解的差别</h3>
+<p><strong>LAN 与 WAN</strong>：LAN 自己可控、带宽充足；WAN 依赖运营商、时延与丢包不可控，因此需要<strong>专线/优化/多链路</strong>。</p>
+<p><strong>存储网络</strong>与业务网络分离，是为了避免业务流量冲击存储 IO，同时便于独立扩展。</p>
+<p><strong>SDN</strong> 的核心是<strong>控制平面与数据平面分离</strong>：控制器集中掌握全局视图，下发流表；交换机只负责转发。它带来<strong>可编程与集中调度</strong>，代价是<strong>控制器成为关键单点</strong>，需要高可用部署。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么数据中心要"三张网"（业务网、存储网、管理网）分开？合并会有什么问题？</p>
+</blockquote>
+<h3>三、例题精解</h3>
+<p><strong>例（工程判断：网络架构设计）</strong> 某企业要把总部与 20 个分支互联，分支通过互联网接入，要求关键业务优先、链路故障自动切换。请给出网络架构要点。</p>
+<p><em>解答</em>：<br>
+- <strong>WAN 层</strong>：采用 <strong>SD-WAN</strong>，多链路（专线 + 宽带 + 4G/5G）智能选路，关键业务走专线，普通流量走互联网；<br>
+- <strong>可靠性</strong>：双链路冗余 + 自动故障切换（BFD 快速检测）；<br>
+- <strong>QoS</strong>：按业务分级标记与队列调度，保证关键业务带宽与优先转发；<br>
+- <strong>安全</strong>：分支到总部加密隧道（IPSec），边界防火墙与准入；<br>
+- <strong>可观测</strong>：链路质量与业务时延监控。</p>
+<p>*点评<strong>：广域网题的答题骨架是"</strong>链路冗余 + 智能选路 + QoS + 加密 + 监控**"。</p>
+<h3>四、常见误区</h3>
+<p><strong>误区一：认为 SDN 只是"换交换机"。</strong><br>
+核心是控制与转发分离、可编程。</p>
+<p><strong>误区二：认为带宽够就不需要 QoS。</strong><br>
+突发与拥塞时，排队策略决定关键业务是否被挤占。</p>
+<h3>五、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="10-4-1" data-type="single" data-explain="存储网络独立可避免 IO 冲击。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10-4-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">数据中心内强调高吞吐与低时延、常与业务网络分离的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 局域网</button><button class="opt" data-k="B"><b>B.</b> 存储网络</button><button class="opt" data-k="C"><b>C.</b> 广域网</button><button class="opt" data-k="D"><b>D.</b> 移动通信网</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-4-2" data-type="single" data-explain="控制器集中掌握全局视图。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10-4-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">SDN 的核心思想是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 增加带宽</button><button class="opt" data-k="B"><b>B.</b> 控制平面与数据平面分离</button><button class="opt" data-k="C"><b>C.</b> 使用无线接入</button><button class="opt" data-k="D"><b>D.</b> 取消路由</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-4-3" data-type="single" data-explain="多链路 + 智能选路。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">10-4-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">分支通过多条链路接入并智能选路的技术是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> SD-WAN</button><button class="opt" data-k="B"><b>B.</b> VLAN</button><button class="opt" data-k="C"><b>C.</b> NAT</button><button class="opt" data-k="D"><b>D.</b> DNS</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-4-4" data-type="single" data-explain="分离是为了隔离故障域与流量。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10-4-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">数据中心把业务网、存储网、管理网分离的主要目的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 减少交换机数量</button><button class="opt" data-k="B"><b>B.</b> 避免流量相互冲击并便于独立扩展</button><button class="opt" data-k="C"><b>C.</b> 降低成本</button><button class="opt" data-k="D"><b>D.</b> 简化布线</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-4-5" data-type="multi" data-explain="E 错：WAN 拥塞时 QoS 决定关键业务是否被挤占。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">10-4-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">关于通信网络架构，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> LAN 带宽充足、时延可控，WAN 依赖运营商、时延不可控</button><button class="opt" data-k="B"><b>B.</b> 存储网络强调吞吐与低时延</button><button class="opt" data-k="C"><b>C.</b> SDN 控制器集中掌握全局视图并下发流表</button><button class="opt" data-k="D"><b>D.</b> SDN 控制器需要高可用部署</button><button class="opt" data-k="E"><b>E.</b> 广域网不需要 QoS</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-4-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="数据|流表/策略" data-answer-text="数据、流表"><div class="qhead"><span class="chip">10-4-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">SDN 将网络分为控制平面与________平面，控制器负责集中下发________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：不同范围用不同网络，SDN 靠控制转发分离实现可编程，数据中心三网分离是常见做法。</p>
+<p><strong>留一个问题</strong>：网络建起来后，怎么保证它不中断、能演进、还安全？</p>
+<p>下一节讲网络构建关键技术。</p>
+<hr>
+<h2 id="sec5">第 5 节 网络构建关键技术</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：网络高可用、IPv6 融合、SDN、安全与绿色，各自的技术手段是什么？</p>
+</blockquote>
+<h3>一、网络高可用设计</h3>
+<p>常用手段：</p>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>手段</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>设备级</td>
+<td>双机热备、堆叠、冗余电源</td>
+</tr>
+<tr>
+<td>链路级</td>
+<td>链路聚合、双上行、环网保护</td>
+</tr>
+<tr>
+<td>协议级</td>
+<td>VRRP、BFD 快速检测、路由收敛优化</td>
+</tr>
+<tr>
+<td>架构级</td>
+<td>双活数据中心、多出口</td>
+</tr>
+</tbody>
+</table>
+<p>关键指标是<strong>收敛时间</strong>：故障发生后多久恢复转发。</p>
+<h3>二、IPv4 与 IPv6 融合组网</h3>
+<p>主要技术路线：</p>
+<ul>
+<li><strong>双栈</strong>：设备同时运行 v4 与 v6，最彻底但改造量大；</li>
+<li><strong>隧道</strong>：v6 over v4（或反向），过渡期常用；</li>
+<li><strong>翻译（NAT64/DNS64）</strong>：实现 v4 与 v6 互通。</li>
+</ul>
+<p>选型依据是<strong>改造范围、终端支持度、过渡时长</strong>。</p>
+<h3>三、SDN 技术要点</h3>
+<ul>
+<li><strong>控制平面</strong>：控制器集群，掌握拓扑与策略；</li>
+<li><strong>数据平面</strong>：支持流表的交换机；</li>
+<li><strong>南向接口</strong>：OpenFlow 等；</li>
+<li><strong>北向接口</strong>：供应用调用网络能力。</li>
+</ul>
+<p>落地价值：<strong>流量工程、按需组网、安全策略统一下发</strong>。</p>
+<h3>四、网络安全与绿色网络</h3>
+<p><strong>网络安全</strong>：边界防护（防火墙/IPS）、访问控制（NAC）、加密传输（IPSec/TLS）、网络隔离（VLAN/微隔离）、审计与监控。</p>
+<p><strong>绿色网络</strong>：设备选型（低功耗）、链路智能休眠、虚拟化整合、机房制冷优化。目标是<strong>单位流量的能耗下降</strong>。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"微隔离"在云环境里比"边界防火墙"更重要？</p>
+</blockquote>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：高可用网络方案）</strong> 某核心业务要求网络故障 1 秒内恢复，现有单链路单设备。请给出改造方案。</p>
+<p><em>解答</em>：<br>
+- <strong>设备冗余</strong>：核心交换机双机（堆叠或 VRRP），接入双上行；<br>
+- <strong>链路冗余</strong>：链路聚合 + 双运营商出口；<br>
+- <strong>检测加速</strong>：用 BFD 做毫秒级故障检测，配合路由快速收敛；<br>
+- <strong>架构冗余</strong>：关键业务跨机房双活；<br>
+- <strong>演练</strong>：定期切换演练验证真实收敛时间（否则纸面指标不可信）。</p>
+<p>*点评<strong>：高可用方案要写"</strong>检测 + 切换 + 演练**"三件事，收敛时间才算得出来。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 6 题（4 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="10-5-1" data-type="single" data-explain="BFD 做快速检测，配合路由收敛。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10-5-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">实现毫秒级链路故障检测的协议是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> VRRP</button><button class="opt" data-k="B"><b>B.</b> BFD</button><button class="opt" data-k="C"><b>C.</b> STP</button><button class="opt" data-k="D"><b>D.</b> NAT</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-5-2" data-type="single" data-explain="双栈最彻底但改造量大。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">10-5-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">设备同时运行 IPv4 与 IPv6 的过渡方式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 双栈</button><button class="opt" data-k="B"><b>B.</b> 隧道</button><button class="opt" data-k="C"><b>C.</b> NAT64</button><button class="opt" data-k="D"><b>D.</b> 代理</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-5-3" data-type="single" data-explain="南向对接设备，北向对接应用。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10-5-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">SDN 中控制器向交换机下发流表所通过的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 北向接口</button><button class="opt" data-k="B"><b>B.</b> 南向接口</button><button class="opt" data-k="C"><b>C.</b> 用户接口</button><button class="opt" data-k="D"><b>D.</b> 管理接口</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-5-4" data-type="single" data-explain="绿色=能效。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10-5-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">绿色网络设计的目标是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 增加带宽</button><button class="opt" data-k="B"><b>B.</b> 降低单位流量能耗</button><button class="opt" data-k="C"><b>C.</b> 减少设备数量</button><button class="opt" data-k="D"><b>D.</b> 提高时延</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-5-5" data-type="multi" data-explain="E 错：不演练就不知道真实收敛时间。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">10-5-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">关于网络构建关键技术，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 高可用可从设备、链路、协议、架构四层设计</button><button class="opt" data-k="B"><b>B.</b> 收敛时间衡量故障后恢复转发的快慢</button><button class="opt" data-k="C"><b>C.</b> IPv6 过渡可用双栈、隧道与翻译</button><button class="opt" data-k="D"><b>D.</b> 微隔离适合云环境的东西向防护</button><button class="opt" data-k="E"><b>E.</b> 只要设备冗余就不需要演练</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-5-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="隧道" data-answer-text="隧道"><div class="qhead"><span class="chip">10-5-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">IPv4 与 IPv6 融合组网的三种主要方式是双栈、________和翻译。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：网络高可用靠多层冗余 + 快速检测，IPv6 过渡有双栈/隧道/翻译，SDN 靠南北向接口开放能力。</p>
+<p><strong>留一个问题</strong>：网络之外，安全架构本身怎么设计？有没有经典模型可依？</p>
+<p>下一节讲安全架构与模型。</p>
+<hr>
+<h2 id="sec6">第 6 节 安全架构与安全模型</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：五种经典安全模型各防什么？WPDRRC 模型由哪几个环节构成？</p>
+</blockquote>
+<h3>一、安全架构的定义与范围</h3>
+<p><strong>安全架构</strong>关注系统在<strong>安全维度</strong>上的整体结构与决策，范围包括：</p>
+<ul>
+<li><strong>安全技术体系</strong>：认证、授权、加密、审计、隔离；</li>
+<li><strong>安全管理体系</strong>：制度、流程、人员；</li>
+<li><strong>安全组织体系</strong>：责任与岗位。</li>
+</ul>
+<p>（与 K2 第 6 节的三支柱一致，安全架构是把这三者落到结构上。）</p>
+<h3>二、五种经典安全模型</h3>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>核心思想</th>
+<th>解决什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>状态机模型</strong></td>
+<td>系统状态与状态转换受安全策略约束</td>
+<td>形式化描述安全行为</td>
+</tr>
+<tr>
+<td><strong>Bell-LaPadula（BLP）</strong></td>
+<td><strong>不上读、不下写</strong></td>
+<td>机密性（防泄密）</td>
+</tr>
+<tr>
+<td><strong>Biba</strong></td>
+<td><strong>不下读、不上写</strong></td>
+<td>完整性（防污染）</td>
+</tr>
+<tr>
+<td><strong>Clark-Wilson</strong></td>
+<td>良构事务 + 职责分离</td>
+<td>商业完整性</td>
+</tr>
+<tr>
+<td><strong>Chinese Wall</strong></td>
+<td>按利益冲突动态限制访问</td>
+<td>咨询/投行等利益冲突场景</td>
+</tr>
+</tbody>
+</table>
+<p><strong>BLP 与 Biba 是镜像关系</strong>：BLP 保机密（低密级不能读高密级），Biba 保完整（高完整级不能读低完整级）。记反是最常见的错误。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"防泄密"和"防污染"需要相反的方向约束？举一个军事与一个商业的例子。</p>
+</blockquote>
+<h3>三、WPDRRC 模型</h3>
+<p><strong>WPDRRC</strong> 是信息安全整体架构的经典模型，六个环节构成闭环：</p>
+<table>
+<thead>
+<tr>
+<th>环节</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>W</strong>arning（预警）</td>
+<td>提前发现威胁与漏洞</td>
+</tr>
+<tr>
+<td><strong>P</strong>rotect（保护）</td>
+<td>防护措施（加密、访问控制、防火墙）</td>
+</tr>
+<tr>
+<td><strong>D</strong>etect（检测）</td>
+<td>入侵检测、审计</td>
+</tr>
+<tr>
+<td><strong>R</strong>espond（响应）</td>
+<td>事件处置</td>
+</tr>
+<tr>
+<td><strong>R</strong>ecovery（恢复）</td>
+<td>恢复业务与数据</td>
+</tr>
+<tr>
+<td><strong>C</strong>ounterattack（反击）</td>
+<td>溯源与反制（法律/技术手段）</td>
+</tr>
+</tbody>
+</table>
+<p>记忆：<strong>预警—保护—检测—响应—恢复—反击</strong>，前两个"防患"，中间三个"应对"，最后一个"追责"。</p>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：安全架构设计）</strong> 某政务系统要建安全架构，请用 WPDRRC 给出六个环节的具体措施。</p>
+<p><em>解答</em>：<br>
+- <strong>预警</strong>：资产梳理、漏洞扫描、威胁情报；<br>
+- <strong>保护</strong>：身份认证与最小权限、传输与存储加密、网络分区与微隔离、堡垒机；<br>
+- <strong>检测</strong>：IDS/IPS、日志审计、异常行为分析；<br>
+- <strong>响应</strong>：应急预案、值班与告警分级、自动化处置脚本；<br>
+- <strong>恢复</strong>：备份与恢复演练、容灾切换；<br>
+- <strong>反击</strong>：取证与溯源、依法追责。</p>
+<p>*点评<strong>：WPDRRC 的价值是</strong>闭环**——只做"保护"不做"检测/响应/恢复"，等于只有盾没有眼和手。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：把 BLP 与 Biba 记反。</strong><br>
+BLP 防泄密（机密性），Biba 防污染（完整性）。</p>
+<p><strong>误区二：认为安全架构就是"堆安全设备"。</strong><br>
+它是技术、管理、组织的结构安排。</p>
+<p><strong>误区三：认为"反击"是攻击回去。</strong><br>
+它指溯源取证与依法处置。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="10-6-1" data-type="single" data-explain="BLP 保机密性。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10-6-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">"不上读、不下写"是哪个模型的核心规则？</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> Biba</button><button class="opt" data-k="B"><b>B.</b> Bell-LaPadula</button><button class="opt" data-k="C"><b>C.</b> Clark-Wilson</button><button class="opt" data-k="D"><b>D.</b> Chinese Wall</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-6-2" data-type="single" data-explain="Biba 与 BLP 是镜像关系。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10-6-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">关注完整性、规则为"不下读、不上写"的模型是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> BLP</button><button class="opt" data-k="B"><b>B.</b> Biba</button><button class="opt" data-k="C"><b>C.</b> 状态机模型</button><button class="opt" data-k="D"><b>D.</b> WPDRRC</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-6-3" data-type="single" data-explain="投行、咨询常用。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10-6-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">按利益冲突动态限制访问的模型是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> Clark-Wilson</button><button class="opt" data-k="B"><b>B.</b> Chinese Wall</button><button class="opt" data-k="C"><b>C.</b> Biba</button><button class="opt" data-k="D"><b>D.</b> BLP</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-6-4" data-type="single" data-explain="顺序：预警-保护-检测-响应-恢复-反击。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10-6-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">WPDRRC 模型中，位于"检测"之后的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 保护</button><button class="opt" data-k="B"><b>B.</b> 响应</button><button class="opt" data-k="C"><b>C.</b> 恢复</button><button class="opt" data-k="D"><b>D.</b> 反击</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-6-5" data-type="multi" data-explain="E 错：反击指溯源取证与依法处置。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">10-6-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">关于安全架构与模型，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 安全架构包括技术体系、管理体系与组织体系</button><button class="opt" data-k="B"><b>B.</b> BLP 保护机密性，Biba 保护完整性</button><button class="opt" data-k="C"><b>C.</b> Clark-Wilson 强调良构事务与职责分离</button><button class="opt" data-k="D"><b>D.</b> WPDRRC 包含预警、保护、检测、响应、恢复、反击</button><button class="opt" data-k="E"><b>E.</b> WPDRRC 的反击指对攻击者发起网络攻击</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10-6-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="不下写/不下泄" data-answer-text="不下写"><div class="qhead"><span class="chip">10-6-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">Bell-LaPadula 模型的两个核心规则是不上读、________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="10-6-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="检测|恢复" data-answer-text="检测、恢复"><div class="qhead"><span class="chip">10-6-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">WPDRRC 六个环节为预警、保护、________、响应、________和反击。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：五种安全模型各有专攻（BLP 保密、Biba 完整、Clark-Wilson 商业完整、Chinese Wall 利益冲突、状态机形式化），WPDRRC 提供六环节闭环。</p>
+<h2 id="sec7">本章总复习</h2>
+<h3>一、这一章的主线</h3>
+<p>这一章回答的是"资源受限与安全受攻这两种极端场景下，架构怎么取舍"。六节分三块：嵌入式（两种典型模式、支撑软件、实时设计方法）、通信网络（按范围分类的网络、构建关键技术）、安全（五种经典模型与 WPDRRC 整体架构）。</p>
+<h3>二、必须能说出的判断</h3>
+<ul>
+<li><strong>层次化求可移植、递归求可重组</strong>，选型看"变化点在哪"；</li>
+<li><strong>实时不是"跑得快"，是最坏情况可预测</strong>——RMS 静态、EDF 动态、时间触发确定性最强；</li>
+<li><strong>SDN 的核心是控制与转发分离</strong>，控制器是高可用关键点；</li>
+<li><strong>BLP 防泄密（不上读不下写）、Biba 防污染（不下读不上写）</strong>，两者是镜像关系，记反是常见失分；</li>
+<li><strong>WPDRRC 是闭环</strong>：只做保护不做检测/响应/恢复，等于有盾没眼没手。</li>
+</ul>
+<h3>三、跨节综合自测（8 题）</h3>
+<div class="quiz" data-id="10综-1" data-type="single" data-explain="变化点在硬件，用分层隔离。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10综-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">要在多种 MCU 上移植、未来可能更换硬件平台，应选择：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 递归模式</button><button class="opt" data-k="B"><b>B.</b> 层次化模式（HAL/BSP 隔离）</button><button class="opt" data-k="C"><b>C.</b> 黑板模式</button><button class="opt" data-k="D"><b>D.</b> 事件驱动模式</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10综-2" data-type="single" data-explain="RMS 是静态优先级；EDF 是动态。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10综-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">周期越短优先级越高的静态调度算法是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> EDF</button><button class="opt" data-k="B"><b>B.</b> RMS</button><button class="opt" data-k="C"><b>C.</b> FIFO</button><button class="opt" data-k="D"><b>D.</b> 时间片轮转</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10综-3" data-type="multi" data-explain="E 错：两者是镜像关系。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">10综-3</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">关于经典安全模型，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> BLP 的核心是「不上读、不下写」</button><button class="opt" data-k="B"><b>B.</b> Biba 的核心是「不下读、不上写」</button><button class="opt" data-k="C"><b>C.</b> Clark-Wilson 强调良构事务与职责分离</button><button class="opt" data-k="D"><b>D.</b> Chinese Wall 按利益冲突动态限制访问</button><button class="opt" data-k="E"><b>E.</b> BLP 与 Biba 的规则方向相同</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10综-4" data-type="single" data-explain="顺序：预警-保护-检测-响应-恢复-反击。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">10综-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">WPDRRC 模型中，位于「检测」与「恢复」之间的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 预警</button><button class="opt" data-k="B"><b>B.</b> 保护</button><button class="opt" data-k="C"><b>C.</b> 响应</button><button class="opt" data-k="D"><b>D.</b> 反击</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10综-5" data-type="single" data-explain="控制器集中下发流表。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10综-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">SDN 的核心思想是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 增加带宽</button><button class="opt" data-k="B"><b>B.</b> 控制平面与数据平面分离</button><button class="opt" data-k="C"><b>C.</b> 取消路由</button><button class="opt" data-k="D"><b>D.</b> 全部无线化</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10综-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="不上|机密" data-answer-text="不上、机密"><div class="qhead"><span class="chip">10综-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">Bell-LaPadula 的两条规则是________读、不下写；其目的是保证________性。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="10综-7" data-type="single" data-explain="微内核可靠可裁剪，但 IPC 有开销。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">10综-7</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">嵌入式系统中，只保留调度、IPC 与内存管理，其他以服务形式运行的内核是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 宏内核</button><button class="opt" data-k="B"><b>B.</b> 微内核</button><button class="opt" data-k="C"><b>C.</b> 单体内核</button><button class="opt" data-k="D"><b>D.</b> 混合内核</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="10综-8" data-type="multi" data-explain="E 错：带宽与可用性不是一回事。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">10综-8</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">网络高可用设计可从哪些层次入手：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 设备级（双机、冗余电源）</button><button class="opt" data-k="B"><b>B.</b> 链路级（聚合、双上行）</button><button class="opt" data-k="C"><b>C.</b> 协议级（VRRP、BFD）</button><button class="opt" data-k="D"><b>D.</b> 架构级（双活、多出口）</button><button class="opt" data-k="E"><b>E.</b> 只靠增加带宽</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<h3>四、与论文、案例的接口</h3>
+<p>案例题考嵌入式方案或安全体系设计；论文里"安全架构""工业互联网"的素材来自这里。</p>
+<h3>五、下一步</h3>
+<p><strong>本章结束</strong>。下一步进入 K11（大数据与未来技术）。</p>
+<hr>
+<div class="legend" style="margin-top:44px">标注说明：<b>软考口径</b>＝按官方用书表述给分；<b>拓展</b>＝考纲未展开的补充知识。详见 <a href="k00.html">K0 前言</a>。作答记录保存在本机浏览器。</div>
+<div class="toast" id="toast"></div>
+</div>
+<script>
+const KEY="book_K10嵌入式通信与安全架构";
+let state=JSON.parse(localStorage.getItem(KEY)||"{}");
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function norm(s){return (s||"").toLowerCase().replace(/[\s，,、;；。.()（）]/g,"");}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1400);}
+function stats(){const qs=$$(".quiz");let done=0,ok=0;
+ qs.forEach(q=>{const st=state[q.dataset.id];if(st&&st.done){done++;if(st.ok)ok++;}});
+ return {done,total:qs.length,ok};}
+function paint(){const s=stats();const p=s.total?s.done/s.total*100:0;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";}
+function fillKeywords(q){return q.dataset.answer.split("|").map(g=>g.split("/"));}
+function fbHTML(q,ok,userText){
+ const diag=q.dataset.diag||"";const warm=diag.includes("补充")?"#a2540f":"#b42318";
+ const ans=q.dataset.answerText||q.dataset.answer;
+ return '<div class="res">'+(ok?"✔ 回答正确":"✘ 回答错误")+'</div>'
+  +'<div><b>正确答案：</b>'+ans+(userText?'　<span style="color:#6b7280">你的作答：'+userText+'</span>':'')+'</div>'
+  +'<details open><summary>展开解析</summary><div class="inner">'
+  +'<div>'+q.dataset.explain+'</div>'
+  +'<div class="row tags">来源：'+q.dataset.source+'　｜　诊断标签：<b style="color:'+warm+'">'+diag+'</b></div>'
+  +'</div></details>';
+}
+function judge(q,ok,userText){
+ const fb=$(".fb",q);fb.className="fb show "+(ok?"ok":"bad");
+ fb.innerHTML=fbHTML(q,ok,userText);
+ state[q.dataset.id]={done:true,ok:ok};save();paint();
+}
+$$(".quiz").forEach(q=>{
+ const type=q.dataset.type;const ans=q.dataset.answer;
+ const opts=$$(".opt",q);const fb=$(".fb",q);
+ const saved=state[q.dataset.id];
+ if(type==="single"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     opts.forEach(x=>x.disabled=true);
+     const ok=(o.dataset.k===ans);
+     o.classList.add(ok?"right":"wrong");
+     if(!ok){const c=opts.find(x=>x.dataset.k===ans);if(c)c.classList.add("right");}
+     judge(q,ok,o.dataset.k);
+   }));
+ }else if(type==="multi"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     if(o.disabled)return;
+     o.classList.toggle("sel");
+   }));
+   const btn=$(".check",q);
+   if(btn)btn.addEventListener("click",()=>{
+     const picked=opts.filter(o=>o.classList.contains("sel")).map(o=>o.dataset.k).sort().join("");
+     if(!picked){toast("先选择至少一个选项");return;}
+     opts.forEach(o=>{
+       o.disabled=true;o.classList.remove("sel");
+       const k=o.dataset.k;
+       if(ans.includes(k))o.classList.add("right");
+       else if(picked.includes(k))o.classList.add("wrong");
+     });
+     judge(q,picked===ans,picked);
+   });
+ }else{
+   const inp=$(".fillinput",q);const btn=$(".check",q);
+   const go=()=>{
+     const raw=inp.value;const v=norm(raw);
+     if(!v){toast("先填写答案");return;}
+     let ok=false;
+     if(q.dataset.numeric){
+       const m=raw.match(/-?\d+(?:\.\d+)?/);
+       const cands=q.dataset.numeric.split("|");
+       ok=!!m&&cands.some(x=>Math.abs(parseFloat(m[0])-parseFloat(x))<0.011);
+     }else{
+       ok=fillKeywords(q).every(g=>g.some(k=>v.includes(norm(k))));
+     }
+     inp.disabled=true;inp.style.borderColor=ok?"#7cc49b":"#e79a94";
+     if(btn)btn.disabled=true;
+     judge(q,ok,raw.trim());
+   };
+   if(btn)btn.addEventListener("click",go);
+   if(inp)inp.addEventListener("keydown",e=>{if(e.key==="Enter")go();});
+ }
+ if(saved&&saved.done){/* 恢复历史状态：仅标记，不覆盖作答 */}
+});
+window.addEventListener("scroll",()=>{
+ const h=document.documentElement;
+ const p=h.scrollTop/(h.scrollHeight-h.clientHeight||1)*100;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";
+});
+paint();
+</script>
+<div class="book-foot-nav"><div class="bf-box"><a href="k09.html">&larr; 上一章 K9 云原生与 SOA</a><a class="bf-next" href="k11.html">下一章 K11 大数据与未来技术 &rarr;</a></div><p class="bf-note">作答记录保存在本机浏览器，换设备或清除缓存不会保留。本章支持浏览器直接打印为 PDF。</p></div><script>
+(function(){
+  var el=document.getElementById("book-nav-progress");
+  function refresh(){
+    try{
+      var st=JSON.parse(localStorage.getItem("book_K10嵌入式通信与安全架构")||"{}"),done=0;
+      Object.keys(st).forEach(function(k){if(st[k]&&st[k].done)done++;});
+      if(el)el.textContent=done+" / 42 题";
+    }catch(e){}
+  }
+  refresh();setInterval(refresh,1000);
+})();
+</script></body></html>

@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K4 数据库设计</title>
+<style>
+:root{--bg:#fbfaf7;--card:#fff;--ink:#1f2328;--sub:#6b7280;--line:#e6e3dd;--accent:#1f4e79;--ok:#0f7b4f;--bad:#b42318;--chip:#eef3f8;--warm:#fdf6ec}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:17px/1.9 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",serif}
+#bar{position:fixed;top:0;left:0;height:3px;background:var(--accent);width:0;z-index:99}
+.wrap{max-width:760px;margin:0 auto;padding:56px 20px 100px}
+h1{font-size:27px;line-height:1.4;letter-spacing:.5px;margin:0 0 10px}
+h2{font-size:21px;margin:52px 0 14px;padding-top:14px;border-top:2px solid var(--line);letter-spacing:.5px}
+h2:first-of-type{border-top:none}
+h3{font-size:17.5px;margin:30px 0 10px;color:#2b3a4a}
+h5{font-size:15px;margin:26px 0 8px;color:var(--sub);font-weight:600}
+p{margin:10px 0}
+blockquote{margin:16px 0;padding:12px 16px;background:var(--warm);border-left:3px solid #e0b984;border-radius:0 8px 8px 0;font-size:16px}
+blockquote p{margin:4px 0}
+strong{color:#12324f}
+hr{border:none;border-top:1px dashed var(--line);margin:26px 0}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px;background:#fff}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f3f1ec;font-weight:600}
+code{background:#f3f1ec;padding:1px 5px;border-radius:4px;font-size:14px}
+pre{background:#f7f5f1;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto}
+ul,ol{margin:10px 0;padding-left:22px}
+li{margin:4px 0}
+.math{font-family:"Cambria Math",Cambria,Georgia,"Times New Roman",serif;font-size:1.03em}
+.mathblock{display:block;text-align:center;margin:16px 0;overflow-x:auto;padding:2px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:-0.55em;text-align:center;margin:0 .3em}
+.frac .n{border-bottom:1px solid currentColor;padding:0 .3em;line-height:1.3}
+.frac .d{padding:0 .3em;line-height:1.4}
+sub,sup{font-size:.72em;line-height:0}
+.toast{position:fixed;right:18px;bottom:18px;background:#1f2937;color:#fff;padding:9px 14px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+
+/* 题卡 */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:18px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.qhead{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.chip{background:var(--chip);color:#33475b;border-radius:999px;padding:1px 9px;font-size:12px}
+.chip.t{background:#eaf4ec;color:#0f7b4f}
+.chip.k{background:#f4f0fa;color:#5b3f8f;font-size:11.5px}
+a.back{margin-left:auto;font-size:12px;color:var(--sub);text-decoration:none;border-bottom:1px dashed #c9c4ba}
+a.back:hover{color:var(--accent);border-color:var(--accent)}
+.qstem{font-weight:600;margin:4px 0 12px;font-size:16px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:15.5px;line-height:1.7;
+ background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 13px;cursor:pointer;transition:.15s}
+.opt:hover{border-color:#b9c6d6;background:#f8fafc}
+.opt b{color:var(--accent);margin-right:2px}
+.opt.sel{border-color:var(--accent);background:#eef4fa}
+.opt.right{border-color:#7cc49b;background:#effaf3}
+.opt.wrong{border-color:#e79a94;background:#fdf1f0}
+.opt:disabled{cursor:default}
+.fillrow{display:flex;gap:10px;margin-top:12px;align-items:center}
+.fillinput{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:15.5px;background:#fff}
+.btn{font:inherit;font-size:14px;padding:7px 16px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer}
+.btn.check{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fb{display:none;margin-top:14px;font-size:15px;line-height:1.8}
+.fb.show{display:block}
+.fb .res{font-weight:700;margin-bottom:6px;font-size:15.5px}
+.fb.ok .res{color:var(--ok)}
+.fb.bad .res{color:var(--bad)}
+.fb details{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:#fcfbf9;padding:0 12px}
+.fb summary{cursor:pointer;padding:9px 0;font-weight:600;color:var(--accent);outline:none}
+.fb .inner{padding:2px 0 12px;border-top:1px dashed var(--line)}
+.fb .row{color:var(--sub);font-size:13px;margin-top:8px}
+.fb .tags b{color:#a2540f}
+.legend{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:20px 0;font-size:14.5px}
+.legend b{color:var(--accent)}
+@media print{
+ #bar,.toast{display:none}
+ .quiz{break-inside:avoid}
+ body{background:#fff;font-size:12pt}
+}
+@media (max-width:600px){
+ body{font-size:16px;line-height:1.85}
+ .wrap{padding:40px 14px 80px}
+ h1{font-size:23px}
+ table{font-size:13px}
+}
+</style>
+<style id="book-nav-css">
+#book-nav{position:sticky;top:0;z-index:100;background:rgba(251,250,247,.96);backdrop-filter:blur(8px);border-bottom:1px solid #e6e3dd;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+#bar{z-index:101!important}
+#book-nav .bn-in{max-width:1060px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+#book-nav a{color:#1f4e79;text-decoration:none;white-space:nowrap}
+#book-nav a:hover{text-decoration:underline}
+#book-nav .bn-home{font-weight:700}
+#book-nav .bn-cur{color:#1f2328;font-weight:600;flex:1;min-width:180px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#book-nav .bn-step{background:#fff;border:1px solid #e6e3dd;border-radius:999px;padding:3px 11px;font-size:13px}
+#book-nav .bn-step.disabled{opacity:.38;pointer-events:none}
+#book-nav .bn-prog{color:#6b7280;font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.book-foot-nav{max-width:760px;margin:0 auto;padding:0 20px 80px;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.book-foot-nav .bf-box{border-top:2px solid #e6e3dd;padding-top:22px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}
+.book-foot-nav a{color:#1f4e79;text-decoration:none}
+.book-foot-nav a:hover{text-decoration:underline}
+.book-foot-nav .bf-next{background:#1f4e79;color:#fff!important;border-radius:10px;padding:9px 18px;font-weight:600}
+.book-foot-nav .bf-next:hover{text-decoration:none;background:#163c5e}
+.book-foot-nav .bf-note{color:#6b7280;font-size:13px;margin-top:14px}
+@media(max-width:600px){#book-nav .bn-cur{order:3;flex-basis:100%;text-align:left}#book-nav .bn-prog{display:none}}
+@media print{#book-nav,.book-foot-nav{display:none}#bar{z-index:0!important}}
+</style>
+</head><body><nav id="book-nav"><div class="bn-in"><a class="bn-home" href="index.html">&larr; 全书目录</a><a class="bn-step" href="k03.html" title="软件工程与可靠性">&larr; K3</a><span class="bn-cur">K4 · 数据库设计</span><a class="bn-step" href="k05.html" title="架构基础与架构风格">K5 &rarr;</a><span class="bn-prog" id="book-nav-progress">0 / 70 题</span></div></nav>
+<div id="bar"></div>
+<div class="wrap">
+<h1>K4 数据库设计</h1>
+<blockquote>
+<p><strong>本章内容</strong>：数据库与数据模型 · 三级模式 · 关系模型与关系运算 · 规范化理论 · 数据库设计过程 · 应用与数据库交互 · NoSQL<br>
+<strong>考纲位置</strong>：上午题稳定出题（关系运算、范式、E-R 转换），案例题常与架构设计结合</p>
+</blockquote>
+<p>本章围绕"<strong>数据怎么组织才不多、不重、不乱</strong>"这一主题展开，共 9 节：</p>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+<th>回答的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>数据库与数据模型</td>
+<td>数据库解决什么问题、模型由什么构成</td>
+</tr>
+<tr>
+<td>2</td>
+<td>三级模式与数据独立性</td>
+<td>为什么要分三层看数据</td>
+</tr>
+<tr>
+<td>3</td>
+<td>关系模型与关系运算</td>
+<td>表怎么表达、关系代数怎么算</td>
+</tr>
+<tr>
+<td>4</td>
+<td>规范化理论</td>
+<td>什么样的表结构算"好"</td>
+</tr>
+<tr>
+<td>5</td>
+<td>数据库设计过程</td>
+<td>从需求到建库要走几步</td>
+</tr>
+<tr>
+<td>6</td>
+<td>应用与数据库交互</td>
+<td>程序怎么访问数据库</td>
+</tr>
+<tr>
+<td>7</td>
+<td>NoSQL</td>
+<td>关系库不够用时用什么</td>
+</tr>
+<tr>
+<td>8</td>
+<td>向量数据库</td>
+<td>怎么按“意思”检索</td>
+</tr>
+<tr>
+<td>9</td>
+<td>多模数据库</td>
+<td>一个库能装几种模型</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="sec1">第 1 节 数据库与数据模型</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：用文件存数据也能用，为什么要数据库？"数据模型"到底由哪几部分组成？</p>
+</blockquote>
+<h3>一、三份数据对不上的账</h3>
+<p>某公司的客户信息：销售系统存一份 Excel，客服系统存一份，财务系统又存一份。同一个客户三个地址、两个电话，对账时要人工核。</p>
+<p>问题的根源不是"没有数据库"，而是<strong>数据没有统一管理</strong>。数据库要解决的核心问题就三条：<strong>减少冗余、保证一致、支持共享</strong>。</p>
+<h3>二、数据库的发展阶段</h3>
+<p>按数据管理方式划分：<strong>人工管理 → 文件系统 → 数据库系统</strong>（后续发展出分布式数据库、NoSQL）。</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>特点</th>
+<th>主要问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>人工管理</td>
+<td>数据不保存、无结构</td>
+<td>无法共享</td>
+</tr>
+<tr>
+<td>文件系统</td>
+<td>以文件为单位，程序与数据有一定分离</td>
+<td>冗余大、独立性差、难以统一控制</td>
+</tr>
+<tr>
+<td>数据库系统</td>
+<td>结构化组织、统一管理、数据共享</td>
+<td>需要 DBMS 与专门设计</td>
+</tr>
+</tbody>
+</table>
+<h3>三、数据模型的三要素</h3>
+<p>数据模型不是"画个 E-R 图"，它由三部分组成：</p>
+<ol>
+<li><strong>数据结构</strong>：描述数据的组织方式（表、树、图）；</li>
+<li><strong>数据操作</strong>：对数据允许做什么（增删改查、连接、投影）；</li>
+<li><strong>完整性约束</strong>：数据必须满足的规则（主键唯一、外键有效、取值范围）。</li>
+</ol>
+<p>按抽象层次分三类模型：</p>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>模型</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>概念层</td>
+<td><strong>E-R 模型</strong></td>
+<td>面向用户，表达业务实体与联系</td>
+</tr>
+<tr>
+<td>逻辑层</td>
+<td>关系模型、层次模型、网状模型、面向对象模型</td>
+<td>面向实现，DBMS 支持</td>
+</tr>
+<tr>
+<td>物理层</td>
+<td>存储结构、索引、分区</td>
+<td>面向存储</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么概念模型（E-R）不直接等于关系模型？如果跳过 E-R 直接设计表，会有什么风险？</p>
+</blockquote>
+<h3>四、DBMS 的职责</h3>
+<p>数据库管理系统（DBMS）是位于用户与操作系统之间的一层数据管理软件，主要功能：</p>
+<ul>
+<li><strong>数据定义（DDL）</strong>：建表、建索引、定义约束；</li>
+<li><strong>数据操纵（DML）</strong>：查询与更新；</li>
+<li><strong>数据控制（DCL）</strong>：权限、事务、并发控制；</li>
+<li><strong>运行管理</strong>：存储管理、缓冲区、日志与恢复；</li>
+<li><strong>维护</strong>：备份、恢复、性能监控。</li>
+</ul>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：从文件到数据库）</strong> 某单位的设备台账用 Excel 管理，出现三个问题：同一设备在三个部门各有一条记录；设备编号被手工修改导致关联的维修记录失效；报表需要人工汇总。请说明迁到数据库后分别由什么机制解决。</p>
+<p><em>解答</em>：<br>
+- 重复记录 → <strong>统一的数据结构与主键约束</strong>（设备编号唯一），从结构上消除冗余；<br>
+- 编号被随意修改 → <strong>完整性约束 + 权限控制</strong>（编号作主键，禁止更新；或采用代理键）；<br>
+- 人工汇总 → <strong>数据操作能力</strong>（视图、聚合查询），报表由查询直接产出；<br>
+- 整体上还需要 <strong>DBMS 的并发控制与恢复机制</strong>，保证多人同时操作不冲突、故障后可恢复。</p>
+<p><em>点评</em>：这题的关键是把"问题现象"映射到"数据模型三要素 + DBMS 职责"，而不是笼统说"数据库更好"。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为数据库只是"存数据的地方"。</strong><br>
+它的价值在<strong>统一的模型与约束</strong>，而不只是存储。</p>
+<p><strong>误区二：把数据模型理解为"表结构"。</strong><br>
+完整的数据模型包含结构、操作与约束三部分。</p>
+<p><strong>误区三：跳过概念模型直接建表。</strong><br>
+缺少 E-R 阶段，业务语义容易在表结构里丢失，后期改动代价大。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="4-1-1" data-type="single" data-explain="三要素缺一不可。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-1-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">数据模型的三要素是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 表、视图、索引</button><button class="opt" data-k="B"><b>B.</b> 数据结构、数据操作、完整性约束</button><button class="opt" data-k="C"><b>C.</b> 需求、设计、实现</button><button class="opt" data-k="D"><b>D.</b> 实体、属性、联系</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-1-2" data-type="single" data-explain="E-R 属概念层。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-1-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">面向用户、用于表达业务实体与联系的概念层模型是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 关系模型</button><button class="opt" data-k="B"><b>B.</b> E-R 模型</button><button class="opt" data-k="C"><b>C.</b> 网状模型</button><button class="opt" data-k="D"><b>D.</b> 物理模型</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-1-3" data-type="single" data-explain="数据库更依赖设计，而非不需要设计。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">4-1-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">数据库系统相比文件系统的主要优势不包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 减少数据冗余</button><button class="opt" data-k="B"><b>B.</b> 提供统一的数据控制与共享</button><button class="opt" data-k="C"><b>C.</b> 完全不需要设计</button><button class="opt" data-k="D"><b>D.</b> 较好的数据独立性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-1-4" data-type="single" data-explain="DBMS 提供 DDL/DML/DCL。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-1-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">负责数据定义、操纵与控制的软件是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 操作系统</button><button class="opt" data-k="B"><b>B.</b> 数据库管理系统</button><button class="opt" data-k="C"><b>C.</b> 编译器</button><button class="opt" data-k="D"><b>D.</b> 中间件</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-1-5" data-type="multi" data-explain="E 错：核心是统一管理与共享。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">4-1-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">关于数据库与数据模型，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 数据模型包含数据结构、数据操作与完整性约束</button><button class="opt" data-k="B"><b>B.</b> E-R 模型属于概念层模型</button><button class="opt" data-k="C"><b>C.</b> 关系模型、层次模型、网状模型属于逻辑层模型</button><button class="opt" data-k="D"><b>D.</b> 完整性约束包括主键唯一、外键有效等规则</button><button class="opt" data-k="E"><b>E.</b> 数据库的唯一目的是节省存储空间</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-1-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="逻辑|物理" data-answer-text="逻辑、物理"><div class="qhead"><span class="chip">4-1-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">数据模型按抽象层次可分为概念模型、________模型和________模型。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="4-1-7" data-type="fill" data-explain="DCL 负责权限与事务控制。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="dcl/数据控制" data-answer-text="DCL"><div class="qhead"><span class="chip">4-1-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec1">↑ 回到本节开头</a></div><div class="qstem">数据库管理系统提供 DDL、DML 与________三类语言接口，分别用于定义、操纵与控制。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：数据库解决冗余、一致与共享；数据模型由结构、操作、约束三要素构成，分概念、逻辑、物理三层。</p>
+<p><strong>留一个问题</strong>：同一个数据库，DBA 看到的是存储文件，程序员看到的是表，用户看到的是报表——这三者怎么统一？</p>
+<p>下一节讲三级模式。</p>
+<hr>
+<h2 id="sec2">第 2 节 三级模式与数据独立性</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：为什么要从三个角度看同一个数据库？"数据独立性"到底独立了什么？</p>
+</blockquote>
+<h3>一、一个改表引发的连锁故障</h3>
+<p>DBA 为了优化性能，把某张表拆成两张并加了索引。结果：十几个应用报错，因为它们直接读的是物理文件。</p>
+<p>问题的本质是<strong>应用与物理存储耦合太紧</strong>。三级模式结构就是为了切断这种耦合。</p>
+<h3>二、三级模式</h3>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>别称</th>
+<th>描述什么</th>
+<th>视角</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>外模式</strong></td>
+<td>子模式、用户模式</td>
+<td>用户能看到的数据视图</td>
+<td>用户/应用</td>
+</tr>
+<tr>
+<td><strong>概念模式</strong></td>
+<td>逻辑模式</td>
+<td>全体数据的逻辑结构</td>
+<td>DBA</td>
+</tr>
+<tr>
+<td><strong>内模式</strong></td>
+<td>存储模式</td>
+<td>数据的物理存储方式</td>
+<td>系统</td>
+</tr>
+</tbody>
+</table>
+<p>关系：<strong>一个数据库只有一个概念模式和一个内模式，但可以有多个外模式</strong>（不同用户/应用看到不同视图）。</p>
+<h3>三、两级映像与数据独立性</h3>
+<p><strong>外模式/概念模式映像</strong>：当概念模式改变（如加字段、拆表）时，只需调整映像，外模式可保持不变 → <strong>逻辑独立性</strong>。</p>
+<p><strong>概念模式/内模式映像</strong>：当存储结构改变（如换存储引擎、加索引、调整分区）时，只需调整映像，概念模式保持不变 → <strong>物理独立性</strong>。</p>
+<p>一句话记：<strong>外模式挡逻辑变化，内模式挡物理变化</strong>。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：DBA 把一个大表按年份分区存储，应用程序完全无感。这靠的是哪一级映像、哪种独立性？</p>
+</blockquote>
+<h3>四、为什么这很重要</h3>
+<p>数据独立性带来两个直接好处：</p>
+<ol>
+<li><strong>应用与存储解耦</strong>：换存储、调索引不必改代码；</li>
+<li><strong>按需授权</strong>：不同用户只看自己的外模式，天然实现"最小可见"。</li>
+</ol>
+<p>这也是视图（View）存在的理论基础——视图就是外模式的一种实现形式。</p>
+<h3>五、例题精解</h3>
+<p><strong>例（工程项目：升级中的独立性）</strong> 某系统要把底层存储从单机 MySQL 换成分布式数据库，同时业务方要求"某新角色只能看客户的部分字段"。请说明这两件事分别依赖三级模式的哪个部分。</p>
+<p><em>解答</em>：<br>
+- 换存储 → 依赖<strong>概念模式/内模式映像</strong>与<strong>物理独立性</strong>：应用的 SQL 与逻辑结构不变，只调整存储实现与映像；<br>
+- 部分字段可见 → 依赖<strong>外模式</strong>（视图）与<strong>外模式/概念模式映像</strong>：为新角色建一个只含允许字段的视图，并授权该视图；<br>
+- 若换存储同时改变了表结构，还需检查外模式映像，避免破坏逻辑独立性。</p>
+<p><em>点评</em>：案例题里"如何在不改应用的前提下换库""如何做字段级权限"，答案都落在两级映像上。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为概念模式就是"表结构"。</strong><br>
+概念模式是全体数据的逻辑结构，包含完整性约束与安全要求，比"表"更抽象。</p>
+<p><strong>误区二：把外模式当成"表的副本"。</strong><br>
+外模式是<strong>视图</strong>，通常不存储数据，只描述可见范围。</p>
+<p><strong>误区三：混淆逻辑独立性与物理独立性。</strong><br>
+逻辑独立性对应"概念模式变化不影响外模式"，物理独立性对应"内模式变化不影响概念模式"。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="4-2-1" data-type="single" data-explain="概念模式=逻辑模式。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-2-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">描述全体数据逻辑结构的模式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 外模式</button><button class="opt" data-k="B"><b>B.</b> 概念模式</button><button class="opt" data-k="C"><b>C.</b> 内模式</button><button class="opt" data-k="D"><b>D.</b> 存储模式</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-2-2" data-type="single" data-explain="内模式变化靠第二级映像吸收。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-2-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">当存储结构改变时，保持概念模式不变的机制是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 外模式/概念模式映像</button><button class="opt" data-k="B"><b>B.</b> 概念模式/内模式映像</button><button class="opt" data-k="C"><b>C.</b> 视图</button><button class="opt" data-k="D"><b>D.</b> 索引</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-2-3" data-type="single" data-explain="一库一个概念模式、一个内模式，多个外模式。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">4-2-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">一个数据库中，可以有多个的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 概念模式</button><button class="opt" data-k="B"><b>B.</b> 内模式</button><button class="opt" data-k="C"><b>C.</b> 外模式</button><button class="opt" data-k="D"><b>D.</b> 存储模式</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-2-4" data-type="single" data-explain="逻辑独立性对应第一级映像。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">4-2-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">逻辑独立性是指：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 概念模式变化时外模式尽量不受影响</button><button class="opt" data-k="B"><b>B.</b> 内模式变化时概念模式不受影响</button><button class="opt" data-k="C"><b>C.</b> 应用程序不需要编译</button><button class="opt" data-k="D"><b>D.</b> 数据不需要备份</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-2-5" data-type="multi" data-explain="E 错：内模式只有一个。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">4-2-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">关于三级模式与数据独立性，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 外模式面向用户与应用</button><button class="opt" data-k="B"><b>B.</b> 内模式描述数据的物理存储方式</button><button class="opt" data-k="C"><b>C.</b> 两级映像分别提供逻辑独立性与物理独立性</button><button class="opt" data-k="D"><b>D.</b> 视图是外模式的一种实现形式</button><button class="opt" data-k="E"><b>E.</b> 一个数据库可以有多个内模式</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-2-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="概念|内" data-answer-text="概念、内"><div class="qhead"><span class="chip">4-2-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">三级模式分别是外模式、________模式和________模式。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="4-2-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="逻辑|物理" data-answer-text="逻辑、物理"><div class="qhead"><span class="chip">4-2-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec2">↑ 回到本节开头</a></div><div class="qstem">外模式/概念模式映像保证了数据的________独立性，概念模式/内模式映像保证了数据的________独立性。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：三级模式把"用户视图—逻辑结构—物理存储"分开，两级映像换来逻辑与物理独立性。</p>
+<p><strong>留一个问题</strong>：概念模式和内模式都讲清楚了，可"表"这种结构本身是怎么表达数据和运算的？</p>
+<p>下一节讲关系模型。</p>
+<hr>
+<h2 id="sec3">第 3 节 关系模型与关系运算</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：关系模型用什么表示数据？关系代数的五种基本运算怎么用？</p>
+</blockquote>
+<h3>一、为什么是"表"</h3>
+<p>关系模型用<strong>二维表</strong>表示实体与联系，这是它流行的根本原因：<strong>结构简单、有严格的数学基础、支持非过程化查询</strong>。</p>
+<p>一张关系（表）的要素：</p>
+<ul>
+<li><strong>元组（行）</strong>：一条记录；</li>
+<li><strong>属性（列）</strong>：一个字段；</li>
+<li><strong>域</strong>：属性的取值范围；</li>
+<li><strong>码（键）</strong>：能唯一标识元组的属性组。</li>
+</ul>
+<h3>二、几种"键"必须分清</h3>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>定义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>超键</strong></td>
+<td>能唯一标识元组的属性集合</td>
+</tr>
+<tr>
+<td><strong>候选键</strong></td>
+<td>不含多余属性的超键（最小超键）</td>
+</tr>
+<tr>
+<td><strong>主键</strong></td>
+<td>从候选键中选定的一个</td>
+</tr>
+<tr>
+<td><strong>外键</strong></td>
+<td>引用另一关系主键的属性（体现联系）</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>想一想 ①</strong>：（学号，姓名）能唯一标识学生，它是超键还是候选键？为什么？</p>
+</blockquote>
+<h3>三、三类完整性约束</h3>
+<ul>
+<li><strong>实体完整性</strong>：主键不能为空、不能重复；</li>
+<li><strong>参照完整性</strong>：外键必须引用存在的主键（或为空）；</li>
+<li><strong>用户定义完整性</strong>：业务规则，如"年龄 0–150""金额非负"。</li>
+</ul>
+<h3>四、关系代数：五种基本运算</h3>
+<p>关系代数是<strong>过程化</strong>的查询语言，是 SQL 的理论基础。</p>
+<table>
+<thead>
+<tr>
+<th>运算</th>
+<th>符号</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>选择</strong></td>
+<td>σ</td>
+<td>按条件挑行（横向）</td>
+</tr>
+<tr>
+<td><strong>投影</strong></td>
+<td>π</td>
+<td>挑列并去重（纵向）</td>
+</tr>
+<tr>
+<td><strong>笛卡尔积</strong></td>
+<td>×</td>
+<td>两表所有组合</td>
+</tr>
+<tr>
+<td><strong>并</strong></td>
+<td>∪</td>
+<td>合并（要求同元）</td>
+</tr>
+<tr>
+<td><strong>差</strong></td>
+<td>−</td>
+<td>属于前者不属于后者</td>
+</tr>
+</tbody>
+</table>
+<p>由基本运算可派生：<strong>交（∩）</strong>、<strong>连接（⋈）</strong>（含 θ 连接、等值连接、自然连接）、<strong>除（÷）</strong>、<strong>重命名（ρ）</strong>。</p>
+<p>最常用的是<strong>自然连接</strong>：按同名属性自动等值连接并去掉重复列。</p>
+<h3>五、例题精解</h3>
+<p><strong>例（工程计算：关系代数表达）</strong> 有关系：学生（学号，姓名，系别）、课程（课程号，课程名）、选课（学号，课程号，成绩）。请用关系代数表达：① 查询"计算机系"学生的姓名；② 查询选修了"数据库"课程的学生学号；③ 查询选修了全部课程的学生学号。</p>
+<p><em>解答</em>：<br>
+- ① <span class="math">π<sub>姓名</sub>(σ<sub>系别='计算机'</sub>(学生))</span> —— 先选择后投影；<br>
+- ② <span class="math">π<sub>学号</sub>(σ<sub>课程名='数据库'</sub>(课程) ⋈ 选课)</span> —— 先过滤课程再与选课自然连接；<br>
+- ③ <span class="math">π<sub>学号,课程号</sub>(选课) ÷ π<sub>课程号</sub>(课程)</span> —— <strong>除运算</strong>表示"对所有课程都成立"，是这类"全部"问题的标准写法。</p>
+<p><em>点评</em>：看到"全部/所有"就想到<strong>除</strong>，看到"至少/存在"就想到<strong>连接 + 投影</strong>，这是关系代数题的两条反射。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：把候选键与超键混为一谈。</strong><br>
+候选键是"最小"的超键，多一个属性就不是候选键。</p>
+<p><strong>误区二：认为投影会保留重复行。</strong><br>
+投影默认去重（关系的元组不重复）。</p>
+<p><strong>误区三：混淆等值连接与自然连接。</strong><br>
+自然连接按同名属性连接并去掉重复列；等值连接保留两表所有列。</p>
+<p><strong>误区四：认为外键必须非空。</strong><br>
+外键可以为空（表示"暂无关联"），但一旦有值就必须存在于被引用表中。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="4-3-1" data-type="single" data-explain="候选键=最小超键。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-3-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">不含多余属性的超键称为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 主键</button><button class="opt" data-k="B"><b>B.</b> 候选键</button><button class="opt" data-k="C"><b>C.</b> 外键</button><button class="opt" data-k="D"><b>D.</b> 代理键</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-3-2" data-type="single" data-explain="σ 选行，π 选列。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-3-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">关系代数中，按条件挑选元组的运算是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 投影</button><button class="opt" data-k="B"><b>B.</b> 选择</button><button class="opt" data-k="C"><b>C.</b> 连接</button><button class="opt" data-k="D"><b>D.</b> 除</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-3-3" data-type="single" data-explain="“全部/所有”想到除运算。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="C"><div class="qhead"><span class="chip">4-3-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">"查询选修了全部课程的学生"最适合用哪种运算表达：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 并</button><button class="opt" data-k="B"><b>B.</b> 差</button><button class="opt" data-k="C"><b>C.</b> 除</button><button class="opt" data-k="D"><b>D.</b> 笛卡尔积</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-3-4" data-type="single" data-explain="实体完整性约束主键。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">4-3-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">主键不能为空、不能重复，这属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 实体完整性</button><button class="opt" data-k="B"><b>B.</b> 参照完整性</button><button class="opt" data-k="C"><b>C.</b> 用户定义完整性</button><button class="opt" data-k="D"><b>D.</b> 域完整性</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-3-5" data-type="single" data-explain="等值连接保留两表全部列。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">4-3-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">自然连接与等值连接的主要区别是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 自然连接要求属性同名并去掉重复列</button><button class="opt" data-k="B"><b>B.</b> 等值连接不要求相等</button><button class="opt" data-k="C"><b>C.</b> 自然连接不能用于多表</button><button class="opt" data-k="D"><b>D.</b> 二者完全相同</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-3-6" data-type="multi" data-explain="E 错：关系是元组的集合，投影自动去重。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">4-3-6</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">关于关系模型，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 关系代数是过程化的查询语言，是 SQL 的理论基础</button><button class="opt" data-k="B"><b>B.</b> 五种基本运算是选择、投影、笛卡尔积、并、差</button><button class="opt" data-k="C"><b>C.</b> 交、连接、除可由基本运算派生</button><button class="opt" data-k="D"><b>D.</b> 外键可以为空</button><button class="opt" data-k="E"><b>E.</b> 投影后保留重复行</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-3-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="选择|投影" data-answer-text="选择、投影"><div class="qhead"><span class="chip">4-3-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">关系代数中，σ 表示________运算，π 表示________运算。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="4-3-8" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="参照|用户定义/用户" data-answer-text="参照、用户定义"><div class="qhead"><span class="chip">4-3-8</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec3">↑ 回到本节开头</a></div><div class="qstem">三类完整性约束是实体完整性、________完整性和________完整性。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：关系模型用表表达数据，用键与完整性约束保证一致性，用关系代数做查询。</p>
+<p><strong>留一个问题</strong>：一张表里如果塞了太多信息，会出现"改一处要改多行""删一行丢一笔信息"，怎么判断表设计好坏？</p>
+<p>下一节讲规范化理论。</p>
+<hr>
+<h2 id="sec4">第 4 节 规范化理论</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：什么样的表结构算"好"？1NF、2NF、3NF、BCNF 到底在排除什么？</p>
+</blockquote>
+<h3>一、一张"什么都往里塞"的表</h3>
+<p>某学生选课表：学生（学号，姓名，系名，系主任，课程号，课程名，成绩）。</p>
+<p>问题很快出现：同一学生选三门课，姓名与系主任要重复三次；换系主任要改多行；删掉最后一门课，学生信息也没了。</p>
+<p>这就是<strong>数据冗余引发的插入、删除、更新异常</strong>。规范化就是系统性地消除这些异常。</p>
+<h3>二、函数依赖：规范化的语言</h3>
+<p><strong>函数依赖 X→Y</strong>：X 的取值确定后，Y 的取值唯一确定。</p>
+<p>几个关键概念：</p>
+<ul>
+<li><strong>完全函数依赖</strong>：Y 依赖于整个 X，缺一个属性就不行；</li>
+<li><strong>部分函数依赖</strong>：Y 只依赖于 X 的一部分（X 是组合键时常见）；</li>
+<li><strong>传递函数依赖</strong>：X→Y、Y→Z，则 Z 传递依赖于 X。</li>
+</ul>
+<h3>三、四个范式的判据</h3>
+<table>
+<thead>
+<tr>
+<th>范式</th>
+<th>条件</th>
+<th>排除的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1NF</strong></td>
+<td>每个属性都是不可再分的原子值</td>
+<td>表中套表、多值字段</td>
+</tr>
+<tr>
+<td><strong>2NF</strong></td>
+<td>满足 1NF，且非主属性<strong>完全依赖</strong>于候选键</td>
+<td>部分依赖（组合键的部分决定）</td>
+</tr>
+<tr>
+<td><strong>3NF</strong></td>
+<td>满足 2NF，且非主属性不<strong>传递依赖</strong>于候选键</td>
+<td>传递依赖（A→B→C）</td>
+</tr>
+<tr>
+<td><strong>BCNF</strong></td>
+<td>每个决定因素都包含候选键</td>
+<td>主属性之间的依赖异常</td>
+</tr>
+</tbody>
+</table>
+<p>上例中：主键是（学号，课程号），而 <code>学号 → 姓名、系名</code> 是部分依赖，<code>系名 → 系主任</code> 是传递依赖。所以这张表连 2NF 都不满足。</p>
+<p>拆解方案：学生（学号，姓名，系名）、系（系名，系主任）、选课（学号，课程号，成绩）、课程（课程号，课程名）。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么规范化程度越高越好？如果无脑拆到 BCNF，会带来什么代价？</p>
+</blockquote>
+<h3>四、规范化的代价</h3>
+<p>范式越高，表越多，查询需要更多<strong>连接</strong>，性能可能下降。</p>
+<p>工程上的常见做法是<strong>"规范化设计 + 适度反规范化"</strong>：设计阶段做到 3NF/BCNF，在报表、统计等读多写少的场景下，用<strong>冗余字段、汇总表、宽表</strong>换取查询性能——这正是数据仓库做"星型模型"的原因。</p>
+<p>一句话：<strong>规范化保证一致性，反规范化换性能，二者按场景取舍。</strong></p>
+<h3>五、例题精解</h3>
+<p><strong>例（工程判断：范式判定与分解）</strong> 关系 R（学号，姓名，课程号，课程名，成绩，教师名），其中：一个学生只属于一个姓名；一门课只有一个课程名、一个教师；成绩由（学号，课程号）决定。请判断其范式并分解到 3NF。</p>
+<p><em>解答</em>：<br>
+- 候选键为（学号，课程号）；<br>
+- <code>学号 → 姓名</code> 是部分依赖，<code>课程号 → 课程名、教师名</code> 也是部分依赖 → R <strong>不满足 2NF</strong>；<br>
+- 分解：学生（学号，姓名）、课程（课程号，课程名，教师名）、选课（学号，课程号，成绩）；<br>
+- 三张表均满足 3NF，且无损连接、保持函数依赖。</p>
+<p><em>点评</em>：范式题的解题顺序固定：<strong>找候选键 → 找部分/传递依赖 → 判定范式 → 分解</strong>。写分解结果时补一句"无损连接、保持函数依赖"是加分点。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为 3NF 一定比 BCNF 差。</strong><br>
+BCNF 更严格，但某些情况下 3NF 能保持函数依赖而 BCNF 不能，需权衡。</p>
+<p><strong>误区二：把"属性不可分"当成 2NF 的条件。</strong><br>
+1NF 管原子性，2NF 管部分依赖。</p>
+<p><strong>误区三：认为规范化只有好处。</strong><br>
+表变多、连接变多，过度规范化反而拖慢查询。</p>
+<p><strong>误区四：分解时不检查无损连接。</strong><br>
+分解后若无法无损还原，数据就"分家"了。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="4-4-1" data-type="single" data-explain="1NF 管原子性。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">4-4-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">要求每个属性都是不可再分的原子值，这是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 1NF</button><button class="opt" data-k="B"><b>B.</b> 2NF</button><button class="opt" data-k="C"><b>C.</b> 3NF</button><button class="opt" data-k="D"><b>D.</b> BCNF</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-4-2" data-type="single" data-explain="2NF 消除部分依赖。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-4-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">若关系模式满足 1NF，且每个非主属性完全依赖于候选键，则满足：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 1NF</button><button class="opt" data-k="B"><b>B.</b> 2NF</button><button class="opt" data-k="C"><b>C.</b> 3NF</button><button class="opt" data-k="D"><b>D.</b> BCNF</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-4-3" data-type="single" data-explain="3NF 消除传递依赖。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">4-4-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">消除非主属性对候选键的传递依赖，对应：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 1NF</button><button class="opt" data-k="B"><b>B.</b> 2NF</button><button class="opt" data-k="C"><b>C.</b> 3NF</button><button class="opt" data-k="D"><b>D.</b> BCNF</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-4-4" data-type="single" data-explain="规范化保一致，反规范化换性能。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-4-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">关于规范化的代价，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 范式越高，查询一定越快</button><button class="opt" data-k="B"><b>B.</b> 范式越高，表越多、连接越多，可能影响性能</button><button class="opt" data-k="C"><b>C.</b> 反规范化会提高一致性</button><button class="opt" data-k="D"><b>D.</b> 规范化与性能无关</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-4-5" data-type="single" data-explain="适度冗余换查询效率。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-4-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">数据仓库中为提升查询性能而采用星型模型、宽表，这属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 提高范式</button><button class="opt" data-k="B"><b>B.</b> 反规范化</button><button class="opt" data-k="C"><b>C.</b> 三级模式</button><button class="opt" data-k="D"><b>D.</b> 分布式设计</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-4-6" data-type="multi" data-explain="E 错：分解必须无损且尽量保持函数依赖。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">4-4-6</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">关于规范化理论，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 函数依赖 X→Y 表示 X 确定则 Y 唯一确定</button><button class="opt" data-k="B"><b>B.</b> 部分函数依赖是 2NF 要排除的问题</button><button class="opt" data-k="C"><b>C.</b> 传递函数依赖是 3NF 要排除的问题</button><button class="opt" data-k="D"><b>D.</b> BCNF 要求每个决定因素都包含候选键</button><button class="opt" data-k="E"><b>E.</b> 分解后无需检查无损连接</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-4-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="传递" data-answer-text="传递"><div class="qhead"><span class="chip">4-4-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">若 X→Y 且 Y→Z，则 Z 对 X 存在________函数依赖。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="4-4-8" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="无损|函数" data-answer-text="无损、函数"><div class="qhead"><span class="chip">4-4-8</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec4">↑ 回到本节开头</a></div><div class="qstem">关系分解必须满足的两个基本要求是________连接和保持________依赖。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：规范化用函数依赖判据逐级排除异常，代价是连接变多；工程上常"规范化设计 + 适度反规范化"。</p>
+<p><strong>留一个问题</strong>：知道了范式判据，可一张 E-R 图怎么变成规范的、可建库的表结构？</p>
+<p>下一节讲数据库设计的完整流程。</p>
+<hr>
+<h2 id="sec5">第 5 节 数据库设计过程</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：从需求到可运行的库，要走哪几步？E-R 图怎么转成关系模式？</p>
+</blockquote>
+<h3>一、跳步的代价</h3>
+<p>某项目跳过概念设计，直接把需求翻译成表结构。上线后发现：一个"订单"被拆成 6 张表，业务人员看不懂；新增"优惠券"又要改 4 张表。</p>
+<p>原因在于<strong>缺少概念模型这一层</strong>——没有先想清楚"有哪些实体、彼此什么关系"，就直接落到表，业务语义在转换中丢失。</p>
+<h3>二、六个阶段</h3>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>主要工作</th>
+<th>产出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1 需求分析</strong></td>
+<td>收集数据需求与处理需求</td>
+<td>数据字典、数据流图</td>
+</tr>
+<tr>
+<td><strong>2 概念结构设计</strong></td>
+<td>抽象实体与联系</td>
+<td><strong>E-R 图</strong>（局部 → 全局 → 优化）</td>
+</tr>
+<tr>
+<td><strong>3 逻辑结构设计</strong></td>
+<td>E-R 转关系模式、规范化</td>
+<td>关系模式、视图</td>
+</tr>
+<tr>
+<td><strong>4 物理设计</strong></td>
+<td>选存储结构、建索引、分区</td>
+<td>物理存储方案</td>
+</tr>
+<tr>
+<td><strong>5 数据库实施</strong></td>
+<td>建库建表、装载数据、编写应用</td>
+<td>可运行的库</td>
+</tr>
+<tr>
+<td><strong>6 运行与维护</strong></td>
+<td>监控、调优、备份、重构</td>
+<td>运行记录</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么"概念结构设计"要分局部 E-R 与全局 E-R 两步？直接画一张全局图不行吗？</p>
+</blockquote>
+<h3>三、E-R 图转关系模式的规则</h3>
+<p>这是考试的高频计算点，规则只有四条：</p>
+<ol>
+<li><strong>每个实体</strong>转成一个关系，属性照搬；</li>
+<li><strong>1:1 联系</strong>：可并入任一端，或单独成表；</li>
+<li><strong>1:n 联系</strong>：把"1"端的主键放到"n"端作为外键（不单独建表）；</li>
+<li><strong>m:n 联系</strong>：<strong>必须单独建表</strong>，主键为两端主键的组合，并加入联系自身的属性。</li>
+</ol>
+<p>举例：学生—选课—课程是 m:n，必须建"选课（学号，课程号，成绩）"；班级—学生是 1:n，把"班级号"放进学生表即可。</p>
+<h3>四、物理设计的关键取舍</h3>
+<ul>
+<li><strong>索引</strong>：加速查询，但拖慢写入、占空间。原则是"高频查询条件 + 连接列"建索引，低选择性字段（如性别）不建；</li>
+<li><strong>分区</strong>：按时间/范围分区，便于归档与并行扫描；</li>
+<li><strong>反规范化</strong>：适当冗余换查询性能，需用触发器或应用逻辑保证一致。</li>
+</ul>
+<h3>五、例题精解</h3>
+<p><strong>例（工程计算：E-R 转换）</strong> 有实体：部门（部门号，名称）、员工（工号，姓名）、项目（项目号，名称）。联系：部门与员工是 1:n（一个部门多个员工，一个员工只属一个部门）；员工与项目是 m:n（一个员工可参与多个项目，一个项目多人参与，且有"投入比例"属性）。请写出转换后的关系模式。</p>
+<p><em>解答</em>：<br>
+- 部门（<strong>部门号</strong>，名称）<br>
+- 员工（<strong>工号</strong>，姓名，部门号）—— 1:n，把部门号作外键放入员工表<br>
+- 项目（<strong>项目号</strong>，名称）<br>
+- 参与（<strong>工号，项目号</strong>，投入比例）—— m:n，单独建表，联合主键，并带上联系属性</p>
+<p><em>点评</em>：转换题只要抓住"<strong>1:n 放外键、m:n 建新表</strong>"两条，就不会错；别忘了 m:n 表要带联系自身的属性。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：把需求分析等同于"问用户要字段"。</strong><br>
+需求分析要产出数据字典与数据流，字段只是结果。</p>
+<p><strong>误区二：m:n 联系不建表，硬塞进某个实体。</strong><br>
+会导致多值字段，直接违反 1NF。</p>
+<p><strong>误区三：物理设计阶段才考虑范式。</strong><br>
+规范化应在逻辑设计阶段完成，物理阶段只做存储与索引取舍。</p>
+<p><strong>误区四：认为索引越多越好。</strong><br>
+每个索引都会增加写入成本与存储开销。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 8 题（5 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="4-5-1" data-type="single" data-explain="概念设计产出 E-R。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-5-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">数据库设计六个阶段中，产出 E-R 图的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 需求分析</button><button class="opt" data-k="B"><b>B.</b> 概念结构设计</button><button class="opt" data-k="C"><b>C.</b> 逻辑结构设计</button><button class="opt" data-k="D"><b>D.</b> 物理设计</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-5-2" data-type="single" data-explain="m:n 必须单独建表。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">4-5-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">m:n 联系转换为关系模式时，正确的做法是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 并入任一端</button><button class="opt" data-k="B"><b>B.</b> 把一端主键放入另一端</button><button class="opt" data-k="C"><b>C.</b> 单独建表，主键为两端主键的组合</button><button class="opt" data-k="D"><b>D.</b> 不建表</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-5-3" data-type="single" data-explain="1:n 不建新表，外键放多端。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-5-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">1:n 联系转换时，通常：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 单独建表</button><button class="opt" data-k="B"><b>B.</b> 把"1"端主键作为外键放入"n"端</button><button class="opt" data-k="C"><b>C.</b> 把"n"端主键放入"1"端</button><button class="opt" data-k="D"><b>D.</b> 忽略该联系</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-5-4" data-type="single" data-explain="低选择性字段（性别只有几种值）索引收益低。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="C"><div class="qhead"><span class="chip">4-5-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">下列字段中最不适合建索引的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 订单号</button><button class="opt" data-k="B"><b>B.</b> 客户号</button><button class="opt" data-k="C"><b>C.</b> 性别</button><button class="opt" data-k="D"><b>D.</b> 创建时间</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-5-5" data-type="single" data-explain="反规范化是性能取向的取舍。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-5-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">关于反规范化，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 提高一致性、降低性能</button><button class="opt" data-k="B"><b>B.</b> 通过适度冗余换取查询性能，需额外保证一致性</button><button class="opt" data-k="C"><b>C.</b> 只在逻辑设计阶段进行</button><button class="opt" data-k="D"><b>D.</b> 与规范化目标完全一致</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-5-6" data-type="multi" data-explain="E 错：只有 m:n 必须单独建表。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">4-5-6</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">关于数据库设计过程，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 需求分析的产出包括数据字典</button><button class="opt" data-k="B"><b>B.</b> 概念设计通常分局部 E-R 与全局 E-R</button><button class="opt" data-k="C"><b>C.</b> 规范化处理在逻辑结构设计阶段完成</button><button class="opt" data-k="D"><b>D.</b> 物理设计包括索引与分区选择</button><button class="opt" data-k="E"><b>E.</b> E-R 图中的联系都必须单独建表</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-5-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="概念|物理" data-answer-text="概念、物理"><div class="qhead"><span class="chip">4-5-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">数据库设计的六个阶段依次为：需求分析、________结构设计、逻辑结构设计、________设计、数据库实施、运行与维护。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="4-5-8" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="建表/单独|两端/双方" data-answer-text="单独建表、两端主键"><div class="qhead"><span class="chip">4-5-8</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec5">↑ 回到本节开头</a></div><div class="qstem">E-R 图转换为关系模式时，m:n 联系必须________，其主键由________组合而成。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：设计分六阶段，概念设计的 E-R 图按"实体成表、1:n 放外键、m:n 建新表"转成关系模式。</p>
+<p><strong>留一个问题</strong>：库建好了，应用程序怎么访问它？直接拼 SQL 字符串行不行？</p>
+<p>下一节讲应用与数据库的交互方式。</p>
+<hr>
+<h2 id="sec6">第 6 节 应用与数据库交互</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：程序访问数据库有哪几种方式？为什么工程上更常用 ORM，而它又带来什么问题？</p>
+</blockquote>
+<h3>一、三种访问方式的历史</h3>
+<p>最早的数据库访问，是在程序里直接调用厂商提供的<strong>库函数</strong>；后来 SQL 成了标准，出现<strong>嵌入式 SQL</strong>；再后来为了跨数据库兼容，有了<strong>通用接口标准</strong>（ODBC/JDBC）；面向对象普及后，又出现了<strong>ORM</strong>。</p>
+<p>这条线索的主线是：<strong>从"绑定某个数据库"走向"与数据库解耦"</strong>。</p>
+<h3>二、四种方式的对比</h3>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>做法</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>库函数级接口</strong></td>
+<td>调用 DBMS 提供的 API</td>
+<td>性能最好、控制最细</td>
+<td>与厂商绑定，不可移植</td>
+</tr>
+<tr>
+<td><strong>嵌入式 SQL</strong></td>
+<td>在宿主语言中直接写 SQL，由预编译器处理</td>
+<td>SQL 能力强、效率高</td>
+<td>需预编译，耦合仍较强</td>
+</tr>
+<tr>
+<td><strong>通用接口标准</strong>（ODBC/JDBC）</td>
+<td>通过驱动屏蔽数据库差异</td>
+<td>跨库可移植</td>
+<td>性能略损、配置复杂</td>
+</tr>
+<tr>
+<td><strong>ORM</strong></td>
+<td>对象与表自动映射</td>
+<td>开发效率高、面向对象</td>
+<td>复杂查询吃力、易产生 N+1 问题</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>想一想 ①</strong>：为什么 ORM 在"复杂报表查询"上往往不如手写 SQL？如果全部改用 ORM，会有什么风险？</p>
+</blockquote>
+<h3>三、ORM 的典型陷阱</h3>
+<ul>
+<li><strong>N+1 查询</strong>：查 N 条主记录后又逐条查关联，导致 N+1 次数据库往返；</li>
+<li><strong>过度懒加载</strong>：看起来只查一个对象，实际触发大量查询；</li>
+<li><strong>批量操作低效</strong>：逐条 save，不如批处理；</li>
+<li><strong>复杂查询被硬塞进 ORM</strong>：可读性与性能双输。</li>
+</ul>
+<p>工程上的做法通常是：<strong>常规 CRUD 用 ORM，复杂查询用原生 SQL 或专门的查询层</strong>。</p>
+<h3>四、例题精解</h3>
+<p><strong>例（工程项目：访问层设计）</strong> 某系统要同时满足：① 支持 MySQL 与达梦两种数据库；② 报表模块有大量多表关联与聚合；③ 业务模块以单表 CRUD 为主。请设计访问层。</p>
+<p><em>解答</em>：<br>
+- ① 通过 <strong>JDBC/ODBC 等通用接口</strong> + 数据库方言适配层，屏蔽差异（不用厂商私有 API）；<br>
+- ② 报表模块用<strong>原生 SQL / 查询构建器</strong>，直接写多表关联与聚合，避免 ORM 生成的低效语句；<br>
+- ③ 业务模块用 <strong>ORM</strong> 提升开发效率，但注意批量操作与 N+1 问题；<br>
+- 整体上做<strong>分层</strong>：DAO/Repository 层隔离，便于替换实现与统一监控。</p>
+<p><em>点评</em>：这题的答题要点是"<strong>按场景分工</strong>"——不是二选一，而是分层组合。</p>
+<h3>五、常见误区</h3>
+<p><strong>误区一：认为 ORM 可以完全替代 SQL。</strong><br>
+复杂查询仍需 SQL，ORM 只是简化常规操作。</p>
+<p><strong>误区二：认为通用接口没有性能代价。</strong><br>
+驱动层转换与元数据查询会带来开销，高频场景需评估。</p>
+<p><strong>误区三：忽视 SQL 注入。</strong><br>
+无论哪种方式，参数化查询都是底线，字符串拼接一律不可接受。</p>
+<h3>六、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="4-6-1" data-type="single" data-explain="通用接口通过驱动屏蔽差异。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">4-6-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">跨数据库可移植性最好的访问方式是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 库函数级接口</button><button class="opt" data-k="B"><b>B.</b> 嵌入式 SQL</button><button class="opt" data-k="C"><b>C.</b> 通用数据接口标准（ODBC/JDBC）</button><button class="opt" data-k="D"><b>D.</b> 直接读写数据文件</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-6-2" data-type="single" data-explain="N+1 是 ORM 最常见的性能陷阱。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-6-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">ORM 中"查 N 条主记录后又逐条查询关联数据"的问题称为：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 死锁</button><button class="opt" data-k="B"><b>B.</b> N+1 查询问题</button><button class="opt" data-k="C"><b>C.</b> 幻读</button><button class="opt" data-k="D"><b>D.</b> 脏读</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-6-3" data-type="single" data-explain="性能最好但可移植性最差。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-6-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">关于库函数级接口，正确的是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 可移植性最好</button><button class="opt" data-k="B"><b>B.</b> 性能好但通常与特定 DBMS 绑定</button><button class="opt" data-k="C"><b>C.</b> 不需要驱动</button><button class="opt" data-k="D"><b>D.</b> 只能用于嵌入式系统</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-6-4" data-type="single" data-explain="参数化（预编译）是根治手段。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-6-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">防止 SQL 注入的根本做法是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 过滤关键字</button><button class="opt" data-k="B"><b>B.</b> 使用参数化查询</button><button class="opt" data-k="C"><b>C.</b> 隐藏错误信息</button><button class="opt" data-k="D"><b>D.</b> 限制返回行数</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-6-5" data-type="multi" data-explain="C 错：复杂聚合查询 ORM 往往吃力。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABDE"><div class="qhead"><span class="chip">4-6-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">关于应用与数据库交互，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 嵌入式 SQL 需要在宿主语言中写 SQL</button><button class="opt" data-k="B"><b>B.</b> ODBC/JDBC 通过驱动屏蔽数据库差异</button><button class="opt" data-k="C"><b>C.</b> ORM 适合复杂多表聚合查询</button><button class="opt" data-k="D"><b>D.</b> ORM 提升开发效率但可能带来 N+1 问题</button><button class="opt" data-k="E"><b>E.</b> 参数化查询可防 SQL 注入</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-6-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="odbc|jdbc" data-answer-text="ODBC、JDBC"><div class="qhead"><span class="chip">4-6-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">通用数据库访问接口标准的两个代表是________和________。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="4-6-7" data-type="fill" data-explain="Object-Relational Mapping。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="对象关系/对象-关系/orm" data-answer-text="对象关系映射"><div class="qhead"><span class="chip">4-6-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec6">↑ 回到本节开头</a></div><div class="qstem">ORM 的全称是________，它把对象模型与关系表做映射。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>七、小结与衔接</h3>
+<p>本节回答：四种访问方式从"绑定"走向"解耦"，ORM 提效但有陷阱，工程上按场景分层组合。</p>
+<p><strong>留一个问题</strong>：如果数据量到了单机装不下、结构又经常变，"关系表+SQL"这条路还够用吗？</p>
+<p>下一节讲 NoSQL。</p>
+<hr>
+<h2 id="sec7">第 7 节 NoSQL 数据库</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：关系数据库在什么场景下不够用？四类 NoSQL 各自解决什么问题？</p>
+</blockquote>
+<h3>一、关系库的三道墙</h3>
+<p>某系统遇到三个问题：单表 20 亿行、写入每秒 10 万、字段每周新增。</p>
+<p>关系库的瓶颈集中体现在三处：<strong>水平扩展困难</strong>（分库分表复杂）、<strong>固定模式</strong>（改字段要 DDL）、<strong>强一致代价高</strong>（分布式事务重）。</p>
+<p>NoSQL 不是在所有方面"更强"，而是<strong>在特定场景下做了不同的取舍</strong>。</p>
+<h3>二、四类 NoSQL</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>数据模型</th>
+<th>典型场景</th>
+<th>代表</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>键值（KV）</strong></td>
+<td>key → value</td>
+<td>缓存、会话、计数器</td>
+<td>Redis、Memcached</td>
+</tr>
+<tr>
+<td><strong>列族（宽列）</strong></td>
+<td>行键 + 列族，稀疏存储</td>
+<td>海量写入、时序、日志</td>
+<td>HBase、Cassandra</td>
+</tr>
+<tr>
+<td><strong>文档</strong></td>
+<td>JSON/BSON 文档，自描述</td>
+<td>内容管理、配置、半结构化</td>
+<td>MongoDB</td>
+</tr>
+<tr>
+<td><strong>图</strong></td>
+<td>节点 + 边</td>
+<td>社交关系、推荐、知识图谱</td>
+<td>Neo4j</td>
+</tr>
+</tbody>
+</table>
+<p>常见的分类是<strong>键值、列式、文档、图</strong>四类，另有搜索引擎（如 Elasticsearch）常被单列。</p>
+<h3>三、取舍：CAP 与 BASE</h3>
+<p>分布式系统的经典权衡是 <strong>CAP</strong>：一致性（C）、可用性（A）、分区容忍性（P）三者不可同时满足。由于网络分区在分布式环境中不可避免，实际是在 <strong>CP</strong> 与 <strong>AP</strong> 之间选。</p>
+<p>大量 NoSQL 走 <strong>BASE</strong>（基本可用、软状态、最终一致），用一致性换可用性与扩展性——这正是它们能水平扩展的根本原因。</p>
+<blockquote>
+<p><strong>想一想 ①</strong>：银行转账与"点赞数统计"，哪个能接受最终一致？判断依据是什么？</p>
+</blockquote>
+<h3>四、什么时候不该用 NoSQL</h3>
+<ul>
+<li>需要<strong>多表关联与复杂事务</strong>（如财务、订单）；</li>
+<li>数据规模不大、结构稳定（关系库完全够用）；</li>
+<li>团队缺少运维经验（NoSQL 的运维复杂度常被低估）。</li>
+</ul>
+<p>工程上的主流做法是<strong>混合持久化</strong>：交易走关系库，缓存走 KV，日志与时序走列族，检索走搜索引擎，通过消息或 CDC 做同步——这也正是 K11 里"多模数据架构"的雏形。</p>
+<h3>五、例题精解</h3>
+<p><strong>例（工程选型：存储组合）</strong> 某电商要支撑：① 商品详情页（字段频繁变化）；② 购物车（高并发读写）；③ 订单交易（强一致）；④ 商品搜索（多条件模糊匹配）。请分别选型。</p>
+<p><em>解答</em>：<br>
+- ① <strong>文档数据库</strong>：字段灵活、自描述，适合频繁变更的商品属性；<br>
+- ② <strong>键值数据库</strong>（如 Redis）：高并发、简单结构，天然适合购物车；<br>
+- ③ <strong>关系数据库</strong>：强一致、事务支持，交易场景不可替代；<br>
+- ④ <strong>搜索引擎</strong>：倒排索引支持多条件检索与排序。</p>
+<p><em>点评</em>：这题的答案不是"选最先进的"，而是"<strong>按访问模式选存储</strong>"——与 K1 第 6 节"一种数据多种查法"是同一思路。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为 NoSQL 全面优于关系库。</strong><br>
+它在事务、关联、一致性上明显更弱。</p>
+<p><strong>误区二：认为 NoSQL 不需要模式设计。</strong><br>
+"无模式"不等于"不设计"，访问模式决定键与索引的设计。</p>
+<p><strong>误区三：混淆 CAP 中"分区容忍性"的含义。</strong><br>
+P 指网络分区发生时系统仍能继续运行，分布式系统绕不开它。</p>
+<p><strong>误区四：认为最终一致"不可靠"。</strong><br>
+它是明确的设计选择，配合幂等与补偿可满足大量业务。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 7 题（4 单选 + 1 不定项 + 2 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="4-7-1" data-type="single" data-explain="文档库自描述、树状结构。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">4-7-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">以 JSON/BSON 文档存储、字段灵活、适合内容管理的数据库属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 键值数据库</button><button class="opt" data-k="B"><b>B.</b> 列族数据库</button><button class="opt" data-k="C"><b>C.</b> 文档数据库</button><button class="opt" data-k="D"><b>D.</b> 图数据库</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-7-2" data-type="single" data-explain="图库擅长多跳关系查询。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="D"><div class="qhead"><span class="chip">4-7-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">适合存储社交关系、推荐路径的 NoSQL 类型是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 键值</button><button class="opt" data-k="B"><b>B.</b> 列族</button><button class="opt" data-k="C"><b>C.</b> 文档</button><button class="opt" data-k="D"><b>D.</b> 图</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-7-3" data-type="single" data-explain="P 在分布式环境不可避免，实际在 CP 与 AP 间选。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="A"><div class="qhead"><span class="chip">4-7-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">CAP 理论说明分布式系统无法同时满足：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 一致性、可用性、分区容忍性</button><button class="opt" data-k="B"><b>B.</b> 原子性、一致性、隔离性</button><button class="opt" data-k="C"><b>C.</b> 读、写、扩展</button><button class="opt" data-k="D"><b>D.</b> 主键、外键、索引</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-7-4" data-type="single" data-explain="BASE=基本可用、软状态、最终一致。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-7-4</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">大量 NoSQL 采用 BASE 模型，其核心是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 强一致</button><button class="opt" data-k="B"><b>B.</b> 最终一致</button><button class="opt" data-k="C"><b>C.</b> 两阶段提交</button><button class="opt" data-k="D"><b>D.</b> 悲观锁</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-7-5" data-type="multi" data-explain="D 错：无模式≠不设计，访问模式决定键与索引。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">4-7-5</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">关于 NoSQL，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 键值数据库适合缓存与会话</button><button class="opt" data-k="B"><b>B.</b> 列族数据库适合海量写入与时序数据</button><button class="opt" data-k="C"><b>C.</b> NoSQL 在强事务与多表关联上弱于关系库</button><button class="opt" data-k="D"><b>D.</b> NoSQL 不需要任何模式设计</button><button class="opt" data-k="E"><b>E.</b> 工程上常见关系库与 NoSQL 混合使用</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-7-6" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="列族/列式/列|图" data-answer-text="列族（列式）、图"><div class="qhead"><span class="chip">4-7-6</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">NoSQL 的四大类型是键值、、文档和。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="4-7-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="软|最终" data-answer-text="软、最终"><div class="qhead"><span class="chip">4-7-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec7">↑ 回到本节开头</a></div><div class="qstem">BASE 是指基本可用、________状态和________一致。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：NoSQL 用一致性与关联能力换取扩展性与灵活性，四类各有场景，工程上多为混合持久化。</p>
+<hr>
+<h2 id="sec8">第 8 节 向量数据库</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：非结构化数据怎么"按意思"检索？向量数据库在其中扮演什么角色？</p>
+</blockquote>
+<h3>一、从"精确匹配"到"相似"</h3>
+<p>关系数据库擅长精确条件：<code>where name = '张三'</code>。</p>
+<p>但很多查询是模糊的："找和这张图相似的图""找意思相近的文档"。这类需求无法用等值条件表达，需要把对象变成<strong>向量</strong>，再计算<strong>相似度</strong>。</p>
+<p><strong>向量化（Embedding）</strong>：用模型把文本、图像、音频映射成几百到几千维的浮点向量，语义相近的对象在向量空间里距离更近。</p>
+<p><strong>向量数据库</strong>就是专门存储与检索这类向量的系统。</p>
+<h3>二、工作原理</h3>
+<table>
+<thead>
+<tr>
+<th>环节</th>
+<th>做法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>写入</strong></td>
+<td>对象 → Embedding 模型 → 向量 + 元数据 → 入库</td>
+</tr>
+<tr>
+<td><strong>索引</strong></td>
+<td>构建近似最近邻（ANN）索引，避免全量比对</td>
+</tr>
+<tr>
+<td><strong>查询</strong></td>
+<td>查询对象 → 向量 → 索引检索 Top-K → 返回 + 元数据过滤</td>
+</tr>
+<tr>
+<td><strong>相似度</strong></td>
+<td>余弦相似度、欧氏距离、内积（需与模型训练方式匹配）</td>
+</tr>
+</tbody>
+</table>
+<p>关键索引结构：</p>
+<ul>
+<li><strong>HNSW</strong>（分层可导航小世界图）：查询快、内存占用高、构建慢，最常用；</li>
+<li><strong>IVF</strong>（倒排文件）：先聚类再在簇内搜索，适合大规模；</li>
+<li><strong>PQ</strong>（乘积量化）：压缩向量，省内存、损失精度。</li>
+</ul>
+<p>这三者可组合（IVF-PQ、HNSW+PQ）以平衡速度、内存与召回率。</p>
+<h3>三、特点与取舍</h3>
+<p><strong>优势</strong>：</p>
+<ul>
+<li>语义检索（不懂关键词也能查到）；</li>
+<li>支持多模态（文本、图像、音频统一到向量空间）；</li>
+<li>天然适合与大模型配合（RAG 的检索层）。</li>
+</ul>
+<p><strong>代价</strong>：</p>
+<ul>
+<li><strong>近似</strong>：ANN 结果是"大概率正确"，召回率需调参；</li>
+<li><strong>更新成本</strong>：索引更新比插入一行数据贵得多；</li>
+<li><strong>可解释性差</strong>：为什么召回这条，不容易说清；</li>
+<li><strong>事务弱</strong>：ACID 能力远不如关系库；</li>
+<li><strong>维度与模型绑定</strong>：换 Embedding 模型往往要重建索引。</li>
+</ul>
+<blockquote>
+<p><strong>想一想 ①</strong>：如果 Embedding 模型升级了，向量库里的数据会怎样？为什么这成为运维难点？</p>
+</blockquote>
+<h3>四、和关系库怎么配合</h3>
+<p>现实中的架构几乎都是<strong>混合</strong>：</p>
+<ul>
+<li>结构化数据（订单、用户）→ 关系库；</li>
+<li>向量与原文 → 向量库；</li>
+<li>用<strong>统一 ID</strong> 关联，查询时先向量召回再回表补全字段。</li>
+</ul>
+<p>纯粹"用向量库替代关系库"的做法，通常在事务与一致性上会碰壁。</p>
+<h3>五、例题精解</h3>
+<p><strong>例（工程选型：知识库检索）</strong> 某企业要把 200 万份制度文档做成"按意思搜"的知识库，要求秒级响应、能按部门过滤。请给出方案。</p>
+<p>*解答**：<br>
+- <strong>向量化</strong>：选中文语义模型把文档切片后转成向量，同时保留原文与元数据（部门、生效日期）；<br>
+- <strong>索引</strong>：规模 200 万级、要求低延迟，选 <strong>HNSW</strong>；若内存吃紧可考虑 IVF-PQ；<br>
+- <strong>元数据过滤</strong>：检索时先按部门过滤再算相似度（或索引内支持过滤），避免召回后过滤导致结果不足；<br>
+- <strong>混合检索</strong>：向量召回 + 关键词（BM25）召回做融合，提升专有名词命中率；<br>
+- <strong>重排</strong>：用 Cross-Encoder 对 Top-50 重排，取 Top-5；<br>
+- <strong>更新</strong>：制度更新需重新切片与向量化，保留版本。</p>
+<p><em>点评</em>：向量库题的得分点是"<strong>切片策略 + 索引选型 + 过滤与混合检索 + 更新机制</strong>"，而不是"用了个向量库"。</p>
+<h3>六、常见误区</h3>
+<p><strong>误区一：认为向量库能替代关系库。</strong><br>
+事务、关联、精确查询仍是关系库的强项。</p>
+<p><strong>误区二：认为维度越高越准。</strong><br>
+维度由模型决定，换模型要重建索引。</p>
+<p><strong>误区三：忽视元数据过滤。</strong><br>
+只做纯向量检索，业务上的"只看本部门"就做不到。</p>
+<h3>七、本节自测</h3>
+<blockquote>
+<p>共 5 题（3 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="4-8-1" data-type="single" data-explain="按“意思”找相近对象。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-8-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">向量数据库解决的核心问题是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 精确等值查询</button><button class="opt" data-k="B"><b>B.</b> 相似性检索</button><button class="opt" data-k="C"><b>C.</b> 事务一致性</button><button class="opt" data-k="D"><b>D.</b> 数据备份</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-8-2" data-type="single" data-explain="HNSW 是分层可导航小世界图。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-8-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">查询快、内存占用较高的图结构 ANN 索引是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> B+ 树</button><button class="opt" data-k="B"><b>B.</b> HNSW</button><button class="opt" data-k="C"><b>C.</b> 倒排索引</button><button class="opt" data-k="D"><b>D.</b> 哈希索引</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-8-3" data-type="single" data-explain="ANN 牺牲一点准确率换速度。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-8-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">向量检索相比精确查询的关键差异是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 结果绝对准确</button><button class="opt" data-k="B"><b>B.</b> 结果为近似最近邻，需关注召回率</button><button class="opt" data-k="C"><b>C.</b> 不需要索引</button><button class="opt" data-k="D"><b>D.</b> 不受维度影响</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-8-4" data-type="multi" data-explain="D 错：向量库事务能力弱。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">4-8-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">关于向量数据库，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> Embedding 把对象映射为高维向量</button><button class="opt" data-k="B"><b>B.</b> 常用相似度有余弦相似度与欧氏距离</button><button class="opt" data-k="C"><b>C.</b> 换 Embedding 模型往往需要重建索引</button><button class="opt" data-k="D"><b>D.</b> 向量库的 ACID 能力通常强于关系库</button><button class="opt" data-k="E"><b>E.</b> 元数据过滤可支持"只看某部门"这类业务约束</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-8-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="图" data-answer-text="图"><div class="qhead"><span class="chip">4-8-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec8">↑ 回到本节开头</a></div><div class="qstem">HNSW 是一种用于近似最近邻检索的________结构索引。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>八、小结与衔接</h3>
+<p>本节回答：向量库把语义检索变成向量空间的近邻问题，靠 ANN 索引换速度，代价是近似、更新贵、可解释性弱。</p>
+<p><strong>留一个问题</strong>：如果一个平台既要文档、又要图、又要键值，能不能用一个库解决？</p>
+<p>下一节讲多模数据库。</p>
+<hr>
+<h2 id="sec9">第 9 节 多模数据库</h2>
+<blockquote>
+<p><strong>本节要解决的问题</strong>：多模型数据源解决了什么问题？它和"多种数据库并存"相比优劣如何？</p>
+</blockquote>
+<h3>一、多库并存的代价</h3>
+<p>一个中台系统往往同时需要：关系型（交易）、文档（内容）、图（关系网络）、键值（缓存/会话）、时序（监控）。</p>
+<p>传统做法是"每类选一个专用库"（polyglot persistence），代价是：</p>
+<ul>
+<li><strong>多套运维</strong>：备份、监控、扩容、升级各一套；</li>
+<li><strong>数据同步</strong>：跨库一致性靠应用或 CDC 补齐；</li>
+<li><strong>跨模型查询</strong>：无法在库内完成，只能拉数据到应用层拼；</li>
+<li><strong>事务边界</strong>：跨库事务几乎无法保证。</li>
+</ul>
+<h3>二、多模数据库的定义</h3>
+<p><strong>多模数据库（Multi-model Database）</strong> 在<strong>同一个系统</strong>中支持多种数据模型（文档、图、键值、关系、时序等），提供统一的查询语言、事务与运维。</p>
+<p>目标很直接：<strong>减少多库之间的同步与集成</strong>，让开发者"在一个系统里存、查、处理不同模型的数据"。</p>
+<h3>三、两种实现路线</h3>
+<table>
+<thead>
+<tr>
+<th>路线</th>
+<th>做法</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>原生多模</strong></td>
+<td>一套存储与引擎，原生支持多种模型</td>
+<td>事务与查询统一，但每种模型的深度有限</td>
+</tr>
+<tr>
+<td><strong>多引擎统一</strong></td>
+<td>内部集成多个专用引擎，对外统一接口</td>
+<td>各模型能力强，但一致性与运维复杂度上升</td>
+</tr>
+</tbody>
+</table>
+<h3>四、优势与局限</h3>
+<p><strong>优势</strong>：</p>
+<ul>
+<li>统一事务与一致性（尤其跨模型写入）；</li>
+<li>一套运维、一套权限、一套备份；</li>
+<li>跨模型查询可在库内完成，减少数据搬运。</li>
+</ul>
+<p><strong>局限</strong>：</p>
+<ul>
+<li><strong>深度不如专用库</strong>：图算法的丰富度、时序压缩比、全文检索能力，往往弱于专精产品；</li>
+<li><strong>厂商锁定风险</strong>：多模能力差异大，迁移成本高；</li>
+<li><strong>性能取舍</strong>：统一引擎难以对每种模型都做到极致；</li>
+<li><strong>生态与人才</strong>：专用库的社区与经验更成熟。</li>
+</ul>
+<blockquote>
+<p><strong>想一想 ①</strong>：什么情况下应该选多模数据库，什么情况下仍应"专用库 + 同步"？</p>
+</blockquote>
+<h3>五、选型判据</h3>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模型种类多但每种用量不大、强调整体一致</td>
+<td>多模数据库</td>
+</tr>
+<tr>
+<td>某一模型是核心且规模巨大（如海量时序）</td>
+<td>专用库</td>
+</tr>
+<tr>
+<td>团队规模小、运维能力有限</td>
+<td>多模数据库（减少运维面）</td>
+</tr>
+<tr>
+<td>需要极致性能或特殊算法</td>
+<td>专用库</td>
+</tr>
+</tbody>
+</table>
+<h3>六、例题精解</h3>
+<p><strong>例（工程项目：多模选型）</strong> 某平台要存：设备档案（结构化）、设备关系网络（图）、设备上报指标（时序）、设备日志（文档）。规模都不大但要能联合查询。请给出方案并说明理由。</p>
+<p>*解答**：<br>
+- <strong>选多模数据库</strong>：四类数据规模中等、需要"设备—关系—指标—日志"联合分析，跨库同步成本高于收益；<br>
+- <strong>建模</strong>：档案用关系/文档模型、关系网络用图模型、指标用时序模型、日志用文档模型；<br>
+- <strong>查询</strong>：图遍历找关联设备 → 按时序取窗口指标 → 关联日志，尽量在库内完成；<br>
+- <strong>风险</strong>：图算法深度与时序压缩能力弱于专用库，若后续指标量级暴增，可单独拆出时序库。</p>
+<p><em>点评</em>：选型判据是"<strong>模型多但单模型规模不大 + 需要联合查询</strong>"，并要提前写好"何时拆分"的退出条件。</p>
+<h3>七、常见误区</h3>
+<p><strong>误区一：认为多模数据库"每种模型都最强"。</strong><br>
+它胜在统一，输在深度。</p>
+<p><strong>误区二：认为多模就等于不用设计数据模型。</strong><br>
+不同模型之间的关联键与一致性策略仍要设计。</p>
+<h3>八、本节自测</h3>
+<blockquote>
+<p>共 5 题（3 单选 + 1 不定项 + 1 填空）。</p>
+</blockquote>
+<div class="quiz" data-id="4-9-1" data-type="single" data-explain="多模 = multi-model。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-9-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">在同一个系统中支持多种数据模型、提供统一查询与事务的数据库是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 关系数据库</button><button class="opt" data-k="B"><b>B.</b> 多模数据库</button><button class="opt" data-k="C"><b>C.</b> 数据仓库</button><button class="opt" data-k="D"><b>D.</b> 分布式文件系统</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-9-2" data-type="single" data-explain="它能存结构化数据，只是多库要各自管。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="D"><div class="qhead"><span class="chip">4-9-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">多库并存（polyglot）的主要代价不包括：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 多套运维</button><button class="opt" data-k="B"><b>B.</b> 跨库数据同步</button><button class="opt" data-k="C"><b>C.</b> 跨模型查询困难</button><button class="opt" data-k="D"><b>D.</b> 无法存储结构化数据</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-9-3" data-type="single" data-explain="胜在统一，输在深度。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4-9-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">多模数据库相对专用库的主要劣势是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 无法支持多种模型</button><button class="opt" data-k="B"><b>B.</b> 每种模型的深度与专精能力有限</button><button class="opt" data-k="C"><b>C.</b> 不能做事务</button><button class="opt" data-k="D"><b>D.</b> 不能水平扩展</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-9-4" data-type="multi" data-explain="D 错：专用库在特定模型上更强。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCE"><div class="qhead"><span class="chip">4-9-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">关于多模数据库，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 目标是减少多库之间的同步与集成</button><button class="opt" data-k="B"><b>B.</b> 原生多模与多引擎统一是两种实现路线</button><button class="opt" data-k="C"><b>C.</b> 统一事务与一致性是其优势之一</button><button class="opt" data-k="D"><b>D.</b> 多模数据库在任何场景都优于专用库</button><button class="opt" data-k="E"><b>E.</b> 模型种类多但单模型规模不大时较适合</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4-9-5" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="多引擎" data-answer-text="多引擎"><div class="qhead"><span class="chip">4-9-5</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec9">↑ 回到本节开头</a></div><div class="qstem">多模数据库的两种实现路线是原生多模和________统一。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<h3>九、小结与衔接</h3>
+<p>本节回答：多模数据库用统一引擎换运维与一致性，代价是各模型深度；选型看模型数量、单模型规模与联合查询需求。</p>
+<h2 id="sec10">本章总复习</h2>
+<h3>一、这一章的主线</h3>
+<p>数据库这一章回答的是"数据怎么组织才不多、不重、不乱"。九节按"看数据—算数据—设计数据—用数据"的顺序：先讲数据模型与三级模式（为什么要分三层看），再讲关系模型与关系运算（表怎么算），然后是规范化（什么样的表算好）、设计过程（从需求到建库走六步），最后是应用如何访问数据库、NoSQL 与向量库/多模库这些新形态。</p>
+<h3>二、必须能说出的判断</h3>
+<ul>
+<li><strong>两级映像换来两种独立性</strong>：外模式/概念模式映射给逻辑独立性，概念模式/内模式映射给物理独立性；</li>
+<li><strong>1:n 联系放外键、m:n 联系必须单独建表</strong>，这是 E-R 转换题的唯一判据；</li>
+<li><strong>范式是逐级排除异常</strong>：1NF 管原子性、2NF 管部分依赖、3NF 管传递依赖、BCNF 管主属性异常；</li>
+<li><strong>优化的顺序</strong>是先索引与慢 SQL 治理，再读写分离，最后才分库分表；</li>
+<li><strong>向量库解决的是相似性检索</strong>，替代不了关系库的事务与关联。</li>
+</ul>
+<h3>三、跨节综合自测（8 题）</h3>
+<div class="quiz" data-id="4综-1" data-type="single" data-explain="部门、员工、项目三实体 + 参与表 = 四张表。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">4综-1</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">E-R 图中有部门与员工（1:n）、员工与项目（m:n）两组联系，转换后应是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 两张表</button><button class="opt" data-k="B"><b>B.</b> 三张表</button><button class="opt" data-k="C"><b>C.</b> 四张表</button><button class="opt" data-k="D"><b>D.</b> 五张表</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4综-2" data-type="single" data-explain="接口与表结构未变，只是部署形态变了。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4综-2</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">把主库换成「一主两从」的读写分离结构，从三级模式角度看属于：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 逻辑结构变化</button><button class="opt" data-k="B"><b>B.</b> 物理结构变化</button><button class="opt" data-k="C"><b>C.</b> 外模式变化</button><button class="opt" data-k="D"><b>D.</b> 概念模式变化</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4综-3" data-type="single" data-explain="看到「全部」就想到除。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="C"><div class="qhead"><span class="chip">4综-3</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">「查询选修了全部课程的学生」应使用的关系运算是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 并</button><button class="opt" data-k="B"><b>B.</b> 差</button><button class="opt" data-k="C"><b>C.</b> 除</button><button class="opt" data-k="D"><b>D.</b> 自然连接</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4综-4" data-type="multi" data-explain="E 错：反规范化牺牲一致性换性能。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">4综-4</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">关于范式与反规范化，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 1NF 要求属性不可再分</button><button class="opt" data-k="B"><b>B.</b> 2NF 排除部分函数依赖</button><button class="opt" data-k="C"><b>C.</b> 3NF 排除传递函数依赖</button><button class="opt" data-k="D"><b>D.</b> BCNF 要求每个决定因素都包含候选键</button><button class="opt" data-k="E"><b>E.</b> 反规范化会提高数据一致性</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4综-5" data-type="single" data-explain="跳过前两步直接分表，会把简单问题复杂化。" data-source="软考口径（原文较简）" data-diag="C 晦涩" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4综-5</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">单表数据量过大时，数据库优化的合理顺序是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 直接分库分表</button><button class="opt" data-k="B"><b>B.</b> 先索引与慢 SQL 治理，再读写分离，最后分库分表</button><button class="opt" data-k="C"><b>C.</b> 只加硬件</button><button class="opt" data-k="D"><b>D.</b> 只做缓存</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4综-6" data-type="single" data-explain="E-R 转换（第 5 节）后主键是组合键，客户名只依赖订单号 → 部分依赖，先消 2NF。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="B"><div class="qhead"><span class="chip">4综-6</span><span class="chip t">单选</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">某 E-R 图转换得到订单表（订单号，客户号，客户名，商品号，商品名，数量），主键为（订单号，商品号）。按规范化理论，最先要解决的问题是：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 属性的原子性</button><button class="opt" data-k="B"><b>B.</b> 客户名、商品名对主键的部分函数依赖</button><button class="opt" data-k="C"><b>C.</b> 非主属性对候选键的传递函数依赖</button><button class="opt" data-k="D"><b>D.</b> 主属性之间的依赖异常</button></div><div class="fb"></div></div>
+
+
+<div class="quiz" data-id="4综-7" data-type="fill" data-explain="记住答案即可，考到了直接填。" data-source="软考口径" data-diag="A 漏读" data-kp="" data-answer="无损|函数" data-answer-text="无损、函数"><div class="qhead"><span class="chip">4综-7</span><span class="chip t">填空</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">关系模式分解必须满足的两个要求是________连接和保持________依赖。</div><div class="fillrow"><input class="fillinput" placeholder="填写答案" autocomplete="off"><button class="btn check">核对</button></div><div class="fb"></div></div>
+
+<div class="quiz" data-id="4综-8" data-type="multi" data-explain="E 错：多模胜在统一，输在深度。" data-source="拓展" data-diag="B 拓展" data-kp="" data-answer="ABCD"><div class="qhead"><span class="chip">4综-8</span><span class="chip t">不定项</span><span class="chip k"></span><a class="back" href="#sec10">↑ 回到本节开头</a></div><div class="qstem">关于存储选型，正确的有：</div><div class="opts"><button class="opt" data-k="A"><b>A.</b> 键值库适合缓存与会话</button><button class="opt" data-k="B"><b>B.</b> 列族库适合海量写入与时序数据</button><button class="opt" data-k="C"><b>C.</b> 图库适合多跳关系查询</button><button class="opt" data-k="D"><b>D.</b> 文档库适合字段频繁变化的半结构化数据</button><button class="opt" data-k="E"><b>E.</b> 多模数据库在所有模型上都强于专用库</button></div><div class="fillrow"><button class="btn check">提交答案</button></div><div class="fb"></div></div>
+
+
+<h3>四、与论文、案例的接口</h3>
+<p>上午题稳定出题（关系运算、范式判定），案例题常与架构设计结合（数据分片、读写分离）；论文里"数据架构""多源数据整合"的素材主要来自这里。</p>
+<h3>五、下一步</h3>
+<p><strong>本章结束</strong>。下一步进入 K5（架构基础与架构风格）。</p>
+<div class="legend" style="margin-top:44px">标注说明：<b>软考口径</b>＝按官方用书表述给分；<b>拓展</b>＝考纲未展开的补充知识。详见 <a href="k00.html">K0 前言</a>。作答记录保存在本机浏览器。</div>
+<div class="toast" id="toast"></div>
+</div>
+<script>
+const KEY="book_K4数据库设计";
+let state=JSON.parse(localStorage.getItem(KEY)||"{}");
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function norm(s){return (s||"").toLowerCase().replace(/[\s，,、;；。.()（）]/g,"");}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1400);}
+function stats(){const qs=$$(".quiz");let done=0,ok=0;
+ qs.forEach(q=>{const st=state[q.dataset.id];if(st&&st.done){done++;if(st.ok)ok++;}});
+ return {done,total:qs.length,ok};}
+function paint(){const s=stats();const p=s.total?s.done/s.total*100:0;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";}
+function fillKeywords(q){return q.dataset.answer.split("|").map(g=>g.split("/"));}
+function fbHTML(q,ok,userText){
+ const diag=q.dataset.diag||"";const warm=diag.includes("补充")?"#a2540f":"#b42318";
+ const ans=q.dataset.answerText||q.dataset.answer;
+ return '<div class="res">'+(ok?"✔ 回答正确":"✘ 回答错误")+'</div>'
+  +'<div><b>正确答案：</b>'+ans+(userText?'　<span style="color:#6b7280">你的作答：'+userText+'</span>':'')+'</div>'
+  +'<details open><summary>展开解析</summary><div class="inner">'
+  +'<div>'+q.dataset.explain+'</div>'
+  +'<div class="row tags">来源：'+q.dataset.source+'　｜　诊断标签：<b style="color:'+warm+'">'+diag+'</b></div>'
+  +'</div></details>';
+}
+function judge(q,ok,userText){
+ const fb=$(".fb",q);fb.className="fb show "+(ok?"ok":"bad");
+ fb.innerHTML=fbHTML(q,ok,userText);
+ state[q.dataset.id]={done:true,ok:ok};save();paint();
+}
+$$(".quiz").forEach(q=>{
+ const type=q.dataset.type;const ans=q.dataset.answer;
+ const opts=$$(".opt",q);const fb=$(".fb",q);
+ const saved=state[q.dataset.id];
+ if(type==="single"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     opts.forEach(x=>x.disabled=true);
+     const ok=(o.dataset.k===ans);
+     o.classList.add(ok?"right":"wrong");
+     if(!ok){const c=opts.find(x=>x.dataset.k===ans);if(c)c.classList.add("right");}
+     judge(q,ok,o.dataset.k);
+   }));
+ }else if(type==="multi"){
+   opts.forEach(o=>o.addEventListener("click",()=>{
+     if(o.disabled)return;
+     o.classList.toggle("sel");
+   }));
+   const btn=$(".check",q);
+   if(btn)btn.addEventListener("click",()=>{
+     const picked=opts.filter(o=>o.classList.contains("sel")).map(o=>o.dataset.k).sort().join("");
+     if(!picked){toast("先选择至少一个选项");return;}
+     opts.forEach(o=>{
+       o.disabled=true;o.classList.remove("sel");
+       const k=o.dataset.k;
+       if(ans.includes(k))o.classList.add("right");
+       else if(picked.includes(k))o.classList.add("wrong");
+     });
+     judge(q,picked===ans,picked);
+   });
+ }else{
+   const inp=$(".fillinput",q);const btn=$(".check",q);
+   const go=()=>{
+     const raw=inp.value;const v=norm(raw);
+     if(!v){toast("先填写答案");return;}
+     let ok=false;
+     if(q.dataset.numeric){
+       const m=raw.match(/-?\d+(?:\.\d+)?/);
+       const cands=q.dataset.numeric.split("|");
+       ok=!!m&&cands.some(x=>Math.abs(parseFloat(m[0])-parseFloat(x))<0.011);
+     }else{
+       ok=fillKeywords(q).every(g=>g.some(k=>v.includes(norm(k))));
+     }
+     inp.disabled=true;inp.style.borderColor=ok?"#7cc49b":"#e79a94";
+     if(btn)btn.disabled=true;
+     judge(q,ok,raw.trim());
+   };
+   if(btn)btn.addEventListener("click",go);
+   if(inp)inp.addEventListener("keydown",e=>{if(e.key==="Enter")go();});
+ }
+ if(saved&&saved.done){/* 恢复历史状态：仅标记，不覆盖作答 */}
+});
+window.addEventListener("scroll",()=>{
+ const h=document.documentElement;
+ const p=h.scrollTop/(h.scrollHeight-h.clientHeight||1)*100;
+ const bar=$("#bar");if(bar)bar.style.width=p+"%";
+});
+paint();
+</script>
+<div class="book-foot-nav"><div class="bf-box"><a href="k03.html">&larr; 上一章 K3 软件工程与可靠性</a><a class="bf-next" href="k05.html">下一章 K5 架构基础与架构风格 &rarr;</a></div><p class="bf-note">作答记录保存在本机浏览器，换设备或清除缓存不会保留。本章支持浏览器直接打印为 PDF。</p></div><script>
+(function(){
+  var el=document.getElementById("book-nav-progress");
+  function refresh(){
+    try{
+      var st=JSON.parse(localStorage.getItem("book_K4数据库设计")||"{}"),done=0;
+      Object.keys(st).forEach(function(k){if(st[k]&&st[k].done)done++;});
+      if(el)el.textContent=done+" / 70 题";
+    }catch(e){}
+  }
+  refresh();setInterval(refresh,1000);
+})();
+</script></body></html>
